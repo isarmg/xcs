@@ -1005,6 +1005,68 @@ class SourcePolicy(unittest.TestCase):
         self.refresh()
         self.verify()
 
+    def test_inherited_consumer_features_are_checked_in_every_dependency_context(self):
+        (self.root / "Cargo.toml").write_text(
+            '[workspace]\nmembers=["src/app"]\n[workspace.package]\nedition="2024"\n'
+            '[workspace.dependencies]\nrenamed={path="src/foundation/mini",package="mini",features=["base"]}\n')
+        (self.source / "Cargo.toml").write_text(
+            '[package]\nname="mini"\nversion="1.0.0"\n[features]\nbase=[]\nextra=[]\n')
+        app = self.root / "src/app/Cargo.toml"
+        for prefix in ("", "target.'cfg(unix)'."):
+            for kind in ("dependencies", "build-dependencies", "dev-dependencies"):
+                with self.subTest(section=prefix + kind):
+                    text = ('[package]\nname="app"\nversion="1.0.0"\nedition.workspace=true\n'
+                            f'[{prefix}{kind}]\nrenamed={{workspace=true,default-features=false,features=["extra"]}}\n')
+                    app.write_text(text)
+                    manager.structure(self.root, self.policy)
+                    app.write_text(text.replace('features=["extra"]', 'features=["missing"]'))
+                    with self.assertRaisesRegex(ValueError, "dangling dependency feature: src/app/Cargo.toml renamed/missing"):
+                        manager.structure(self.root, self.policy)
+
+    def test_inherited_optional_features_and_weak_edges_remain_validated(self):
+        (self.root / "Cargo.toml").write_text(
+            '[workspace]\nmembers=["src/app"]\n'
+            '[workspace.dependencies]\nmini={path="src/foundation/mini",default-features=false}\n')
+        (self.source / "Cargo.toml").write_text(
+            '[package]\nname="mini"\nversion="1.0.0"\n[features]\nextra=[]\n')
+        app = self.root / "src/app/Cargo.toml"
+        for prefix in ("", "target.'cfg(unix)'."):
+            for kind in ("dependencies", "build-dependencies"):
+                for values in ('["mini"]', '["dep:mini"]', '["mini?/extra"]', '["mini/extra"]'):
+                    with self.subTest(section=prefix + kind, values=values):
+                        text = ('[package]\nname="app"\nversion="1.0.0"\n'
+                                f'[{prefix}{kind}]\nmini={{workspace=true,optional=true}}\n'
+                                f'[features]\nenabled={values}\n')
+                        app.write_text(text)
+                        manager.structure(self.root, self.policy)
+                        if values != '["mini/extra"]':
+                            app.write_text(text.replace('optional=true', 'optional=false'))
+                            with self.assertRaisesRegex(ValueError, "dangling feature edge"):
+                                manager.structure(self.root, self.policy)
+
+    def test_inherited_dep_syntax_still_hides_implicit_feature(self):
+        (self.root / "Cargo.toml").write_text(
+            '[workspace]\nmembers=["src/app"]\n'
+            '[workspace.dependencies]\nmini={path="src/foundation/mini"}\n')
+        (self.root / "src/app/Cargo.toml").write_text(
+            '[package]\nname="app"\nversion="1.0.0"\n'
+            '[dependencies]\nmini={workspace=true,optional=true}\n'
+            '[features]\nexplicit=["dep:mini"]\ndefault=["mini"]\n')
+        with self.assertRaisesRegex(ValueError, "dangling feature edge: src/app/Cargo.toml default -> mini"):
+            manager.structure(self.root, self.policy)
+
+    def test_disabling_inherited_defaults_does_not_hide_dormant_invalid_edges(self):
+        (self.root / "Cargo.toml").write_text(
+            '[workspace]\nmembers=["src/app"]\n'
+            '[workspace.dependencies]\nmini={path="src/foundation/mini",default-features=true}\n')
+        (self.root / "src/app/Cargo.toml").write_text(
+            '[package]\nname="app"\nversion="1.0.0"\nedition="2024"\n'
+            '[dependencies]\nmini={workspace=true,default-features=false}\n')
+        (self.source / "Cargo.toml").write_text(
+            '[package]\nname="mini"\nversion="1.0.0"\n[features]\ndefault=["removed"]\n')
+        with self.assertRaisesRegex(ValueError, "dangling feature edge: src/foundation/mini/Cargo.toml default -> removed"):
+            manager.structure(self.root, self.policy)
+
     def test_registry_or_git_source_in_root_lock_fails_after_receipt_update(self):
         with (self.root / "Cargo.lock").open("a") as lock:
             lock.write(f'source = "{manager.REGISTRY}"\nchecksum = "' + "a" * 64 + '"\n')

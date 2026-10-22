@@ -21,6 +21,7 @@ import source_consolidation
 import external_transfers
 import source_relocation
 import benchmark_relocation
+import dependency_edges
 
 ROOT = Path(__file__).resolve().parents[2]
 CATALOG = "compliance/rust-sources.json"
@@ -165,7 +166,6 @@ def structure(root, policy):
             or any(not path.startswith("src/foundation/") or path not in workspace.get("members", [])
                    or path in workspace.get("default-members", []) for path in verification_members)):
         raise ValueError("foundation verification members must be explicit non-default root members")
-    workspace_dependencies = root_manifest["workspace"].get("dependencies", {})
     for relative in project_manifests(root):
         manifest_path = safe_path(root, relative)
         manifest = tomllib.loads(manifest_path.read_text(encoding="utf-8"))
@@ -175,12 +175,7 @@ def structure(root, policy):
         for section in sections:
             for kind in ("dependencies", "dev-dependencies", "build-dependencies"):
                 for name, dependency in section.get(kind, {}).items():
-                    if not isinstance(dependency, dict):
-                        raise ValueError(f"non-path dependency: {relative} {name}")
-                    base = manifest_path.parent
-                    if dependency.get("workspace") is True:
-                        dependency = workspace_dependencies.get(name)
-                        base = root
+                    dependency, base = dependency_edges.resolve(root, relative, manifest, workspace, name, dependency)
                     if (not isinstance(dependency, dict) or "path" not in dependency
                             or any(key in dependency for key in ("git", "registry", "branch", "tag", "rev"))):
                         raise ValueError(f"non-path dependency: {relative} {name}")
@@ -214,7 +209,7 @@ def verify_feature_edges(root):
     """Validate dormant feature edges too, not just Cargo's selected features."""
     documents = {relative: tomllib.loads(safe_path(root, relative).read_text(encoding="utf-8"))
                  for relative in project_manifests(root)}
-    workspace = documents["Cargo.toml"]["workspace"].get("dependencies", {})
+    workspace = documents["Cargo.toml"]["workspace"]
     dependencies = {}
     for relative, manifest in documents.items():
         edges = {}
@@ -224,9 +219,7 @@ def verify_feature_edges(root):
         for section in sections:
             for kind in ("dependencies", "build-dependencies", "dev-dependencies"):
                 for alias, dependency in section.get(kind, {}).items():
-                    base = root / Path(relative).parent
-                    if dependency.get("workspace") is True:
-                        dependency, base = workspace[alias], root
+                    dependency, base = dependency_edges.resolve(root, relative, manifest, workspace, alias, dependency)
                     target = (base / dependency["path"] / "Cargo.toml").resolve().relative_to(root.resolve()).as_posix()
                     edges.setdefault(alias, []).append((dependency, target))
         dependencies[relative] = edges

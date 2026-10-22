@@ -5,6 +5,8 @@ benchmark programs or assert their missing providers/fixtures are available.
 """
 from copy import deepcopy
 import json
+import hashlib
+import zipfile
 from pathlib import Path
 import shutil
 import sys
@@ -178,7 +180,42 @@ class BenchmarkRelocation(unittest.TestCase):
         (self.root / self.item['directory'] / 'src/lib.rs').write_bytes(b'legitimate later edit')
         self.check()
 
+    def historical_install_view(self, fixture=None):
+        # Only this install scenario needs the exact prior snapshot. Ordinary
+        # verification above deliberately keeps current source and manifest edits.
+        fixture = fixture or ROOT / 'test/tools/rust-sources/fixtures/benchmark-install-schema.zip'
+        with zipfile.ZipFile(fixture) as archive:
+            for item in self.receipt['packages']:
+                directory = item['directory']
+                expected = item['proposed_files_sha256']
+                current = manage.files(self.root / directory)
+                for relative in current.keys() - expected.keys():
+                    (self.root / directory / relative).unlink()
+                for relative, sha in expected.items():
+                    if current.get(relative) == sha:
+                        continue
+                    name = directory + '/' + relative
+                    self.assertLessEqual(archive.getinfo(name).file_size, 100_000)
+                    data = archive.read(name)
+                    self.assertEqual(hashlib.sha256(data).hexdigest(), sha)
+                    path = self.root / name
+                    path.parent.mkdir(parents=True, exist_ok=True)
+                    path.write_bytes(data)
+                self.assertEqual(manage.files(self.root / directory), expected)
+
+    def test_historical_install_fixture_rejects_changed_bytes(self):
+        fixture = ROOT / 'test/tools/rust-sources/fixtures/benchmark-install-schema.zip'
+        changed = self.root / 'changed-fixture.zip'
+        with zipfile.ZipFile(fixture) as original, zipfile.ZipFile(changed, 'w') as archive:
+            for index, name in enumerate(original.namelist()):
+                if index == 0:
+                    (self.root / name).write_bytes(b'require historical restoration')
+                archive.writestr(name, b'tampered' if index == 0 else original.read(name))
+        with self.assertRaises(AssertionError):
+            self.historical_install_view(changed)
+
     def test_unrelated_catalog_changes_allow_installation(self):
+        self.historical_install_view()
         cat = self.before(); cat['unrelated_new_metadata'] = 'does not change any reviewed owner'
         relocation.validate(self.root, cat, manage.files, installing=True)
 

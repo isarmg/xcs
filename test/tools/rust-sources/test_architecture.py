@@ -15,12 +15,12 @@ class ConsumerEdges(unittest.TestCase):
             root = Path(directory)
             documents = {
                 'Cargo.toml': {'workspace': {'dependencies': {'renamed': {'path': 'src/foundation/mini', 'package': 'mini'}}}},
-                'src/app/Cargo.toml': {'dependencies': {'renamed': {'workspace': True}},
+                'src/app/Cargo.toml': {'dependencies': {'renamed': {'workspace': True, 'optional': True}},
                     'dev-dependencies': {'mini': {'path': '../foundation/mini'}},
                     'target': {'cfg(unix)': {'build-dependencies': {'mini': {'path': '../foundation/mini', 'optional': True}}}}},
             }
             edges = architecture.consumer_edges(root, documents)['src/foundation/mini']
-            self.assertEqual(edges, ['src/app [build, optional, cfg(unix)]', 'src/app [dev]', 'src/app [normal] alias=renamed'])
+            self.assertEqual(edges, ['src/app [build, optional, cfg(unix)]', 'src/app [dev]', 'src/app [normal, optional] alias=renamed'])
             self.assertFalse(any('Cargo.toml' in edge for edge in edges))
 
 

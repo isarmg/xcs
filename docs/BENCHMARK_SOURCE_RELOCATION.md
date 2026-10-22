@@ -91,3 +91,16 @@ and old criterion invocations. Schema benchmarks reference historical criterion
 providers, crate names and fixture paths that are not restored by this transition.
 These benchmarks remain inactive. This change makes no claim that they compile or
 run; provider/API/fixture restoration and reactivation need separate review.
+
+## Historical installation test fixture
+
+`test/tools/rust-sources/fixtures/benchmark-install-schema.zip` preserves the three schema-validation files that
+changed after the pinned benchmark-relocation installation: `Cargo.toml`,
+`src/validation/keywords/format.rs`, and `src/validation/keywords/mod.rs`.
+
+The fixture reconstructs only the old installation test, not current production
+sources. Every restored file must match `proposed_files_sha256` in the immutable
+benchmark-relocation receipt. The files were recovered from the repository's
+pre-UUID-consolidation history and verified against those existing hashes. The
+archive is never extracted wholesale, compiled, or executed. Ordinary validation
+and tamper tests continue to inspect current source bytes.

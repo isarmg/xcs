@@ -7,6 +7,9 @@ from pathlib import Path
 import sys
 import tomllib
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import dependency_edges
+
 ROOT = Path(__file__).resolve().parents[2]
 DOCUMENT = 'docs/architecture/foundation-consumers.md'
 
@@ -25,7 +28,7 @@ def manifests(root):
 
 def consumer_edges(root, documents):
     """Keep dormant, target-specific and dev edges distinct from resolved use."""
-    workspace = documents['Cargo.toml']['workspace'].get('dependencies', {})
+    workspace = documents['Cargo.toml']['workspace']
     consumers = defaultdict(list)
     for relative, manifest in documents.items():
         if relative == 'Cargo.toml':
@@ -34,12 +37,7 @@ def consumer_edges(root, documents):
         for target, section in sections:
             for kind in ('dependencies', 'build-dependencies', 'dev-dependencies'):
                 for alias, declaration in sorted(section.get(kind, {}).items()):
-                    dependency = dict(declaration)
-                    base = root / Path(relative).parent
-                    if dependency.pop('workspace', False):
-                        inherited = dict(workspace[alias])
-                        inherited.update(dependency)
-                        dependency, base = inherited, root
+                    dependency, base = dependency_edges.resolve(root, relative, manifest, workspace, alias, declaration)
                     destination = (base / dependency['path']).resolve().relative_to(root.resolve()).as_posix()
                     label = f"{Path(relative).parent.as_posix()} [{kind.removesuffix('-dependencies') if kind != 'dependencies' else 'normal'}"
                     if dependency.get('optional'):
