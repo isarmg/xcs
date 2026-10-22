@@ -13,6 +13,7 @@ pub(crate) struct DetachedPublication {
     candidate: Candidate,
     result: OperationResult,
     verified: VerifiedPayloadSet,
+    names: crate::container_storage::PreparedNames,
     base_root: std::path::PathBuf,
     base_snapshot: Option<String>,
     base_sequence: u64,
@@ -45,6 +46,16 @@ impl Engine {
         prepared: Vec<Prepared>,
         result: OperationResult,
         maximum: usize,
+    ) -> Result<DetachedPublication> {
+        self.prepare_publication_bounded(next, prepared, result, maximum, maximum)
+    }
+    fn prepare_publication_bounded(
+        &self,
+        next: State,
+        prepared: Vec<Prepared>,
+        result: OperationResult,
+        maximum: usize,
+        cache_maximum: usize,
     ) -> Result<DetachedPublication> {
         let members = self.members();
         let mut required = BTreeMap::<String, u64>::new();
@@ -119,6 +130,14 @@ impl Engine {
         let preparation = PayloadPreparation::new(&self.config, &candidate)?;
         self.prepare_payloads(&prepared)?;
         let verified = preparation.verify(&self.config, &candidate)?;
+        // Payload installation establishes the physical container, but no decision
+        // exists yet. Encode its complete projection before ACCEPT can be written.
+        let names = crate::container_storage::prepare_names(
+            &self.config,
+            &self.state,
+            &next,
+            cache_maximum,
+        )?;
         snapshot.store(&members)?;
         for manifest in manifests {
             manifest.store(&members)?;
@@ -128,6 +147,7 @@ impl Engine {
             candidate,
             result,
             verified,
+            names,
             base_root: self.root.clone(),
             base_snapshot: self.snapshot.clone(),
             base_sequence: self.state.sequence,
@@ -157,6 +177,7 @@ impl Engine {
             candidate,
             result,
             verified,
+            names,
             ..
         } = detached;
         verified
@@ -207,8 +228,14 @@ impl Engine {
         }
         // Once the first ACCEPT may have reached disk, failure is indeterminate.
         self.blocked = true;
-        let finish =
-            self.complete_candidate_verified(&candidate, &hash, &next, None, Some(&verified));
+        let finish = self.complete_candidate_verified(
+            &candidate,
+            &hash,
+            &next,
+            None,
+            Some(&verified),
+            Some(names),
+        );
         if let Err(e) = finish {
             return Err(Error::new(
                 "IN_DOUBT",
@@ -313,7 +340,7 @@ impl Engine {
         next: &State,
         existing: Option<Publication>,
     ) -> Result<()> {
-        self.complete_candidate_verified(c, hash, next, existing, None)
+        self.complete_candidate_verified(c, hash, next, existing, None, None)
     }
     fn complete_candidate_verified(
         &mut self,
@@ -322,6 +349,7 @@ impl Engine {
         next: &State,
         existing: Option<Publication>,
         verified: Option<&VerifiedPayloadSet>,
+        names: Option<crate::container_storage::PreparedNames>,
     ) -> Result<()> {
         self.verify_candidate_membership(c)?;
         if let Some(publication) = existing {
@@ -336,7 +364,7 @@ impl Engine {
                     "stored publication does not bind this candidate",
                 ));
             }
-            crate::container_storage::synchronize_names(&self.config, &self.state, next)?;
+            crate::container_storage::repair_historical_names(&self.config, &self.state, next)?;
             let pub_hash = object_hash("publication", &publication)?;
             let mut publication_receipts = Vec::new();
             for (index, d) in self.members().into_iter().enumerate() {
@@ -424,6 +452,15 @@ impl Engine {
             }
             return Ok(());
         }
+        let names = match names {
+            Some(names) => names,
+            None => crate::container_storage::prepare_names(
+                &self.config,
+                &self.state,
+                next,
+                MAX_METADATA,
+            )?,
+        };
         let members = self.members();
         let mut accepts = Vec::new();
         for (i, d) in members.iter().enumerate() {
@@ -445,7 +482,7 @@ impl Engine {
         self.failpoint("after_finalize")?;
         // Only a decided candidate may rename a published file container.
         // A crash leaves the operation indeterminate and recovery replays it.
-        crate::container_storage::synchronize_names(&self.config, &self.state, next)?;
+        names.apply(&self.config)?;
         self.failpoint("after_container_names")?;
         let mut payload_receipts = Vec::new();
         for evidence in &c.versions {
@@ -644,3 +681,7 @@ fn run_payload_groups<T: Sync>(
 #[cfg(test)]
 #[path = "../../../../test/engine/unit/engine/publication/parallel_preparation_tests.rs"]
 mod parallel_preparation_tests;
+
+#[cfg(test)]
+#[path = "../../../../test/engine/unit/engine/publication/cache_budget_tests.rs"]
+mod cache_budget_tests;

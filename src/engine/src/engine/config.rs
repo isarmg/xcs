@@ -9,10 +9,13 @@ pub(super) fn acquire_locks(
 ) -> Result<Vec<File>> {
     let mut paths = vec![root.join("writer.lock")];
     for d in &config.disks {
-        if d.root.exists() {
-            if allow_missing {
-                validate_seal(config, d)?;
+        if allow_missing {
+            if disk_unavailable(d)? {
+                continue;
             }
+            validate_seal(config, d)?;
+            paths.push(d.root.join(".writer.lock"));
+        } else if d.root.exists() {
             paths.push(d.root.join(".writer.lock"));
         }
     }

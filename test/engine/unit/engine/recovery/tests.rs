@@ -726,3 +726,192 @@ fn nonmetadata_payload_disk_offline_proofs_require_saved_membership() {
     assert!(verify_tombstone(&directory, &version).is_err());
     assert!(!anchor.exists());
 }
+
+#[test]
+fn empty_unmounted_root_is_unavailable_without_writes() {
+    for lost in [1, 2] {
+        let temp = tempfile::tempdir().unwrap();
+        let root = temp.path().join("system");
+        let config = Config::development((0..3).map(|n| temp.path().join(format!("disk-{n}"))));
+        let mut engine = Engine::initialize(&root, config.clone()).unwrap();
+        let repo = engine
+            .create_repository("majority", "P01", 1, "admin", &new_id("op"))
+            .unwrap();
+        drop(engine);
+        for disk in config.disks.iter().rev().take(lost) {
+            std::fs::remove_dir_all(&disk.root).unwrap();
+            private_dir(&disk.root).unwrap();
+        }
+        for recovery in [false, true] {
+            let opened = if recovery {
+                Engine::open_for_recovery(&root)
+            } else {
+                Engine::open(&root)
+            };
+            if lost == 1 {
+                let engine = opened.unwrap();
+                assert!(engine.blocked);
+                assert!(engine.state.repositories.contains_key(&repo.repository_id));
+            } else {
+                assert_eq!(opened.err().unwrap().code(), "METADATA_QUORUM_UNAVAILABLE");
+            }
+            for disk in config.disks.iter().rev().take(lost) {
+                assert_eq!(std::fs::read_dir(&disk.root).unwrap().count(), 0);
+            }
+        }
+    }
+}
+
+#[test]
+fn unavailable_root_classification_rejects_unsafe_or_conflicting_roots() {
+    use std::os::unix::fs::{PermissionsExt, symlink};
+    for fault in ["nonempty", "wrong-seal", "symlink", "permissions"] {
+        let temp = tempfile::tempdir().unwrap();
+        let root = temp.path().join("system");
+        let config = Config::development((0..3).map(|n| temp.path().join(format!("disk-{n}"))));
+        drop(Engine::initialize(&root, config.clone()).unwrap());
+        let disk = &config.disks[2];
+        match fault {
+            "nonempty" => {
+                std::fs::remove_file(disk.root.join("disk.json")).unwrap();
+            }
+            "wrong-seal" => {
+                std::fs::copy(
+                    config.disks[0].root.join("disk.json"),
+                    disk.root.join("disk.json"),
+                )
+                .unwrap();
+            }
+            "symlink" => {
+                let moved = temp.path().join("moved");
+                std::fs::rename(&disk.root, &moved).unwrap();
+                symlink(&moved, &disk.root).unwrap();
+            }
+            "permissions" => {
+                std::fs::set_permissions(&disk.root, std::fs::Permissions::from_mode(0o755))
+                    .unwrap();
+            }
+            _ => unreachable!(),
+        }
+        assert!(Engine::open(&root).is_err(), "{fault}");
+        assert!(Engine::open_for_recovery(&root).is_err(), "{fault}");
+    }
+}
+
+#[test]
+fn missing_payload_only_replica_preserves_history_but_not_new_copy_admission() {
+    use std::io::Read;
+    for checkpoint in [false, true] {
+        for empty_root in [false, true] {
+            let temp = tempfile::tempdir().unwrap();
+            let root = temp.path().join("system");
+            let mut config =
+                Config::development((0..4).map(|n| temp.path().join(format!("disk-{n}"))));
+            config.disks[3].metadata_member = false;
+            let mut engine = Engine::initialize(&root, config.clone()).unwrap();
+            let repo = engine
+                .create_repository("history", "P01", 4, "admin", &new_id("op"))
+                .unwrap();
+            let mut versions = Vec::new();
+            for content in [b"old", b"new"] {
+                let workspace = engine
+                    .create_workspace(&repo.main_branch_id, "admin")
+                    .unwrap();
+                engine
+                    .stage_bytes(&workspace.workspace_id, "file.txt", content)
+                    .unwrap();
+                engine
+                    .commit_workspace(CommitRequest {
+                        workspace_id: workspace.workspace_id.clone(),
+                        operation_id: new_id("op"),
+                        principal: "admin".into(),
+                        expected_head: workspace.base_head,
+                        fencing_token: workspace.fencing_token,
+                        message: "save".into(),
+                        request_digest: None,
+                    })
+                    .unwrap();
+                versions.push(
+                    engine.list_tree(&repo.main_branch_id).unwrap()[0]
+                        .version_id
+                        .clone(),
+                );
+            }
+            let before = canonical_json(&engine.state).unwrap();
+            drop(engine);
+            // Generate an eligible checkpoint while every replica still exists.
+            drop(Engine::open(&root).unwrap());
+            for disk in config.disks.iter().filter(|disk| disk.metadata_member) {
+                let path = disk.root.join("metadata/replay-checkpoint.json");
+                assert!(path.exists());
+                if !checkpoint {
+                    std::fs::remove_file(path).unwrap();
+                }
+            }
+            let missing = &config.disks[3].root;
+            std::fs::remove_dir_all(missing).unwrap();
+            if empty_root {
+                private_dir(missing).unwrap();
+            }
+            for recovery in [false, true] {
+                let mut engine = if recovery {
+                    Engine::open_for_recovery(&root)
+                } else {
+                    Engine::open(&root)
+                }
+                .unwrap();
+                assert_eq!(canonical_json(&engine.state).unwrap(), before);
+                for (version, expected) in versions.iter().zip([b"old", b"new"]) {
+                    let mut bytes = Vec::new();
+                    engine
+                        .open_content(version)
+                        .unwrap()
+                        .file
+                        .read_to_end(&mut bytes)
+                        .unwrap();
+                    assert_eq!(&bytes, expected);
+                }
+                let workspace = engine
+                    .create_workspace(&repo.main_branch_id, "admin")
+                    .unwrap();
+                engine
+                    .stage_bytes(&workspace.workspace_id, "file.txt", b"third")
+                    .unwrap();
+                let logs: Vec<_> = engine
+                    .members()
+                    .iter()
+                    .map(|disk| std::fs::read(log_path(disk)).unwrap())
+                    .collect();
+                let error = engine
+                    .commit_workspace(CommitRequest {
+                        workspace_id: workspace.workspace_id.clone(),
+                        operation_id: new_id("op"),
+                        principal: "admin".into(),
+                        expected_head: workspace.base_head,
+                        fencing_token: workspace.fencing_token,
+                        message: "must retain four copies".into(),
+                        request_digest: None,
+                    })
+                    .unwrap_err();
+                assert_ne!(error.code(), "IN_DOUBT");
+                engine
+                    .abort_workspace(&workspace.workspace_id, "admin")
+                    .unwrap();
+                assert_eq!(
+                    engine
+                        .members()
+                        .iter()
+                        .map(|disk| std::fs::read(log_path(disk)).unwrap())
+                        .collect::<Vec<_>>(),
+                    logs
+                );
+                assert_eq!(canonical_json(&engine.state).unwrap(), before);
+                if empty_root {
+                    assert_eq!(std::fs::read_dir(missing).unwrap().count(), 0);
+                } else {
+                    assert!(!missing.exists());
+                }
+            }
+        }
+    }
+}

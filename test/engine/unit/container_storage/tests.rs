@@ -657,3 +657,32 @@ fn rename_and_note_projection_replays_without_changing_body_identity() {
         "CONTAINER_AMBIGUOUS"
     );
 }
+
+#[test]
+fn empty_name_projection_has_no_staging_file() {
+    let temporary = tempfile::tempdir().unwrap();
+    let config = Config::development([
+        temporary.path().join("p"),
+        temporary.path().join("b"),
+        temporary.path().join("c"),
+    ]);
+    let previous = State::default();
+    let mut metadata_only = previous.clone();
+    metadata_only.sequence = 1;
+    metadata_only
+        .file_notes
+        .insert(new_id("file"), "no physical container".into());
+    for next in [&previous, &metadata_only] {
+        for historical in [false, true] {
+            let prepared = prepare_names_inner(&config, &previous, next, 0, historical).unwrap();
+            assert!(
+                prepared.cache.is_none(),
+                "empty projections must not allocate staging"
+            );
+            prepared.apply(&config).unwrap();
+        }
+    }
+    for disk in &config.disks {
+        assert!(!disk.root.exists());
+    }
+}

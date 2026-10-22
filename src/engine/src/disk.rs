@@ -514,6 +514,22 @@ fn production_device(root: &Path) -> Result<(String, String)> {
         })?,
     ))
 }
+/// An unmounted root is unavailable only when absent or a safe, empty directory.
+/// A missing seal in a nonempty root is corruption, not permission to initialize.
+pub(crate) fn disk_unavailable(disk: &DiskConfig) -> Result<bool> {
+    match fs::symlink_metadata(&disk.root) {
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound => return Ok(true),
+        Err(error) => return Err(error.into()),
+        Ok(_) => (),
+    }
+    existing_private_dir(&disk.root)?;
+    match fs::read_dir(&disk.root)?.next() {
+        None => Ok(true),
+        Some(Ok(_)) => Ok(false),
+        Some(Err(error)) => Err(error.into()),
+    }
+}
+
 pub(crate) fn validate_seal(config: &Config, disk: &DiskConfig) -> Result<DiskSeal> {
     let stored: DiskSeal = read_json(&disk.root.join("disk.json"))?;
     let live = identity(config, disk)?;

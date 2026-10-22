@@ -6,7 +6,7 @@ use platform_io::fs_safety::linux::{MountPolicy, OpenAt2Root};
 use std::{
     collections::{BTreeMap, BTreeSet},
     fs,
-    io::Read,
+    io::{Read, Seek, Write},
     os::unix::fs::MetadataExt,
     path::{Path, PathBuf},
 };
@@ -816,9 +816,99 @@ fn collect_empty_directories(
     Ok(())
 }
 
-/// Replayable post-decision projection of names and user notes. The cache is
-/// convenient for offline inspection; signed version evidence remains separate.
+/// Fully encoded, bounded projections. Preparation never changes published names
+/// or caches. Signed version evidence remains separate from this inspection cache.
+pub(crate) struct PreparedNames {
+    cache: Option<PreparedNameCache>,
+    historical: bool,
+}
+struct PreparedNameCache {
+    items: Vec<PreparedName>,
+    // Lazily create one anonymous file only when a projection exists. Keeping
+    // items with their file makes an unstaged projection unrepresentable.
+    file: fs::File,
+}
+struct PreparedName {
+    slot: String,
+    history_id: String,
+    file: String,
+    location: Option<String>,
+    name: String,
+    offset: u64,
+    length: usize,
+}
+impl PreparedNames {
+    pub(crate) fn apply(self, config: &Config) -> Result<()> {
+        let Some(mut cache) = self.cache else {
+            return Ok(());
+        };
+        for item in cache.items {
+            let disk = config
+                .disks
+                .iter()
+                .find(|disk| disk.slot_id == item.slot)
+                .ok_or_else(|| Error::new("DISK_NOT_FOUND", "container slot disappeared"))?;
+            if self.historical && disk_unavailable(disk)? {
+                continue;
+            }
+            validate_seal(config, disk)?;
+            let history = disk.root.join("histories").join(&item.history_id);
+            let Some(current) = container(&history, &item.file)? else {
+                continue;
+            };
+            let stable = history.join("file-containers").join(&item.file);
+            let named = synchronize_location(
+                current,
+                &stable,
+                &item.file,
+                item.location.as_deref(),
+                &item.name,
+            )?;
+            // Seal even a rename made visible by an earlier interrupted attempt.
+            sync_dir(&stable)?;
+            cache.file.seek(std::io::SeekFrom::Start(item.offset))?;
+            let mut bytes = vec![0; item.length];
+            cache.file.read_exact(&mut bytes)?;
+            write_atomic(&named.join("container.json"), &bytes, true)?;
+            sync_dir(&named)?;
+        }
+        Ok(())
+    }
+}
+
+#[cfg(test)]
 pub(crate) fn synchronize_names(config: &Config, previous: &State, next: &State) -> Result<()> {
+    prepare_names(config, previous, next, MAX_METADATA)?.apply(config)
+}
+
+/// A verified Publication authorizes repair that skips unavailable replicas.
+/// This includes historical replay and a newly validated degraded-recovery
+/// publication; present-but-invalid identities are never ignored.
+pub(crate) fn repair_historical_names(
+    config: &Config,
+    previous: &State,
+    next: &State,
+) -> Result<()> {
+    prepare_names_inner(config, previous, next, MAX_METADATA, true)?.apply(config)
+}
+
+pub(crate) fn prepare_names(
+    config: &Config,
+    previous: &State,
+    next: &State,
+    maximum: usize,
+) -> Result<PreparedNames> {
+    prepare_names_inner(config, previous, next, maximum, false)
+}
+
+fn prepare_names_inner(
+    config: &Config,
+    previous: &State,
+    next: &State,
+    maximum: usize,
+    historical: bool,
+) -> Result<PreparedNames> {
+    let mut cache: Option<PreparedNameCache> = None;
     let mut node_projection = crate::business::file_nodes::NodeProjection::new(next);
     for file in changed_files(previous, next) {
         validate_id(&file, "file")?;
@@ -865,6 +955,9 @@ pub(crate) fn synchronize_names(config: &Config, previous: &State, next: &State)
                         "container placement references an absent slot",
                     )
                 })?;
+            if historical && disk_unavailable(disk)? {
+                continue;
+            }
             let history = disk.root.join("histories").join(&history_id);
             validate_seal(config, disk)?;
             let pending_here = pending
@@ -890,17 +983,6 @@ pub(crate) fn synchronize_names(config: &Config, previous: &State, next: &State)
                 .ok_or_else(|| invalid("container directory name is not UTF-8"))?;
             let name = physical_name.unwrap_or(current_name);
             name_policy::validate_name(name)?;
-            let stable = history.join("file-containers").join(&file);
-            let named = synchronize_location(
-                current.clone(),
-                &stable,
-                &file,
-                physical_location.map(String::as_str),
-                name,
-            )?;
-            // Also seal a directory rename that became visible before an
-            // earlier attempt returned a durability error.
-            sync_dir(&stable)?;
             let records = records_by_history
                 .entry(history_id.clone())
                 .or_insert_with(|| {
@@ -942,15 +1024,35 @@ pub(crate) fn synchronize_names(config: &Config, previous: &State, next: &State)
                     .then_with(|| a.node_id.cmp(&b.node_id))
             });
             let path_nodes = nodes.into_iter().map(|node| json!({"node":node,"tags":node_projection.tags(&node.node_id),"note":next.file_path_notes.get(&node.node_id).map(String::as_str).unwrap_or("")})).collect::<Vec<_>>();
-            write_json(
-                &named.join("container.json"),
+            let bytes = encode_metadata(
                 &json!({"cache_only":true,"file_id":file,"history_tree_id":history_id,"name":name,"location":physical_location,"primary_location":next.file_locations.get(&file),"backup_policy_id":next.file_backup_policies.get(&file),"metadata_nodes":next.file_metadata_nodes.values().filter(|node|node.file_id==file&&node.history_tree_id==history_id).map(|node|json!({"node":node,"note":next.file_path_notes.get(&node.node_id).map(String::as_str).unwrap_or("")})).collect::<Vec<_>>(),"branch_merges":next.file_branch_merges.values().filter(|event|event.file_id==file&&event.history_tree_id==history_id).collect::<Vec<_>>(),"branch_aliases":next.file_branch_aliases.iter().filter(|(source,_)|next.branches.get(*source).is_some_and(|branch|branch.file_id.as_deref()==Some(file.as_str()))).collect::<BTreeMap<_,_>>(),"note":next.file_notes.get(&file).map(String::as_str).unwrap_or(""),"path_contexts":contexts,"path_nodes":path_nodes,"versions":records,"inherited_branches":inherited}),
-                true,
+                maximum,
             )?;
-            sync_dir(&named)?;
+            let staged = match &mut cache {
+                Some(staged) => staged,
+                empty @ None => empty.insert(PreparedNameCache {
+                    items: Vec::new(),
+                    file: tempfile::tempfile()?,
+                }),
+            };
+            let offset = staged.file.stream_position()?;
+            staged.file.write_all(&bytes)?;
+            staged.items.push(PreparedName {
+                slot,
+                history_id,
+                file: file.clone(),
+                location: physical_location.cloned(),
+                name: name.to_owned(),
+                offset,
+                length: bytes.len(),
+            });
         }
     }
-    Ok(())
+    // Surface staging allocation/writeback failures before any decision.
+    if let Some(staged) = &cache {
+        staged.file.sync_data()?;
+    }
+    Ok(PreparedNames { cache, historical })
 }
 
 #[cfg(test)]
