@@ -453,7 +453,7 @@ runtime 是统一工作区特性图中 normal 边可达的运行候选；compile
 
 ## 根测试目录的来源核算
 
-包内当前文件 12448 个，另有 225 个原始身份所属的外置测试文件 3856 个、39884402 字节；当前来源文件总计 16304 个。测试从源码目录迁移至 test/，不是删除、裁剪或空间优化，仍完整计入来源覆盖、许可及安全审计。
+包内当前文件 12303 个，另有 225 个原始身份所属的外置测试文件 3888 个、40029427 字节；当前来源文件总计 16191 个。测试从源码目录迁移至 test/，不是删除、裁剪或空间优化，仍完整计入来源覆盖、许可及安全审计。
 
 JSON external_tests 按原包目录和原始身份登记精确根目录、原路径、当前路径及逐文件摘要；external_test_mappings_sha256 固定当前映射文档。refresh 先验证外置清单，不能静默吞入新增文件或因目录迁移缩减来源核算。独立说明见 docs/EXTERNAL_TEST_SOURCES.md。
 
@@ -529,6 +529,10 @@ JSON external_tests 按原包目录和原始身份登记精确根目录、原路
 | src/foundation/hashlink | 1 | 1 | Replace upstream-branded serialization module and test filenames with functional names | ebeda17f0d5131ae509f1d725cd601b7fb6258ab5e1e024de3c0c92b49f5b91c |
 | src/foundation/tinystr | 2 | 1 | Replace upstream-branded serialization module and test filenames with functional names | f20a704e85c8002bbc2abd9bae7303dc9524fa190f791a811bf823831716ac33 |
 | src/foundation/zerovec | 7 | 5 | Replace upstream-branded serialization module and test filenames with functional names | fafe5b43f2cfb1275366675522369fc80c7db2b169109e0abb1b16a4d01bdcfd |
+## 外置保留基准源码
+
+32 个未启用的历史基准文件已逐字节移至 test；独立追加凭据保留原始来源和合并证据。未运行历史基准，也未启用基准目标。详见 [迁移说明](BENCHMARK_SOURCE_RELOCATION.md)。
+
 
 ## 已登记的多来源实现合并
 

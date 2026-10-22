@@ -20,6 +20,7 @@ import proof_routing
 import source_consolidation
 import external_transfers
 import source_relocation
+import benchmark_relocation
 
 ROOT = Path(__file__).resolve().parents[2]
 CATALOG = "compliance/rust-sources.json"
@@ -657,12 +658,15 @@ def upgrade_plan(root, previous, plan, records):
     return packages, superseded
 
 
-def refresh(root, retire_plan=None, upgrade_plan_data=None, rename_plan_data=None, move_plan_data=None, consolidate_plan_data=None):
+def refresh(root, retire_plan=None, upgrade_plan_data=None, rename_plan_data=None, move_plan_data=None, consolidate_plan_data=None, relocate_benchmarks=False):
     policy = read_json(root / POLICY)
     structure(root, policy)
     previous = read_json(root / CATALOG)
     if previous.get("initial_test_relocation_sha256") not in (None, source_relocation.RECEIPT_SHA256):
         raise ValueError("initial test relocation history identity drift")
+    if relocate_benchmarks and any(p is not None for p in (retire_plan, upgrade_plan_data, rename_plan_data, move_plan_data, consolidate_plan_data)):
+        raise ValueError('benchmark relocation requires a separate reviewed transition')
+    benchmark_receipt, benchmark_grants = benchmark_relocation.prepare(root, previous, relocate_benchmarks, files)
     records = origins(root)
     hashes = origin_hashes(records)
     for key, expected in previous.get("origin_records_sha256", {}).items():
@@ -746,7 +750,8 @@ def refresh(root, retire_plan=None, upgrade_plan_data=None, rename_plan_data=Non
             if key in merged:
                 merged[key] = current_description(merged[key])
         merges.append(merged)
-    external, external_receipts = external_tests.load(root, source_owners(packages, merges), renames, external_transfers.grants(consolidation_history))
+    external, external_receipts = external_tests.load(root, source_owners(packages, merges), renames, benchmark_relocation.combine_grants(external_transfers.grants(consolidation_history), benchmark_grants))
+    benchmark_relocation.check_current_external(external, benchmark_receipt, relocate_benchmarks)
     source_naming.check_current_external(previous, external, renames)
     source_moves.check_current_external(external, moved_now)
     source_consolidation.check_current_external(external, consolidated_now)
@@ -761,10 +766,11 @@ def refresh(root, retire_plan=None, upgrade_plan_data=None, rename_plan_data=Non
     elif external_tests.has_history(previous):
         source_relocation.read_receipt(root, safe_path)
     retained_external = external_tests.transition_previous(source_naming.remap_previous(source_consolidation.remap_previous_external(previous.get("external_tests", {}), consolidated_now), renames), retired, superseded, external)
+    previous_owners = benchmark_relocation.remap_previous(source_owners(previous["packages"], previous.get("merges", [])), benchmark_receipt, relocate_benchmarks)
     external_tests.check_previous(
         retained_external, external, root,
         source_owners(packages, merges),
-        source_moves.remap_previous(source_naming.remap_previous(source_consolidation.remap_previous_packages(source_owners(previous["packages"], previous.get("merges", [])), consolidated_now), renames), moved_now))
+        source_moves.remap_previous(source_naming.remap_previous(source_consolidation.remap_previous_packages(previous_owners, consolidated_now), renames), moved_now))
     catalog = dict(external_tests=external, external_test_mappings_sha256=external_receipts, schema=max(previous.get("schema", 6), 8 if consolidation_history else 7), proof_routing_receipts=list(proof_routing.RECEIPTS), consolidations=consolidation_history, consolidation_records_sha256=source_consolidation.hashes(consolidation_history), source_moves=move_history, renames=renames, rename_records_sha256=source_naming.hashes(renames), policy_sha256=digest((root / POLICY).read_bytes()),
                    config_sha256=digest((root / ".cargo/config.toml").read_bytes()),
                    manifests_sha256={path: digest(safe_path(root, path).read_bytes()) for path in sorted(project_manifests(root))},
@@ -776,6 +782,9 @@ def refresh(root, retire_plan=None, upgrade_plan_data=None, rename_plan_data=Non
                    superseded=superseded, superseded_records_sha256=origin_hashes(superseded))
     if external or external_tests.has_history(previous):
         catalog["initial_test_relocation_sha256"] = source_relocation.RECEIPT_SHA256
+    if benchmark_receipt is not None:
+        catalog[benchmark_relocation.KEY] = benchmark_relocation.RECEIPT
+    benchmark_relocation.validate(root, catalog, files)
     proof_routing.validate_refresh(root, previous, catalog)
     source_consolidation.validate_origins(source_consolidation.validate_history(root, catalog, validate_external=external_transfers.validate), records)
     source_naming.validate_history(root, catalog)
@@ -783,7 +792,7 @@ def refresh(root, retire_plan=None, upgrade_plan_data=None, rename_plan_data=Non
     retired_sources(root, catalog, records)
     superseded_sources(root, catalog, records)
     verify_origin_coverage(catalog, records)
-    external_tests.check_removed(source_moves.remap_previous(source_naming.remap_previous(source_consolidation.remap_previous_packages(source_owners(previous["packages"], previous.get("merges", [])), consolidated_now), renames), moved_now), source_owners(packages, merges), external, renames)
+    external_tests.check_removed(source_moves.remap_previous(source_naming.remap_previous(source_consolidation.remap_previous_packages(previous_owners, consolidated_now), renames), moved_now), source_owners(packages, merges), external, renames)
     verify_retained_closure(catalog, policy)
     (root / CATALOG).write_text(json.dumps(catalog, ensure_ascii=False, indent=2, sort_keys=True) + "\n", encoding="utf-8", newline="\n")
     (root / DOC).write_text(document(catalog, policy), encoding="utf-8", newline="\n")
@@ -868,6 +877,9 @@ def document(catalog, policy):
                   "| 源码目录 | 生产路径数 | 测试路径数 | 原因 | 收据 |", "| --- | --- | --- | --- | --- |"]
         for key, record in sorted(catalog['source_moves'].items()):
             lines.append("| " + " | ".join(map(cell, [record['directory'], len(record['file_moves']), len(record['external_file_moves']), record['reason'], key])) + " |")
+    if catalog.get(benchmark_relocation.KEY):
+        lines += ["## 外置保留基准源码", "",
+                  "32 个未启用的历史基准文件已逐字节移至 test；独立追加凭据保留原始来源和合并证据。未运行历史基准，也未启用基准目标。详见 [迁移说明](BENCHMARK_SOURCE_RELOCATION.md)。", ""]
     if catalog.get('consolidations'):
         lines += ["", "## 已登记的多来源实现合并", "",
                   "显式 consolidate-plan 保留各原始身份、版本、许可证、迁移前清单与独立测试来源。生产文件可经审阅合入同一实现；这不是逐字节保留或行为等价证明。外置测试逐一验证可逆改动，原始证据不变。", "",
@@ -911,12 +923,13 @@ def verify(root, metadata=False):
         if catalog[key] != digest(safe_path(root, relative).read_bytes()):
             raise ValueError(f"policy/config/origin content drift: {relative}")
     records = origins(root)
+    benchmark_receipt, benchmark_grants = benchmark_relocation.validate(root, catalog, files)
     consolidation_history = source_consolidation.validate_history(root, catalog, validate_external=external_transfers.validate)
     source_consolidation.validate_origins(consolidation_history, records)
     source_moves.validate_origins(source_moves.validate_history(root, catalog), records)
     if origin_hashes(records) != catalog["origin_records_sha256"] or provenance(root) != catalog["provenance_sha256"]:
         raise ValueError("centralized original provenance/license inventory drift")
-    external, external_receipts = external_tests.load(root, source_owners(catalog["packages"], catalog.get("merges", [])), renames, external_transfers.grants(consolidation_history))
+    external, external_receipts = external_tests.load(root, source_owners(catalog["packages"], catalog.get("merges", [])), renames, benchmark_relocation.combine_grants(external_transfers.grants(consolidation_history), benchmark_grants))
     if external or external_tests.has_history(catalog):
         source_relocation.read_receipt(root, safe_path)
     if external != catalog.get("external_tests", {}) or external_receipts != catalog.get("external_test_mappings_sha256", {}):
@@ -975,15 +988,17 @@ def main():
     parser.add_argument("--rename-plan", type=Path, help="explicit reviewed lossless source naming plan; refresh only")
     parser.add_argument("--move-plan", type=Path, help="explicit reviewed identity-preserving internal file move plan; refresh only")
     parser.add_argument("--consolidate-plan", type=Path, help="explicit reviewed multi-origin consolidation plan; refresh only")
+    parser.add_argument("--relocate-benchmarks", action="store_true", help="install the pinned 32-file post-consolidation benchmark relocation; refresh only")
     arguments = parser.parse_args()
     try:
-        if (arguments.retire_plan or arguments.upgrade_plan or arguments.rename_plan or arguments.move_plan or arguments.consolidate_plan) and arguments.command != "refresh":
-            raise ValueError("--retire-plan, --upgrade-plan, --rename-plan, --move-plan and --consolidate-plan are only accepted by refresh")
+        if (arguments.retire_plan or arguments.upgrade_plan or arguments.rename_plan or arguments.move_plan or arguments.consolidate_plan or arguments.relocate_benchmarks) and arguments.command != "refresh":
+            raise ValueError("--retire-plan, --upgrade-plan, --rename-plan, --move-plan, --consolidate-plan and --relocate-benchmarks are only accepted by refresh")
         (refresh(ROOT, read_json(arguments.retire_plan) if arguments.retire_plan else None,
                  read_json(arguments.upgrade_plan) if arguments.upgrade_plan else None,
                  read_json(arguments.rename_plan) if arguments.rename_plan else None,
                  read_json(arguments.move_plan) if arguments.move_plan else None,
-                 read_json(arguments.consolidate_plan) if arguments.consolidate_plan else None)
+                 read_json(arguments.consolidate_plan) if arguments.consolidate_plan else None,
+                 **({'relocate_benchmarks': True} if arguments.relocate_benchmarks else {}))
          if arguments.command == "refresh" else verify(ROOT, arguments.metadata))
     except (ValueError, OSError, KeyError, TypeError) as error:
         print(f"Rust source check failed: {error}", file=sys.stderr)
