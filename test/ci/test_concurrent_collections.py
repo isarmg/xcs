@@ -1,6 +1,7 @@
 import importlib.util
 from pathlib import Path
 import unittest
+from unittest.mock import call, patch
 
 ROOT = Path(__file__).resolve().parents[2]
 SPEC = importlib.util.spec_from_file_location("concurrency_gate", ROOT / ".github/scripts/check-concurrent-collections.py")
@@ -9,6 +10,15 @@ SPEC.loader.exec_module(GATE)
 
 
 class ConcurrentCollectionsGateTests(unittest.TestCase):
+    def test_sqlite_default_and_optional_pool_consumers_are_both_compiled(self):
+        with patch.object(GATE, 'run') as execute:
+            GATE.check_consumers()
+        self.assertEqual(execute.call_args_list, [
+            call(['cargo', 'check', '--locked', '--offline', '-p', 'rayon', '-p', 'sqlite-access']),
+            call(['cargo', 'check', '--locked', '--offline', '-p', 'platform-io',
+                  '--features', 'platform-io/sqlite-pool']),
+        ])
+
     def test_native_and_wasm_feature_matrix(self):
         self.assertEqual(len(GATE.TARGETS) * len(GATE.FEATURES), 6)
         self.assertEqual(GATE.FEATURES[0], ())

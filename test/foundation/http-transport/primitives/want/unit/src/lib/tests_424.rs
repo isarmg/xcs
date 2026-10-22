@@ -1,13 +1,11 @@
 #[cfg(test)]
 mod tests {
     use std::thread;
-    use tokio_sync::oneshot;
+    use tokio::sync::oneshot;
     use super::*;
 
     fn block_on<F: Future>(f: F) -> F::Output {
-        tokio_executor::enter()
-            .expect("block_on enter")
-            .block_on(f)
+        futures::executor::block_on(f)
     }
 
     #[test]

@@ -4,6 +4,8 @@ import json
 import os
 from pathlib import Path
 import re
+import shutil
+import tomllib
 import subprocess
 import tempfile
 ROOT=Path(__file__).resolve().parents[2]
@@ -18,9 +20,58 @@ def run(work,*args,negative=False,env=None):
         if re.search(r'^warning:',result.stderr,re.M):raise AssertionError(result.stderr)
     return result.stdout
 
+def check_retained_primitives(temporary):
+    # Compile the actual private production modules, not copies or public facades.
+    # Match their manifest-relative include paths in a disposable test workspace.
+    mirror = temporary / 'retained'
+    work = mirror / 'src/foundation/http-transport'
+    (work / 'src').mkdir(parents=True)
+    shutil.copytree(ROOT / 'test/foundation/http-transport/primitives',
+                    mirror / 'test/foundation/http-transport/primitives')
+    (work / 'rust-toolchain.toml').write_bytes((ROOT / 'rust-toolchain.toml').read_bytes())
+    (work / 'Cargo.toml').write_text(
+        '[package]\nname="transport-private-primitives"\nversion="0.0.0"\nedition="2021"\n'
+        '[workspace]\n[dependencies]\n'
+        f'futures={{path={json.dumps(str(ROOT/"src/foundation/futures"))},default-features=false,features=["std","executor"]}}\n'
+        f'tokio={{path={json.dumps(str(ROOT/"src/foundation/tokio"))},default-features=false,features=["sync"]}}\n')
+    modules = ''.join(f'#[path = {json.dumps(str(ROOT/"src/foundation/http-transport/src/common"/(name+".rs")))}]\n'
+                      f'pub(crate) mod {name};\n' for name in ('demand','try_lock','task_waker'))
+    (work / 'src/lib.rs').write_text('#![deny(warnings)]\nmod common {\n' + modules + '}\n'
+        '#[cfg(test)]\n#[path = "../../../../test/foundation/http-transport/primitives/atomic-waker/tests/basic.rs"]\nmod retained_atomic_waker;\n'
+        f'#[cfg(test)]\n#[path = {json.dumps(str(ROOT/"test/architecture/http-transport/primitives.rs"))}]\nmod contracts;\n')
+    run(work, 'generate-lockfile')
+    output = run(work, 'test', '--locked', '--lib')
+    assert re.search(r'test result: ok\. 18 passed; 0 failed; 0 ignored', output), output
+    # Repeat the scheduling-sensitive tests; each iteration covers 128 races.
+    for _ in range(3):
+        output = run(work, 'test', '--locked', '--lib', 'race', env=dict(os.environ, RUST_TEST_THREADS='1'))
+        assert re.search(r'test result: ok\. 2 passed; 0 failed; 0 ignored', output), output
+
+
+def check_retired_dependencies():
+    retired = {'want', 'try-lock', 'atomic-waker'}
+    for name in retired:
+        assert not (ROOT / 'src/foundation' / name).exists(), name
+        assert not (ROOT / 'test/foundation' / name).exists(), name
+    def dependencies(value):
+        if not isinstance(value, dict): return
+        for key, item in value.items():
+            if key in ('dependencies', 'dev-dependencies', 'build-dependencies'):
+                for name, specification in item.items():
+                    package = specification.get('package', name) if isinstance(specification, dict) else name
+                    assert package not in retired, (manifest, key, name)
+            else:
+                dependencies(item)
+    for base in ('src', 'tools', 'test'):
+        for manifest in (ROOT / base).rglob('Cargo.toml'):
+            dependencies(tomllib.loads(manifest.read_text()))
+    dependencies(tomllib.loads((ROOT / 'Cargo.toml').read_text()))
+
 def main():
+    check_retired_dependencies()
     os.environ.setdefault('CARGO_BUILD_JOBS','2');os.environ.setdefault('CARGO_PROFILE_DEV_DEBUG','0');os.environ.setdefault('CARGO_INCREMENTAL','0')
     with tempfile.TemporaryDirectory(prefix='http-transport-') as temporary:
+        check_retained_primitives(Path(temporary))
         work=Path(temporary);(work/'src').mkdir();(work/'test').mkdir()
         (work / 'rust-toolchain.toml').write_bytes((ROOT / 'rust-toolchain.toml').read_bytes())
         (work/'src/lib.rs').write_text('pub use http_transport::{Error,Request,Response};\n')
@@ -29,7 +80,7 @@ def main():
             (work/'Cargo.toml').write_text('[package]\nname="transport-contract"\nversion="0.0.0"\nedition="2021"\n[workspace]\n[dependencies]\n'+f'http-transport={{path={json.dumps(str(ROOT/"src/foundation/http-transport"))},default-features=false,features={json.dumps(features)}}}\n')
             run(work,'generate-lockfile');metadata=json.loads(run(work,'metadata','--locked','--format-version','1'))
             nodes={n['id']:n for n in metadata['resolve']['nodes']};packages={p['name']:p for p in metadata['packages'] if p['id'] in nodes}
-            assert not set(packages).intersection({'hyper','hyper-util','h2'}),set(packages)
+            assert not set(packages).intersection({'hyper','hyper-util','h2','want','try-lock','atomic-waker'}),set(packages)
             if not set(features)&NATIVE_ONLY:
                 tf=set(nodes[packages['tokio']['id']]['features']);assert not tf.intersection({'rt','rt-multi-thread','net','time'}),tf
                 run(work,'check','--locked','--target','wasm32-unknown-unknown');count+=1
@@ -57,5 +108,5 @@ def main():
         (work/'test/behavior.rs').write_bytes((ROOT/'test/architecture/http-transport/behavior.rs').read_bytes() + (ROOT/'test/architecture/http-transport/combined.rs').read_bytes() + (ROOT/'test/architecture/http-transport/upgrade.rs').read_bytes() + (ROOT/'test/architecture/http-transport/client_state.rs').read_bytes() + (ROOT/'test/architecture/http-transport/probe_timeout.rs').read_bytes())
         run(work,'generate-lockfile');output=run(work,'test','--locked','--test','behavior')
         assert re.search(r'test result: ok\. 25 passed; 0 failed',output),output
-        print(f'http-transport: {count} native/WASM feature checks, absent HTTP2 rejection, 25 transport/routing/readiness/upgrade/state tests and 2 FFI allocation/ABI tests passed')
+        print(f'http-transport: {count} native/WASM feature checks, absent HTTP2 rejection, 25 transport/routing/readiness/upgrade/state tests, 2 FFI allocation/ABI tests, 6 retained primitive tests and 12 additional primitive contracts (including repeated races) passed')
 if __name__=='__main__':main()

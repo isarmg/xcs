@@ -10,7 +10,7 @@ Only retired HTTP/2 cfg conditions were evaluated in the syntax-aware pruning pa
 
 ## Validation
 
-The maintained gate checks 26 native/WASM feature profiles, rejects compiler warnings and the retired HTTP/2 feature, and validates original unstable tracing/FFI opt-in configurations. Twenty-five behavior tests exercise real HTTP/1 client/server handshakes, body/status/header transfer, malformed requests, service errors, service-adapter identity and readiness, route integration, upgrades, HTTP/1 pool reuse, unsupported version/ALPN rejection, and owned connection/graceful futures over in-memory duplex streams. Two focused FFI tests exercise distinct non-zero-sized opaque option allocations, setters/free, and the preserved unsupported HTTP/2 entry point without consuming the options. No listening socket or fake transport provider is used. Historical attributed tests are not represented as executed.
+The maintained gate checks 26 native/WASM feature profiles, rejects compiler warnings and the retired HTTP/2 feature, and validates original unstable tracing/FFI opt-in configurations. Twenty-five behavior tests exercise real HTTP/1 client/server handshakes, body/status/header transfer, malformed requests, service errors, service-adapter identity and readiness, route integration, upgrades, HTTP/1 pool reuse, unsupported version/ALPN rejection, and owned connection/graceful futures over in-memory duplex streams. Two focused FFI tests exercise distinct non-zero-sized opaque option allocations, setters/free, and the preserved unsupported HTTP/2 entry point without consuming the options. No listening socket or fake transport provider is used. Historical transport/adapters tests are not represented as executed. The six active tests from the dispatch/wakeup helper origins are explicitly executed by the private primitive harness described below.
 
 ## Provenance
 
@@ -53,3 +53,33 @@ Paused-time upload and streamed-download regressions each keep a partial 64 KiB
 body open for 61 seconds after complete headers, then verify byte-exact successful
 completion. The header policy is not a replacement for application body or
 operation limits.
+
+## Private dispatch and wakeup ownership
+
+The transport owns the actual `want` 0.3.2, `try-lock` 0.2.5 and
+`atomic-waker` 1.1.2 implementations under `src/common/{demand,try_lock,task_waker}.rs`.
+Their former Cargo packages and all three declared dependency edges are removed.
+`demand` and its lock compile only with `client`; `task_waker` compiles only with
+`http1`. No helper is re-exported and no compatibility facade or second public
+HTTP type is introduced. Request/response, body, service and FFI ownership is
+unchanged. The demand module forbids unsafe code; the two unsafe implementations
+retain separate, reviewable modules and their original atomic orderings.
+
+The complete leaf sources and benchmark bodies are preserved. Only module
+visibility, imports, crate-only attributes and test harness paths change; the
+`want` tests now use maintained Tokio oneshot and futures executor providers.
+The source archive preserves every pre-move leaf source, manifest, benchmark and
+test byte. Existing license files, upstream hashes and prior Hyper/HyperUtil
+receipts remain authoritative and unchanged.
+
+The transport gate compiles these same private production source files directly
+in a disposable harness. It requires all six previously active leaf tests plus
+twelve added contracts to pass, with zero ignored tests. Contracts cover task
+movement, explicit cancellation, dropped senders/receivers, giving after closure,
+lock exclusion and ordering, unwind release, latest-waker replacement, taking
+registrations, early wakeup, and concurrent registration/notification. The two
+race tests run 128 schedules each and are repeated three additional times.
+Dormant commented upstream examples are retained but are not counted as executed
+coverage. The gate also rejects any active or declared optional dependency on
+one of the three retired packages, and keeps the existing 25 transport and two
+FFI tests and native/WASM capability matrix.

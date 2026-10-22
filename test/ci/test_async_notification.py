@@ -15,6 +15,58 @@ SPEC.loader.exec_module(gate)
 
 
 class AsyncNotificationGateTests(unittest.TestCase):
+    def test_direct_sqlite_rejects_notification_but_pool_requires_event_only_std(self):
+        absent = {'packages': [], 'resolve': {'nodes': []}}
+        present = {'packages': [{'name': 'async-notification', 'id': 'event'}],
+                   'resolve': {'nodes': [{'id': 'event', 'features': ['std']}]}}
+        gate.verify_consumer_features(absent, 'sqlite-access', None)
+        gate.verify_consumer_features(present, 'sqlite-access', False)
+        with self.assertRaises(AssertionError):
+            gate.verify_consumer_features(present, 'sqlite-access', None)
+        with self.assertRaises(AssertionError):
+            gate.verify_consumer_features(absent, 'sqlite-access', False)
+        for features in ([], ['std', 'locks']):
+            present['resolve']['nodes'][0]['features'] = features
+            with self.assertRaises(AssertionError):
+                gate.verify_consumer_features(present, 'sqlite-access', False)
+
+    def test_gate_checks_direct_and_optional_pool_graphs_and_preserves_runtime_contracts(self):
+        current = {}
+        metadata_consumers = []
+        runtime_consumers = []
+
+        def prepare(work, dependencies, source, tests=()):
+            current.clear()
+            current.update(tomllib.loads('[dependencies]\n' + dependencies)['dependencies'])
+            if any(name == 'sqlite_close' for name, _ in tests):
+                runtime_consumers.append(current.copy())
+
+        def run(args, directory, **kwargs):
+            if args[0] == 'tree':
+                features = current['async-notification']['features']
+                target = args[args.index('--target') + 1]
+                return 'parking v2.2.1' if 'std' in features and target.startswith('x86_64') else ''
+            return ''
+
+        def metadata(*args, **kwargs):
+            metadata_consumers.append(current.copy())
+            if 'sqlite-access' in current and 'pool' not in current['sqlite-access']['features']:
+                return json.dumps({'packages': [], 'resolve': {'nodes': []}})
+            features = ['std', 'locks'] if 'reactive-state' in current else ['std']
+            return json.dumps({'packages': [{'name': 'async-notification', 'id': 'event'}],
+                               'resolve': {'nodes': [{'id': 'event', 'features': features}]}})
+
+        with patch.object(gate, 'prepare', side_effect=prepare), \
+             patch.object(gate, 'run', side_effect=run) as commands, \
+             patch.object(gate.subprocess, 'check_output', side_effect=metadata):
+            gate.check(ROOT)
+        self.assertEqual([row.get('sqlite-access', {}).get('features') for row in metadata_consumers],
+                         [['sqlite-bundled'], ['sqlite-bundled', 'pool'], None])
+        self.assertEqual(len(runtime_consumers), 1)
+        self.assertEqual(runtime_consumers[0]['sqlite-access']['features'], ['sqlite-bundled', 'pool'])
+        self.assertEqual([call.kwargs['minimum_tests'] for call in commands.call_args_list
+                          if 'minimum_tests' in call.kwargs], [13, 8])
+
     def test_temporary_fixture_inherits_toolchain_before_first_cargo_command(self):
         class FirstCargoCommand(Exception):
             pass

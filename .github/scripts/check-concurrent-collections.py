@@ -98,6 +98,16 @@ def check_retained(root, temporary, target):
     print('Six missing-rand integrations preserved but not executed; Loom/Miri not claimed.', flush=True)
 
 
+def check_consumers():
+    # Preserve the real default consumers, then explicitly compile SQLite's
+    # optional queue-backed pool through its workspace platform consumer. The
+    # foundation package is excluded, so root feature selection must use that
+    # declared workspace capability rather than a feature on a non-member.
+    run(['cargo', 'check', '--locked', '--offline', '-p', 'rayon', '-p', 'sqlite-access'])
+    run(['cargo', 'check', '--locked', '--offline', '-p', 'platform-io',
+         '--features', 'platform-io/sqlite-pool'])
+
+
 def main():
     parent = ROOT / 'target/scope-consumers'
     parent.mkdir(parents=True, exist_ok=True)
@@ -107,7 +117,7 @@ def main():
         check_removed_feature(ROOT, temporary)
         check_features(ROOT, temporary, target)
         check_retained(ROOT, temporary, target)
-    run(['cargo', 'check', '--locked', '--offline', '-p', 'rayon', '-p', 'sqlite-access'])
+    check_consumers()
 
 
 if __name__ == '__main__':

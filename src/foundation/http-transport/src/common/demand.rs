@@ -1,4 +1,6 @@
-#![doc(html_root_url = "https://docs.rs/want/0.3.1")]
+// Maintained from want; see compliance/http-transport-primitives-source-archive.json.gz.
+#![allow(dead_code)] // Retain the complete audited helper and its source tests.
+#![forbid(unsafe_code)]
 #![deny(warnings)]
 #![deny(missing_docs)]
 #![deny(missing_debug_implementations)]
@@ -23,7 +25,7 @@
 //!
 //! ```nightly
 //! # //#![feature(async_await)]
-//! extern crate want;
+//! use crate::common::demand;
 //!
 //! # fn spawn<T>(_t: T) {}
 //! # fn we_still_want_message() -> bool { true }
@@ -40,7 +42,7 @@
 //! let (mut tx, mut rx) = mpsc_channel();
 //!
 //! // And our `want` channel!
-//! let (mut gv, mut tk) = want::new();
+//! let (mut gv, mut tk) = demand::new();
 //!
 //!
 //! // Our receiving task...
@@ -84,40 +86,32 @@ use std::fmt;
 use std::future::Future;
 use std::mem;
 use std::pin::Pin;
-use std::sync::Arc;
 use std::sync::atomic::AtomicUsize;
+use std::sync::Arc;
 // SeqCst is the only ordering used to ensure accessing the state and
 // TryLock are never re-ordered.
 use std::sync::atomic::Ordering::SeqCst;
 use std::task::{self, Poll, Waker};
 
-
-use try_lock::TryLock;
+use super::try_lock::TryLock;
 
 /// Create a new `want` channel.
-pub fn new() -> (Giver, Taker) {
+pub(crate) fn new() -> (Giver, Taker) {
     let inner = Arc::new(Inner {
         state: AtomicUsize::new(State::Idle.into()),
         task: TryLock::new(None),
     });
     let inner2 = inner.clone();
-    (
-        Giver {
-            inner,
-        },
-        Taker {
-            inner: inner2,
-        },
-    )
+    (Giver { inner }, Taker { inner: inner2 })
 }
 
 /// An entity that gives a value when wanted.
-pub struct Giver {
+pub(crate) struct Giver {
     inner: Arc<Inner>,
 }
 
 /// An entity that wants a value.
-pub struct Taker {
+pub(crate) struct Taker {
     inner: Arc<Inner>,
 }
 
@@ -126,12 +120,12 @@ pub struct Taker {
 /// It differs from `Giver` in that you cannot poll for `want`. It's only
 /// usable as a cancellation watcher.
 #[derive(Clone)]
-pub struct SharedGiver {
+pub(crate) struct SharedGiver {
     inner: Arc<Inner>,
 }
 
 /// The `Taker` has canceled its interest in a value.
-pub struct Closed {
+pub(crate) struct Closed {
     _inner: (),
 }
 
@@ -195,14 +189,13 @@ impl Giver {
             match state {
                 State::Want => {
                     return Poll::Ready(Ok(()));
-                },
+                }
                 State::Closed => {
                     return Poll::Ready(Err(Closed { _inner: () }));
-                },
+                }
                 State::Idle | State::Give => {
                     // Taker doesn't want anything yet, so park.
                     if let Some(mut locked) = self.inner.task.try_lock_explicit(SeqCst, SeqCst) {
-
                         // While we have the lock, try to set to GIVE.
                         let old = self.inner.state.compare_exchange(
                             state.into(),
@@ -212,7 +205,8 @@ impl Giver {
                         );
                         // If it's still the first state (Idle or Give), park current task.
                         if old == Ok(state.into()) {
-                            let park = locked.as_ref()
+                            let park = locked
+                                .as_ref()
                                 .map(|w| !w.will_wake(cx.waker()))
                                 .unwrap_or(true);
                             if park {
@@ -235,7 +229,7 @@ impl Giver {
                         //
                         // We need to loop again to see what state it was changed to.
                     }
-                },
+                }
             }
         }
     }
@@ -250,7 +244,8 @@ impl Giver {
             State::Want.into(),
             State::Idle.into(),
             SeqCst,
-            SeqCst);
+            SeqCst,
+        );
         old == Ok(State::Want.into())
     }
 
@@ -263,7 +258,6 @@ impl Giver {
         self.inner.state.load(SeqCst) == State::Want.into()
     }
 
-
     /// Check if the `Taker` has canceled interest without parking a task.
     #[inline]
     pub fn is_canceled(&self) -> bool {
@@ -273,9 +267,7 @@ impl Giver {
     /// Converts this into a `SharedGiver`.
     #[inline]
     pub fn shared(self) -> SharedGiver {
-        SharedGiver {
-            inner: self.inner,
-        }
+        SharedGiver { inner: self.inner }
     }
 }
 
@@ -298,7 +290,6 @@ impl SharedGiver {
     pub fn is_wanting(&self) -> bool {
         self.inner.state.load(SeqCst) == State::Want.into()
     }
-
 
     /// Check if the `Taker` has canceled interest without parking a task.
     #[inline]
@@ -347,7 +338,8 @@ impl Taker {
             State::Want.into(),
             State::Idle.into(),
             SeqCst,
-            SeqCst);
+            SeqCst,
+        );
     }
 
     #[inline]
@@ -370,7 +362,7 @@ impl Taker {
                         // We need to loop and take the lock so we can notify this task.
                     }
                 }
-            },
+            }
         }
     }
 }
@@ -394,8 +386,7 @@ impl fmt::Debug for Taker {
 
 impl fmt::Debug for Closed {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.debug_struct("Closed")
-            .finish()
+        f.debug_struct("Closed").finish()
     }
 }
 
@@ -412,7 +403,6 @@ impl Inner {
 
 struct Want<'a>(&'a mut Giver);
 
-
 impl Future for Want<'_> {
     type Output = Result<(), Closed>;
 
@@ -422,4 +412,7 @@ impl Future for Want<'_> {
 }
 
 #[cfg(test)]
-include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/want/unit/src/lib/tests_424.rs"));
+include!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/../../../test/foundation/http-transport/primitives/want/unit/src/lib/tests_424.rs"
+));

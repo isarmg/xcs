@@ -1,31 +1,17 @@
-//! `futures::task::AtomicWaker` extracted into its own crate.
+// Maintained from atomic-waker; see compliance/http-transport-primitives-source-archive.json.gz.
+#![allow(dead_code)] // Retain the complete audited helper and its source tests.
+//! Transport-owned task wakeup primitive from atomic-waker 1.1.2.
 //!
-//! # Features
-//!
-//! This crate adds a feature, `portable-atomic`, which uses a polyfill
-//! from the [`portable-atomic`] crate in order to provide functionality
-//! to targets without atomics. See the [`README`] for the [`portable-atomic`]
-//! crate for more information on how to use it.
-//!
-//! [`portable-atomic`]: https://crates.io/crates/portable-atomic
-//! [`README`]: https://github.com/taiki-e/portable-atomic/blob/main/README.md#optional-cfg
-
-#![no_std]
-#![doc(
-    html_favicon_url = "https://raw.githubusercontent.com/smol-rs/smol/master/assets/images/logo_fullsize_transparent.png"
-)]
-#![doc(
-    html_logo_url = "https://raw.githubusercontent.com/smol-rs/smol/master/assets/images/logo_fullsize_transparent.png"
-)]
+//! This maintained implementation uses core atomics on the supported native and
+//! browser WASM targets. The original source and optional-platform documentation
+//! remain in the immutable pre-move archive.
 
 use core::cell::UnsafeCell;
 use core::fmt;
 use core::sync::atomic::Ordering::{AcqRel, Acquire, Release};
 use core::task::Waker;
 
-
 use core::sync::atomic::AtomicUsize;
-
 
 /// A synchronization primitive for task wakeup.
 ///
@@ -109,7 +95,7 @@ use core::sync::atomic::AtomicUsize;
 ///     }
 /// }
 /// ```
-pub struct AtomicWaker {
+pub(crate) struct AtomicWaker {
     state: AtomicUsize,
     waker: UnsafeCell<Option<Waker>>,
 }

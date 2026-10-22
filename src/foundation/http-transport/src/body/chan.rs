@@ -2,7 +2,7 @@ use std::fmt;
 use std::sync::{Arc, Mutex};
 use std::task::{Context, Poll};
 
-use atomic_waker::AtomicWaker;
+use crate::common::task_waker::AtomicWaker;
 use bytes::Bytes;
 use http::HeaderMap;
 

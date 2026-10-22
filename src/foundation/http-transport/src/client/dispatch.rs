@@ -2,6 +2,8 @@ use std::task::{Context, Poll};
 
 use tokio::sync::{mpsc, oneshot};
 
+use crate::common::demand;
+
 pub(crate) type RetryPromise<T, U> = oneshot::Receiver<Result<U, TrySendError<T>>>;
 pub(crate) type Promise<T> = oneshot::Receiver<Result<T, crate::Error>>;
 
@@ -19,7 +21,7 @@ pub struct TrySendError<T> {
 
 pub(crate) fn channel<T, U>() -> (Sender<T, U>, Receiver<T, U>) {
     let (tx, rx) = mpsc::unbounded_channel();
-    let (giver, taker) = want::new();
+    let (giver, taker) = demand::new();
     let tx = Sender {
         #[cfg(feature = "http1")]
         buffered_once: false,
@@ -44,7 +46,7 @@ pub(crate) struct Sender<T, U> {
     /// when the queue is empty. This helps us know when a request and
     /// response have been fully processed, and a connection is ready
     /// for more.
-    giver: want::Giver,
+    giver: demand::Giver,
     /// Actually bounded by the Giver, plus `buffered_once`.
     inner: mpsc::UnboundedSender<Envelope<T, U>>,
 }
@@ -108,7 +110,7 @@ impl<T, U> Sender<T, U> {
 
 pub(crate) struct Receiver<T, U> {
     inner: mpsc::UnboundedReceiver<Envelope<T, U>>,
-    taker: want::Taker,
+    taker: demand::Taker,
 }
 
 impl<T, U> Receiver<T, U> {

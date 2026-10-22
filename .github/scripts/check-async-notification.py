@@ -40,6 +40,19 @@ def prepare(work, dependencies, source, tests=()):
     run(['generate-lockfile', '--offline'], work)
 
 
+def verify_consumer_features(metadata, consumer, expected_locks):
+    packages = [p for p in metadata['packages'] if p['name'] == 'async-notification']
+    if expected_locks is None:
+        assert not packages, (consumer, 'direct SQLite must not enable async notification')
+        return
+    assert len(packages) == 1, (consumer, packages)
+    nodes = [n for n in metadata['resolve']['nodes'] if n['id'] == packages[0]['id']]
+    assert len(nodes) == 1, (consumer, nodes)
+    features = nodes[0]['features']
+    assert ('locks' in features) == expected_locks, (consumer, features)
+    assert 'std' in features, (consumer, features)
+
+
 def check(work):
     event_source = 'pub fn event() { let e = async_notification::event::Event::new(); let _listener = e.listen(); e.notify(1); }'
     lock_source = 'pub fn lock() { let _ = async_notification::RwLock::new(1); }'
@@ -56,15 +69,15 @@ def check(work):
     run(['check', '--offline', '--locked', '--target', 'wasm32-unknown-unknown'], work, expected='no method named `wait`')
     prepare(work, dependency('async-notification', ('std', 'locks')), '', [('behavior', 'test/async-notification/contract.rs')])
     run(['test', '--offline', '--locked', '--jobs', '1', '--test', 'behavior'], work, minimum_tests=13)
-    for consumer, features, expected_locks in (('sqlite-access', ('sqlite-bundled',), False), ('reactive-state', (), True)):
+    for consumer, features, expected_locks in (
+        ('sqlite-access', ('sqlite-bundled',), None),
+        ('sqlite-access', ('sqlite-bundled', 'pool'), False),
+        ('reactive-state', (), True),
+    ):
         prepare(work, dependency(consumer, features), '')
         raw = subprocess.check_output(['cargo', 'metadata', '--offline', '--locked', '--format-version', '1'], cwd=work, text=True)
-        metadata = json.loads(raw)
-        package = next(p for p in metadata['packages'] if p['name'] == 'async-notification')
-        node = next(n for n in metadata['resolve']['nodes'] if n['id'] == package['id'])
-        assert ('locks' in node['features']) == expected_locks, (consumer, node['features'])
-        assert 'std' in node['features'], (consumer, node['features'])
-    dependencies = dependency('sqlite-access', ('sqlite-bundled',)) + dependency('reactive-state') + dependency('task-dispatch', ('tokio',)) + dependency('tokio', ('macros', 'rt-multi-thread', 'time', 'sync'))
+        verify_consumer_features(json.loads(raw), consumer, expected_locks)
+    dependencies = dependency('sqlite-access', ('sqlite-bundled', 'pool')) + dependency('reactive-state') + dependency('task-dispatch', ('tokio',)) + dependency('tokio', ('macros', 'rt-multi-thread', 'time', 'sync'))
     prepare(work, dependencies, '', [('sqlite_close', 'test/async-notification/consumer.rs'), ('reactive_derived', 'test/foundation/reactive-state/tests/async_derived.rs')])
     run(['test', '--offline', '--locked', '--jobs', '1', '--tests', '--', '--test-threads=1'], work, minimum_tests=8)
     prepare(work, dependency('reactive-state'), 'pub fn guard() { let _ = reactive_state::owner::Owner::new(); }')

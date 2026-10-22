@@ -60,10 +60,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "atomic-waker"
-version = "1.1.2"
-
-[[package]]
 name = "attribute-derive"
 version = "0.11.0"
 dependencies = [
@@ -614,7 +610,6 @@ dependencies = [
 name = "http-transport"
 version = "1.12.0"
 dependencies = [
- "atomic-waker",
  "base64",
  "bytes",
  "futures",
@@ -632,7 +627,6 @@ dependencies = [
  "tokio",
  "tracing",
  "url-encoding",
- "want",
 ]
 
 [[package]]
@@ -1676,10 +1670,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "try-lock"
-version = "0.2.5"
-
-[[package]]
 name = "typed-builder"
 version = "0.23.2"
 dependencies = [
@@ -1853,13 +1843,6 @@ dependencies = [
  "proc-macro2",
  "quote",
  "rust-syntax",
-]
-
-[[package]]
-name = "want"
-version = "0.3.2"
-dependencies = [
- "try-lock",
 ]
 
 [[package]]

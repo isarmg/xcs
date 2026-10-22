@@ -1,7 +1,8 @@
+// Maintained from try-lock; see compliance/http-transport-primitives-source-archive.json.gz.
+#![allow(dead_code)] // Retain the complete audited helper and its source tests.
 #![deny(missing_docs)]
 #![deny(missing_debug_implementations)]
 #![deny(warnings)]
-#![cfg_attr(not(test), no_std)]
 
 //! A light-weight lock guarded by an atomic boolean.
 //!
@@ -12,7 +13,7 @@
 //!
 //! ```
 //! use std::sync::Arc;
-//! use try_lock::TryLock;
+//! use crate::common::try_lock::TryLock;
 //!
 //! // a thing we want to share
 //! struct Widget {
@@ -43,9 +44,6 @@
 //! assert_eq!(locked2.name, "Spanner Bundle");
 //! ```
 
-#[cfg(test)]
-extern crate core;
-
 use core::cell::UnsafeCell;
 use core::fmt;
 use core::marker::PhantomData;
@@ -60,7 +58,7 @@ use core::sync::atomic::{AtomicBool, Ordering};
 /// It is only possible to try to acquire the lock, it is not possible to
 /// wait for the lock to become ready, like with a `Mutex`.
 #[derive(Default)]
-pub struct TryLock<T> {
+pub(crate) struct TryLock<T> {
     is_locked: AtomicBool,
     value: UnsafeCell<T>,
 }
@@ -219,7 +217,7 @@ impl<T: fmt::Debug> fmt::Debug for TryLock<T> {
 ///
 /// This type derefs to the underlying value.
 #[must_use = "TryLock will immediately unlock if not used"]
-pub struct Locked<'a, T: 'a> {
+pub(crate) struct Locked<'a, T: 'a> {
     lock: &'a TryLock<T>,
     order: Ordering,
     /// Suppresses Send and Sync autotraits for `struct Locked`.
@@ -255,4 +253,7 @@ impl<'a, T: fmt::Debug> fmt::Debug for Locked<'a, T> {
 }
 
 #[cfg(test)]
-include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/try-lock/unit/src/lib/tests_257.rs"));
+include!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/../../../test/foundation/http-transport/primitives/try-lock/unit/src/lib/tests_257.rs"
+));

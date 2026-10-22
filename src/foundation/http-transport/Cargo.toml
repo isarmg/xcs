@@ -36,11 +36,11 @@ repository = "https://github.com/hyperium/hyper"
 
 [features]
 capi = []
-client = ["dep:want", "dep:pin-project-lite", "dep:smallvec"]
+client = ["dep:pin-project-lite", "dep:smallvec"]
 default = []
 ffi = ["http-body/utilities", "dep:futures", "futures/alloc", "futures/utilities"]
 full = ["client-legacy", "client-pool", "client-proxy", "client-proxy-system", "server-auto", "server-graceful", "service-adapter", "tokio", "adapter-tracing"]
-http1 = ["dep:atomic-waker", "dep:futures", "futures/std", "dep:httparse", "dep:itoa"]
+http1 = ["dep:futures", "futures/std", "dep:httparse", "dep:itoa"]
 nightly = []
 server = ["dep:httpdate", "dep:pin-project-lite", "dep:smallvec"]
 tracing = ["dep:tracing"]
@@ -158,10 +158,6 @@ check-cfg = [
     "cfg(hyper_unstable_ffi)",
 ]
 
-[dependencies.atomic-waker]
-version = "1.1.2"
-optional = true
-path = "../atomic-waker"
 
 [dependencies.bytes]
 version = "1.2"
@@ -216,10 +212,6 @@ optional = true
 default-features = false
 path = "../tracing"
 
-[dependencies.want]
-version = "0.3.2"
-optional = true
-path = "../want"
 
 [dependencies.base64]
 version = "0.23"

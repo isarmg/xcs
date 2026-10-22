@@ -1,4 +1,6 @@
-use atomic_waker::AtomicWaker;
+#[path = "../../../src/common/task_waker.rs"]
+mod task_waker;
+use task_waker::AtomicWaker;
 use criterion::{black_box, criterion_group, criterion_main, BenchmarkGroup, Criterion};
 
 use std::sync::Arc;

@@ -674,20 +674,6 @@
       ]
     },
     {
-      "directory": "src/foundation/atomic-waker",
-      "files": [
-        {
-          "path": "test/foundation/atomic-waker/tests/basic.rs",
-          "sha256": "3200dbc6f9c7738c15b323f7eddd74f2b5150cb7219d17bc27fa981fb1c988ec",
-          "source": "src/foundation/atomic-waker/tests/basic.rs",
-          "source_sha256_before": "3200dbc6f9c7738c15b323f7eddd74f2b5150cb7219d17bc27fa981fb1c988ec"
-        }
-      ],
-      "roots": [
-        "test/foundation/atomic-waker"
-      ]
-    },
-    {
       "directory": "src/foundation/autocfg",
       "files": [
         {
@@ -8327,6 +8313,27 @@
           "sha256": "7c77d16f952bda6ce51995548b1a1b8652739fca70115df96598440a524d86d4",
           "source": "src/foundation/hyper/src/mock.rs",
           "source_sha256_before": "7c77d16f952bda6ce51995548b1a1b8652739fca70115df96598440a524d86d4"
+        },
+        {
+          "origin_directory": "vendor/rust/atomic-waker-1.1.2",
+          "path": "test/foundation/http-transport/primitives/atomic-waker/tests/basic.rs",
+          "sha256": "166b57e484c931bf5e2e99130ba08200cf26475ad6cbe1449ddf9c70150b4660",
+          "source": "src/foundation/atomic-waker/tests/basic.rs",
+          "source_sha256_before": "3200dbc6f9c7738c15b323f7eddd74f2b5150cb7219d17bc27fa981fb1c988ec"
+        },
+        {
+          "origin_directory": "vendor/rust/try-lock-0.2.5",
+          "path": "test/foundation/http-transport/primitives/try-lock/unit/src/lib/tests_257.rs",
+          "sha256": "22c80cc20799bc76eb6d558cb8f106203440d8e18e6d0e0becdace3454f963ab",
+          "source": "src/foundation/try-lock/src/lib.rs",
+          "source_sha256_before": "1e402c959f7093f5a3354c36fb62fa71966c44a99f3635c61ae4d66c4f13dcd5"
+        },
+        {
+          "origin_directory": "vendor/rust/want-0.3.2",
+          "path": "test/foundation/http-transport/primitives/want/unit/src/lib/tests_424.rs",
+          "sha256": "1f55dbf7a017f44bbaf5b4f176e25c304275b4035b8c385013e37c93339aa18d",
+          "source": "src/foundation/want/src/lib.rs",
+          "source_sha256_before": "afea01f5fc14f8473ed3fe49a722026ef1405e4458c147d9b188b5e66da6c127"
         },
         {
           "origin_directory": "vendor/rust/hyper-1.12.0",
@@ -22445,20 +22452,6 @@
       ]
     },
     {
-      "directory": "src/foundation/try-lock",
-      "files": [
-        {
-          "path": "test/foundation/try-lock/unit/src/lib/tests_257.rs",
-          "sha256": "22c80cc20799bc76eb6d558cb8f106203440d8e18e6d0e0becdace3454f963ab",
-          "source": "src/foundation/try-lock/src/lib.rs",
-          "source_sha256_before": "1e402c959f7093f5a3354c36fb62fa71966c44a99f3635c61ae4d66c4f13dcd5"
-        }
-      ],
-      "roots": [
-        "test/foundation/try-lock"
-      ]
-    },
-    {
       "directory": "src/foundation/typed-builder",
       "files": [
         {
@@ -23275,20 +23268,6 @@
       ],
       "roots": [
         "test/foundation/walrus"
-      ]
-    },
-    {
-      "directory": "src/foundation/want",
-      "files": [
-        {
-          "path": "test/foundation/want/unit/src/lib/tests_424.rs",
-          "sha256": "9b67be9c2687406b67d9753a2d7fcf005e2ccbf994a1a674517c2b40725a0d81",
-          "source": "src/foundation/want/src/lib.rs",
-          "source_sha256_before": "afea01f5fc14f8473ed3fe49a722026ef1405e4458c147d9b188b5e66da6c127"
-        }
-      ],
-      "roots": [
-        "test/foundation/want"
       ]
     },
     {
