@@ -61,7 +61,7 @@ use std::sync::Arc;
 use std::task::{ready, Context, Poll};
 use std::time::{Duration, Instant};
 
-use event_listener::EventListener;
+use async_notification::event::EventListener;
 use futures::FusedFuture;
 use futures::FutureExt;
 

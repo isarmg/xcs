@@ -113,7 +113,7 @@ where
 /// and contains its value. `.await`ing this clones the value `T`.
 pub struct AsyncDerivedFuture<T> {
     source: AnySource,
-    value: Arc<async_lock::RwLock<SendOption<T>>>,
+    value: Arc<async_notification::RwLock<SendOption<T>>>,
     loading: Arc<AtomicBool>,
     wakers: Arc<RwLock<Vec<Waker>>>,
     inner: Arc<RwLock<ArcAsyncDerivedInner>>,
@@ -191,7 +191,7 @@ where
 /// and yields an [`AsyncDerivedGuard`] that dereferences to its value.
 pub struct AsyncDerivedRefFuture<T> {
     source: AnySource,
-    value: Arc<async_lock::RwLock<SendOption<T>>>,
+    value: Arc<async_notification::RwLock<SendOption<T>>>,
     loading: Arc<AtomicBool>,
     wakers: Arc<RwLock<Vec<Waker>>>,
 }

@@ -55,9 +55,9 @@ path = "../concurrent-collections"
 version = "1.6.1"
 path = "../either"
 
-[dependencies.event-listener]
-version = "5.2.0"
-path = "../event-listener"
+[dependencies.async-notification]
+path = "../async-notification"
+default-features = true
 
 [dependencies.futures]
 version = "0.3.34"

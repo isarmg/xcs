@@ -21,6 +21,7 @@
     "c0106826dcd6a6018d2cd31dfc91db21c0466af5a93692ba0cc86b63baaec222": "c0106826dcd6a6018d2cd31dfc91db21c0466af5a93692ba0cc86b63baaec222",
     "dd6c7498dd42d13067bc3b6e0903bbb03de79331644cf36996294fb399ce5e4b": "dd6c7498dd42d13067bc3b6e0903bbb03de79331644cf36996294fb399ce5e4b",
     "eafb0b4185a7c210506e15a28d87995a7ff4898a240281ec013b11ec70a2acd3": "eafb0b4185a7c210506e15a28d87995a7ff4898a240281ec013b11ec70a2acd3",
+    "f45582d1970599a2e18f20194cbf7ce8145da2215e988bfe2443f90d1484049d": "f45582d1970599a2e18f20194cbf7ce8145da2215e988bfe2443f90d1484049d",
     "f8932c62a4c5148866ef0a7651507467033344188f02694bfbffced61db248e4": "f8932c62a4c5148866ef0a7651507467033344188f02694bfbffced61db248e4",
     "f9ca98767ea1270edde6843571ba5055ac95a067a2e57d9312293364a299ac0b": "f9ca98767ea1270edde6843571ba5055ac95a067a2e57d9312293364a299ac0b",
     "fae6f9b66a7b4143705badfcac36827715e98623ce3baa43b8690ba3c563eff8": "fae6f9b66a7b4143705badfcac36827715e98623ce3baa43b8690ba3c563eff8",
@@ -35822,6 +35823,450 @@
       "primary_directory": "src/foundation/futures",
       "reason": "Unify futures traits, combinators, channels and opt-in executors into one capability-gated library while retaining the host procedural macro package separately and preserving eight upstream origins and exact test attribution."
     },
+    "f45582d1970599a2e18f20194cbf7ce8145da2215e988bfe2443f90d1484049d": {
+      "destination_directory": "src/foundation/async-notification",
+      "destination_external_tests": {
+        "bytes": 42524,
+        "directory": "src/foundation/async-notification",
+        "file_count": 11,
+        "files": [
+          {
+            "origin_directory": "vendor/rust/async-lock-3.4.2",
+            "path": "test/foundation/async-notification/async-lock/tests/barrier.rs",
+            "sha256": "46d479150e207179eeecc2e8b49e0219936d522e79ea8faaec85c6a03982eb8f",
+            "source": "src/foundation/async-lock/tests/barrier.rs",
+            "source_sha256_before": "46d479150e207179eeecc2e8b49e0219936d522e79ea8faaec85c6a03982eb8f"
+          },
+          {
+            "origin_directory": "vendor/rust/async-lock-3.4.2",
+            "path": "test/foundation/async-notification/async-lock/tests/common/mod.rs",
+            "sha256": "27c48c3d67d0d647bdcf9ae45e2cd6006fb97b0bbd0114032bf75ac4f4d01d71",
+            "source": "src/foundation/async-lock/tests/common/mod.rs",
+            "source_sha256_before": "27c48c3d67d0d647bdcf9ae45e2cd6006fb97b0bbd0114032bf75ac4f4d01d71"
+          },
+          {
+            "origin_directory": "vendor/rust/async-lock-3.4.2",
+            "path": "test/foundation/async-notification/async-lock/tests/loom.rs",
+            "sha256": "ec53be1b04bc93bafc1aaf65d3d318193dc2ebcc09cc008113ee39fe08151142",
+            "source": "src/foundation/async-lock/tests/loom.rs",
+            "source_sha256_before": "ec53be1b04bc93bafc1aaf65d3d318193dc2ebcc09cc008113ee39fe08151142"
+          },
+          {
+            "origin_directory": "vendor/rust/async-lock-3.4.2",
+            "path": "test/foundation/async-notification/async-lock/tests/mutex.rs",
+            "sha256": "1d6d3ed23065603f8c6143963aa4c4f933a5926ca24cfc4b168b8e7294afe4ee",
+            "source": "src/foundation/async-lock/tests/mutex.rs",
+            "source_sha256_before": "1d6d3ed23065603f8c6143963aa4c4f933a5926ca24cfc4b168b8e7294afe4ee"
+          },
+          {
+            "origin_directory": "vendor/rust/async-lock-3.4.2",
+            "path": "test/foundation/async-notification/async-lock/tests/rwlock.rs",
+            "sha256": "d76339a43defe14adc1584f98ad2650fe39a8e46fc770a87de86f98d66b332ce",
+            "source": "src/foundation/async-lock/tests/rwlock.rs",
+            "source_sha256_before": "d76339a43defe14adc1584f98ad2650fe39a8e46fc770a87de86f98d66b332ce"
+          },
+          {
+            "origin_directory": "vendor/rust/async-lock-3.4.2",
+            "path": "test/foundation/async-notification/async-lock/tests/semaphore.rs",
+            "sha256": "e6f6bd4b083858f2870af1e96c5e8631d8f977dea34a8e86fa37a2e0623b118c",
+            "source": "src/foundation/async-lock/tests/semaphore.rs",
+            "source_sha256_before": "e6f6bd4b083858f2870af1e96c5e8631d8f977dea34a8e86fa37a2e0623b118c"
+          },
+          {
+            "origin_directory": "vendor/rust/event-listener-5.4.2",
+            "path": "test/foundation/async-notification/event-listener/tests/loom.rs",
+            "sha256": "774b4a8935bd5aebc7b294e5260da5ca543871af3b32e297ea4e73520e2b515a",
+            "source": "src/foundation/event-listener/tests/loom.rs",
+            "source_sha256_before": "774b4a8935bd5aebc7b294e5260da5ca543871af3b32e297ea4e73520e2b515a"
+          },
+          {
+            "origin_directory": "vendor/rust/event-listener-5.4.2",
+            "path": "test/foundation/async-notification/event-listener/tests/notify.rs",
+            "sha256": "5782d6732d7abd7035f93ea9c9f877fc884269052df1845621cdbead37511b7d",
+            "source": "src/foundation/event-listener/tests/notify.rs",
+            "source_sha256_before": "5782d6732d7abd7035f93ea9c9f877fc884269052df1845621cdbead37511b7d"
+          },
+          {
+            "origin_directory": "vendor/rust/event-listener-5.4.2",
+            "path": "test/foundation/async-notification/event-listener/unit/src/intrusive/tests_471.rs",
+            "sha256": "cd5897fc6d90057a96710a2da2f74bfe6f9b04cbc7eca83ef1b894d0bfbaeb95",
+            "source": "src/foundation/event-listener/src/intrusive.rs",
+            "source_sha256_before": "c027259f5435147256d497e41c5e35400ce697be598768cdf3be4cbd5cdaac16"
+          },
+          {
+            "origin_directory": "vendor/rust/event-listener-strategy-0.5.4",
+            "path": "test/foundation/async-notification/event-listener-strategy/functions/src/lib/send_and_sync_537.rs",
+            "sha256": "5b02c4c8fe2b4ccbf3e395a0927664f58c07b765aa2077652e2fd9ed06eb8607",
+            "source": "src/foundation/event-listener-strategy/src/lib.rs",
+            "source_sha256_before": "da209dd2d22c18580a9345dbb3b02a68b48bbf4019c54024b61e97640a461399"
+          },
+          {
+            "origin_directory": "vendor/rust/event-listener-strategy-0.5.4",
+            "path": "test/foundation/async-notification/event-listener-strategy/tests/easy_wrapper.rs",
+            "sha256": "b6b15a1cd6090ed5c59135c830aeca8a11046dbbbf428f2f7ef5cbe2fe28147d",
+            "source": "src/foundation/event-listener-strategy/tests/easy_wrapper.rs",
+            "source_sha256_before": "b6b15a1cd6090ed5c59135c830aeca8a11046dbbbf428f2f7ef5cbe2fe28147d"
+          }
+        ],
+        "origin_directory": "vendor/rust/async-lock-3.4.2",
+        "roots": [
+          "test/foundation/async-notification"
+        ]
+      },
+      "destination_files_sha256": {
+        "Cargo.toml": "959c1d6629eea201fcb339a02cbfb3e34e48ecc250ed68f14be200598676efef",
+        "benches/bench.rs": "a534ba022682b1979d00c6a9b815bd6433a6c950027f17f4d68733f893f7ecff",
+        "src/barrier.rs": "893715a6a391e23c5c7bf1e8bab0fdfff0d841b894fd903aae89d5dd66e59137",
+        "src/event/intrusive.rs": "103dcc29ad1b40c8d0e063852a018216b5a80e01b6bd23548d1fa8db52d973bb",
+        "src/event/mod.rs": "9eb0615fb7d945d5d2f5ed28a3391b113c68687742aa5b5ca8c74e44de3147bd",
+        "src/event/notify.rs": "4a3185c359baf7762e2e26e6abbdfa4095f220e97a58f000f408d1038889db6a",
+        "src/lib.rs": "a09c7ed029cf89988a9d97e31c3fe577ed39d914d629cc804f505f35ca47032a",
+        "src/mutex.rs": "e54e0fa06462e2557bcd320c2c71a52cc6e080ddfe8f5ed114c35587d1f06607",
+        "src/once_cell.rs": "e0bedf02d270729b7fda4930694684178954ee960993c728eb560b25b0ae5403",
+        "src/rwlock.rs": "21b63c139e4f9e1e29f0e593113fdb995438b87f2ee5b8f03c3626ae6e3c4468",
+        "src/rwlock/futures.rs": "82577bfe5746181625685e8bf00b865568ba510ca8dd6cfb9872a1d1aec0240b",
+        "src/rwlock/raw.rs": "8d414502a938721cc4862f799ce72beca7556885aaf2ffd3bf3ed8f7d4e53fa0",
+        "src/semaphore.rs": "7f8b7e2347a6051ac4c93258635796c4076b196fc129e6212c2e7e24dc287d3c",
+        "src/strategy.rs": "f9c76c4d157c78f9f278a697bc48b8057bcd48b95eae65aacab47b71fea09f9a"
+      },
+      "destination_name": "async-notification",
+      "external_file_routes": {
+        "test/foundation/async-lock/tests/barrier.rs": {
+          "destination": "test/foundation/async-notification/async-lock/tests/barrier.rs",
+          "replacements": []
+        },
+        "test/foundation/async-lock/tests/common/mod.rs": {
+          "destination": "test/foundation/async-notification/async-lock/tests/common/mod.rs",
+          "replacements": []
+        },
+        "test/foundation/async-lock/tests/loom.rs": {
+          "destination": "test/foundation/async-notification/async-lock/tests/loom.rs",
+          "replacements": []
+        },
+        "test/foundation/async-lock/tests/mutex.rs": {
+          "destination": "test/foundation/async-notification/async-lock/tests/mutex.rs",
+          "replacements": []
+        },
+        "test/foundation/async-lock/tests/rwlock.rs": {
+          "destination": "test/foundation/async-notification/async-lock/tests/rwlock.rs",
+          "replacements": []
+        },
+        "test/foundation/async-lock/tests/semaphore.rs": {
+          "destination": "test/foundation/async-notification/async-lock/tests/semaphore.rs",
+          "replacements": []
+        },
+        "test/foundation/event-listener-strategy/functions/src/lib/send_and_sync_537.rs": {
+          "destination": "test/foundation/async-notification/event-listener-strategy/functions/src/lib/send_and_sync_537.rs",
+          "replacements": []
+        },
+        "test/foundation/event-listener-strategy/tests/easy_wrapper.rs": {
+          "destination": "test/foundation/async-notification/event-listener-strategy/tests/easy_wrapper.rs",
+          "replacements": []
+        },
+        "test/foundation/event-listener/tests/loom.rs": {
+          "destination": "test/foundation/async-notification/event-listener/tests/loom.rs",
+          "replacements": []
+        },
+        "test/foundation/event-listener/tests/notify.rs": {
+          "destination": "test/foundation/async-notification/event-listener/tests/notify.rs",
+          "replacements": []
+        },
+        "test/foundation/event-listener/unit/src/intrusive/tests_471.rs": {
+          "destination": "test/foundation/async-notification/event-listener/unit/src/intrusive/tests_471.rs",
+          "replacements": [
+            {
+              "new": "ZXN0KV0KbW9kIHRlc3RzIHsKICAgIHVzZSBzdXBlcjo6KjsKICAgIHVzZSBjb3JlOjpwaW46OnBpbjsKCiAgICAjW2NmZyh0YXJnZXRfZmFtaWx5ID0gIndhc20iKV0KICAg",
+              "old": "ZXN0KV0KbW9kIHRlc3RzIHsKICAgIHVzZSBzdXBlcjo6KjsKICAgIHVzZSBmdXR1cmVzX2xpdGU6OnBpbjsKCiAgICAjW2NmZyh0YXJnZXRfZmFtaWx5ID0gIndhc20iKV0KICAg"
+            },
+            {
+              "new": "Ojo8TGlzdGVuZXI8KCk+Pjo6Tm9uZTsKICAgICAgICAgICAgICAgIGxldCBtdXQgJGlkID0gcGluISgkaWQpOwogICAgICAgICAgICApKgogICAgICAgIH07CiAgICB9CgogICAgI1s=",
+              "old": "Ojo8TGlzdGVuZXI8KCk+Pjo6Tm9uZTsKICAgICAgICAgICAgICAgIHBpbiEoJGlkKTsKICAgICAgICAgICAgKSoKICAgICAgICB9OwogICAgfQoKICAgICNb"
+            },
+            {
+              "new": "b3Bfbm9uX25vdGlmaWVkKCkgewogICAgICAgIGxldCBpbm5lciA9IGNyYXRlOjpldmVudDo6SW5uZXI6Om5ldygpOwogICAgICAgIG1ha2VfbGlzdGVuZXJzIShsaXN0ZW4xLCBsaXN0ZQ==",
+              "old": "b3Bfbm9uX25vdGlmaWVkKCkgewogICAgICAgIGxldCBpbm5lciA9IGNyYXRlOjpJbm5lcjo6bmV3KCk7CiAgICAgICAgbWFrZV9saXN0ZW5lcnMhKGxpc3RlbjEsIGxpc3Rl"
+            },
+            {
+              "new": "XQogICAgZm4gaW5zZXJ0KCkgewogICAgICAgIGxldCBpbm5lciA9IGNyYXRlOjpldmVudDo6SW5uZXI6Om5ldygpOwogICAgICAgIG1ha2VfbGlzdGVuZXJzIShsaXN0ZW4xLCBsaXN0ZQ==",
+              "old": "XQogICAgZm4gaW5zZXJ0KCkgewogICAgICAgIGxldCBpbm5lciA9IGNyYXRlOjpJbm5lcjo6bmV3KCk7CiAgICAgICAgbWFrZV9saXN0ZW5lcnMhKGxpc3RlbjEsIGxpc3Rl"
+            }
+          ]
+        }
+      },
+      "file_routes": {
+        "src/foundation/async-lock": {
+          "Cargo.toml": {
+            "destination": "Cargo.toml"
+          },
+          "src/barrier.rs": {
+            "destination": "src/barrier.rs"
+          },
+          "src/lib.rs": {
+            "destination": "src/lib.rs"
+          },
+          "src/mutex.rs": {
+            "destination": "src/mutex.rs"
+          },
+          "src/once_cell.rs": {
+            "destination": "src/once_cell.rs"
+          },
+          "src/rwlock.rs": {
+            "destination": "src/rwlock.rs"
+          },
+          "src/rwlock/futures.rs": {
+            "destination": "src/rwlock/futures.rs"
+          },
+          "src/rwlock/raw.rs": {
+            "destination": "src/rwlock/raw.rs"
+          },
+          "src/semaphore.rs": {
+            "destination": "src/semaphore.rs"
+          }
+        },
+        "src/foundation/event-listener": {
+          "Cargo.toml": {
+            "archive_base64": "IyBJbnRlcm5hbCBzb3VyY2UgY29tcG9uZW50LiBPcmlnaW5hbCBtYW5pZmVzdCBhbmQgb3JpZ2luOiBjb21wbGlhbmNlL3Byb3ZlbmFuY2UuCgpbcGFja2FnZV0KZWRpdGlvbiA9ICIyMDIxIgpydXN0LXZlcnNpb24gPSAiMS42MCIKbmFtZSA9ICJldmVudC1saXN0ZW5lciIKdmVyc2lvbiA9ICI1LjQuMiIKYXV0aG9ycyA9IFsKICAgICJTdGplcGFuIEdsYXZpbmEgPHN0amVwYW5nQGdtYWlsLmNvbT4iLAogICAgIkpvaG4gTnVubGV5IDxkZXZAbm90Z3VsbC5uZXQ+IiwKXQpidWlsZCA9IGZhbHNlCmV4Y2x1ZGUgPSBbIi8uKiJdCmF1dG9saWIgPSBmYWxzZQphdXRvYmlucyA9IGZhbHNlCmF1dG9leGFtcGxlcyA9IGZhbHNlCmF1dG90ZXN0cyA9IGZhbHNlCmF1dG9iZW5jaGVzID0gZmFsc2UKZGVzY3JpcHRpb24gPSAiTm90aWZ5IGFzeW5jIHRhc2tzIG9yIHRocmVhZHMiCnJlYWRtZSA9ICIuLi8uLi8uLi9kb2NzL3Vwc3RyZWFtL2V2ZW50LWxpc3RlbmVyLTUuNC4yL1JFQURNRS5tZCIKa2V5d29yZHMgPSBbCiAgICAiY29uZHZhciIsCiAgICAiZXZlbnRjb3VudCIsCiAgICAid2FrZSIsCiAgICAiYmxvY2tpbmciLAogICAgInBhcmsiLApdCmNhdGVnb3JpZXMgPSBbCiAgICAiYXN5bmNocm9ub3VzIiwKICAgICJjb25jdXJyZW5jeSIsCl0KbGljZW5zZSA9ICJBcGFjaGUtMi4wIE9SIE1JVCIKcmVwb3NpdG9yeSA9ICJodHRwczovL2dpdGh1Yi5jb20vc21vbC1ycy9ldmVudC1saXN0ZW5lciIKCltmZWF0dXJlc10KZGVmYXVsdCA9IFsic3RkIl0Kc3RkID0gWyJwYXJraW5nIl0KCltsaWJdCm5hbWUgPSAiZXZlbnRfbGlzdGVuZXIiCnBhdGggPSAic3JjL2xpYi5ycyIKYmVuY2ggPSBmYWxzZQoKW2RlcGVuZGVuY2llcy5waW4tcHJvamVjdC1saXRlXQp2ZXJzaW9uID0gIjAuMi4xMiIKcGF0aCA9ICIuLi9waW4tcHJvamVjdC1saXRlIgoKW3RhcmdldC4nY2ZnKG5vdCh0YXJnZXRfZmFtaWx5ID0gIndhc20iKSknLmRlcGVuZGVuY2llcy5wYXJraW5nXQp2ZXJzaW9uID0gIjIuMC4wIgpvcHRpb25hbCA9IHRydWUKcGF0aCA9ICIuLi9wYXJraW5nIgoKW2xpbnRzLnJ1c3QudW5leHBlY3RlZF9jZmdzXQpsZXZlbCA9ICJ3YXJuIgpwcmlvcml0eSA9IDAKY2hlY2stY2ZnID0gWyJjZmcobG9vbSkiXQo="
+          },
+          "benches/bench.rs": {
+            "destination": "benches/bench.rs"
+          },
+          "src/intrusive.rs": {
+            "destination": "src/event/intrusive.rs"
+          },
+          "src/lib.rs": {
+            "destination": "src/event/mod.rs"
+          },
+          "src/notify.rs": {
+            "destination": "src/event/notify.rs"
+          }
+        },
+        "src/foundation/event-listener-strategy": {
+          "Cargo.toml": {
+            "archive_base64": "IyBJbnRlcm5hbCBzb3VyY2UgY29tcG9uZW50LiBPcmlnaW5hbCBtYW5pZmVzdCBhbmQgb3JpZ2luOiBjb21wbGlhbmNlL3Byb3ZlbmFuY2UuCgpbcGFja2FnZV0KZWRpdGlvbiA9ICIyMDIxIgpydXN0LXZlcnNpb24gPSAiMS42MCIKbmFtZSA9ICJldmVudC1saXN0ZW5lci1zdHJhdGVneSIKdmVyc2lvbiA9ICIwLjUuNCIKYXV0aG9ycyA9IFsiSm9obiBOdW5sZXkgPGRldkBub3RndWxsLm5ldD4iXQpidWlsZCA9IGZhbHNlCmV4Y2x1ZGUgPSBbIi8uKiJdCmF1dG9saWIgPSBmYWxzZQphdXRvYmlucyA9IGZhbHNlCmF1dG9leGFtcGxlcyA9IGZhbHNlCmF1dG90ZXN0cyA9IGZhbHNlCmF1dG9iZW5jaGVzID0gZmFsc2UKZGVzY3JpcHRpb24gPSAiQmxvY2sgb3IgcG9sbCBvbiBldmVudF9saXN0ZW5lciBlYXNpbHkiCnJlYWRtZSA9ICIuLi8uLi8uLi9kb2NzL3Vwc3RyZWFtL2V2ZW50LWxpc3RlbmVyLXN0cmF0ZWd5LTAuNS40L1JFQURNRS5tZCIKa2V5d29yZHMgPSBbCiAgICAiY29uZHZhciIsCiAgICAiZW52Y291bnQiLAogICAgIndha2UiLAogICAgImJsb2NraW5nIiwKICAgICJwYXJrIiwKXQpjYXRlZ29yaWVzID0gWwogICAgImFzeW5jaHJvbm91cyIsCiAgICAiY29uY3VycmVuY3kiLApdCmxpY2Vuc2UgPSAiQXBhY2hlLTIuMCBPUiBNSVQiCnJlcG9zaXRvcnkgPSAiaHR0cHM6Ly9naXRodWIuY29tL3Ntb2wtcnMvZXZlbnQtbGlzdGVuZXItc3RyYXRlZ3kiCgpbZmVhdHVyZXNdCmRlZmF1bHQgPSBbInN0ZCJdCnBvcnRhYmxlLWF0b21pYyA9IFtdCnN0ZCA9IFsiZXZlbnQtbGlzdGVuZXIvc3RkIl0KCltsaWJdCm5hbWUgPSAiZXZlbnRfbGlzdGVuZXJfc3RyYXRlZ3kiCnBhdGggPSAic3JjL2xpYi5ycyIKCltkZXBlbmRlbmNpZXMuZXZlbnQtbGlzdGVuZXJdCnZlcnNpb24gPSAiNS4wLjAiCmRlZmF1bHQtZmVhdHVyZXMgPSBmYWxzZQpwYXRoID0gIi4uL2V2ZW50LWxpc3RlbmVyIgoKW2RlcGVuZGVuY2llcy5waW4tcHJvamVjdC1saXRlXQp2ZXJzaW9uID0gIjAuMi4xMiIKcGF0aCA9ICIuLi9waW4tcHJvamVjdC1saXRlIgoKW2xpbnRzLnJ1c3QudW5leHBlY3RlZF9jZmdzXQpsZXZlbCA9ICJ3YXJuIgpwcmlvcml0eSA9IDAKY2hlY2stY2ZnID0gWyJjZmcod2FzbV9iaW5kZ2VuX3Vuc3RhYmxlX3Rlc3RfY292ZXJhZ2UpIl0K"
+          },
+          "src/lib.rs": {
+            "destination": "src/strategy.rs"
+          }
+        }
+      },
+      "input_history": {},
+      "inputs": [
+        {
+          "external_tests": {
+            "bytes": 28112,
+            "directory": "src/foundation/async-lock",
+            "file_count": 6,
+            "files": [
+              {
+                "path": "test/foundation/async-lock/tests/barrier.rs",
+                "sha256": "46d479150e207179eeecc2e8b49e0219936d522e79ea8faaec85c6a03982eb8f",
+                "source": "src/foundation/async-lock/tests/barrier.rs",
+                "source_sha256_before": "46d479150e207179eeecc2e8b49e0219936d522e79ea8faaec85c6a03982eb8f"
+              },
+              {
+                "path": "test/foundation/async-lock/tests/common/mod.rs",
+                "sha256": "27c48c3d67d0d647bdcf9ae45e2cd6006fb97b0bbd0114032bf75ac4f4d01d71",
+                "source": "src/foundation/async-lock/tests/common/mod.rs",
+                "source_sha256_before": "27c48c3d67d0d647bdcf9ae45e2cd6006fb97b0bbd0114032bf75ac4f4d01d71"
+              },
+              {
+                "path": "test/foundation/async-lock/tests/loom.rs",
+                "sha256": "ec53be1b04bc93bafc1aaf65d3d318193dc2ebcc09cc008113ee39fe08151142",
+                "source": "src/foundation/async-lock/tests/loom.rs",
+                "source_sha256_before": "ec53be1b04bc93bafc1aaf65d3d318193dc2ebcc09cc008113ee39fe08151142"
+              },
+              {
+                "path": "test/foundation/async-lock/tests/mutex.rs",
+                "sha256": "1d6d3ed23065603f8c6143963aa4c4f933a5926ca24cfc4b168b8e7294afe4ee",
+                "source": "src/foundation/async-lock/tests/mutex.rs",
+                "source_sha256_before": "1d6d3ed23065603f8c6143963aa4c4f933a5926ca24cfc4b168b8e7294afe4ee"
+              },
+              {
+                "path": "test/foundation/async-lock/tests/rwlock.rs",
+                "sha256": "d76339a43defe14adc1584f98ad2650fe39a8e46fc770a87de86f98d66b332ce",
+                "source": "src/foundation/async-lock/tests/rwlock.rs",
+                "source_sha256_before": "d76339a43defe14adc1584f98ad2650fe39a8e46fc770a87de86f98d66b332ce"
+              },
+              {
+                "path": "test/foundation/async-lock/tests/semaphore.rs",
+                "sha256": "e6f6bd4b083858f2870af1e96c5e8631d8f977dea34a8e86fa37a2e0623b118c",
+                "source": "src/foundation/async-lock/tests/semaphore.rs",
+                "source_sha256_before": "e6f6bd4b083858f2870af1e96c5e8631d8f977dea34a8e86fa37a2e0623b118c"
+              }
+            ],
+            "origin_directory": "vendor/rust/async-lock-3.4.2",
+            "roots": [
+              "test/foundation/async-lock"
+            ]
+          },
+          "package": {
+            "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 2026-10-20：裁剪不支持平台与缺失后端的依赖/feature边；移除不可达条件实现并修复稳定工具链编译诊断；当前逐文件摘要记录本地实现差异。",
+            "description": "Async synchronization primitives",
+            "directory": "src/foundation/async-lock",
+            "files_sha256": {
+              "Cargo.toml": "13b242bf3a520528eee1e44f1a0795a32055ece891d45b0858c2999184a2feb5",
+              "src/barrier.rs": "4a7d44fa6c7df99355e64d9e959f29adc1dedd5df82184acd3b0bc51b49df9b5",
+              "src/lib.rs": "130969743ddbc8d36390e6956fbdb43e634307a908bfcaa56875df3be8927aff",
+              "src/mutex.rs": "669923b4d6334fb2966eebd2115a4c87da2bd2ac8e56938d99f2ee3ddb5e4c75",
+              "src/once_cell.rs": "bc86cd8cfaa2518a46115b335abc841d735e5d4e8da5d150541829bc822b5dbc",
+              "src/rwlock.rs": "21b63c139e4f9e1e29f0e593113fdb995438b87f2ee5b8f03c3626ae6e3c4468",
+              "src/rwlock/futures.rs": "ad9e6aeb93f40c84466a560cd64a65d809cb11126955fd2775159a7c9f336424",
+              "src/rwlock/raw.rs": "21e93be95f69e4926a9c2c864d829ed975cbee62d67f037381ac457b5e2692b1",
+              "src/semaphore.rs": "ccd6d6e1d2e1bbb539b45facd8066e994443dc233cd6ed2eb864815280331eb7"
+            },
+            "license": "Apache-2.0 OR MIT",
+            "license_materials": [
+              "compliance/licenses/upstream/async-lock-3.4.2/LICENSE-APACHE",
+              "compliance/licenses/upstream/async-lock-3.4.2/LICENSE-MIT"
+            ],
+            "merged_into": "无；通过统一内部源码源接入",
+            "name": "async-lock",
+            "origin_directory": "vendor/rust/async-lock-3.4.2",
+            "repository": "https://github.com/smol-rs/async-lock",
+            "status": "内部维护源码",
+            "upstream": {
+              "archive_sha256": "290f7f2596bd5b78a9fec8088ccd89180d7f9f55b94b0576823bbbdc72ee8311",
+              "archive_url": "https://static.crates.io/crates/async-lock/async-lock-3.4.2.crate",
+              "name": "async-lock",
+              "version": "3.4.2"
+            },
+            "vcs": {
+              "git": {
+                "sha1": "f07ba65a02ec3eca32fa95e6d13dc754d619bb35"
+              },
+              "path_in_vcs": ""
+            },
+            "version": "3.4.2"
+          }
+        },
+        {
+          "external_tests": {
+            "bytes": 11201,
+            "directory": "src/foundation/event-listener",
+            "file_count": 3,
+            "files": [
+              {
+                "path": "test/foundation/event-listener/tests/loom.rs",
+                "sha256": "774b4a8935bd5aebc7b294e5260da5ca543871af3b32e297ea4e73520e2b515a",
+                "source": "src/foundation/event-listener/tests/loom.rs",
+                "source_sha256_before": "774b4a8935bd5aebc7b294e5260da5ca543871af3b32e297ea4e73520e2b515a"
+              },
+              {
+                "path": "test/foundation/event-listener/tests/notify.rs",
+                "sha256": "5782d6732d7abd7035f93ea9c9f877fc884269052df1845621cdbead37511b7d",
+                "source": "src/foundation/event-listener/tests/notify.rs",
+                "source_sha256_before": "5782d6732d7abd7035f93ea9c9f877fc884269052df1845621cdbead37511b7d"
+              },
+              {
+                "path": "test/foundation/event-listener/unit/src/intrusive/tests_471.rs",
+                "sha256": "7f2581c30df1e549106fb79fa8c6c411add1aea31a8fa56fefed68b73ff5c3f8",
+                "source": "src/foundation/event-listener/src/intrusive.rs",
+                "source_sha256_before": "c027259f5435147256d497e41c5e35400ce697be598768cdf3be4cbd5cdaac16"
+              }
+            ],
+            "origin_directory": "vendor/rust/event-listener-5.4.2",
+            "roots": [
+              "test/foundation/event-listener"
+            ]
+          },
+          "package": {
+            "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 2026-10-20：裁剪不支持平台与缺失后端的依赖/feature边；移除不可达条件实现并修复稳定工具链编译诊断；当前逐文件摘要记录本地实现差异。 清理独立演示：移除 1 个独立示例程序及专属输入（4930 字节）；保留文档编译、真实测试及性能基准输入。",
+            "description": "Notify async tasks or threads",
+            "directory": "src/foundation/event-listener",
+            "files_sha256": {
+              "Cargo.toml": "950407569cae95670ade8033a7c17e646a3d30d24a97552c2e8eaf59a61a4a6d",
+              "benches/bench.rs": "a534ba022682b1979d00c6a9b815bd6433a6c950027f17f4d68733f893f7ecff",
+              "src/intrusive.rs": "efa8febff908da41164f0fc42b1a1e88402164d5f2a0f27d8df68bef8f5b2042",
+              "src/lib.rs": "8fac9415d610aa4fcbda98dce34b802283079b6fb7e3b85c26c19c33a3f37550",
+              "src/notify.rs": "9a56ebbe5970637f9a6681546763fd7f9844f541308b2dcec142b43cb5749157"
+            },
+            "license": "Apache-2.0 OR MIT",
+            "license_materials": [
+              "compliance/licenses/upstream/event-listener-5.4.2/LICENSE-APACHE",
+              "compliance/licenses/upstream/event-listener-5.4.2/LICENSE-MIT"
+            ],
+            "merged_into": "无；通过统一内部源码源接入",
+            "name": "event-listener",
+            "origin_directory": "vendor/rust/event-listener-5.4.2",
+            "repository": "https://github.com/smol-rs/event-listener",
+            "status": "内部维护源码",
+            "upstream": {
+              "archive_sha256": "5a23add41df1562121a9393cb065eab5146a1242410f23a644851e90cfd669d2",
+              "archive_url": "https://static.crates.io/crates/event-listener/event-listener-5.4.2.crate",
+              "name": "event-listener",
+              "version": "5.4.2"
+            },
+            "vcs": {
+              "git": {
+                "sha1": "77004ac77dcef7884bf71a99c276a50f83a7fa4e"
+              },
+              "path_in_vcs": ""
+            },
+            "version": "5.4.2"
+          }
+        },
+        {
+          "external_tests": {
+            "bytes": 3186,
+            "directory": "src/foundation/event-listener-strategy",
+            "file_count": 2,
+            "files": [
+              {
+                "path": "test/foundation/event-listener-strategy/functions/src/lib/send_and_sync_537.rs",
+                "sha256": "5b02c4c8fe2b4ccbf3e395a0927664f58c07b765aa2077652e2fd9ed06eb8607",
+                "source": "src/foundation/event-listener-strategy/src/lib.rs",
+                "source_sha256_before": "da209dd2d22c18580a9345dbb3b02a68b48bbf4019c54024b61e97640a461399"
+              },
+              {
+                "path": "test/foundation/event-listener-strategy/tests/easy_wrapper.rs",
+                "sha256": "b6b15a1cd6090ed5c59135c830aeca8a11046dbbbf428f2f7ef5cbe2fe28147d",
+                "source": "src/foundation/event-listener-strategy/tests/easy_wrapper.rs",
+                "source_sha256_before": "b6b15a1cd6090ed5c59135c830aeca8a11046dbbbf428f2f7ef5cbe2fe28147d"
+              }
+            ],
+            "origin_directory": "vendor/rust/event-listener-strategy-0.5.4",
+            "roots": [
+              "test/foundation/event-listener-strategy"
+            ]
+          },
+          "package": {
+            "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 2026-10-20：裁剪不支持平台与缺失后端的依赖/feature边；当前逐文件摘要记录本地实现差异。",
+            "description": "Block or poll on event_listener easily",
+            "directory": "src/foundation/event-listener-strategy",
+            "files_sha256": {
+              "Cargo.toml": "b5bc72ebfeef754306bdb6f73161897af7d9f8a56594f8828ee3e5c386fb3139",
+              "src/lib.rs": "647edaf4863f2b2cac47a610a0afd4372321b6852a1b89c9eaecc12bf1916a9d"
+            },
+            "license": "Apache-2.0 OR MIT",
+            "license_materials": [
+              "compliance/licenses/upstream/event-listener-strategy-0.5.4/LICENSE-APACHE",
+              "compliance/licenses/upstream/event-listener-strategy-0.5.4/LICENSE-MIT"
+            ],
+            "merged_into": "无；通过统一内部源码源接入",
+            "name": "event-listener-strategy",
+            "origin_directory": "vendor/rust/event-listener-strategy-0.5.4",
+            "repository": "https://github.com/smol-rs/event-listener-strategy",
+            "status": "内部维护源码",
+            "upstream": {
+              "archive_sha256": "8be9f3dfaaffdae2972880079a491a1a8bb7cbed0b8dd7a347f668b4150a3b93",
+              "archive_url": "https://static.crates.io/crates/event-listener-strategy/event-listener-strategy-0.5.4.crate",
+              "name": "event-listener-strategy",
+              "version": "0.5.4"
+            },
+            "vcs": {
+              "git": {
+                "sha1": "f533c437e8a6561e9b625c3ee036a8ea7d19375c"
+              },
+              "path_in_vcs": ""
+            },
+            "version": "0.5.4"
+          }
+        }
+      ],
+      "new_files": {},
+      "primary_directory": "src/foundation/async-lock",
+      "reason": "Unify event notifications, internal polling strategy and async locks behind event-only and explicit locks capabilities. Preserve algorithms, native/WASM boundaries, immutable original source recovery and all external test attribution."
+    },
     "f8932c62a4c5148866ef0a7651507467033344188f02694bfbffced61db248e4": {
       "destination_directory": "src/foundation/unicode-normalizer",
       "destination_external_tests": {
@@ -38187,7 +38632,7 @@
     }
   },
   "external_test_mappings_sha256": {
-    "compliance/external-tests/foundation.json": "82df3a2ebc28eca5aa9d04a53519faaf799ffcfe07875d8ef61801334e1ca13a",
+    "compliance/external-tests/foundation.json": "1da3283aee65be73a2bc5b90ba98747a8532726d5ceaf5bf0b719a2b01927692",
     "compliance/external-tests/integrated.json": "976578b7514d285c9214c408327f9b344f3c7649b4ae3b63839e8806b4677d96",
     "compliance/external-tests/ring.json": "3e5a834ea832ea11a0da5cdeab898e9c2e2d5229becc1988edc3462cfb51dab1"
   },
@@ -38560,51 +39005,92 @@
         "test/foundation/arrayvec"
       ]
     },
-    "src/foundation/async-lock": {
-      "bytes": 28112,
-      "directory": "src/foundation/async-lock",
-      "file_count": 6,
+    "src/foundation/async-notification": {
+      "bytes": 42524,
+      "directory": "src/foundation/async-notification",
+      "file_count": 11,
       "files": [
         {
-          "path": "test/foundation/async-lock/tests/barrier.rs",
+          "origin_directory": "vendor/rust/async-lock-3.4.2",
+          "path": "test/foundation/async-notification/async-lock/tests/barrier.rs",
           "sha256": "46d479150e207179eeecc2e8b49e0219936d522e79ea8faaec85c6a03982eb8f",
           "source": "src/foundation/async-lock/tests/barrier.rs",
           "source_sha256_before": "46d479150e207179eeecc2e8b49e0219936d522e79ea8faaec85c6a03982eb8f"
         },
         {
-          "path": "test/foundation/async-lock/tests/common/mod.rs",
+          "origin_directory": "vendor/rust/async-lock-3.4.2",
+          "path": "test/foundation/async-notification/async-lock/tests/common/mod.rs",
           "sha256": "27c48c3d67d0d647bdcf9ae45e2cd6006fb97b0bbd0114032bf75ac4f4d01d71",
           "source": "src/foundation/async-lock/tests/common/mod.rs",
           "source_sha256_before": "27c48c3d67d0d647bdcf9ae45e2cd6006fb97b0bbd0114032bf75ac4f4d01d71"
         },
         {
-          "path": "test/foundation/async-lock/tests/loom.rs",
+          "origin_directory": "vendor/rust/async-lock-3.4.2",
+          "path": "test/foundation/async-notification/async-lock/tests/loom.rs",
           "sha256": "ec53be1b04bc93bafc1aaf65d3d318193dc2ebcc09cc008113ee39fe08151142",
           "source": "src/foundation/async-lock/tests/loom.rs",
           "source_sha256_before": "ec53be1b04bc93bafc1aaf65d3d318193dc2ebcc09cc008113ee39fe08151142"
         },
         {
-          "path": "test/foundation/async-lock/tests/mutex.rs",
+          "origin_directory": "vendor/rust/async-lock-3.4.2",
+          "path": "test/foundation/async-notification/async-lock/tests/mutex.rs",
           "sha256": "1d6d3ed23065603f8c6143963aa4c4f933a5926ca24cfc4b168b8e7294afe4ee",
           "source": "src/foundation/async-lock/tests/mutex.rs",
           "source_sha256_before": "1d6d3ed23065603f8c6143963aa4c4f933a5926ca24cfc4b168b8e7294afe4ee"
         },
         {
-          "path": "test/foundation/async-lock/tests/rwlock.rs",
+          "origin_directory": "vendor/rust/async-lock-3.4.2",
+          "path": "test/foundation/async-notification/async-lock/tests/rwlock.rs",
           "sha256": "d76339a43defe14adc1584f98ad2650fe39a8e46fc770a87de86f98d66b332ce",
           "source": "src/foundation/async-lock/tests/rwlock.rs",
           "source_sha256_before": "d76339a43defe14adc1584f98ad2650fe39a8e46fc770a87de86f98d66b332ce"
         },
         {
-          "path": "test/foundation/async-lock/tests/semaphore.rs",
+          "origin_directory": "vendor/rust/async-lock-3.4.2",
+          "path": "test/foundation/async-notification/async-lock/tests/semaphore.rs",
           "sha256": "e6f6bd4b083858f2870af1e96c5e8631d8f977dea34a8e86fa37a2e0623b118c",
           "source": "src/foundation/async-lock/tests/semaphore.rs",
           "source_sha256_before": "e6f6bd4b083858f2870af1e96c5e8631d8f977dea34a8e86fa37a2e0623b118c"
+        },
+        {
+          "origin_directory": "vendor/rust/event-listener-5.4.2",
+          "path": "test/foundation/async-notification/event-listener/tests/loom.rs",
+          "sha256": "774b4a8935bd5aebc7b294e5260da5ca543871af3b32e297ea4e73520e2b515a",
+          "source": "src/foundation/event-listener/tests/loom.rs",
+          "source_sha256_before": "774b4a8935bd5aebc7b294e5260da5ca543871af3b32e297ea4e73520e2b515a"
+        },
+        {
+          "origin_directory": "vendor/rust/event-listener-5.4.2",
+          "path": "test/foundation/async-notification/event-listener/tests/notify.rs",
+          "sha256": "5782d6732d7abd7035f93ea9c9f877fc884269052df1845621cdbead37511b7d",
+          "source": "src/foundation/event-listener/tests/notify.rs",
+          "source_sha256_before": "5782d6732d7abd7035f93ea9c9f877fc884269052df1845621cdbead37511b7d"
+        },
+        {
+          "origin_directory": "vendor/rust/event-listener-5.4.2",
+          "path": "test/foundation/async-notification/event-listener/unit/src/intrusive/tests_471.rs",
+          "sha256": "cd5897fc6d90057a96710a2da2f74bfe6f9b04cbc7eca83ef1b894d0bfbaeb95",
+          "source": "src/foundation/event-listener/src/intrusive.rs",
+          "source_sha256_before": "c027259f5435147256d497e41c5e35400ce697be598768cdf3be4cbd5cdaac16"
+        },
+        {
+          "origin_directory": "vendor/rust/event-listener-strategy-0.5.4",
+          "path": "test/foundation/async-notification/event-listener-strategy/functions/src/lib/send_and_sync_537.rs",
+          "sha256": "5b02c4c8fe2b4ccbf3e395a0927664f58c07b765aa2077652e2fd9ed06eb8607",
+          "source": "src/foundation/event-listener-strategy/src/lib.rs",
+          "source_sha256_before": "da209dd2d22c18580a9345dbb3b02a68b48bbf4019c54024b61e97640a461399"
+        },
+        {
+          "origin_directory": "vendor/rust/event-listener-strategy-0.5.4",
+          "path": "test/foundation/async-notification/event-listener-strategy/tests/easy_wrapper.rs",
+          "sha256": "b6b15a1cd6090ed5c59135c830aeca8a11046dbbbf428f2f7ef5cbe2fe28147d",
+          "source": "src/foundation/event-listener-strategy/tests/easy_wrapper.rs",
+          "source_sha256_before": "b6b15a1cd6090ed5c59135c830aeca8a11046dbbbf428f2f7ef5cbe2fe28147d"
         }
       ],
       "origin_directory": "vendor/rust/async-lock-3.4.2",
       "roots": [
-        "test/foundation/async-lock"
+        "test/foundation/async-notification"
       ]
     },
     "src/foundation/async-trait": {
@@ -43211,58 +43697,6 @@
       "origin_directory": "vendor/rust/thiserror-2.0.21",
       "roots": [
         "test/foundation/error-definition"
-      ]
-    },
-    "src/foundation/event-listener": {
-      "bytes": 11201,
-      "directory": "src/foundation/event-listener",
-      "file_count": 3,
-      "files": [
-        {
-          "path": "test/foundation/event-listener/tests/loom.rs",
-          "sha256": "774b4a8935bd5aebc7b294e5260da5ca543871af3b32e297ea4e73520e2b515a",
-          "source": "src/foundation/event-listener/tests/loom.rs",
-          "source_sha256_before": "774b4a8935bd5aebc7b294e5260da5ca543871af3b32e297ea4e73520e2b515a"
-        },
-        {
-          "path": "test/foundation/event-listener/tests/notify.rs",
-          "sha256": "5782d6732d7abd7035f93ea9c9f877fc884269052df1845621cdbead37511b7d",
-          "source": "src/foundation/event-listener/tests/notify.rs",
-          "source_sha256_before": "5782d6732d7abd7035f93ea9c9f877fc884269052df1845621cdbead37511b7d"
-        },
-        {
-          "path": "test/foundation/event-listener/unit/src/intrusive/tests_471.rs",
-          "sha256": "7f2581c30df1e549106fb79fa8c6c411add1aea31a8fa56fefed68b73ff5c3f8",
-          "source": "src/foundation/event-listener/src/intrusive.rs",
-          "source_sha256_before": "c027259f5435147256d497e41c5e35400ce697be598768cdf3be4cbd5cdaac16"
-        }
-      ],
-      "origin_directory": "vendor/rust/event-listener-5.4.2",
-      "roots": [
-        "test/foundation/event-listener"
-      ]
-    },
-    "src/foundation/event-listener-strategy": {
-      "bytes": 3186,
-      "directory": "src/foundation/event-listener-strategy",
-      "file_count": 2,
-      "files": [
-        {
-          "path": "test/foundation/event-listener-strategy/functions/src/lib/send_and_sync_537.rs",
-          "sha256": "5b02c4c8fe2b4ccbf3e395a0927664f58c07b765aa2077652e2fd9ed06eb8607",
-          "source": "src/foundation/event-listener-strategy/src/lib.rs",
-          "source_sha256_before": "da209dd2d22c18580a9345dbb3b02a68b48bbf4019c54024b61e97640a461399"
-        },
-        {
-          "path": "test/foundation/event-listener-strategy/tests/easy_wrapper.rs",
-          "sha256": "b6b15a1cd6090ed5c59135c830aeca8a11046dbbbf428f2f7ef5cbe2fe28147d",
-          "source": "src/foundation/event-listener-strategy/tests/easy_wrapper.rs",
-          "source_sha256_before": "b6b15a1cd6090ed5c59135c830aeca8a11046dbbbf428f2f7ef5cbe2fe28147d"
-        }
-      ],
-      "origin_directory": "vendor/rust/event-listener-strategy-0.5.4",
-      "roots": [
-        "test/foundation/event-listener-strategy"
       ]
     },
     "src/foundation/fallible-iterator": {
@@ -65022,7 +65456,7 @@
   },
   "initial_test_relocation_sha256": "791ad728a408677dd54ef98e3feaffe825c5fc5670e888440615933d9498ecc3",
   "lockfiles_sha256": {
-    "Cargo.lock": "002995d59de6f7270d77daa648291b3abc4cc73cbd7874aa763704e68a98e593"
+    "Cargo.lock": "d5c94e2ad2e546d395d4e5bd120d04a8090617b1df6d136f4bd7c3a21a6735c3"
   },
   "manifests_sha256": {
     "Cargo.toml": "d4eb9ad428c26f50546105c8704f7ed0b4b75d50632a800c76a3256279001869",
@@ -65036,7 +65470,7 @@
     "src/foundation/anyhow/Cargo.toml": "e0e454bcb6007aa477275ec737f89c5d6e5b0a3d43c3d08826954945a753542b",
     "src/foundation/argon2/Cargo.toml": "cf5aadb2ab7b0a2a71f26dcaade31903949b4aacc15bd801b83d4d4df761e70d",
     "src/foundation/arrayvec/Cargo.toml": "13233aaeb3ab6c046247cc29964b024e4c93388b25b6081fd415168edb5cdb96",
-    "src/foundation/async-lock/Cargo.toml": "13b242bf3a520528eee1e44f1a0795a32055ece891d45b0858c2999184a2feb5",
+    "src/foundation/async-notification/Cargo.toml": "959c1d6629eea201fcb339a02cbfb3e34e48ecc250ed68f14be200598676efef",
     "src/foundation/async-trait/Cargo.toml": "b3365acb1795443dcd3f8b5cfe366f5b778f94fa13d854833d1ad44359e77530",
     "src/foundation/atoi/Cargo.toml": "b5f15ca70c88dce01cd68300cd0f87c1f337c1f6be03958fbb4fdfbcdd7fdfe6",
     "src/foundation/atomic-waker/Cargo.toml": "d6992d3e7b2190b1226fa1d3e7638899cbcfaafb68912dd2a70b0e50ac6c4a9b",
@@ -65086,8 +65520,6 @@
     "src/foundation/errno/Cargo.toml": "6124cd43b52f4fc37ca8d3153197e8a5f8d47769b48dad4f8a115d2040053e98",
     "src/foundation/error-definition-macros/Cargo.toml": "c3c3ba5d80b843c295d31e458e78606550d2e57b96791dcb0aa94e469ecea4ce",
     "src/foundation/error-definition/Cargo.toml": "5c406ab3ca34cf1c8e158640f2df059725d0e88b3a1a3099666b430dc3f41dd5",
-    "src/foundation/event-listener-strategy/Cargo.toml": "b5bc72ebfeef754306bdb6f73161897af7d9f8a56594f8828ee3e5c386fb3139",
-    "src/foundation/event-listener/Cargo.toml": "950407569cae95670ade8033a7c17e646a3d30d24a97552c2e8eaf59a61a4a6d",
     "src/foundation/fallible-iterator/Cargo.toml": "692f59bb96003626649210374e97a557b9a2816c02283e2c829de55da20963c0",
     "src/foundation/fancy-regex/Cargo.toml": "b3031887d58c372eff4f7113449a69dcc313079fc7c57f7a5e1eaed08a1e7496",
     "src/foundation/fastrand/Cargo.toml": "cae6792a5a7309564b7e258f32624287b687068520cede651733a4674c01284c",
@@ -65173,7 +65605,7 @@
     "src/foundation/random-generator-core/Cargo.toml": "7eec94598ffd4e8672d36cc2051e0f60248ce2e17afacd4838589087b4ab21c1",
     "src/foundation/rayon-core/Cargo.toml": "ec99da3c7e92b7454834e615d0a0e2407bb7b1fd1877607c00c8f1e3bc98985f",
     "src/foundation/rayon/Cargo.toml": "fbdb1891ba970b009e5d85e78d8f8ead0e716f2b376fb30bcb04023c1bbba919",
-    "src/foundation/reactive-state/Cargo.toml": "97fcef25a6146688dd4322db95696b55f0aceba2ab70149490efeb44dfa1d87a",
+    "src/foundation/reactive-state/Cargo.toml": "ae90208c04c121caffbc7b99f8d77ba1fbdb12e08e06fb208e200ac6dc55ecf4",
     "src/foundation/ref-cast-impl/Cargo.toml": "15ba9d3c503960ea47843072982d4e1c9095fb6a2b67063cd0ccdb94268f992a",
     "src/foundation/ref-cast/Cargo.toml": "1291fdd6c5162dc8a1dd02103dd516846fdeb82f4b6d8b1f114c32e644a4701f",
     "src/foundation/regex/Cargo.toml": "7243083d5898fd6ee10adb616bf724f1fe0b9877befcb5b6a76b164b2aa1ae74",
@@ -65208,7 +65640,7 @@
     "src/foundation/smallvec/Cargo.toml": "7f4809c1243c4cb0854b7878cedcbcf9b1b8a30f667333eb9edb76f990b77f05",
     "src/foundation/socket2/Cargo.toml": "a748169b0a61eda1988393bf74d1a3f13b9033cb29b83240a74eb7b2be808a92",
     "src/foundation/spin/Cargo.toml": "b5996fae3be64ef8d7b80f6e3880903b3015cdd91f3eb968daf6833c1e0272e9",
-    "src/foundation/sqlite-access/Cargo.toml": "8047697db6dd987289078fa61bf1a15976591f5ebd41068ea80544892d04d231",
+    "src/foundation/sqlite-access/Cargo.toml": "94753ec30198470607c5fd71c8dbbbdd7cbe3e81f2d5977f4c023784131bf74f",
     "src/foundation/stable_deref_trait/Cargo.toml": "4f080b924f2ae5fa6c2a7fd2d5fdcc08728c189503b520c2fec8132495f21256",
     "src/foundation/strsim/Cargo.toml": "7312930e6b154cde7b4ab50ba717760e952876c630e36cb82365d5b0a214600c",
     "src/foundation/strum/Cargo.toml": "ce19c4c3938857512107c5ca185a1aba6fed8b5ddc302e82cec8b11727482035",
@@ -66618,7 +67050,7 @@
       "description": "Core of SQLx, the rust SQL toolkit. Not intended to be used directly.",
       "directory": "src/foundation/sqlite-access",
       "files_sha256": {
-        "Cargo.toml": "8047697db6dd987289078fa61bf1a15976591f5ebd41068ea80544892d04d231",
+        "Cargo.toml": "94753ec30198470607c5fd71c8dbbbdd7cbe3e81f2d5977f4c023784131bf74f",
         "benches/sqlite/describe.rs": "e3846b1cd17054663e135116aecde934c2d20f3b83592562a3e34596168f0e94",
         "contrib/ide/vscode/settings.json": "af1e5804fd68126c54f709b71aee3c7dd4dca964f509257c2dd331006dda66ad",
         "gen-changelog.sh": "be0292a711d7a7bb03b57b9b3534dbb34d084189ed85d32c528d0a39e2e156a7",
@@ -66643,9 +67075,9 @@
         "src/query_engine/mod.rs": "c5354a07248ce4f0a21170b0653507390329283ad63185df05085b0479f64e4c",
         "src/query_engine/pool/connection.rs": "02a5e46ccbf34257ff0463d6fa840611dd4e2c7d12ebb13c1cc5998210c4ba90",
         "src/query_engine/pool/executor.rs": "75a6851c6196df8faab2f138e5a1f189efb16cc5473fd700186971c4eea7ca83",
-        "src/query_engine/pool/inner.rs": "5bb18abf4a47e04ff45b09cd977919f469fe851e1df65486fce0619e57faff1e",
+        "src/query_engine/pool/inner.rs": "7850a4da6b191b912e7d5285795c69463f3e7692ef1ec7be11dfe9d5b9063694",
         "src/query_engine/pool/maybe.rs": "add426222f6f6ba9f8b2027c0b5ec4bf6fd32de5043488358da45fedd0244dc2",
-        "src/query_engine/pool/mod.rs": "14ecc44d608838e53531f3c504d88ee490923d8e47501e6ad75b521eae0bf884",
+        "src/query_engine/pool/mod.rs": "9266614739d0b7bccff24339d0731e042918b6d0fe0cce9791486b724518fee0",
         "src/query_engine/pool/options.rs": "61b51593070dbc3e87479a6d9d3c4788921128a3795b0720bcb5df28831c9246",
         "src/query_engine/query.rs": "49fe2ed8b0b8a036dd6a27d0062fe682a3573fd7d7f474db2c407c3ea82e2a43",
         "src/query_engine/query_as.rs": "77bc19bb31f303398e21e3f8687977fccf122e02e9793a1dd02e5b60e57882c9",
@@ -66741,7 +67173,7 @@
       "description": "SQLite driver implementation for SQLx. Not for direct use; see the `sqlx` crate for details.",
       "directory": "src/foundation/sqlite-access",
       "files_sha256": {
-        "Cargo.toml": "8047697db6dd987289078fa61bf1a15976591f5ebd41068ea80544892d04d231",
+        "Cargo.toml": "94753ec30198470607c5fd71c8dbbbdd7cbe3e81f2d5977f4c023784131bf74f",
         "benches/sqlite/describe.rs": "e3846b1cd17054663e135116aecde934c2d20f3b83592562a3e34596168f0e94",
         "contrib/ide/vscode/settings.json": "af1e5804fd68126c54f709b71aee3c7dd4dca964f509257c2dd331006dda66ad",
         "gen-changelog.sh": "be0292a711d7a7bb03b57b9b3534dbb34d084189ed85d32c528d0a39e2e156a7",
@@ -66766,9 +67198,9 @@
         "src/query_engine/mod.rs": "c5354a07248ce4f0a21170b0653507390329283ad63185df05085b0479f64e4c",
         "src/query_engine/pool/connection.rs": "02a5e46ccbf34257ff0463d6fa840611dd4e2c7d12ebb13c1cc5998210c4ba90",
         "src/query_engine/pool/executor.rs": "75a6851c6196df8faab2f138e5a1f189efb16cc5473fd700186971c4eea7ca83",
-        "src/query_engine/pool/inner.rs": "5bb18abf4a47e04ff45b09cd977919f469fe851e1df65486fce0619e57faff1e",
+        "src/query_engine/pool/inner.rs": "7850a4da6b191b912e7d5285795c69463f3e7692ef1ec7be11dfe9d5b9063694",
         "src/query_engine/pool/maybe.rs": "add426222f6f6ba9f8b2027c0b5ec4bf6fd32de5043488358da45fedd0244dc2",
-        "src/query_engine/pool/mod.rs": "14ecc44d608838e53531f3c504d88ee490923d8e47501e6ad75b521eae0bf884",
+        "src/query_engine/pool/mod.rs": "9266614739d0b7bccff24339d0731e042918b6d0fe0cce9791486b724518fee0",
         "src/query_engine/pool/options.rs": "61b51593070dbc3e87479a6d9d3c4788921128a3795b0720bcb5df28831c9246",
         "src/query_engine/query.rs": "49fe2ed8b0b8a036dd6a27d0062fe682a3573fd7d7f474db2c407c3ea82e2a43",
         "src/query_engine/query_as.rs": "77bc19bb31f303398e21e3f8687977fccf122e02e9793a1dd02e5b60e57882c9",
@@ -73164,6 +73596,94 @@
         "path_in_vcs": "crates/env_filter"
       },
       "version": "2.0.0"
+    },
+    {
+      "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 2026-10-20：裁剪不支持平台与缺失后端的依赖/feature边；移除不可达条件实现并修复稳定工具链编译诊断；当前逐文件摘要记录本地实现差异。 清理独立演示：移除 1 个独立示例程序及专属输入（4930 字节）；保留文档编译、真实测试及性能基准输入。",
+      "description": "Notify async tasks or threads",
+      "directory": "src/foundation/async-notification",
+      "files_sha256": {
+        "Cargo.toml": "959c1d6629eea201fcb339a02cbfb3e34e48ecc250ed68f14be200598676efef",
+        "benches/bench.rs": "a534ba022682b1979d00c6a9b815bd6433a6c950027f17f4d68733f893f7ecff",
+        "src/barrier.rs": "893715a6a391e23c5c7bf1e8bab0fdfff0d841b894fd903aae89d5dd66e59137",
+        "src/event/intrusive.rs": "103dcc29ad1b40c8d0e063852a018216b5a80e01b6bd23548d1fa8db52d973bb",
+        "src/event/mod.rs": "9eb0615fb7d945d5d2f5ed28a3391b113c68687742aa5b5ca8c74e44de3147bd",
+        "src/event/notify.rs": "4a3185c359baf7762e2e26e6abbdfa4095f220e97a58f000f408d1038889db6a",
+        "src/lib.rs": "a09c7ed029cf89988a9d97e31c3fe577ed39d914d629cc804f505f35ca47032a",
+        "src/mutex.rs": "e54e0fa06462e2557bcd320c2c71a52cc6e080ddfe8f5ed114c35587d1f06607",
+        "src/once_cell.rs": "e0bedf02d270729b7fda4930694684178954ee960993c728eb560b25b0ae5403",
+        "src/rwlock.rs": "21b63c139e4f9e1e29f0e593113fdb995438b87f2ee5b8f03c3626ae6e3c4468",
+        "src/rwlock/futures.rs": "82577bfe5746181625685e8bf00b865568ba510ca8dd6cfb9872a1d1aec0240b",
+        "src/rwlock/raw.rs": "8d414502a938721cc4862f799ce72beca7556885aaf2ffd3bf3ed8f7d4e53fa0",
+        "src/semaphore.rs": "7f8b7e2347a6051ac4c93258635796c4076b196fc129e6212c2e7e24dc287d3c",
+        "src/strategy.rs": "f9c76c4d157c78f9f278a697bc48b8057bcd48b95eae65aacab47b71fea09f9a"
+      },
+      "license": "Apache-2.0 OR MIT",
+      "license_materials": [
+        "compliance/licenses/upstream/event-listener-5.4.2/LICENSE-APACHE",
+        "compliance/licenses/upstream/event-listener-5.4.2/LICENSE-MIT"
+      ],
+      "merged_into": "src/foundation/async-notification",
+      "name": "event-listener",
+      "origin_directory": "vendor/rust/event-listener-5.4.2",
+      "repository": "https://github.com/smol-rs/event-listener",
+      "status": "内部维护源码",
+      "upstream": {
+        "archive_sha256": "5a23add41df1562121a9393cb065eab5146a1242410f23a644851e90cfd669d2",
+        "archive_url": "https://static.crates.io/crates/event-listener/event-listener-5.4.2.crate",
+        "name": "event-listener",
+        "version": "5.4.2"
+      },
+      "vcs": {
+        "git": {
+          "sha1": "77004ac77dcef7884bf71a99c276a50f83a7fa4e"
+        },
+        "path_in_vcs": ""
+      },
+      "version": "5.4.2"
+    },
+    {
+      "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 2026-10-20：裁剪不支持平台与缺失后端的依赖/feature边；当前逐文件摘要记录本地实现差异。",
+      "description": "Block or poll on event_listener easily",
+      "directory": "src/foundation/async-notification",
+      "files_sha256": {
+        "Cargo.toml": "959c1d6629eea201fcb339a02cbfb3e34e48ecc250ed68f14be200598676efef",
+        "benches/bench.rs": "a534ba022682b1979d00c6a9b815bd6433a6c950027f17f4d68733f893f7ecff",
+        "src/barrier.rs": "893715a6a391e23c5c7bf1e8bab0fdfff0d841b894fd903aae89d5dd66e59137",
+        "src/event/intrusive.rs": "103dcc29ad1b40c8d0e063852a018216b5a80e01b6bd23548d1fa8db52d973bb",
+        "src/event/mod.rs": "9eb0615fb7d945d5d2f5ed28a3391b113c68687742aa5b5ca8c74e44de3147bd",
+        "src/event/notify.rs": "4a3185c359baf7762e2e26e6abbdfa4095f220e97a58f000f408d1038889db6a",
+        "src/lib.rs": "a09c7ed029cf89988a9d97e31c3fe577ed39d914d629cc804f505f35ca47032a",
+        "src/mutex.rs": "e54e0fa06462e2557bcd320c2c71a52cc6e080ddfe8f5ed114c35587d1f06607",
+        "src/once_cell.rs": "e0bedf02d270729b7fda4930694684178954ee960993c728eb560b25b0ae5403",
+        "src/rwlock.rs": "21b63c139e4f9e1e29f0e593113fdb995438b87f2ee5b8f03c3626ae6e3c4468",
+        "src/rwlock/futures.rs": "82577bfe5746181625685e8bf00b865568ba510ca8dd6cfb9872a1d1aec0240b",
+        "src/rwlock/raw.rs": "8d414502a938721cc4862f799ce72beca7556885aaf2ffd3bf3ed8f7d4e53fa0",
+        "src/semaphore.rs": "7f8b7e2347a6051ac4c93258635796c4076b196fc129e6212c2e7e24dc287d3c",
+        "src/strategy.rs": "f9c76c4d157c78f9f278a697bc48b8057bcd48b95eae65aacab47b71fea09f9a"
+      },
+      "license": "Apache-2.0 OR MIT",
+      "license_materials": [
+        "compliance/licenses/upstream/event-listener-strategy-0.5.4/LICENSE-APACHE",
+        "compliance/licenses/upstream/event-listener-strategy-0.5.4/LICENSE-MIT"
+      ],
+      "merged_into": "src/foundation/async-notification",
+      "name": "event-listener-strategy",
+      "origin_directory": "vendor/rust/event-listener-strategy-0.5.4",
+      "repository": "https://github.com/smol-rs/event-listener-strategy",
+      "status": "内部维护源码",
+      "upstream": {
+        "archive_sha256": "8be9f3dfaaffdae2972880079a491a1a8bb7cbed0b8dd7a347f668b4150a3b93",
+        "archive_url": "https://static.crates.io/crates/event-listener-strategy/event-listener-strategy-0.5.4.crate",
+        "name": "event-listener-strategy",
+        "version": "0.5.4"
+      },
+      "vcs": {
+        "git": {
+          "sha1": "f533c437e8a6561e9b625c3ee036a8ea7d19375c"
+        },
+        "path_in_vcs": ""
+      },
+      "version": "0.5.4"
     }
   ],
   "origin_records_sha256": {
@@ -73787,20 +74307,25 @@
       },
       "version": "0.7.8"
     },
-    "src/foundation/async-lock": {
+    "src/foundation/async-notification": {
       "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 2026-10-20：裁剪不支持平台与缺失后端的依赖/feature边；移除不可达条件实现并修复稳定工具链编译诊断；当前逐文件摘要记录本地实现差异。",
       "description": "Async synchronization primitives",
-      "directory": "src/foundation/async-lock",
+      "directory": "src/foundation/async-notification",
       "files_sha256": {
-        "Cargo.toml": "13b242bf3a520528eee1e44f1a0795a32055ece891d45b0858c2999184a2feb5",
-        "src/barrier.rs": "4a7d44fa6c7df99355e64d9e959f29adc1dedd5df82184acd3b0bc51b49df9b5",
-        "src/lib.rs": "130969743ddbc8d36390e6956fbdb43e634307a908bfcaa56875df3be8927aff",
-        "src/mutex.rs": "669923b4d6334fb2966eebd2115a4c87da2bd2ac8e56938d99f2ee3ddb5e4c75",
-        "src/once_cell.rs": "bc86cd8cfaa2518a46115b335abc841d735e5d4e8da5d150541829bc822b5dbc",
+        "Cargo.toml": "959c1d6629eea201fcb339a02cbfb3e34e48ecc250ed68f14be200598676efef",
+        "benches/bench.rs": "a534ba022682b1979d00c6a9b815bd6433a6c950027f17f4d68733f893f7ecff",
+        "src/barrier.rs": "893715a6a391e23c5c7bf1e8bab0fdfff0d841b894fd903aae89d5dd66e59137",
+        "src/event/intrusive.rs": "103dcc29ad1b40c8d0e063852a018216b5a80e01b6bd23548d1fa8db52d973bb",
+        "src/event/mod.rs": "9eb0615fb7d945d5d2f5ed28a3391b113c68687742aa5b5ca8c74e44de3147bd",
+        "src/event/notify.rs": "4a3185c359baf7762e2e26e6abbdfa4095f220e97a58f000f408d1038889db6a",
+        "src/lib.rs": "a09c7ed029cf89988a9d97e31c3fe577ed39d914d629cc804f505f35ca47032a",
+        "src/mutex.rs": "e54e0fa06462e2557bcd320c2c71a52cc6e080ddfe8f5ed114c35587d1f06607",
+        "src/once_cell.rs": "e0bedf02d270729b7fda4930694684178954ee960993c728eb560b25b0ae5403",
         "src/rwlock.rs": "21b63c139e4f9e1e29f0e593113fdb995438b87f2ee5b8f03c3626ae6e3c4468",
-        "src/rwlock/futures.rs": "ad9e6aeb93f40c84466a560cd64a65d809cb11126955fd2775159a7c9f336424",
-        "src/rwlock/raw.rs": "21e93be95f69e4926a9c2c864d829ed975cbee62d67f037381ac457b5e2692b1",
-        "src/semaphore.rs": "ccd6d6e1d2e1bbb539b45facd8066e994443dc233cd6ed2eb864815280331eb7"
+        "src/rwlock/futures.rs": "82577bfe5746181625685e8bf00b865568ba510ca8dd6cfb9872a1d1aec0240b",
+        "src/rwlock/raw.rs": "8d414502a938721cc4862f799ce72beca7556885aaf2ffd3bf3ed8f7d4e53fa0",
+        "src/semaphore.rs": "7f8b7e2347a6051ac4c93258635796c4076b196fc129e6212c2e7e24dc287d3c",
+        "src/strategy.rs": "f9c76c4d157c78f9f278a697bc48b8057bcd48b95eae65aacab47b71fea09f9a"
       },
       "license": "Apache-2.0 OR MIT",
       "license_materials": [
@@ -73808,7 +74333,7 @@
         "compliance/licenses/upstream/async-lock-3.4.2/LICENSE-MIT"
       ],
       "merged_into": "无；通过统一内部源码源接入",
-      "name": "async-lock",
+      "name": "async-notification",
       "origin_directory": "vendor/rust/async-lock-3.4.2",
       "repository": "https://github.com/smol-rs/async-lock",
       "status": "内部维护源码",
@@ -76146,73 +76671,6 @@
         "path_in_vcs": "impl"
       },
       "version": "2.0.21"
-    },
-    "src/foundation/event-listener": {
-      "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 2026-10-20：裁剪不支持平台与缺失后端的依赖/feature边；移除不可达条件实现并修复稳定工具链编译诊断；当前逐文件摘要记录本地实现差异。 清理独立演示：移除 1 个独立示例程序及专属输入（4930 字节）；保留文档编译、真实测试及性能基准输入。",
-      "description": "Notify async tasks or threads",
-      "directory": "src/foundation/event-listener",
-      "files_sha256": {
-        "Cargo.toml": "950407569cae95670ade8033a7c17e646a3d30d24a97552c2e8eaf59a61a4a6d",
-        "benches/bench.rs": "a534ba022682b1979d00c6a9b815bd6433a6c950027f17f4d68733f893f7ecff",
-        "src/intrusive.rs": "efa8febff908da41164f0fc42b1a1e88402164d5f2a0f27d8df68bef8f5b2042",
-        "src/lib.rs": "8fac9415d610aa4fcbda98dce34b802283079b6fb7e3b85c26c19c33a3f37550",
-        "src/notify.rs": "9a56ebbe5970637f9a6681546763fd7f9844f541308b2dcec142b43cb5749157"
-      },
-      "license": "Apache-2.0 OR MIT",
-      "license_materials": [
-        "compliance/licenses/upstream/event-listener-5.4.2/LICENSE-APACHE",
-        "compliance/licenses/upstream/event-listener-5.4.2/LICENSE-MIT"
-      ],
-      "merged_into": "无；通过统一内部源码源接入",
-      "name": "event-listener",
-      "origin_directory": "vendor/rust/event-listener-5.4.2",
-      "repository": "https://github.com/smol-rs/event-listener",
-      "status": "内部维护源码",
-      "upstream": {
-        "archive_sha256": "5a23add41df1562121a9393cb065eab5146a1242410f23a644851e90cfd669d2",
-        "archive_url": "https://static.crates.io/crates/event-listener/event-listener-5.4.2.crate",
-        "name": "event-listener",
-        "version": "5.4.2"
-      },
-      "vcs": {
-        "git": {
-          "sha1": "77004ac77dcef7884bf71a99c276a50f83a7fa4e"
-        },
-        "path_in_vcs": ""
-      },
-      "version": "5.4.2"
-    },
-    "src/foundation/event-listener-strategy": {
-      "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 2026-10-20：裁剪不支持平台与缺失后端的依赖/feature边；当前逐文件摘要记录本地实现差异。",
-      "description": "Block or poll on event_listener easily",
-      "directory": "src/foundation/event-listener-strategy",
-      "files_sha256": {
-        "Cargo.toml": "b5bc72ebfeef754306bdb6f73161897af7d9f8a56594f8828ee3e5c386fb3139",
-        "src/lib.rs": "647edaf4863f2b2cac47a610a0afd4372321b6852a1b89c9eaecc12bf1916a9d"
-      },
-      "license": "Apache-2.0 OR MIT",
-      "license_materials": [
-        "compliance/licenses/upstream/event-listener-strategy-0.5.4/LICENSE-APACHE",
-        "compliance/licenses/upstream/event-listener-strategy-0.5.4/LICENSE-MIT"
-      ],
-      "merged_into": "无；通过统一内部源码源接入",
-      "name": "event-listener-strategy",
-      "origin_directory": "vendor/rust/event-listener-strategy-0.5.4",
-      "repository": "https://github.com/smol-rs/event-listener-strategy",
-      "status": "内部维护源码",
-      "upstream": {
-        "archive_sha256": "8be9f3dfaaffdae2972880079a491a1a8bb7cbed0b8dd7a347f668b4150a3b93",
-        "archive_url": "https://static.crates.io/crates/event-listener-strategy/event-listener-strategy-0.5.4.crate",
-        "name": "event-listener-strategy",
-        "version": "0.5.4"
-      },
-      "vcs": {
-        "git": {
-          "sha1": "f533c437e8a6561e9b625c3ee036a8ea7d19375c"
-        },
-        "path_in_vcs": ""
-      },
-      "version": "0.5.4"
     },
     "src/foundation/fallible-iterator": {
       "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 2026-10-20：移除不可达条件实现并修复稳定工具链编译诊断；当前逐文件摘要记录本地实现差异。",
@@ -80540,7 +80998,7 @@
       "description": "A fine-grained reactive graph for building user interfaces.",
       "directory": "src/foundation/reactive-state",
       "files_sha256": {
-        "Cargo.toml": "97fcef25a6146688dd4322db95696b55f0aceba2ab70149490efeb44dfa1d87a",
+        "Cargo.toml": "ae90208c04c121caffbc7b99f8d77ba1fbdb12e08e06fb208e200ac6dc55ecf4",
         "build.rs": "11ccc42a6266f3bb42677ff796dd8f456a72460f0a20a83cce22bb29dfec534e",
         "src/actions/action.rs": "db4ecb4ee33b75b83f60eda0926b8942fdf1964e11c10d18d39267f76ea39b4e",
         "src/actions/mod.rs": "d17fbc1f77c4a2ff4f28a73de5979525509be75f96e8e38738c3fd3979d0717d",
@@ -80549,9 +81007,9 @@
         "src/channel.rs": "70c7d2de63ad0a74faeb89510ad900c0596c05a30c7d0a6b091c18fef7d70dbd",
         "src/computed.rs": "162e4c76b373bae25995afbeec069a6324d6687db7a567f5294df991a1bc0336",
         "src/computed/arc_memo.rs": "ad37c5c24d8058c52a2a9f063f00a588af9b4acb0747f8e3cacb57d1b9336976",
-        "src/computed/async_derived/arc_async_derived.rs": "5e1deee95922fc4f361b14865e812133df7a61c9745921faec7c2ada71a5f0af",
+        "src/computed/async_derived/arc_async_derived.rs": "23b1653dedc4cd6518435e0d795da3f4b62080fb2a847245f03f5cdcd5b2f21e",
         "src/computed/async_derived/async_derived.rs": "d948b091e66188adc004e52a90272fd3a5beb69f9e1738a2c2833e52efeadd70",
-        "src/computed/async_derived/future_impls.rs": "73bf9bcd4f4698c2d9810a9d3bf23958a127d43123643c2a4c33ad06f9e062ec",
+        "src/computed/async_derived/future_impls.rs": "79fbabee4050578ee54688f898ecc479db6d1d88c1e052cc91c2862eedb39c52",
         "src/computed/async_derived/inner.rs": "cb2d5dabad3866f37d63d70e62a00a995a4aaabcbd752a53a7601e0bfb197173",
         "src/computed/async_derived/mod.rs": "97e561a5f564291424312b5d04c3105873914a4cbea154ddb5756df38a893229",
         "src/computed/inner.rs": "43ec7d1f7c1ee1ffca70c6cd2d8a2faacf9bc283b953ce70352e9d1fe25cc028",
@@ -80586,7 +81044,7 @@
         "src/signal/arc_rw.rs": "76042cb47ea05cac7336a386128f9fbacf1efaf826138c715bc4d25f6ba23a1c",
         "src/signal/arc_trigger.rs": "7ce46c660f3324397ec9caa11ca7c094c977128083dd1946ddffbd2c232f3fce",
         "src/signal/arc_write.rs": "34e819d726d2bb845544d29ee922f8c03c25853dadfcd25472a5acc784cb2126",
-        "src/signal/guards.rs": "f30681912c779960fd5f2c719677587b7387ea712ad35e1897167bc4e4ba50aa",
+        "src/signal/guards.rs": "d98d9cebd97de00419d1df07c12942994c9bec0d491bf6abf34314337ef222fa",
         "src/signal/mapped.rs": "f685825cf2de5e019b2be365ac30a7265dcbb2616780ea7ad2e24232b9968f53",
         "src/signal/read.rs": "1876e8217af5a410e83fba877e1fcd80c85011c4be31803e664952f6fcaba32a",
         "src/signal/rw.rs": "796ee89c4500accf7db8c9ad9c67d6de45d862df3114037243be948f69bdcf74",
@@ -83091,7 +83549,7 @@
       "description": "🧰 The Rust SQL Toolkit. An async, pure Rust SQL crate featuring compile-time checked queries without a DSL. Supports PostgreSQL, MySQL, and SQLite.",
       "directory": "src/foundation/sqlite-access",
       "files_sha256": {
-        "Cargo.toml": "8047697db6dd987289078fa61bf1a15976591f5ebd41068ea80544892d04d231",
+        "Cargo.toml": "94753ec30198470607c5fd71c8dbbbdd7cbe3e81f2d5977f4c023784131bf74f",
         "benches/sqlite/describe.rs": "e3846b1cd17054663e135116aecde934c2d20f3b83592562a3e34596168f0e94",
         "contrib/ide/vscode/settings.json": "af1e5804fd68126c54f709b71aee3c7dd4dca964f509257c2dd331006dda66ad",
         "gen-changelog.sh": "be0292a711d7a7bb03b57b9b3534dbb34d084189ed85d32c528d0a39e2e156a7",
@@ -83116,9 +83574,9 @@
         "src/query_engine/mod.rs": "c5354a07248ce4f0a21170b0653507390329283ad63185df05085b0479f64e4c",
         "src/query_engine/pool/connection.rs": "02a5e46ccbf34257ff0463d6fa840611dd4e2c7d12ebb13c1cc5998210c4ba90",
         "src/query_engine/pool/executor.rs": "75a6851c6196df8faab2f138e5a1f189efb16cc5473fd700186971c4eea7ca83",
-        "src/query_engine/pool/inner.rs": "5bb18abf4a47e04ff45b09cd977919f469fe851e1df65486fce0619e57faff1e",
+        "src/query_engine/pool/inner.rs": "7850a4da6b191b912e7d5285795c69463f3e7692ef1ec7be11dfe9d5b9063694",
         "src/query_engine/pool/maybe.rs": "add426222f6f6ba9f8b2027c0b5ec4bf6fd32de5043488358da45fedd0244dc2",
-        "src/query_engine/pool/mod.rs": "14ecc44d608838e53531f3c504d88ee490923d8e47501e6ad75b521eae0bf884",
+        "src/query_engine/pool/mod.rs": "9266614739d0b7bccff24339d0731e042918b6d0fe0cce9791486b724518fee0",
         "src/query_engine/pool/options.rs": "61b51593070dbc3e87479a6d9d3c4788921128a3795b0720bcb5df28831c9246",
         "src/query_engine/query.rs": "49fe2ed8b0b8a036dd6a27d0062fe682a3573fd7d7f474db2c407c3ea82e2a43",
         "src/query_engine/query_as.rs": "77bc19bb31f303398e21e3f8687977fccf122e02e9793a1dd02e5b60e57882c9",
@@ -88331,6 +88789,22 @@
     "compliance/licenses/upstream/zxs-bindgen-0.2.129/LICENSE-MIT": "378f5840b258e2779c39418f3f2d7b2ba96f1c7917dd6be0713f88305dbda397",
     "compliance/licenses/upstream/zxs-web-core-0.8.19/UPSTREAM-NOTICE.md": "5a22efb04cfa9cef41afb32626f8e9637f8284ce71397a6f06aac22bdb64d52e",
     "compliance/licenses/upstream/zxs-web-macro-0.8.19/UPSTREAM-NOTICE.md": "cadda70f7c6ae3bf8aecab12b3e8f44507695f00b6e21afd9f5ca61fc239670f",
+    "compliance/provenance/async-notification/async-lock/Cargo.toml.txt": "13b242bf3a520528eee1e44f1a0795a32055ece891d45b0858c2999184a2feb5",
+    "compliance/provenance/async-notification/async-lock/src/barrier.rs.txt": "4a7d44fa6c7df99355e64d9e959f29adc1dedd5df82184acd3b0bc51b49df9b5",
+    "compliance/provenance/async-notification/async-lock/src/lib.rs.txt": "130969743ddbc8d36390e6956fbdb43e634307a908bfcaa56875df3be8927aff",
+    "compliance/provenance/async-notification/async-lock/src/mutex.rs.txt": "669923b4d6334fb2966eebd2115a4c87da2bd2ac8e56938d99f2ee3ddb5e4c75",
+    "compliance/provenance/async-notification/async-lock/src/once_cell.rs.txt": "bc86cd8cfaa2518a46115b335abc841d735e5d4e8da5d150541829bc822b5dbc",
+    "compliance/provenance/async-notification/async-lock/src/rwlock.rs.txt": "21b63c139e4f9e1e29f0e593113fdb995438b87f2ee5b8f03c3626ae6e3c4468",
+    "compliance/provenance/async-notification/async-lock/src/rwlock/futures.rs.txt": "ad9e6aeb93f40c84466a560cd64a65d809cb11126955fd2775159a7c9f336424",
+    "compliance/provenance/async-notification/async-lock/src/rwlock/raw.rs.txt": "21e93be95f69e4926a9c2c864d829ed975cbee62d67f037381ac457b5e2692b1",
+    "compliance/provenance/async-notification/async-lock/src/semaphore.rs.txt": "ccd6d6e1d2e1bbb539b45facd8066e994443dc233cd6ed2eb864815280331eb7",
+    "compliance/provenance/async-notification/event-listener-strategy/Cargo.toml.txt": "b5bc72ebfeef754306bdb6f73161897af7d9f8a56594f8828ee3e5c386fb3139",
+    "compliance/provenance/async-notification/event-listener-strategy/src/lib.rs.txt": "647edaf4863f2b2cac47a610a0afd4372321b6852a1b89c9eaecc12bf1916a9d",
+    "compliance/provenance/async-notification/event-listener/Cargo.toml.txt": "950407569cae95670ade8033a7c17e646a3d30d24a97552c2e8eaf59a61a4a6d",
+    "compliance/provenance/async-notification/event-listener/benches/bench.rs.txt": "a534ba022682b1979d00c6a9b815bd6433a6c950027f17f4d68733f893f7ecff",
+    "compliance/provenance/async-notification/event-listener/src/intrusive.rs.txt": "efa8febff908da41164f0fc42b1a1e88402164d5f2a0f27d8df68bef8f5b2042",
+    "compliance/provenance/async-notification/event-listener/src/lib.rs.txt": "8fac9415d610aa4fcbda98dce34b802283079b6fb7e3b85c26c19c33a3f37550",
+    "compliance/provenance/async-notification/event-listener/src/notify.rs.txt": "9a56ebbe5970637f9a6681546763fd7f9844f541308b2dcec142b43cb5749157",
     "compliance/provenance/component-renaming.json": "5b3e162ec7ff199c86f5bc2be3b2fa91af55b8eb86800662675f223bf75e6451",
     "compliance/provenance/directory-migration.json": "55a8f2faf7396985eb0b9a0ecfdcfccd28fb6876703ef03da8b5489489a66b2f",
     "compliance/provenance/document-migration.json": "7b21c53a42db54f66f2abb6f97b4537a3abb6a8aaaa6fe175f5dd8b92cf33f69",
@@ -98015,6 +98489,16 @@
             "runtime"
           ]
         },
+        "src/foundation/async-notification": {
+          "features": [
+            "default",
+            "locks",
+            "std"
+          ],
+          "roles": [
+            "runtime"
+          ]
+        },
         "src/foundation/atoi": {
           "features": [
             "default",
@@ -98246,16 +98730,6 @@
           "features": [],
           "roles": [
             "compile"
-          ]
-        },
-        "src/foundation/event-listener": {
-          "features": [
-            "default",
-            "parking",
-            "std"
-          ],
-          "roles": [
-            "runtime"
           ]
         },
         "src/foundation/fastrand": {
@@ -99371,9 +99845,10 @@
             "runtime"
           ]
         },
-        "src/foundation/async-lock": {
+        "src/foundation/async-notification": {
           "features": [
             "default",
+            "locks",
             "std"
           ],
           "roles": [
@@ -99518,24 +99993,6 @@
           "features": [],
           "roles": [
             "compile"
-          ]
-        },
-        "src/foundation/event-listener": {
-          "features": [
-            "default",
-            "parking",
-            "std"
-          ],
-          "roles": [
-            "runtime"
-          ]
-        },
-        "src/foundation/event-listener-strategy": {
-          "features": [
-            "std"
-          ],
-          "roles": [
-            "runtime"
           ]
         },
         "src/foundation/find-msvc-tools": {
@@ -101133,6 +101590,16 @@
             "compile"
           ]
         },
+        "src/foundation/async-notification": {
+          "features": [
+            "default",
+            "locks",
+            "std"
+          ],
+          "roles": [
+            "compile"
+          ]
+        },
         "src/foundation/atoi": {
           "features": [
             "default",
@@ -101361,16 +101828,6 @@
         },
         "src/foundation/error-definition-macros": {
           "features": [],
-          "roles": [
-            "compile"
-          ]
-        },
-        "src/foundation/event-listener": {
-          "features": [
-            "default",
-            "parking",
-            "std"
-          ],
           "roles": [
             "compile"
           ]

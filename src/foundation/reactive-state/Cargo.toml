@@ -34,10 +34,10 @@ path = "src/lib.rs"
 path = "../task-dispatch"
 version = "0.3.0"
 
-[dependencies.async-lock]
-version = "3.4"
+[dependencies.async-notification]
+path = "../async-notification"
 default-features = true
-path = "../async-lock"
+features = ["locks"]
 
 [dependencies.futures]
 version = "0.3.34"

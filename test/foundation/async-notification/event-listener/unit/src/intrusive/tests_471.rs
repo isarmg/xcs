@@ -1,7 +1,7 @@
 #[cfg(test)]
 mod tests {
     use super::*;
-    use futures_lite::pin;
+    use core::pin::pin;
 
     #[cfg(target_family = "wasm")]
     use wasm_bindgen_test::wasm_bindgen_test as test;
@@ -10,14 +10,14 @@ mod tests {
         ($($id:ident),*) => {
             $(
                 let $id = Option::<Listener<()>>::None;
-                pin!($id);
+                let mut $id = pin!($id);
             )*
         };
     }
 
     #[test]
     fn insert() {
-        let inner = crate::Inner::new();
+        let inner = crate::event::Inner::new();
         make_listeners!(listen1, listen2, listen3);
 
         // Register the listeners.
@@ -38,7 +38,7 @@ mod tests {
 
     #[test]
     fn drop_non_notified() {
-        let inner = crate::Inner::new();
+        let inner = crate::event::Inner::new();
         make_listeners!(listen1, listen2, listen3);
 
         // Register the listeners.

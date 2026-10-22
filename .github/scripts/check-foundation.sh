@@ -54,6 +54,7 @@ case "${1:-}" in
     python3 .github/scripts/check-terminal-style.py
     ;;
   foundation-async)
+    python3 .github/scripts/check-async-notification.py
     python3 .github/scripts/check-tracing-family.py
     python3 .github/scripts/check-runtime-join-map.py
     python3 .github/scripts/check-futures-consolidation.py

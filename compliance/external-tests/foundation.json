@@ -357,47 +357,88 @@
       ]
     },
     {
-      "directory": "src/foundation/async-lock",
+      "directory": "src/foundation/async-notification",
       "files": [
         {
-          "path": "test/foundation/async-lock/tests/barrier.rs",
+          "origin_directory": "vendor/rust/async-lock-3.4.2",
+          "path": "test/foundation/async-notification/async-lock/tests/barrier.rs",
           "sha256": "46d479150e207179eeecc2e8b49e0219936d522e79ea8faaec85c6a03982eb8f",
           "source": "src/foundation/async-lock/tests/barrier.rs",
           "source_sha256_before": "46d479150e207179eeecc2e8b49e0219936d522e79ea8faaec85c6a03982eb8f"
         },
         {
-          "path": "test/foundation/async-lock/tests/common/mod.rs",
+          "origin_directory": "vendor/rust/async-lock-3.4.2",
+          "path": "test/foundation/async-notification/async-lock/tests/common/mod.rs",
           "sha256": "27c48c3d67d0d647bdcf9ae45e2cd6006fb97b0bbd0114032bf75ac4f4d01d71",
           "source": "src/foundation/async-lock/tests/common/mod.rs",
           "source_sha256_before": "27c48c3d67d0d647bdcf9ae45e2cd6006fb97b0bbd0114032bf75ac4f4d01d71"
         },
         {
-          "path": "test/foundation/async-lock/tests/loom.rs",
+          "origin_directory": "vendor/rust/async-lock-3.4.2",
+          "path": "test/foundation/async-notification/async-lock/tests/loom.rs",
           "sha256": "ec53be1b04bc93bafc1aaf65d3d318193dc2ebcc09cc008113ee39fe08151142",
           "source": "src/foundation/async-lock/tests/loom.rs",
           "source_sha256_before": "ec53be1b04bc93bafc1aaf65d3d318193dc2ebcc09cc008113ee39fe08151142"
         },
         {
-          "path": "test/foundation/async-lock/tests/mutex.rs",
+          "origin_directory": "vendor/rust/async-lock-3.4.2",
+          "path": "test/foundation/async-notification/async-lock/tests/mutex.rs",
           "sha256": "1d6d3ed23065603f8c6143963aa4c4f933a5926ca24cfc4b168b8e7294afe4ee",
           "source": "src/foundation/async-lock/tests/mutex.rs",
           "source_sha256_before": "1d6d3ed23065603f8c6143963aa4c4f933a5926ca24cfc4b168b8e7294afe4ee"
         },
         {
-          "path": "test/foundation/async-lock/tests/rwlock.rs",
+          "origin_directory": "vendor/rust/async-lock-3.4.2",
+          "path": "test/foundation/async-notification/async-lock/tests/rwlock.rs",
           "sha256": "d76339a43defe14adc1584f98ad2650fe39a8e46fc770a87de86f98d66b332ce",
           "source": "src/foundation/async-lock/tests/rwlock.rs",
           "source_sha256_before": "d76339a43defe14adc1584f98ad2650fe39a8e46fc770a87de86f98d66b332ce"
         },
         {
-          "path": "test/foundation/async-lock/tests/semaphore.rs",
+          "origin_directory": "vendor/rust/async-lock-3.4.2",
+          "path": "test/foundation/async-notification/async-lock/tests/semaphore.rs",
           "sha256": "e6f6bd4b083858f2870af1e96c5e8631d8f977dea34a8e86fa37a2e0623b118c",
           "source": "src/foundation/async-lock/tests/semaphore.rs",
           "source_sha256_before": "e6f6bd4b083858f2870af1e96c5e8631d8f977dea34a8e86fa37a2e0623b118c"
+        },
+        {
+          "origin_directory": "vendor/rust/event-listener-5.4.2",
+          "path": "test/foundation/async-notification/event-listener/tests/loom.rs",
+          "sha256": "774b4a8935bd5aebc7b294e5260da5ca543871af3b32e297ea4e73520e2b515a",
+          "source": "src/foundation/event-listener/tests/loom.rs",
+          "source_sha256_before": "774b4a8935bd5aebc7b294e5260da5ca543871af3b32e297ea4e73520e2b515a"
+        },
+        {
+          "origin_directory": "vendor/rust/event-listener-5.4.2",
+          "path": "test/foundation/async-notification/event-listener/tests/notify.rs",
+          "sha256": "5782d6732d7abd7035f93ea9c9f877fc884269052df1845621cdbead37511b7d",
+          "source": "src/foundation/event-listener/tests/notify.rs",
+          "source_sha256_before": "5782d6732d7abd7035f93ea9c9f877fc884269052df1845621cdbead37511b7d"
+        },
+        {
+          "origin_directory": "vendor/rust/event-listener-5.4.2",
+          "path": "test/foundation/async-notification/event-listener/unit/src/intrusive/tests_471.rs",
+          "sha256": "cd5897fc6d90057a96710a2da2f74bfe6f9b04cbc7eca83ef1b894d0bfbaeb95",
+          "source": "src/foundation/event-listener/src/intrusive.rs",
+          "source_sha256_before": "c027259f5435147256d497e41c5e35400ce697be598768cdf3be4cbd5cdaac16"
+        },
+        {
+          "origin_directory": "vendor/rust/event-listener-strategy-0.5.4",
+          "path": "test/foundation/async-notification/event-listener-strategy/functions/src/lib/send_and_sync_537.rs",
+          "sha256": "5b02c4c8fe2b4ccbf3e395a0927664f58c07b765aa2077652e2fd9ed06eb8607",
+          "source": "src/foundation/event-listener-strategy/src/lib.rs",
+          "source_sha256_before": "da209dd2d22c18580a9345dbb3b02a68b48bbf4019c54024b61e97640a461399"
+        },
+        {
+          "origin_directory": "vendor/rust/event-listener-strategy-0.5.4",
+          "path": "test/foundation/async-notification/event-listener-strategy/tests/easy_wrapper.rs",
+          "sha256": "b6b15a1cd6090ed5c59135c830aeca8a11046dbbbf428f2f7ef5cbe2fe28147d",
+          "source": "src/foundation/event-listener-strategy/tests/easy_wrapper.rs",
+          "source_sha256_before": "b6b15a1cd6090ed5c59135c830aeca8a11046dbbbf428f2f7ef5cbe2fe28147d"
         }
       ],
       "roots": [
-        "test/foundation/async-lock"
+        "test/foundation/async-notification"
       ]
     },
     {
@@ -4303,45 +4344,45 @@
     },
     {
       "directory": "src/foundation/logging",
-      "roots": [
-        "test/foundation/logging"
-      ],
       "files": [
         {
+          "origin_directory": "vendor/rust/env_logger-0.11.11",
           "path": "test/foundation/logging/logger/unit/src/fmt/mod/tests_557.rs",
           "sha256": "5f90d3a9eca39d79b16e830a7a7cb3ff1b2553b2dfd4773e08bca70d0a03a3c2",
           "source": "src/foundation/env_logger/src/fmt/mod.rs",
-          "source_sha256_before": "33f4faa8323ad49b91b5b129d36ff11909e206d8e67e7f333a2d94e0b6229382",
-          "origin_directory": "vendor/rust/env_logger-0.11.11"
+          "source_sha256_before": "33f4faa8323ad49b91b5b129d36ff11909e206d8e67e7f333a2d94e0b6229382"
         },
         {
+          "origin_directory": "vendor/rust/env_logger-0.11.11",
           "path": "test/foundation/logging/logger/unit/src/logger/tests_970.rs",
           "sha256": "87b30834ce5c67e7ce52a43e1fd19736f40fcbb871bc46b0abf8a7015dcd6472",
           "source": "src/foundation/env_logger/src/logger.rs",
-          "source_sha256_before": "41ea3c1ccabd992f8dfa8fee4626be338f704c40189e725d47c6367bb5350698",
-          "origin_directory": "vendor/rust/env_logger-0.11.11"
+          "source_sha256_before": "41ea3c1ccabd992f8dfa8fee4626be338f704c40189e725d47c6367bb5350698"
         },
         {
+          "origin_directory": "vendor/rust/env_logger-0.11.11",
           "path": "test/foundation/logging/logger/unit/src/writer/mod/tests_165.rs",
           "sha256": "bbdc48d6a04e07051da85ede81c20a8f034949451b418a9c71df4275cadd921d",
           "source": "src/foundation/env_logger/src/writer/mod.rs",
-          "source_sha256_before": "e1b92ece9c76e7c3d45338330e3d55b248f104ef781b621283ec8fcb4f9898be",
-          "origin_directory": "vendor/rust/env_logger-0.11.11"
+          "source_sha256_before": "e1b92ece9c76e7c3d45338330e3d55b248f104ef781b621283ec8fcb4f9898be"
         },
         {
+          "origin_directory": "vendor/rust/env_filter-2.0.0",
           "path": "test/foundation/logging/filter/unit/src/filter/tests_262.rs",
           "sha256": "260729d835d32ec8d760c30138946aec9e77432e8d8bef1f66da9b3481077c51",
           "source": "src/foundation/env_filter/src/filter.rs",
-          "source_sha256_before": "8d6309b9ebac3ab997dabc78b464066cfae8d07bd7a66bc8990bd5592c3bbd8e",
-          "origin_directory": "vendor/rust/env_filter-2.0.0"
+          "source_sha256_before": "8d6309b9ebac3ab997dabc78b464066cfae8d07bd7a66bc8990bd5592c3bbd8e"
         },
         {
+          "origin_directory": "vendor/rust/env_filter-2.0.0",
           "path": "test/foundation/logging/filter/unit/src/parser/tests_118.rs",
           "sha256": "27b932456333424f044989e5b91d90e17f65b7ee7059b80d1513fb30def72e8a",
           "source": "src/foundation/env_filter/src/parser.rs",
-          "source_sha256_before": "c17b96969c5c298ce82338c179f6130ae98a9bd4ed20566e6710aed5f235586b",
-          "origin_directory": "vendor/rust/env_filter-2.0.0"
+          "source_sha256_before": "c17b96969c5c298ce82338c179f6130ae98a9bd4ed20566e6710aed5f235586b"
         }
+      ],
+      "roots": [
+        "test/foundation/logging"
       ]
     },
     {
@@ -4924,52 +4965,6 @@
       ],
       "roots": [
         "test/foundation/error-definition"
-      ]
-    },
-    {
-      "directory": "src/foundation/event-listener",
-      "files": [
-        {
-          "path": "test/foundation/event-listener/tests/loom.rs",
-          "sha256": "774b4a8935bd5aebc7b294e5260da5ca543871af3b32e297ea4e73520e2b515a",
-          "source": "src/foundation/event-listener/tests/loom.rs",
-          "source_sha256_before": "774b4a8935bd5aebc7b294e5260da5ca543871af3b32e297ea4e73520e2b515a"
-        },
-        {
-          "path": "test/foundation/event-listener/tests/notify.rs",
-          "sha256": "5782d6732d7abd7035f93ea9c9f877fc884269052df1845621cdbead37511b7d",
-          "source": "src/foundation/event-listener/tests/notify.rs",
-          "source_sha256_before": "5782d6732d7abd7035f93ea9c9f877fc884269052df1845621cdbead37511b7d"
-        },
-        {
-          "path": "test/foundation/event-listener/unit/src/intrusive/tests_471.rs",
-          "sha256": "7f2581c30df1e549106fb79fa8c6c411add1aea31a8fa56fefed68b73ff5c3f8",
-          "source": "src/foundation/event-listener/src/intrusive.rs",
-          "source_sha256_before": "c027259f5435147256d497e41c5e35400ce697be598768cdf3be4cbd5cdaac16"
-        }
-      ],
-      "roots": [
-        "test/foundation/event-listener"
-      ]
-    },
-    {
-      "directory": "src/foundation/event-listener-strategy",
-      "files": [
-        {
-          "path": "test/foundation/event-listener-strategy/functions/src/lib/send_and_sync_537.rs",
-          "sha256": "5b02c4c8fe2b4ccbf3e395a0927664f58c07b765aa2077652e2fd9ed06eb8607",
-          "source": "src/foundation/event-listener-strategy/src/lib.rs",
-          "source_sha256_before": "da209dd2d22c18580a9345dbb3b02a68b48bbf4019c54024b61e97640a461399"
-        },
-        {
-          "path": "test/foundation/event-listener-strategy/tests/easy_wrapper.rs",
-          "sha256": "b6b15a1cd6090ed5c59135c830aeca8a11046dbbbf428f2f7ef5cbe2fe28147d",
-          "source": "src/foundation/event-listener-strategy/tests/easy_wrapper.rs",
-          "source_sha256_before": "b6b15a1cd6090ed5c59135c830aeca8a11046dbbbf428f2f7ef5cbe2fe28147d"
-        }
-      ],
-      "roots": [
-        "test/foundation/event-listener-strategy"
       ]
     },
     {

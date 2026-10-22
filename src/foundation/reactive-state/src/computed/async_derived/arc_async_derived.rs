@@ -24,7 +24,7 @@ use crate::{
     },
     transition::AsyncTransition,
 };
-use async_lock::RwLock as AsyncRwLock;
+use async_notification::RwLock as AsyncRwLock;
 use core::fmt::Debug;
 use futures::{channel::oneshot, FutureExt, StreamExt};
 use or_poisoned::OrPoisoned;
@@ -119,21 +119,21 @@ pub struct ArcAsyncDerived<T> {
 #[allow(dead_code)]
 pub(crate) trait BlockingLock<T> {
     fn blocking_read_arc(self: &Arc<Self>)
-        -> async_lock::RwLockReadGuardArc<T>;
+        -> async_notification::RwLockReadGuardArc<T>;
 
     fn blocking_write_arc(
         self: &Arc<Self>,
-    ) -> async_lock::RwLockWriteGuardArc<T>;
+    ) -> async_notification::RwLockWriteGuardArc<T>;
 
-    fn blocking_read(&self) -> async_lock::RwLockReadGuard<'_, T>;
+    fn blocking_read(&self) -> async_notification::RwLockReadGuard<'_, T>;
 
-    fn blocking_write(&self) -> async_lock::RwLockWriteGuard<'_, T>;
+    fn blocking_write(&self) -> async_notification::RwLockWriteGuard<'_, T>;
 }
 
 impl<T> BlockingLock<T> for AsyncRwLock<T> {
     fn blocking_read_arc(
         self: &Arc<Self>,
-    ) -> async_lock::RwLockReadGuardArc<T> {
+    ) -> async_notification::RwLockReadGuardArc<T> {
         #[cfg(not(target_family = "wasm"))]
         {
             self.read_arc_blocking()
@@ -146,7 +146,7 @@ impl<T> BlockingLock<T> for AsyncRwLock<T> {
 
     fn blocking_write_arc(
         self: &Arc<Self>,
-    ) -> async_lock::RwLockWriteGuardArc<T> {
+    ) -> async_notification::RwLockWriteGuardArc<T> {
         #[cfg(not(target_family = "wasm"))]
         {
             self.write_arc_blocking()
@@ -157,7 +157,7 @@ impl<T> BlockingLock<T> for AsyncRwLock<T> {
         }
     }
 
-    fn blocking_read(&self) -> async_lock::RwLockReadGuard<'_, T> {
+    fn blocking_read(&self) -> async_notification::RwLockReadGuard<'_, T> {
         #[cfg(not(target_family = "wasm"))]
         {
             self.read_blocking()
@@ -168,7 +168,7 @@ impl<T> BlockingLock<T> for AsyncRwLock<T> {
         }
     }
 
-    fn blocking_write(&self) -> async_lock::RwLockWriteGuard<'_, T> {
+    fn blocking_write(&self) -> async_notification::RwLockWriteGuard<'_, T> {
         #[cfg(not(target_family = "wasm"))]
         {
             self.write_blocking()
