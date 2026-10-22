@@ -2,8 +2,9 @@
 
 This helper never writes files. External ownership is deliberately not authorized
 by a broad source-prefix exception: the caller supplies validate_external, whose
-contract is (root, record, check_current=True). It must validate exact historical
-fragments and transfers, and current bytes only when check_current is true.
+contract is (root, record, check_current=True). Nested receipts additionally
+receive exact input_grants from their authenticated predecessor graph. It must
+validate historical attribution/transfers, and live bytes only for check_current.
 """
 import base64
 import binascii
@@ -17,6 +18,7 @@ import tomllib
 
 import external_tests
 import source_history_chain
+import source_consolidation_chain as chain
 
 SCHEMA = 8
 HEX = re.compile(r'[0-9a-f]{64}')
@@ -241,7 +243,7 @@ def _has_build_script_archive(record):
 
 
 def _record(root, record):
-    if not isinstance(record, dict) or not FIELDS <= set(record) or set(record) - FIELDS - {'input_history'}:
+    if not isinstance(record, dict) or not FIELDS <= set(record) or set(record) - FIELDS - {'input_history', 'input_consolidations'}:
         raise ValueError('invalid explicit consolidation record fields')
     _encoded(record)
     primary, destination = record['primary_directory'], record['destination_directory']
@@ -325,7 +327,7 @@ def _record(root, record):
     return packages
 
 
-def _external(root, record, validator, check_current):
+def _external(root, record, validator, check_current, input_grants=None):
     has_external = (record['destination_external_tests'] is not None
                     or bool(record['external_file_routes'])
                     or any(row['external_tests'] is not None for row in record['inputs']))
@@ -333,7 +335,10 @@ def _external(root, record, validator, check_current):
         if has_external:
             raise ValueError('consolidation external transfer requires an explicit validator')
     else:
-        validator(root, record, check_current=check_current)
+        if chain.links(record):
+            validator(root, record, check_current=check_current, input_grants=input_grants)
+        else:
+            validator(root, record, check_current=check_current)
 
 
 def _absence(root, record):
@@ -405,41 +410,50 @@ def validate_history(root, catalog, check_manifests=True, validate_external=None
     if not records:
         return records
     owners = _origin_rows(catalog)
-    seen_inputs, seen_origins, destinations = set(), set(), set()
+    packages = {}
     for key, record in records.items():
         if not isinstance(key, str) or not HEX.fullmatch(key) or key != receipt_id(record):
             raise ValueError('immutable content-addressed consolidation receipt drift')
-        inputs = _record(root, record)
-        primary, destination = record['primary_directory'], record['destination_directory']
-        origins = {row['origin_directory'] for row in inputs.values()}
-        if (seen_inputs & set(inputs) or seen_origins & origins
-                or destination in destinations or destination in seen_inputs
-                or (set(inputs) - {destination}) & destinations):
-            raise ValueError('duplicate or chained consolidation history')
-        seen_inputs.update(inputs); seen_origins.update(origins); destinations.add(destination)
+        packages[key] = _record(root, record)
+    outputs, consumed, grants = chain.analyze(root, records)
+    for key, record in records.items():
         _absence(root, record)
+        _external(root, record, validate_external, check_current=False, input_grants=grants[key])
+        if key in consumed:
+            continue
+        inputs = packages[key]
+        if chain.links(record) and (chain._labels(record['destination_external_tests']) -
+                chain._labels(catalog.get('external_tests', {}).get(record['destination_directory']))):
+            raise ValueError('nested consolidation current external origin accounting shrank')
+        primary, destination = record['primary_directory'], record['destination_directory']
         current = catalog['packages'].get(destination)
         if (not isinstance(current, dict) or current.get('directory') != destination
                 or current.get('name') != record['destination_name']
                 or not _stable(inputs[primary], current)):
             raise ValueError('consolidation lacks the same-origin active primary successor')
         _inventory(root, current.get('files_sha256'))
-        for directory, before in inputs.items():
-            owner = owners.get(before['origin_directory'])
+        for origin, before in outputs[key].items():
+            owner = owners.get(origin)
             if (not isinstance(owner, dict) or owner.get('directory') != destination
                     or not _stable(before, owner)
                     or owner.get('files_sha256') != current['files_sha256']):
                 raise ValueError('consolidation current origin coverage or shared inventory drift')
-            if directory != primary:
+            if origin != current['origin_directory']:
                 matches = [row for row in catalog.get('merges', [])
-                           if row.get('origin_directory') == before['origin_directory']]
-                if len(matches) != 1 or owner is not matches[0] or owner.get('name') != before['name']:
+                           if row.get('origin_directory') == origin]
+                if (len(matches) != 1 or owner is not matches[0] or owner.get('name') != before['name']
+                        or owner.get('merged_into') != destination):
                     raise ValueError('consolidation secondary origin must remain exactly one merged successor')
-            if directory != destination and (directory in catalog['packages'] or directory in catalog.get('retired', {})):
-                raise ValueError('consolidation input identity remains separately registered')
-        _external(root, record, validate_external, check_current=False)
         if check_manifests:
             _manifest(root, record, inputs[primary])
+    terminal_directories = {records[key]['destination_directory'] for key in set(records) - consumed.keys()}
+    for record in records.values():
+        for item in record['inputs']:
+            directory = item['package']['directory']
+            if directory in catalog.get('retired', {}):
+                raise ValueError('consolidation input identity remains separately registered')
+            if directory in catalog['packages'] and directory not in terminal_directories:
+                raise ValueError('consolidation input identity remains separately registered')
     source_history_chain.validate_all(root, records.values(), catalog)
     return records
 
@@ -447,8 +461,7 @@ def validate_history(root, catalog, check_manifests=True, validate_external=None
 def validate_origins(records, origins):
     """Use the independently authenticated manage.origins(root) mapping."""
     for record in records.values():
-        for item in record['inputs']:
-            package = item['package']
+        for package in chain.snapshots(record):
             origin = origins.get(package['origin_directory'])
             if origin is None or origin.get('upstream') != package['upstream']:
                 raise ValueError('consolidation historical upstream origin mismatch')
@@ -460,18 +473,36 @@ def validate_origins(records, origins):
 
 
 def _unhandled_history(root, previous, inputs, destination, records, record=None, authorize_pinned=None):
-    directories, origins = set(inputs), {p['origin_directory'] for p in inputs.values()}
-    if any(p.get('directory') in directories | {destination} or p.get('origin_directory') in origins
-           for p in previous.get('merges', [])):
-        raise ValueError('consolidating already merged inputs requires a chain-aware adapter')
+    directories = set(inputs)
+    bound = chain.links(record or {})
+    origins = {p['origin_directory'] for p in inputs.values()}
+    origins.update(p['origin_directory'] for link in bound.values() for p in link['merged_packages'])
+    ancestors = set()
+    pending = [link['receipt_id'] for link in bound.values()]
+    while pending:
+        key = pending.pop()
+        if key in ancestors:
+            continue
+        ancestors.add(key)
+        pending.extend(link['receipt_id'] for link in chain.links(records[key]).values())
+    for key, prior_record in records.items():
+        used = {item['package']['directory'] for item in prior_record['inputs']} | {prior_record['destination_directory']}
+        if key not in ancestors and used & (directories | {destination}):
+            raise ValueError('consolidating prior consolidation inputs requires a chain-aware adapter')
     for row in previous.get('superseded', {}).values():
         if (row.get('package', {}).get('directory') in directories | {destination}
                 or row.get('successor_origin_directory') in origins):
             raise ValueError('consolidating upgraded inputs requires a chain-aware adapter')
-    for prior_record in records.values():
-        used = {item['package']['directory'] for item in prior_record['inputs']} | {prior_record['destination_directory']}
-        if used & (directories | {destination}):
-            raise ValueError('consolidating prior consolidation inputs requires a chain-aware adapter')
+    import benchmark_relocation
+    if previous.get(benchmark_relocation.KEY) and directories & set(benchmark_relocation.SCOPES):
+        raise ValueError('consolidating benchmark-pinned inputs requires a chain-aware adapter')
+    if bound:
+        import proof_routing
+        predecessors = {link['receipt_id'] for link in bound.values()}
+        for key in previous.get('proof_routing_receipts', []):
+            binding = proof_routing._read(root, key)['binding']
+            if binding['kind'] == 'consolidation' and receipt_id(binding['record']) in predecessors:
+                raise ValueError('nested pinned source requires a new historical-view adapter')
     for receipt in ('compliance/ring-test-relocation.json', 'compliance/platform-test-relocation.json'):
         path = _safe(root, receipt)
         if path.exists():
@@ -487,7 +518,8 @@ def _unhandled_history(root, previous, inputs, destination, records, record=None
 def prepare(root, previous, plan, file_inventory, validate_external=None, authorize_pinned=None):
     """Return active, merges, immutable history, and new records by destination.
 
-The input plan is schema=1, packages=[record,...], with exactly FIELDS per record.
+The plan is schema=1, packages=[record,...], with FIELDS and optional exact
+input_history/input_consolidations bindings per record.
 The file_inventory callback must reject symlinks and special files. The external
 validator is mandatory whenever any external data exists, even for old history.
 """
@@ -502,6 +534,7 @@ validator is mandatory whenever any external data exists, even for old history.
             or not isinstance(plan['packages'], list) or not 1 <= len(plan['packages']) <= MAX_RECORDS):
         raise ValueError('invalid explicit source consolidation plan')
     before_origins = _origin_rows(previous)
+    _, consumed, _ = chain.analyze(root, history)
     seen = set()
     for record in plan['packages']:
         inputs = _record(root, record)
@@ -519,6 +552,11 @@ validator is mandatory whenever any external data exists, even for old history.
         if ((destination in previous['packages'] and destination != primary)
                 or destination in previous.get('retired', {})):
             raise ValueError('consolidation destination identity is already registered')
+        expected_links = chain.expected(previous, inputs, history, consumed)
+        if chain.links(record) != expected_links:
+            raise ValueError('nested consolidation needs exact previous merged snapshots and chain-aware binding')
+        trial_history = dict(history, **{receipt_id(record): record})
+        _, trial_consumed, trial_grants = chain.analyze(root, trial_history)
         source_history_chain.validate(root, record, previous)
         _unhandled_history(root, previous, inputs, destination, history, record, authorize_pinned)
         _absence(root, record)
@@ -528,7 +566,12 @@ validator is mandatory whenever any external data exists, even for old history.
         if file_inventory(destination_path) != record['destination_files_sha256']:
             raise ValueError('consolidated source content differs from reviewed destination inventory')
         _manifest(root, record, inputs[primary])
-        _external(root, record, validate_external, check_current=True)
+        _external(root, record, validate_external, check_current=True,
+                  input_grants=trial_grants[receipt_id(record)])
+        for merged in merges:
+            if merged['directory'] in inputs:
+                merged.update(directory=destination, merged_into=destination,
+                              files_sha256=deepcopy(record['destination_files_sha256']))
         for directory, package in inputs.items():
             del active[directory]
             after = deepcopy(package)
@@ -543,9 +586,11 @@ validator is mandatory whenever any external data exists, even for old history.
         if key in history or len(history) >= MAX_RECORDS:
             raise ValueError('duplicate or excessive consolidation receipt history')
         history[key] = deepcopy(record)
+        consumed = trial_consumed
         changed[destination] = deepcopy(record)
     catalog = dict(previous, schema=max(previous.get('schema', 0), SCHEMA), packages=active,
-                   merges=merges, consolidations=history, consolidation_records_sha256=hashes(history))
+                   merges=merges, consolidations=history, consolidation_records_sha256=hashes(history),
+                   external_tests=remap_previous_external(previous.get('external_tests', {}), changed))
     if set(_origin_rows(catalog)) != set(before_origins):
         raise ValueError('consolidation origin coverage changed')
     validate_history(root, catalog, validate_external=validate_external)

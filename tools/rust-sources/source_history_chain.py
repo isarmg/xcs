@@ -15,10 +15,16 @@ def _touch(package, directory, origin):
     return package.get('directory') == directory or package.get('origin_directory') == origin
 
 
-def expected(catalog, inputs, destination):
-    """Select all intersecting receipts, never a caller-selected subset."""
+def expected(catalog, inputs, destination, excluded=()):
+    """Select every direct receipt; validated nested inputs retain ancestor links.
+
+    excluded is only for graph-authenticated nested owners, never arbitrary roots.
+    Their immutable ancestors are independently checked by validate_all.
+    """
     result = {}
     for directory, package in inputs.items():
+        if directory in excluded:
+            continue
         origin = package['origin_directory']
         renames, moves = {}, {}
         for old, row in catalog.get('renames', {}).items():
@@ -42,7 +48,8 @@ def validate(root, record, catalog=None):
     import source_consolidation as consolidation
     inputs = {item['package']['directory']: item for item in record['inputs']}
     links = record.get('input_history', {})
-    if not isinstance(links, dict) or not set(links) <= set(inputs):
+    if (not isinstance(links, dict) or not set(links) <= set(inputs)
+            or set(links) & set(record.get('input_consolidations', {}))):
         raise ValueError('invalid consolidation input history roots')
     count = 0
     for directory, link in links.items():
@@ -82,7 +89,8 @@ def _validate_catalog_links(root, records, catalog):
         raise ValueError('immutable source rename receipt drift')
     for record in records:
         inputs = {item['package']['directory']: item['package'] for item in record['inputs']}
-        wanted = expected(catalog, inputs, record['destination_directory'])
+        wanted = expected(catalog, inputs, record['destination_directory'],
+                          excluded=record.get('input_consolidations', {}))
         if record.get('input_history', {}) != wanted:
             raise ValueError('consolidation input history differs from exact immutable catalog receipts')
 
@@ -114,7 +122,8 @@ def consumed_successors(root, catalog, renames, check_manifests=True):
     found = {directory: [] for directory in renames}
     for record in records.values():
         matching = [item['package'] for item in record['inputs']
-                    if item['package']['directory'] in renames]
+                    if item['package']['directory'] in renames
+                    and item['package']['directory'] not in record.get('input_consolidations', {})]
         if not matching:
             continue
         links = validate(root, record, catalog)

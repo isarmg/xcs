@@ -210,3 +210,48 @@ and outref implementations remain available only in authenticated historical
 archives. Correctness, real schema consumers and native/WASM boundaries are
 validated separately; the measured small predicate cost is disclosed, not
 presented as a speed improvement.
+
+
+## Repeated consolidation provenance
+
+A physical owner that already contains several upstream origins may be an input
+to a later reviewed consolidation, as either the primary or a secondary input.
+The schema-1 plan keeps one exact current package/external-test snapshot per
+physical root. Every current production file still needs an explicit route; each
+external test still needs its own bijective, reversible transfer. Inherited origins
+are not additional physical copies and must not be classified as retired.
+
+For each already consolidated input, add `input_consolidations[directory]` with:
+
+- `receipt_id`: the content-addressed ID of that owner's immediately preceding,
+  unconsumed consolidation receipt.
+- `merged_packages`: every exact current catalog merge row for that directory,
+  in catalog order, including the full shared current inventory.
+
+The validator checks a bounded acyclic receipt graph, unique consumption of each
+predecessor, complete and non-duplicated origin coverage, stable upstream/legal
+identities, and exact current input snapshots. Earlier receipts, archives, IDs,
+licenses, and rename/move bindings remain unchanged. Current inventory changes
+after an earlier receipt are not confused with its historical output snapshot.
+Only terminal owners must exist now; all historical consumed roots remain absent.
+Every final inherited origin shares the terminal physical inventory.
+
+External-test ownership is inherited through exact `(origin, source, original
+source hash)` grants, not broad prefixes. Multiplicity and historical attribution
+are retained through later stages; new native tests still require normal source
+ownership. Altered source/hash/origin labels, omitted tests, stale before snapshots,
+branching/replayed predecessor links, and changed current manifest identities fail.
+Ordinary refresh may update current bytes but cannot rewrite the old receipts.
+
+Unsupported transitions remain errors: legacy multi-origin owners without a
+consolidation receipt, upgraded inputs, pinned proof-routing successors, the fixed
+date-time/schema-validation benchmark relocation, and nested build-script
+retirement proofs. Removing/restoring inherited external fragments also needs a
+separate authenticated transition; the nested receipt retains their labels and
+multiplicity. These cases require their own narrowly authenticated adapters, not
+an exemption from provenance checks.
+
+Targeted Python regressions are in `test_nested_consolidation.py`, including
+three-stage mixed-origin external transfers and primary/secondary manager
+refresh/verify/replay. These prove accounting and receipt integrity, not semantic
+equivalence or Rust build correctness.

@@ -74,10 +74,14 @@ def _inverse(data, edits, before_hash):
         raise ValueError('external transfer does not preserve previous test bytes')
 
 
-def validate(root, record, check_current=True):
+def validate(root, record, check_current=True, input_grants=None):
     """Authenticate initial content transfer, or validate a frozen history shape."""
     root = Path(root)
     inputs = record['inputs']
+    nested = record.get('input_consolidations', {})
+    if (nested or input_grants is not None) and (
+            not isinstance(input_grants, dict) or set(input_grants) != set(nested)):
+        raise ValueError('nested external transfer requires authenticated predecessor grants')
     primary = next(item['package'] for item in inputs if item['package']['directory'] == record['primary_directory'])
     before = {}
     prior_roots = set()
@@ -87,12 +91,15 @@ def validate(root, record, check_current=True):
             continue
         import source_history_chain
         external_tests.validate_archived(root, owner, package,
-            renames=source_history_chain.renames_for(root, record, package['directory']))
+            renames=source_history_chain.renames_for(root, record, package['directory']),
+            transfers={package['directory']: (input_grants or {}).get(package['directory'], set())})
         prior_roots.update(owner['roots'])
         for row in owner['files']:
-            if row['path'] in before or row.get('origin_directory', package['origin_directory']) != package['origin_directory']:
+            origin = row.get('origin_directory', package['origin_directory'])
+            inherited = label(row, owner) in (input_grants or {}).get(package['directory'], set())
+            if row['path'] in before or (origin != package['origin_directory'] and not inherited):
                 raise ValueError('duplicate or wrong-origin external transfer input')
-            before[row['path']] = (row, package['origin_directory'])
+            before[row['path']] = (row, origin)
     routes, owner = record['external_file_routes'], record['destination_external_tests']
     if not isinstance(routes, dict) or set(routes) != set(before) or len(before) > MAX_FILES:
         raise ValueError('external transfer input inventory mismatch/bound')

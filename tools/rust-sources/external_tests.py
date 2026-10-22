@@ -156,7 +156,7 @@ def check_previous(previous, current, root=None, packages=None, previous_package
             raise ValueError(f'external test source accounting shrank: {directory}')
 
 
-def validate_archived(root, owner, package, removed=False, renames=None):
+def validate_archived(root, owner, package, removed=False, renames=None, transfers=None):
     """Validate a last-current receipt without learning bytes from absent files."""
     directory = package['directory']
     if (not isinstance(owner, dict) or owner.get('directory') != directory
@@ -179,7 +179,10 @@ def validate_archived(root, owner, package, removed=False, renames=None):
     for entry in owner['files']:
         source, path = entry['source'], entry['path']
         safe(root, source); safe(root, path)
-        if (not source.startswith(prefixes) or path in paths
+        from external_transfers import permits
+        native = (entry.get('origin_directory', package['origin_directory']) == package['origin_directory']
+                  and source.startswith(prefixes))
+        if (not (native or permits(transfers or {}, directory, entry, package['origin_directory'])) or path in paths
                 or not any(path.startswith(p + '/') for p in roots)
                 or any(not re.fullmatch(r'[0-9a-f]{64}', entry.get(key, ''))
                        for key in ('sha256', 'source_sha256_before'))):
