@@ -69,40 +69,24 @@ pub(crate) fn run(command: Command) -> Result<()> {
             if config.to_str().is_none() || path.to_str().is_none() {
                 return Err("configuration and disk paths must be valid UTF-8 for JSON output; the draft was not changed".into());
             }
-            // Match the engine's bounded metadata reader, including whitespace
-            // in hand-written drafts. Never read a link or unowned input first.
-            const MAX_DRAFT_BYTES: usize = 64 * 1024 * 1024;
-            let original = private_io::read_owned_bytes(&config, MAX_DRAFT_BYTES)?;
-            let mut draft: Config = storage_engine::decode_strict(&original)?;
-            draft.disks.push(storage_engine::DiskConfig {
-                slot_id: slot.clone(),
-                disk_id,
-                root: path,
-                level,
-                upstream_slot_id: upstream,
-                metadata_member,
-                binding_generation: 1,
-                capacity_bytes: None,
-            });
-            Engine::validate_configuration(&draft)?;
-            ensure_uninitialized_draft(&config, &draft)?;
-            let candidate = json_codec::to_vec_pretty(&draft)?;
-            if candidate.len() > MAX_DRAFT_BYTES {
-                return Err("configuration draft exceeds its byte limit".into());
-            }
-            let backup = registration_backup(&config)?;
-            let backup_result = if backup.symlink_metadata().is_ok() {
-                private_io::replace_private(&backup, &original)
-            } else {
-                private_io::write_new(&backup, &original)
-            };
-            backup_result.map_err(|error| {
-                format!(
-                    "cannot preserve configuration backup {} (the draft was not changed): {error}",
-                    backup.display()
-                )
-            })?;
-            private_io::replace_private(&config, &candidate)?;
+            let transaction = private_io::DraftTransaction::open(&config)?;
+            let backup = register_disk(
+                &transaction,
+                &config,
+                storage_engine::DiskConfig {
+                    slot_id: slot.clone(),
+                    disk_id,
+                    root: path,
+                    level,
+                    upstream_slot_id: upstream,
+                    metadata_member,
+                    binding_generation: 1,
+                    capacity_bytes: None,
+                },
+            )?;
+            // Durable publication is complete; stdout backpressure must not
+            // keep unrelated draft edits in this directory locked out.
+            drop(transaction);
             print(
                 json!({"slot_id":slot,"draft":config,"backup":backup,"live_binding_changed":false}),
             )
@@ -110,14 +94,47 @@ pub(crate) fn run(command: Command) -> Result<()> {
     }
 }
 
+/// Keep the stable parent lock alive from the first read through both durable
+/// publications. A rejected contender must retry from a fresh draft snapshot.
+fn register_disk(
+    transaction: &private_io::DraftTransaction,
+    config: &Path,
+    disk: storage_engine::DiskConfig,
+) -> Result<PathBuf> {
+    // Match the engine's bounded metadata reader, including whitespace in
+    // hand-written drafts. Never read a link or unowned input first.
+    const MAX_DRAFT_BYTES: usize = 64 * 1024 * 1024;
+    let original = transaction.read_owned_bytes(MAX_DRAFT_BYTES)?;
+    let mut draft: Config = storage_engine::decode_strict(&original)?;
+    draft.disks.push(disk);
+    Engine::validate_configuration(&draft)?;
+    ensure_uninitialized_draft(transaction, &draft)?;
+    let candidate = json_codec::to_vec_pretty(&draft)?;
+    if candidate.len() > MAX_DRAFT_BYTES {
+        return Err("configuration draft exceeds its byte limit".into());
+    }
+    let backup = registration_backup(config)?;
+    transaction
+        .write_backup(
+            backup.file_name().ok_or("backup file name is required")?,
+            &original,
+        )
+        .map_err(|error| {
+            format!(
+                "cannot preserve configuration backup {} (the draft was not changed): {error}",
+                backup.display()
+            )
+        })?;
+    transaction.replace_private(&candidate)?;
+    Ok(backup)
+}
+
 /// The selected configuration, not an unrelated --root argument, determines
 /// whether this is an offline draft. Stat only: never initialize or lock disks.
-fn ensure_uninitialized_draft(path: &Path, config: &Config) -> Result<()> {
-    let parent = path
-        .parent()
-        .filter(|parent| !parent.as_os_str().is_empty())
-        .unwrap_or_else(|| Path::new("."))
-        .canonicalize()?;
+fn ensure_uninitialized_draft(
+    transaction: &private_io::DraftTransaction,
+    config: &Config,
+) -> Result<()> {
     for marker in [
         "auth.json",
         "management-authority.json",
@@ -128,7 +145,9 @@ fn ensure_uninitialized_draft(path: &Path, config: &Config) -> Result<()> {
         "index.sqlite",
         "workspaces",
     ] {
-        reject_initialized_marker(&parent.join(marker))?;
+        if transaction.entry_exists(std::ffi::OsStr::new(marker))? {
+            return Err("disk registration modifies only an uninitialized configuration draft; live migration requires a protected topology plan".into());
+        }
     }
     let mut resolved = config.clone();
     for disk in &mut resolved.disks {

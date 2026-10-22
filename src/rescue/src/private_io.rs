@@ -1,12 +1,16 @@
 //! Descriptor-anchored CLI files. Output parents may be public (for example
-//! /tmp); the file itself is owner-only, single-linked and never overwritten.
+//! /tmp); files are owner-only and single-linked. Existing outputs are never
+//! clobbered; draft replacements require a held transaction.
 use crate::Result;
 use platform_io::fs_safety::{
     EntryName,
-    linux::{MountPolicy, OpenAt2Root},
+    linux::{AdvisoryLock, MountPolicy, OpenAt2Root},
 };
-use rustix::fs::{AtFlags, Mode, OFlags, RenameFlags, openat, renameat, renameat_with, unlinkat};
+use rustix::fs::{
+    AtFlags, Mode, OFlags, RenameFlags, openat, renameat, renameat_with, statat, unlinkat,
+};
 use std::{
+    ffi::OsStr,
     fs::File,
     io::{Read, Write},
     os::unix::fs::{MetadataExt, PermissionsExt},
@@ -56,8 +60,66 @@ impl AnchoredPath {
         Ok(bytes)
     }
 }
-pub(crate) fn read_owned_bytes(path: &Path, maximum: usize) -> Result<Vec<u8>> {
-    AnchoredPath::open(path)?.read_owned_bytes(maximum)
+/// One draft read/validate/backup/replace transaction. Lock the stable parent,
+/// not the draft inode that atomic publication replaces. Parent aliases share
+/// the same lock, and overlapping backup names cannot bypass it. Contenders
+/// fail before reading a snapshot; no sidecar is created or unlinked.
+///
+/// This is an advisory offline-tool lock, not a substitute for stopping the
+/// daemon or excluding unrelated writers before editing a draft.
+pub(crate) struct DraftTransaction {
+    target: AnchoredPath,
+    _lock: AdvisoryLock,
+}
+impl DraftTransaction {
+    pub(crate) fn open(path: &Path) -> Result<Self> {
+        let target = AnchoredPath::open(path)?;
+        let lock = AdvisoryLock::directory(target.directory.directory()).map_err(|error| {
+            match error {
+                platform_io::fs_safety::Error::AlreadyLocked(_) => {
+                    "another configuration draft edit is active in this directory; retry after it finishes".into()
+                }
+                other => Box::new(other) as Box<dyn std::error::Error + Send + Sync>,
+            }
+        })?;
+        Ok(Self {
+            target,
+            _lock: lock,
+        })
+    }
+
+    pub(crate) fn read_owned_bytes(&self, maximum: usize) -> Result<Vec<u8>> {
+        self.target.read_owned_bytes(maximum)
+    }
+
+    /// Inspect markers and backup names relative to the same held parent as
+    /// the draft. Never recanonicalize a parent that could have been rebound.
+    pub(crate) fn entry_exists(&self, name: &OsStr) -> Result<bool> {
+        let name = EntryName::new(name)?;
+        match statat(
+            self.target.directory.directory(),
+            name.as_os_str(),
+            AtFlags::SYMLINK_NOFOLLOW,
+        ) {
+            Ok(_) => Ok(true),
+            Err(rustix::io::Errno::NOENT) => Ok(false),
+            Err(error) => Err(error.into()),
+        }
+    }
+
+    pub(crate) fn write_backup(&self, name: &OsStr, original: &[u8]) -> Result<()> {
+        let replace = self.entry_exists(name)?;
+        write_atomic_at(
+            &self.target.directory,
+            &EntryName::new(name)?,
+            original,
+            replace,
+        )
+    }
+
+    pub(crate) fn replace_private(&self, bytes: &[u8]) -> Result<()> {
+        write_atomic_at(&self.target.directory, &self.target.name, bytes, true)
+    }
 }
 
 struct StagingCleanup<'a> {
@@ -76,21 +138,19 @@ impl Drop for StagingCleanup<'_> {
 /// Publish only a complete 0600 file; existing files, directories and links win.
 /// A directory-sync failure after rename preserves PublishedDurabilityUnknown.
 pub(crate) fn write_new(path: &Path, bytes: &[u8]) -> Result<()> {
-    write_atomic(path, bytes, false)
-}
-
-/// Update an explicit owned regular draft file without following any link.
-pub(crate) fn replace_private(path: &Path, bytes: &[u8]) -> Result<()> {
-    write_atomic(path, bytes, true)
-}
-
-fn write_atomic(path: &Path, bytes: &[u8], replace: bool) -> Result<()> {
     let target = AnchoredPath::open(path)?;
-    let directory = target.directory.directory();
+    write_atomic_at(&target.directory, &target.name, bytes, false)
+}
+
+fn write_atomic_at(
+    root: &OpenAt2Root,
+    target: &EntryName,
+    bytes: &[u8],
+    replace: bool,
+) -> Result<()> {
+    let directory = root.directory();
     if replace {
-        let existing = target
-            .directory
-            .open_file(&target.name.as_relative(), false)?;
+        let existing = root.open_file(&target.as_relative(), false)?;
         if existing.metadata()?.uid() != rustix::process::geteuid().as_raw() {
             return Err("configuration draft must belong to this user".into());
         }
@@ -116,14 +176,14 @@ fn write_atomic(path: &Path, bytes: &[u8], replace: bool) -> Result<()> {
             directory,
             cleanup.name.as_str(),
             directory,
-            target.name.as_os_str(),
+            target.as_os_str(),
         )?;
     } else {
         renameat_with(
             directory,
             cleanup.name.as_str(),
             directory,
-            target.name.as_os_str(),
+            target.as_os_str(),
             RenameFlags::NOREPLACE,
         )?;
     }

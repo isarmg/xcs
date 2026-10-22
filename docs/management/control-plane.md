@@ -46,7 +46,17 @@ as well as its existing byte limit. Setup bodies retain their stricter 10-second
 deadline. Streaming uploads retain their separate upload limits and deadlines. Read-only health and management status
 requests do not consume the mutating-request pool.
 
-Optional SMB startup waits and directory preparation run off async workers. An
-HTTP exit stops and joins the optional bridge task even on error. This does not
-cancel an already-running filesystem system call or claim a bounded process
-shutdown when a kernel I/O operation cannot return.
+Optional SMB startup waits and directory preparation run off async workers. A
+termination signal requests HTTP graceful shutdown and immediately stops optional
+SMB admission and closes its connected sockets, without waiting for HTTP drain.
+HTTP completion, error, or service-future cancellation also drops the owned bridge;
+it is not a detached background listener. An optional bridge failure still leaves
+management HTTP available.
+
+Admitted HTTP requests drain normally; no arbitrary timeout abandons publication
+or mistakes dropping a server future for cancelling the HTTP library's connection
+tasks. Already-running SMB/backend blocking work retains its permits and recovery
+evidence until it returns. Socket shutdown wakes idle RPC reads, but cannot cancel
+a filesystem system call. HTTP drain and the Tokio runtime's blocking-worker join
+are therefore not bounded when kernel I/O cannot return; host-level intervention
+may still be required. No shutdown path force-exits the process to claim success.

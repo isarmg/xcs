@@ -65,7 +65,7 @@ struct Args {
     pub(crate) smb_spool_recovery_reserve_bytes: u64,
 }
 
-fn main() {
+fn main() -> std::process::ExitCode {
     let args = Args::parse();
     tracing::collector::fmt()
         .with_env_filter(
@@ -73,14 +73,20 @@ fn main() {
         )
         .with_writer(std::io::stderr)
         .init();
-    run_with_runtime(args);
+    run_with_runtime(args)
 }
 
 #[tokio::main]
-async fn run_with_runtime(args: Args) {
-    if let Err(error) = run(args).await {
-        eprintln!("zxs: {error}");
-        std::process::exit(1);
+async fn run_with_runtime(args: Args) -> std::process::ExitCode {
+    // Let runtime teardown join admitted blocking work, including on errors.
+    // Force-exiting here would skip its durability and recovery cleanup.
+    match run(args).await {
+        Ok(()) => std::process::ExitCode::SUCCESS,
+        Err(error) => {
+            // Report the error before runtime teardown, which may need to wait.
+            eprintln!("zxs: {error}");
+            std::process::ExitCode::FAILURE
+        }
     }
 }
 

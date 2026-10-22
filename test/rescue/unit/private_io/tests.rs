@@ -5,6 +5,14 @@ use std::{
     sync::Arc,
 };
 
+fn read_owned_bytes(path: &Path, maximum: usize) -> Result<Vec<u8>> {
+    AnchoredPath::open(path)?.read_owned_bytes(maximum)
+}
+
+fn replace_private(path: &Path, bytes: &[u8]) -> Result<()> {
+    DraftTransaction::open(path)?.replace_private(bytes)
+}
+
 #[test]
 fn owned_draft_reads_are_bounded_and_reject_links_without_requiring_secret_mode() {
     let root = tempfile::tempdir().unwrap();
@@ -128,4 +136,71 @@ fn administrator_cannot_accidentally_read_another_owners_draft() {
     let file = File::open(&path).unwrap();
     rustix::fs::fchown(&file, Some(rustix::process::Uid::from_raw(65534)), None).unwrap();
     assert!(read_owned_bytes(&path, 1024).is_err());
+}
+
+#[test]
+fn draft_transaction_excludes_parent_aliases_and_survives_draft_replacement() {
+    let root = tempfile::tempdir().unwrap();
+    let parent = root.path().join("parent");
+    fs::create_dir(&parent).unwrap();
+    let alias = root.path().join("alias");
+    symlink(&parent, &alias).unwrap();
+    let path = parent.join("draft.json");
+    write_new(&path, b"original").unwrap();
+    let held = DraftTransaction::open(&path).unwrap();
+    let original = held.read_owned_bytes(1024).unwrap();
+    let contender = alias.join("draft.json");
+    let error = std::thread::spawn(move || match DraftTransaction::open(&contender) {
+        Ok(_) => panic!("a parent alias must not bypass the active transaction"),
+        Err(error) => error.to_string(),
+    })
+    .join()
+    .unwrap();
+    assert!(error.contains("another configuration draft edit is active"));
+    held.write_backup(OsStr::new("draft.json.before-registration"), &original)
+        .unwrap();
+    held.replace_private(b"replacement").unwrap();
+    // Atomic rename creates a new draft inode, but must not release its lock.
+    assert!(DraftTransaction::open(&path).is_err());
+    // A backup used as another draft is protected by the same stable anchor.
+    assert!(DraftTransaction::open(&parent.join("draft.json.before-registration")).is_err());
+    drop(held);
+    let next = DraftTransaction::open(&path).unwrap();
+    assert_eq!(next.read_owned_bytes(1024).unwrap(), b"replacement");
+    for name in ["draft.json", "draft.json.before-registration"] {
+        assert_eq!(
+            fs::metadata(parent.join(name)).unwrap().mode() & 0o7777,
+            0o600
+        );
+    }
+    assert_eq!(fs::read_dir(&parent).unwrap().count(), 2);
+}
+
+#[test]
+fn draft_transaction_keeps_markers_backups_and_writes_on_the_held_parent() {
+    let root = tempfile::tempdir().unwrap();
+    let parent = root.path().join("parent");
+    fs::create_dir(&parent).unwrap();
+    let path = parent.join("draft.json");
+    write_new(&path, b"original").unwrap();
+    let held = DraftTransaction::open(&path).unwrap();
+    let moved = root.path().join("moved");
+    fs::rename(&parent, &moved).unwrap();
+    fs::create_dir(&parent).unwrap();
+    write_new(&path, b"unrelated draft").unwrap();
+    fs::write(moved.join("writer.lock"), b"").unwrap();
+    assert!(held.entry_exists(OsStr::new("writer.lock")).unwrap());
+    assert!(!parent.join("writer.lock").exists());
+    let original = held.read_owned_bytes(1024).unwrap();
+    held.write_backup(OsStr::new("draft.json.before-registration"), &original)
+        .unwrap();
+    held.replace_private(b"replacement").unwrap();
+    assert_eq!(fs::read(moved.join("draft.json")).unwrap(), b"replacement");
+    assert_eq!(
+        fs::read(moved.join("draft.json.before-registration")).unwrap(),
+        b"original"
+    );
+    assert_eq!(fs::read(&path).unwrap(), b"unrelated draft");
+    assert!(!parent.join("draft.json.before-registration").exists());
+    assert!(DraftTransaction::open(&moved.join("draft.json")).is_err());
 }

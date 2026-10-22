@@ -247,3 +247,176 @@ fn management_authority_markers_prevent_reclassifying_system_state_as_a_draft() 
         assert!(!registration_backup(&path).unwrap().exists());
     }
 }
+
+// Run the real registration command in a separate process while the parent
+// holds a precisely staged transaction. No timing/sleep-based race is needed.
+#[test]
+fn registration_process_contender() {
+    let Some(path) = std::env::var_os("ZXS_RESCUE_REGISTRATION_TEST_DRAFT") else {
+        return;
+    };
+    let path = PathBuf::from(path);
+    let root = path.parent().unwrap();
+    let mut args = registration(root, path.clone());
+    if let Command::RegisterDisk { slot, path, .. } = &mut args {
+        *slot = "P03".into();
+        *path = root.join("concurrent-disk");
+    }
+    let result = run(args);
+    if std::env::var_os("ZXS_RESCUE_REGISTRATION_TEST_CONFLICT").is_some() {
+        assert!(
+            result
+                .unwrap_err()
+                .to_string()
+                .contains("another configuration draft edit is active")
+        );
+    } else {
+        result.unwrap();
+    }
+}
+
+fn registration_process(path: &Path, conflict: bool) {
+    let mut child = std::process::Command::new(std::env::current_exe().unwrap());
+    child
+        .args([
+            "--exact",
+            "configuration::registration_tests::registration_process_contender",
+            "--nocapture",
+        ])
+        .env("ZXS_RESCUE_REGISTRATION_TEST_DRAFT", path);
+    if conflict {
+        child.env("ZXS_RESCUE_REGISTRATION_TEST_CONFLICT", "1");
+    } else {
+        child.env_remove("ZXS_RESCUE_REGISTRATION_TEST_CONFLICT");
+    }
+    let output = child.output().unwrap();
+    assert!(
+        output.status.success(),
+        "contender failed: {}\n{}",
+        String::from_utf8_lossy(&output.stdout),
+        String::from_utf8_lossy(&output.stderr)
+    );
+    assert!(String::from_utf8_lossy(&output.stdout).contains("1 passed"));
+}
+
+fn additional_disk(root: &Path) -> storage_engine::DiskConfig {
+    storage_engine::DiskConfig {
+        slot_id: "P02".into(),
+        disk_id: storage_engine::new_id("disk"),
+        root: root.join("additional"),
+        level: 1,
+        upstream_slot_id: None,
+        metadata_member: false,
+        binding_generation: 1,
+        capacity_bytes: None,
+    }
+}
+
+#[test]
+fn concurrent_registration_rejects_stale_reads_then_preserves_the_immediate_predecessor() {
+    let root = tempfile::tempdir().unwrap();
+    let path = root.path().join("draft.json");
+    // Noncanonical formatting must be retained exactly in the first backup.
+    let mut original = json_codec::to_vec(&draft(root.path())).unwrap();
+    original.extend_from_slice(b"\n ");
+    private_io::write_new(&path, &original).unwrap();
+    let backup = registration_backup(&path).unwrap();
+    let transaction = private_io::DraftTransaction::open(&path).unwrap();
+    assert_eq!(transaction.read_owned_bytes(1024 * 1024).unwrap(), original);
+    registration_process(&path, true);
+    assert_eq!(fs::read(&path).unwrap(), original);
+    assert!(!backup.exists());
+    register_disk(&transaction, &path, additional_disk(root.path())).unwrap();
+    let predecessor = fs::read(&path).unwrap();
+    assert_eq!(fs::read(&backup).unwrap(), original);
+    // The second process still cannot enter after the draft inode is replaced.
+    registration_process(&path, true);
+    assert_eq!(fs::read(&path).unwrap(), predecessor);
+    assert_eq!(fs::read(&backup).unwrap(), original);
+    drop(transaction);
+    registration_process(&path, false);
+    let saved: Config = storage_engine::decode_strict(&fs::read(&path).unwrap()).unwrap();
+    assert_eq!(saved.disks.len(), 5);
+    assert!(saved.disks.iter().any(|disk| disk.slot_id == "P02"));
+    assert!(saved.disks.iter().any(|disk| disk.slot_id == "P03"));
+    assert_eq!(fs::read(&backup).unwrap(), predecessor);
+    assert!(saved.disks.iter().all(|disk| !disk.root.exists()));
+}
+
+#[test]
+fn initialized_markers_cannot_be_hidden_by_rebinding_the_locked_parent() {
+    let root = tempfile::tempdir().unwrap();
+    let parent = root.path().join("parent");
+    fs::create_dir(&parent).unwrap();
+    let path = parent.join("draft.json");
+    let original = json_codec::to_vec(&draft(root.path())).unwrap();
+    private_io::write_new(&path, &original).unwrap();
+    let transaction = private_io::DraftTransaction::open(&path).unwrap();
+    fs::write(parent.join("writer.lock"), b"").unwrap();
+    let moved = root.path().join("moved");
+    fs::rename(&parent, &moved).unwrap();
+    fs::create_dir(&parent).unwrap();
+    private_io::write_new(&path, &original).unwrap();
+    let error = register_disk(&transaction, &path, additional_disk(root.path())).unwrap_err();
+    assert!(
+        error
+            .to_string()
+            .contains("only an uninitialized configuration draft")
+    );
+    assert_eq!(fs::read(&path).unwrap(), original);
+    assert_eq!(fs::read(moved.join("draft.json")).unwrap(), original);
+    assert!(!registration_backup(&path).unwrap().exists());
+    assert!(
+        !registration_backup(&moved.join("draft.json"))
+            .unwrap()
+            .exists()
+    );
+}
+
+#[test]
+fn untrusted_backup_entries_fail_closed_without_changing_the_draft() {
+    use std::os::unix::fs::symlink;
+
+    for kind in ["symlink", "hard_link", "directory", "foreign_owner"] {
+        if kind == "foreign_owner" && rustix::process::geteuid().as_raw() != 0 {
+            continue;
+        }
+        let root = tempfile::tempdir().unwrap();
+        let path = root.path().join("draft.json");
+        let original = json_codec::to_vec(&draft(root.path())).unwrap();
+        private_io::write_new(&path, &original).unwrap();
+        let backup = registration_backup(&path).unwrap();
+        let protected = root.path().join("protected");
+        fs::write(&protected, b"must remain intact").unwrap();
+        match kind {
+            "symlink" => symlink(&protected, &backup).unwrap(),
+            "hard_link" => fs::hard_link(&protected, &backup).unwrap(),
+            "directory" => fs::create_dir(&backup).unwrap(),
+            "foreign_owner" => {
+                fs::write(&backup, b"must remain intact").unwrap();
+                rustix::fs::fchown(
+                    fs::File::open(&backup).unwrap(),
+                    Some(rustix::process::Uid::from_raw(65534)),
+                    None,
+                )
+                .unwrap();
+            }
+            _ => unreachable!(),
+        }
+        let error = run(registration(root.path(), path.clone())).unwrap_err();
+        assert!(
+            error.to_string().contains("the draft was not changed"),
+            "{kind}"
+        );
+        assert_eq!(fs::read(&path).unwrap(), original, "{kind}");
+        assert_eq!(
+            fs::read(&protected).unwrap(),
+            b"must remain intact",
+            "{kind}"
+        );
+        if kind != "directory" {
+            assert_eq!(fs::read(&backup).unwrap(), b"must remain intact", "{kind}");
+        }
+        assert_eq!(fs::read_dir(root.path()).unwrap().count(), 3, "{kind}");
+    }
+}

@@ -7,6 +7,7 @@ mod http_auth;
 mod http_boundary;
 #[cfg(feature = "core")]
 pub mod management;
+mod service_lifecycle;
 #[cfg(feature = "core")]
 pub mod setup_recovery;
 pub use http_boundary::ApiError;
@@ -635,16 +636,18 @@ pub async fn serve(
     let smb_max_file_bytes = config.max_upload_bytes;
     let bridge_auth = auth.clone();
     let app = router_shared(backend.clone(), auth, config, telemetry)?;
-    let http = async move {
+    let http = |stopped: tokio::sync::oneshot::Receiver<()>| async move {
         http_routing::serve(
             listener,
             app.into_make_service_with_connect_info::<SocketAddr>(),
         )
-        .with_graceful_shutdown(shutdown())
+        .with_graceful_shutdown(async move {
+            let _ = stopped.await;
+        })
         .await
     };
-    if let Some(smb) = smb {
-        let bridge = tokio::spawn(async move {
+    let bridge = async move {
+        if let Some(smb) = smb {
             let run = async move {
                 // Recovery may import credentials after HTTP is already online.
                 // Until then no SMB identity is admitted.
@@ -691,15 +694,9 @@ pub async fn serve(
             if let Err(error) = run.await {
                 tracing::error!(%error, "SMB bridge stopped; management HTTP remains available");
             }
-        });
-        let result = http.await;
-        // HTTP errors must also stop the optional listener instead of detaching it.
-        bridge.abort();
-        let _ = bridge.await;
-        result?;
-    } else {
-        http.await?;
-    }
+        }
+    };
+    service_lifecycle::run(http, bridge, shutdown()).await?;
     Ok(())
 }
 async fn bridge_identities(
