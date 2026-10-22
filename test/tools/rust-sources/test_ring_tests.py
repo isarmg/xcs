@@ -49,9 +49,11 @@ class RingMaterials(unittest.TestCase):
 
     def test_style_patches_reconstruct_original_sources(self):
         historical = checker.historical_sources(checker.ROOT)
+        # This test only reads sources; authenticate one local snapshot, not one per patch.
+        relocated = checker.relocated_sources(checker.ROOT)
         for patch in json.loads((checker.ROOT / checker.STYLE).read_text())['patches']:
             before = historical(checker.RING / patch['path'])
-            current = checker.relocated_sources(checker.ROOT)[str(checker.RING / patch['path'])]
+            current = relocated[str(checker.RING / patch['path'])]
             self.assertNotEqual(before, current)
             self.assertEqual(before.replace(patch['old'].encode(), patch['new'].encode()), current)
 
