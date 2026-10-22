@@ -1,6 +1,6 @@
 use log::Log;
 
-use crate::Filter;
+use super::Filter;
 
 /// Decorate a [`log::Log`] with record [`Filter`]ing.
 ///

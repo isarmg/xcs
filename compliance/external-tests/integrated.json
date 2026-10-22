@@ -220,7 +220,7 @@
         {
           "source": "tools/web-bindings/src/logging_tests.rs",
           "path": "test/tools/web-bindings/unit/logging_tests.rs",
-          "sha256": "209f50042ad6f0b9f05421ab635e2902ca97c1c9fc9be304dfdaeb039b2b5dd9",
+          "sha256": "2342adb15913193512aaacc267c3d1d7cda1f4ef416a21889dd17f0cbb70c8e2",
           "source_sha256_before": "209f50042ad6f0b9f05421ab635e2902ca97c1c9fc9be304dfdaeb039b2b5dd9"
         },
         {

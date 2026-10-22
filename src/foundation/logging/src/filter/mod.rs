@@ -1,18 +1,17 @@
 //! Filtering for log records.
 //!
 //! You can use the [`Filter`] type in your own logger implementation to use the same
-//! filter parsing and matching as `env_logger`.
+//! filter parsing and matching as `logging`.
 //!
-//! ## Using `env_filter` in your own logger
+//! ## Using `logging::filter` in your own logger
 //!
-//! You can use `env_filter`'s filtering functionality with your own logger.
+//! You can use `logging::filter`'s filtering functionality with your own logger.
 //! Call [`Builder::parse`] to parse directives from a string when constructing
 //! your logger. Call [`Filter::matches`] to check whether a record should be
 //! logged based on the parsed filters when log records are received.
 //!
 //! ```
-//! # #[cfg(feature = "std")] {
-//! use env_filter::Filter;
+//! use logging::filter::Filter;
 //! use log::{Log, Metadata, Record};
 //!
 //! struct PrintLogger;
@@ -29,25 +28,21 @@
 //!     fn flush(&self) {}
 //! }
 //!
-//! let mut builder = env_filter::Builder::new();
+//! let mut builder = logging::filter::Builder::new();
 //! // Parse a directives string from an environment variable
 //! if let Ok(ref filter) = std::env::var("MY_LOG_LEVEL") {
 //!     builder.parse(filter);
 //! }
 //!
-//! let logger = env_filter::FilteredLog::new(PrintLogger, builder.build());
-//! # }
+//! let logger = logging::filter::FilteredLog::new(PrintLogger, builder.build());
 //! ```
 
 #![cfg_attr(docsrs, feature(doc_cfg))]
-#![cfg_attr(all(not(feature = "std"), not(test)), no_std)]
 #![warn(missing_docs)]
 #![warn(clippy::print_stderr)]
 #![warn(clippy::print_stdout)]
 #![warn(clippy::std_instead_of_core)]
 #![warn(clippy::std_instead_of_alloc)]
-
-extern crate alloc;
 
 mod directive;
 mod filter;
@@ -64,7 +59,3 @@ pub use filter::Builder;
 pub use filter::Filter;
 pub use filtered_log::FilteredLog;
 pub use parser::ParseError;
-
-#[doc = include_str!("../../../../docs/upstream/env_filter-2.0.0/README.md")]
-#[cfg(doctest)]
-pub struct ReadmeDoctests;

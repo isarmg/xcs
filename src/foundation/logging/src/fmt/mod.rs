@@ -23,7 +23,7 @@
 //! ```
 //! use std::io::Write;
 //!
-//! let mut builder = env_logger::Builder::new();
+//! let mut builder = logging::Builder::new();
 //!
 //! builder.format(|buf, record| {
 //!     writeln!(buf, "{}: {}",
@@ -45,7 +45,7 @@
 //! # #[cfg(feature= "kv")]
 //! # {
 //! use log::info;
-//! env_logger::init();
+//! logging::init();
 //! info!(x="45"; "Some message");
 //! info!(x="12"; "Another message {x}", x="12");
 //! # }
@@ -88,12 +88,12 @@ use crate::writer::{Buffer, Writer};
 /// # Examples
 ///
 /// Use the [`writeln`] macro to format a log record.
-/// An instance of a `Formatter` is passed to an `env_logger` format as `buf`:
+/// An instance of a `Formatter` is passed to an `logging` format as `buf`:
 ///
 /// ```
 /// use std::io::Write;
 ///
-/// let mut builder = env_logger::Builder::new();
+/// let mut builder = logging::Builder::new();
 ///
 /// builder.format(|buf, record| writeln!(buf, "{}: {}", record.level(), record.args()));
 /// ```
@@ -243,7 +243,7 @@ impl<T: Display> Display for StyledValue<T> {
     }
 }
 
-#[cfg(not(feature = "color"))]
+#[cfg(all(not(feature = "color"), feature = "kv"))]
 type StyledValue<T> = T;
 
 /// A [custom format][crate::Builder::format] with settings for which fields to show
@@ -555,4 +555,4 @@ impl ConfigurableFormatWriter<'_> {
 }
 
 #[cfg(test)]
-include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/env_logger/unit/src/fmt/mod/tests_557.rs"));
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/logging/logger/unit/src/fmt/mod/tests_557.rs"));

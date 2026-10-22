@@ -3,12 +3,12 @@ use core::{fmt, mem};
 
 use log::{LevelFilter, Metadata, Record};
 
-use crate::enabled;
-use crate::parse_spec;
-use crate::parser::ParseResult;
-use crate::Directive;
-use crate::FilterOp;
-use crate::ParseError;
+use super::enabled;
+use super::parse_spec;
+use super::parser::ParseResult;
+use super::Directive;
+use super::FilterOp;
+use super::ParseError;
 
 /// A builder for a log filter.
 ///
@@ -18,9 +18,8 @@ use crate::ParseError;
 /// ## Example
 ///
 /// ```
-/// # #[cfg(feature = "std")] {
 /// # use std::env;
-/// use env_filter::Builder;
+/// use logging::filter::Builder;
 ///
 /// let mut builder = Builder::new();
 ///
@@ -30,7 +29,6 @@ use crate::ParseError;
 /// }
 ///
 /// let filter = builder.build();
-/// # }
 /// ```
 pub struct Builder {
     directives: Vec<Directive>,
@@ -49,7 +47,6 @@ impl Builder {
     }
 
     /// Initializes the filter builder from an environment.
-    #[cfg(feature = "std")]
     pub fn from_env(env: &str) -> Builder {
         let mut builder = Builder::new();
 
@@ -100,7 +97,6 @@ impl Builder {
     /// See the [Enabling Logging] section for more details.
     ///
     /// [Enabling Logging]: ../index.html#enabling-logging
-    #[cfg(feature = "std")]
     pub fn parse(&mut self, filters: &str) -> &mut Self {
         #![allow(clippy::print_stderr)] // compatibility
 
@@ -209,7 +205,7 @@ impl Filter {
     ///
     /// ```rust
     /// use log::LevelFilter;
-    /// use env_filter::Builder;
+    /// use logging::filter::Builder;
     ///
     /// let mut builder = Builder::new();
     /// builder.filter(Some("module1"), LevelFilter::Info);
@@ -260,4 +256,7 @@ impl fmt::Debug for Filter {
 }
 
 #[cfg(test)]
-include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/env_filter/unit/src/filter/tests_262.rs"));
+include!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/../../../test/foundation/logging/filter/unit/src/filter/tests_262.rs"
+));

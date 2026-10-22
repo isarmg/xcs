@@ -3,8 +3,8 @@ use core::fmt::{Display, Formatter};
 
 use log::LevelFilter;
 
-use crate::Directive;
-use crate::FilterOp;
+use super::Directive;
+use super::FilterOp;
 
 #[derive(Default, Debug)]
 pub(crate) struct ParseResult {
@@ -52,7 +52,6 @@ impl Display for ParseError {
     }
 }
 
-#[cfg(feature = "std")]
 impl std::error::Error for ParseError {}
 
 /// Parse a logging specification string (e.g: `crate1,crate2::mod3,crate3::x=error/foo`)
@@ -116,4 +115,7 @@ pub(crate) fn parse_spec(spec: &str) -> ParseResult {
 }
 
 #[cfg(test)]
-include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/env_filter/unit/src/parser/tests_118.rs"));
+include!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/../../../test/foundation/logging/filter/unit/src/parser/tests_118.rs"
+));

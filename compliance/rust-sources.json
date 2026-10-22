@@ -16,6 +16,7 @@
     "914124306c29fc963dad00752c0a5f2f96a20db52dd497053eee3eb52b8d2555": "914124306c29fc963dad00752c0a5f2f96a20db52dd497053eee3eb52b8d2555",
     "949449a180450285d289bb0830def80cbaefdaeb376c99169839d022fce81837": "949449a180450285d289bb0830def80cbaefdaeb376c99169839d022fce81837",
     "9a8a096030bfdb1bdb2567d9c7fb019d623295f4587845cde75ee41003ac7dfb": "9a8a096030bfdb1bdb2567d9c7fb019d623295f4587845cde75ee41003ac7dfb",
+    "a6ea9547c68dae8e874eb8b8fa1f1768c57c19be26a29186b1d6455614921736": "a6ea9547c68dae8e874eb8b8fa1f1768c57c19be26a29186b1d6455614921736",
     "b9eb2e8fc755fd61e0f6150127a360f2520a1fc69698df9c374e58365ff8fdbb": "b9eb2e8fc755fd61e0f6150127a360f2520a1fc69698df9c374e58365ff8fdbb",
     "c0106826dcd6a6018d2cd31dfc91db21c0466af5a93692ba0cc86b63baaec222": "c0106826dcd6a6018d2cd31dfc91db21c0466af5a93692ba0cc86b63baaec222",
     "dd6c7498dd42d13067bc3b6e0903bbb03de79331644cf36996294fb399ce5e4b": "dd6c7498dd42d13067bc3b6e0903bbb03de79331644cf36996294fb399ce5e4b",
@@ -27631,6 +27632,287 @@
       "primary_directory": "src/foundation/tower",
       "reason": "Consolidate the single Service and Layer identities with dependency-light composition and explicit optional middleware; preserve original implementation, licensing and per-origin test attribution without old package compatibility aliases."
     },
+    "a6ea9547c68dae8e874eb8b8fa1f1768c57c19be26a29186b1d6455614921736": {
+      "destination_directory": "src/foundation/logging",
+      "destination_external_tests": {
+        "bytes": 39934,
+        "directory": "src/foundation/logging",
+        "file_count": 5,
+        "files": [
+          {
+            "origin_directory": "vendor/rust/env_logger-0.11.11",
+            "path": "test/foundation/logging/logger/unit/src/fmt/mod/tests_557.rs",
+            "sha256": "5f90d3a9eca39d79b16e830a7a7cb3ff1b2553b2dfd4773e08bca70d0a03a3c2",
+            "source": "src/foundation/env_logger/src/fmt/mod.rs",
+            "source_sha256_before": "33f4faa8323ad49b91b5b129d36ff11909e206d8e67e7f333a2d94e0b6229382"
+          },
+          {
+            "origin_directory": "vendor/rust/env_logger-0.11.11",
+            "path": "test/foundation/logging/logger/unit/src/logger/tests_970.rs",
+            "sha256": "87b30834ce5c67e7ce52a43e1fd19736f40fcbb871bc46b0abf8a7015dcd6472",
+            "source": "src/foundation/env_logger/src/logger.rs",
+            "source_sha256_before": "41ea3c1ccabd992f8dfa8fee4626be338f704c40189e725d47c6367bb5350698"
+          },
+          {
+            "origin_directory": "vendor/rust/env_logger-0.11.11",
+            "path": "test/foundation/logging/logger/unit/src/writer/mod/tests_165.rs",
+            "sha256": "bbdc48d6a04e07051da85ede81c20a8f034949451b418a9c71df4275cadd921d",
+            "source": "src/foundation/env_logger/src/writer/mod.rs",
+            "source_sha256_before": "e1b92ece9c76e7c3d45338330e3d55b248f104ef781b621283ec8fcb4f9898be"
+          },
+          {
+            "origin_directory": "vendor/rust/env_filter-2.0.0",
+            "path": "test/foundation/logging/filter/unit/src/filter/tests_262.rs",
+            "sha256": "260729d835d32ec8d760c30138946aec9e77432e8d8bef1f66da9b3481077c51",
+            "source": "src/foundation/env_filter/src/filter.rs",
+            "source_sha256_before": "8d6309b9ebac3ab997dabc78b464066cfae8d07bd7a66bc8990bd5592c3bbd8e"
+          },
+          {
+            "origin_directory": "vendor/rust/env_filter-2.0.0",
+            "path": "test/foundation/logging/filter/unit/src/parser/tests_118.rs",
+            "sha256": "27b932456333424f044989e5b91d90e17f65b7ee7059b80d1513fb30def72e8a",
+            "source": "src/foundation/env_filter/src/parser.rs",
+            "source_sha256_before": "c17b96969c5c298ce82338c179f6130ae98a9bd4ed20566e6710aed5f235586b"
+          }
+        ],
+        "origin_directory": "vendor/rust/env_logger-0.11.11",
+        "roots": [
+          "test/foundation/logging"
+        ]
+      },
+      "destination_files_sha256": {
+        "Cargo.toml": "80adbee020a431ec1cee1b83bd0f7db78996e400b12b491abb72d3602b72b76b",
+        "src/filter/directive.rs": "45695d91e33dcf93251542ded1930835a2dd4b231dd8826e77b1dad82b918235",
+        "src/filter/filter.rs": "30e821d0ca8acad9cba2e2cb9ce5acdf7102c96011228034b28e979593e6ee6a",
+        "src/filter/filtered_log.rs": "252a1ce0d4f87ca1ffd42f1b6ea95e7e50469511d87cea92dce5aab26ba103d0",
+        "src/filter/mod.rs": "72eb4b8de01ea064bfbea2e899297b26b5a99f560b44206f2fa6d6321a055d16",
+        "src/filter/op.rs": "9ccc08ebf820494aa788ac09b09f7d28f4632dc6dbdcc1ee8197bb98cef4ebb2",
+        "src/filter/parser.rs": "35fd05aba042aece95a27729d3a4b166a205c6e0c2c56dbb856106f2782e46f9",
+        "src/fmt/kv.rs": "15d2246a1d2624f297c96653d0eb19d2e408a521fb31d7f239572e9e76b2535c",
+        "src/fmt/mod.rs": "eac0aabf214cfae44b0a99cda1265afa941964499f2cd5ae5d9491a7de69e94c",
+        "src/lib.rs": "32e7879b6467514382daab4d1543001b186550f1c634dc81343c7b08691039e5",
+        "src/logger.rs": "5eabb7241895441a8ef1d8a7f11bcc23b16426e4d9f662711c294e5904396252",
+        "src/writer/buffer.rs": "61e4ec5a4fc1f78b1289fc54ad0c3c10c5cc3f8c050a16ccd2353adeb6b13ec9",
+        "src/writer/mod.rs": "31f7ebc33228c7ae4d2e022ad15cc43f79f4c11d3b97417e1df709a34710a6dc",
+        "src/writer/target.rs": "34d65a0db699a3848d26027c08246dd2753e395841a5614bf8325f23ed08c206"
+      },
+      "destination_name": "logging",
+      "external_file_routes": {
+        "test/foundation/env_filter/unit/src/filter/tests_262.rs": {
+          "destination": "test/foundation/logging/filter/unit/src/filter/tests_262.rs",
+          "replacements": []
+        },
+        "test/foundation/env_filter/unit/src/parser/tests_118.rs": {
+          "destination": "test/foundation/logging/filter/unit/src/parser/tests_118.rs",
+          "replacements": [
+            {
+              "new": "ICAgIHVzZSBsb2c6OkxldmVsRmlsdGVyOw==",
+              "old": "ICAgIHVzZSBjcmF0ZTo6UGFyc2VFcnJvcjsKICAgIHVzZSBsb2c6OkxldmVsRmlsdGVyOw=="
+            }
+          ]
+        },
+        "test/foundation/env_logger/unit/src/fmt/mod/tests_557.rs": {
+          "destination": "test/foundation/logging/logger/unit/src/fmt/mod/tests_557.rs",
+          "replacements": []
+        },
+        "test/foundation/env_logger/unit/src/logger/tests_970.rs": {
+          "destination": "test/foundation/logging/logger/unit/src/logger/tests_970.rs",
+          "replacements": []
+        },
+        "test/foundation/env_logger/unit/src/writer/mod/tests_165.rs": {
+          "destination": "test/foundation/logging/logger/unit/src/writer/mod/tests_165.rs",
+          "replacements": []
+        }
+      },
+      "file_routes": {
+        "src/foundation/env_filter": {
+          "Cargo.toml": {
+            "archive_base64": "IyBJbnRlcm5hbCBzb3VyY2UgY29tcG9uZW50LiBPcmlnaW5hbCBtYW5pZmVzdCBhbmQgb3JpZ2luOiBjb21wbGlhbmNlL3Byb3ZlbmFuY2UuCgpbcGFja2FnZV0KZWRpdGlvbiA9ICIyMDIxIgpydXN0LXZlcnNpb24gPSAiMS43MSIKbmFtZSA9ICJlbnZfZmlsdGVyIgp2ZXJzaW9uID0gIjIuMC4wIgpidWlsZCA9IGZhbHNlCmluY2x1ZGUgPSBbCiAgICAiYnVpbGQucnMiLAogICAgInNyYy8qKi8qIiwKICAgICJDYXJnby50b21sIiwKICAgICJDYXJnby5sb2NrIiwKICAgICJMSUNFTlNFKiIsCiAgICAiUkVBRE1FLm1kIiwKICAgICJleGFtcGxlcy8qKi8qIiwKXQphdXRvbGliID0gZmFsc2UKYXV0b2JpbnMgPSBmYWxzZQphdXRvZXhhbXBsZXMgPSBmYWxzZQphdXRvdGVzdHMgPSBmYWxzZQphdXRvYmVuY2hlcyA9IGZhbHNlCmRlc2NyaXB0aW9uID0gIiIiCkZpbHRlciBsb2cgZXZlbnRzIHVzaW5nIGVudmlyb25tZW50IHZhcmlhYmxlcwoiIiIKcmVhZG1lID0gIi4uLy4uLy4uL2RvY3MvdXBzdHJlYW0vZW52X2ZpbHRlci0yLjAuMC9SRUFETUUubWQiCmtleXdvcmRzID0gWwogICAgImxvZ2dpbmciLAogICAgImxvZyIsCiAgICAibG9nZ2VyIiwKXQpjYXRlZ29yaWVzID0gWyJkZXZlbG9wbWVudC10b29sczo6ZGVidWdnaW5nIl0KbGljZW5zZSA9ICJNSVQgT1IgQXBhY2hlLTIuMCIKcmVwb3NpdG9yeSA9ICJodHRwczovL2dpdGh1Yi5jb20vcnVzdC1jbGkvZW52X2xvZ2dlciIKCltmZWF0dXJlc10KZGVmYXVsdCA9IFsic3RkIiwgInJlZ2V4Il0KcmVnZXggPSBbImRlcDpyZWdleCJdCnN0ZCA9IFsibG9nL3N0ZCIsICJyZWdleD8vc3RkIl0KCltsaWJdCm5hbWUgPSAiZW52X2ZpbHRlciIKcGF0aCA9ICJzcmMvbGliLnJzIgoKW2RlcGVuZGVuY2llcy5sb2ddCnZlcnNpb24gPSAiMC40LjI5IgpwYXRoID0gIi4uL2xvZyIKCltkZXBlbmRlbmNpZXMucmVnZXhdCnZlcnNpb24gPSAiMS4xMi4zIgpmZWF0dXJlcyA9IFsibWF0Y2hlciIsICJwZXJmIl0Kb3B0aW9uYWwgPSB0cnVlCmRlZmF1bHQtZmVhdHVyZXMgPSBmYWxzZQpwYXRoID0gIi4uL3JlZ2V4IgoKW2xpbnRzLmNsaXBweV0KYm9vbF9hc3NlcnRfY29tcGFyaXNvbiA9ICJhbGxvdyIKYnJhbmNoZXNfc2hhcmluZ19jb2RlID0gImFsbG93IgpjaGVja2VkX2NvbnZlcnNpb25zID0gIndhcm4iCmNvbGxhcHNpYmxlX2Vsc2VfaWYgPSAiYWxsb3ciCmNyZWF0ZV9kaXIgPSAid2FybiIKZGJnX21hY3JvID0gIndhcm4iCmRlYnVnX2Fzc2VydF93aXRoX211dF9jYWxsID0gIndhcm4iCmRvY19tYXJrZG93biA9ICJ3YXJuIgplbXB0eV9lbnVtcyA9ICJ3YXJuIgplbnVtX2dsb2JfdXNlID0gIndhcm4iCmV4cGxfaW1wbF9jbG9uZV9vbl9jb3B5ID0gIndhcm4iCmV4cGxpY2l0X2RlcmVmX21ldGhvZHMgPSAid2FybiIKZXhwbGljaXRfaW50b19pdGVyX2xvb3AgPSAid2FybiIKZmFsbGlibGVfaW1wbF9mcm9tID0gIndhcm4iCmZpbHRlcl9tYXBfbmV4dCA9ICJ3YXJuIgpmbGF0X21hcF9vcHRpb24gPSAid2FybiIKZmxvYXRfY21wX2NvbnN0ID0gIndhcm4iCmZuX3BhcmFtc19leGNlc3NpdmVfYm9vbHMgPSAid2FybiIKZnJvbV9pdGVyX2luc3RlYWRfb2ZfY29sbGVjdCA9ICJ3YXJuIgppZl9zYW1lX3RoZW5fZWxzZSA9ICJhbGxvdyIKaW1wbGljaXRfY2xvbmUgPSAid2FybiIKaW1wcmVjaXNlX2Zsb3BzID0gIndhcm4iCmluY29uc2lzdGVudF9zdHJ1Y3RfY29uc3RydWN0b3IgPSAid2FybiIKaW5lZmZpY2llbnRfdG9fc3RyaW5nID0gIndhcm4iCmluZmluaXRlX2xvb3AgPSAid2FybiIKaW52YWxpZF91cGNhc3RfY29tcGFyaXNvbnMgPSAid2FybiIKbGFyZ2VfZGlnaXRfZ3JvdXBzID0gIndhcm4iCmxhcmdlX3N0YWNrX2FycmF5cyA9ICJ3YXJuIgpsYXJnZV90eXBlc19wYXNzZWRfYnlfdmFsdWUgPSAid2FybiIKbGV0X2FuZF9yZXR1cm4gPSAiYWxsb3ciCmxpbmtlZGxpc3QgPSAid2FybiIKbG9zc3lfZmxvYXRfbGl0ZXJhbCA9ICJ3YXJuIgptYWNyb191c2VfaW1wb3J0cyA9ICJ3YXJuIgptZW1fZm9yZ2V0ID0gIndhcm4iCm11dGV4X2ludGVnZXIgPSAid2FybiIKbmVlZGxlc3NfY29udGludWUgPSAiYWxsb3ciCm5lZWRsZXNzX2Zvcl9lYWNoID0gIndhcm4iCm5lZ2F0aXZlX2ZlYXR1cmVfbmFtZXMgPSAid2FybiIKcGF0aF9idWZfcHVzaF9vdmVyd3JpdGUgPSAid2FybiIKcHRyX2FzX3B0ciA9ICJ3YXJuIgpyY19tdXRleCA9ICJ3YXJuIgpyZWR1bmRhbnRfZmVhdHVyZV9uYW1lcyA9ICJ3YXJuIgpyZWZfb3B0aW9uX3JlZiA9ICJ3YXJuIgpyZXN0X3BhdF9pbl9mdWxseV9ib3VuZF9zdHJ1Y3RzID0gIndhcm4iCnJlc3VsdF9sYXJnZV9lcnIgPSAiYWxsb3ciCnNhbWVfZnVuY3Rpb25zX2luX2lmX2NvbmRpdGlvbiA9ICJ3YXJuIgpzZWxmX25hbWVkX21vZHVsZV9maWxlcyA9ICJ3YXJuIgpzZW1pY29sb25faWZfbm90aGluZ19yZXR1cm5lZCA9ICJ3YXJuIgpzdHJfdG9fc3RyaW5nID0gIndhcm4iCnN0cmluZ19hZGQgPSAid2FybiIKc3RyaW5nX2FkZF9hc3NpZ24gPSAid2FybiIKc3RyaW5nX2xpdF9hc19ieXRlcyA9ICJ3YXJuIgp0b2RvID0gIndhcm4iCnRyYWl0X2R1cGxpY2F0aW9uX2luX2JvdW5kcyA9ICJ3YXJuIgp1bmlubGluZWRfZm9ybWF0X2FyZ3MgPSAid2FybiIKdmVyYm9zZV9maWxlX3JlYWRzID0gIndhcm4iCndpbGRjYXJkX2ltcG9ydHMgPSAid2FybiIKemVyb19zaXplZF9tYXBfdmFsdWVzID0gIndhcm4iCgpbbGludHMucnVzdF0KdW5uYW1lYWJsZV90eXBlcyA9ICJ3YXJuIgp1bnJlYWNoYWJsZV9wdWIgPSAid2FybiIKdW5zYWZlX29wX2luX3Vuc2FmZV9mbiA9ICJ3YXJuIgp1bnVzZWRfbGlmZXRpbWVzID0gIndhcm4iCnVudXNlZF9tYWNyb19ydWxlcyA9ICJ3YXJuIgp1bnVzZWRfcXVhbGlmaWNhdGlvbnMgPSAid2FybiIKCltsaW50cy5ydXN0LnJ1c3RfMjAxOF9pZGlvbXNdCmxldmVsID0gIndhcm4iCnByaW9yaXR5ID0gLTEK"
+          },
+          "src/directive.rs": {
+            "destination": "src/filter/directive.rs"
+          },
+          "src/filter.rs": {
+            "destination": "src/filter/filter.rs"
+          },
+          "src/filtered_log.rs": {
+            "destination": "src/filter/filtered_log.rs"
+          },
+          "src/lib.rs": {
+            "destination": "src/filter/mod.rs"
+          },
+          "src/op.rs": {
+            "destination": "src/filter/op.rs"
+          },
+          "src/parser.rs": {
+            "destination": "src/filter/parser.rs"
+          }
+        },
+        "src/foundation/env_logger": {
+          "Cargo.toml": {
+            "destination": "Cargo.toml"
+          },
+          "src/fmt/kv.rs": {
+            "destination": "src/fmt/kv.rs"
+          },
+          "src/fmt/mod.rs": {
+            "destination": "src/fmt/mod.rs"
+          },
+          "src/lib.rs": {
+            "destination": "src/lib.rs"
+          },
+          "src/logger.rs": {
+            "destination": "src/logger.rs"
+          },
+          "src/writer/buffer.rs": {
+            "destination": "src/writer/buffer.rs"
+          },
+          "src/writer/mod.rs": {
+            "destination": "src/writer/mod.rs"
+          },
+          "src/writer/target.rs": {
+            "destination": "src/writer/target.rs"
+          }
+        }
+      },
+      "input_history": {},
+      "inputs": [
+        {
+          "external_tests": {
+            "bytes": 13554,
+            "directory": "src/foundation/env_logger",
+            "file_count": 3,
+            "files": [
+              {
+                "path": "test/foundation/env_logger/unit/src/fmt/mod/tests_557.rs",
+                "sha256": "5f90d3a9eca39d79b16e830a7a7cb3ff1b2553b2dfd4773e08bca70d0a03a3c2",
+                "source": "src/foundation/env_logger/src/fmt/mod.rs",
+                "source_sha256_before": "33f4faa8323ad49b91b5b129d36ff11909e206d8e67e7f333a2d94e0b6229382"
+              },
+              {
+                "path": "test/foundation/env_logger/unit/src/logger/tests_970.rs",
+                "sha256": "87b30834ce5c67e7ce52a43e1fd19736f40fcbb871bc46b0abf8a7015dcd6472",
+                "source": "src/foundation/env_logger/src/logger.rs",
+                "source_sha256_before": "41ea3c1ccabd992f8dfa8fee4626be338f704c40189e725d47c6367bb5350698"
+              },
+              {
+                "path": "test/foundation/env_logger/unit/src/writer/mod/tests_165.rs",
+                "sha256": "bbdc48d6a04e07051da85ede81c20a8f034949451b418a9c71df4275cadd921d",
+                "source": "src/foundation/env_logger/src/writer/mod.rs",
+                "source_sha256_before": "e1b92ece9c76e7c3d45338330e3d55b248f104ef781b621283ec8fcb4f9898be"
+              }
+            ],
+            "origin_directory": "vendor/rust/env_logger-0.11.11",
+            "roots": [
+              "test/foundation/env_logger"
+            ]
+          },
+          "package": {
+            "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 2026-10-20：裁剪不支持平台与缺失后端的依赖/feature边；当前逐文件摘要记录本地实现差异。 清理独立演示：移除 8 个独立示例程序及专属输入（7409 字节）；保留文档编译、真实测试及性能基准输入。；构建工具日志只保留 RUST_LOG 正则、级别/目标和颜色；删除未消费的时间戳 feature、API、实现与 jiff 可选边。；活跃文档默认输出示例同步为无时间戳，INFO 级别空格与实际补齐一致；不可重写的原始上游文档保持不变。",
+            "description": "A logging implementation for `log` which is configured via an environment\nvariable.",
+            "directory": "src/foundation/env_logger",
+            "files_sha256": {
+              "Cargo.toml": "21d0fae4fb9b25dcca380edb88d8d3395ff0dd9c64965ca208263bc238153fe0",
+              "src/fmt/kv.rs": "15d2246a1d2624f297c96653d0eb19d2e408a521fb31d7f239572e9e76b2535c",
+              "src/fmt/mod.rs": "16185db1d85e69b092eaee2b836a46113c00fa7224373a5cbb0836ebe6a48b69",
+              "src/lib.rs": "02d8003c277909ea4917da6f9ed7f9f58c5586e91a07d0b612ce19170f5ba53a",
+              "src/logger.rs": "d16f4e38e43fb131bec8108414a6218b0ec318c9c5d06e7e4d99511a683b9cd2",
+              "src/writer/buffer.rs": "61e4ec5a4fc1f78b1289fc54ad0c3c10c5cc3f8c050a16ccd2353adeb6b13ec9",
+              "src/writer/mod.rs": "1c7eecd146e5cb055ea9f26c68e0d5124e1ba1c6f859b606fe410c8888c6a6cd",
+              "src/writer/target.rs": "34d65a0db699a3848d26027c08246dd2753e395841a5614bf8325f23ed08c206"
+            },
+            "license": "MIT OR Apache-2.0",
+            "license_materials": [
+              "compliance/licenses/upstream/env_logger-0.11.11/LICENSE-APACHE",
+              "compliance/licenses/upstream/env_logger-0.11.11/LICENSE-MIT"
+            ],
+            "merged_into": "无；通过统一内部源码源接入",
+            "name": "env_logger",
+            "origin_directory": "vendor/rust/env_logger-0.11.11",
+            "repository": "https://github.com/rust-cli/env_logger",
+            "status": "内部维护源码",
+            "upstream": {
+              "archive_sha256": "de671bd27a75a797dc9ae289ba1e77276e75e2026408aab65185384e2d5cd3f6",
+              "archive_url": "https://static.crates.io/crates/env_logger/env_logger-0.11.11.crate",
+              "name": "env_logger",
+              "version": "0.11.11"
+            },
+            "vcs": {
+              "git": {
+                "sha1": "b4d3f2b8dd3f1c3362f07da8f6f4a30c701358cf"
+              },
+              "path_in_vcs": ""
+            },
+            "version": "0.11.11"
+          }
+        },
+        {
+          "external_tests": {
+            "bytes": 26407,
+            "directory": "src/foundation/env_filter",
+            "file_count": 2,
+            "files": [
+              {
+                "path": "test/foundation/env_filter/unit/src/filter/tests_262.rs",
+                "sha256": "260729d835d32ec8d760c30138946aec9e77432e8d8bef1f66da9b3481077c51",
+                "source": "src/foundation/env_filter/src/filter.rs",
+                "source_sha256_before": "8d6309b9ebac3ab997dabc78b464066cfae8d07bd7a66bc8990bd5592c3bbd8e"
+              },
+              {
+                "path": "test/foundation/env_filter/unit/src/parser/tests_118.rs",
+                "sha256": "93f881ec3bae947dff08deb167ebf3401767f44ce88d30fd8fafed62766f85cd",
+                "source": "src/foundation/env_filter/src/parser.rs",
+                "source_sha256_before": "c17b96969c5c298ce82338c179f6130ae98a9bd4ed20566e6710aed5f235586b"
+              }
+            ],
+            "origin_directory": "vendor/rust/env_filter-2.0.0",
+            "roots": [
+              "test/foundation/env_filter"
+            ]
+          },
+          "package": {
+            "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。；保留上游全部过滤/解析用例与错误预期，将仅比较字符串的 snapbox 断言改为标准 assert_eq，离线测试不恢复上游测试框架依赖。",
+            "description": "Filter log events using environment variables",
+            "directory": "src/foundation/env_filter",
+            "files_sha256": {
+              "Cargo.toml": "7fe801d55e1d54b3163bc5bcc06a2177fc011cd107d5bc52b67480b90ade475d",
+              "src/directive.rs": "45695d91e33dcf93251542ded1930835a2dd4b231dd8826e77b1dad82b918235",
+              "src/filter.rs": "a1c2b5ca2c51c2738619313a66b981c543e5a499f263491d9740783d62245af8",
+              "src/filtered_log.rs": "5a2c431b7967e288cba7d0ba4f327c12cb399b8fbe9107c9c7af64d014da7053",
+              "src/lib.rs": "cd4aa9c4107b38aeded899f62eae7204c47c48bcc7a5e8d6e41d6711f1b22df6",
+              "src/op.rs": "9ccc08ebf820494aa788ac09b09f7d28f4632dc6dbdcc1ee8197bb98cef4ebb2",
+              "src/parser.rs": "2439e2e89f654ea92c33a1299ebf4d1a3f0b444e3512e485f8bd94d4b84a673c"
+            },
+            "license": "MIT OR Apache-2.0",
+            "license_materials": [
+              "compliance/licenses/upstream/env_filter-2.0.0/LICENSE-APACHE",
+              "compliance/licenses/upstream/env_filter-2.0.0/LICENSE-MIT"
+            ],
+            "merged_into": "无；通过统一内部源码源接入",
+            "name": "env_filter",
+            "origin_directory": "vendor/rust/env_filter-2.0.0",
+            "repository": "https://github.com/rust-cli/env_logger",
+            "status": "内部维护源码",
+            "upstream": {
+              "archive_sha256": "900d271a03799a1ee8d1ca9b19893b48ca674a9284fefcfb85f05e74ed314217",
+              "archive_url": "https://static.crates.io/crates/env_filter/env_filter-2.0.0.crate",
+              "name": "env_filter",
+              "version": "2.0.0"
+            },
+            "vcs": {
+              "git": {
+                "sha1": "cc2b2efcd7454be82ca49f8ac165b3fbc3095ae3"
+              },
+              "path_in_vcs": "crates/env_filter"
+            },
+            "version": "2.0.0"
+          }
+        }
+      ],
+      "new_files": {},
+      "primary_directory": "src/foundation/env_logger",
+      "reason": "Integrate logging configuration, directive filtering, formatting and output in the sole consumer capability; retain terminal-style as shared infrastructure and all upstream attribution."
+    },
     "b9eb2e8fc755fd61e0f6150127a360f2520a1fc69698df9c374e58365ff8fdbb": {
       "destination_directory": "src/foundation/data-serialization",
       "destination_external_tests": {
@@ -37905,8 +38187,8 @@
     }
   },
   "external_test_mappings_sha256": {
-    "compliance/external-tests/foundation.json": "0689a41835fd6311d124c952cd357418eebc529ed3024c24e4380307297d634d",
-    "compliance/external-tests/integrated.json": "b9d3cdc7b7678cb7dec3dff2b120b11d1754ddc86ec66194ce97d53a4f8d2033",
+    "compliance/external-tests/foundation.json": "82df3a2ebc28eca5aa9d04a53519faaf799ffcfe07875d8ef61801334e1ca13a",
+    "compliance/external-tests/integrated.json": "976578b7514d285c9214c408327f9b344f3c7649b4ae3b63839e8806b4677d96",
     "compliance/external-tests/ring.json": "3e5a834ea832ea11a0da5cdeab898e9c2e2d5229becc1988edc3462cfb51dab1"
   },
   "external_tests": {
@@ -42338,58 +42620,6 @@
       "origin_directory": "vendor/rust/email_address-0.2.9",
       "roots": [
         "test/foundation/email_address"
-      ]
-    },
-    "src/foundation/env_filter": {
-      "bytes": 26407,
-      "directory": "src/foundation/env_filter",
-      "file_count": 2,
-      "files": [
-        {
-          "path": "test/foundation/env_filter/unit/src/filter/tests_262.rs",
-          "sha256": "260729d835d32ec8d760c30138946aec9e77432e8d8bef1f66da9b3481077c51",
-          "source": "src/foundation/env_filter/src/filter.rs",
-          "source_sha256_before": "8d6309b9ebac3ab997dabc78b464066cfae8d07bd7a66bc8990bd5592c3bbd8e"
-        },
-        {
-          "path": "test/foundation/env_filter/unit/src/parser/tests_118.rs",
-          "sha256": "93f881ec3bae947dff08deb167ebf3401767f44ce88d30fd8fafed62766f85cd",
-          "source": "src/foundation/env_filter/src/parser.rs",
-          "source_sha256_before": "c17b96969c5c298ce82338c179f6130ae98a9bd4ed20566e6710aed5f235586b"
-        }
-      ],
-      "origin_directory": "vendor/rust/env_filter-2.0.0",
-      "roots": [
-        "test/foundation/env_filter"
-      ]
-    },
-    "src/foundation/env_logger": {
-      "bytes": 13554,
-      "directory": "src/foundation/env_logger",
-      "file_count": 3,
-      "files": [
-        {
-          "path": "test/foundation/env_logger/unit/src/fmt/mod/tests_557.rs",
-          "sha256": "5f90d3a9eca39d79b16e830a7a7cb3ff1b2553b2dfd4773e08bca70d0a03a3c2",
-          "source": "src/foundation/env_logger/src/fmt/mod.rs",
-          "source_sha256_before": "33f4faa8323ad49b91b5b129d36ff11909e206d8e67e7f333a2d94e0b6229382"
-        },
-        {
-          "path": "test/foundation/env_logger/unit/src/logger/tests_970.rs",
-          "sha256": "87b30834ce5c67e7ce52a43e1fd19736f40fcbb871bc46b0abf8a7015dcd6472",
-          "source": "src/foundation/env_logger/src/logger.rs",
-          "source_sha256_before": "41ea3c1ccabd992f8dfa8fee4626be338f704c40189e725d47c6367bb5350698"
-        },
-        {
-          "path": "test/foundation/env_logger/unit/src/writer/mod/tests_165.rs",
-          "sha256": "bbdc48d6a04e07051da85ede81c20a8f034949451b418a9c71df4275cadd921d",
-          "source": "src/foundation/env_logger/src/writer/mod.rs",
-          "source_sha256_before": "e1b92ece9c76e7c3d45338330e3d55b248f104ef781b621283ec8fcb4f9898be"
-        }
-      ],
-      "origin_directory": "vendor/rust/env_logger-0.11.11",
-      "roots": [
-        "test/foundation/env_logger"
       ]
     },
     "src/foundation/erased": {
@@ -48346,6 +48576,52 @@
       "origin_directory": "vendor/rust/log-0.4.34",
       "roots": [
         "test/foundation/log"
+      ]
+    },
+    "src/foundation/logging": {
+      "bytes": 39934,
+      "directory": "src/foundation/logging",
+      "file_count": 5,
+      "files": [
+        {
+          "origin_directory": "vendor/rust/env_logger-0.11.11",
+          "path": "test/foundation/logging/logger/unit/src/fmt/mod/tests_557.rs",
+          "sha256": "5f90d3a9eca39d79b16e830a7a7cb3ff1b2553b2dfd4773e08bca70d0a03a3c2",
+          "source": "src/foundation/env_logger/src/fmt/mod.rs",
+          "source_sha256_before": "33f4faa8323ad49b91b5b129d36ff11909e206d8e67e7f333a2d94e0b6229382"
+        },
+        {
+          "origin_directory": "vendor/rust/env_logger-0.11.11",
+          "path": "test/foundation/logging/logger/unit/src/logger/tests_970.rs",
+          "sha256": "87b30834ce5c67e7ce52a43e1fd19736f40fcbb871bc46b0abf8a7015dcd6472",
+          "source": "src/foundation/env_logger/src/logger.rs",
+          "source_sha256_before": "41ea3c1ccabd992f8dfa8fee4626be338f704c40189e725d47c6367bb5350698"
+        },
+        {
+          "origin_directory": "vendor/rust/env_logger-0.11.11",
+          "path": "test/foundation/logging/logger/unit/src/writer/mod/tests_165.rs",
+          "sha256": "bbdc48d6a04e07051da85ede81c20a8f034949451b418a9c71df4275cadd921d",
+          "source": "src/foundation/env_logger/src/writer/mod.rs",
+          "source_sha256_before": "e1b92ece9c76e7c3d45338330e3d55b248f104ef781b621283ec8fcb4f9898be"
+        },
+        {
+          "origin_directory": "vendor/rust/env_filter-2.0.0",
+          "path": "test/foundation/logging/filter/unit/src/filter/tests_262.rs",
+          "sha256": "260729d835d32ec8d760c30138946aec9e77432e8d8bef1f66da9b3481077c51",
+          "source": "src/foundation/env_filter/src/filter.rs",
+          "source_sha256_before": "8d6309b9ebac3ab997dabc78b464066cfae8d07bd7a66bc8990bd5592c3bbd8e"
+        },
+        {
+          "origin_directory": "vendor/rust/env_filter-2.0.0",
+          "path": "test/foundation/logging/filter/unit/src/parser/tests_118.rs",
+          "sha256": "27b932456333424f044989e5b91d90e17f65b7ee7059b80d1513fb30def72e8a",
+          "source": "src/foundation/env_filter/src/parser.rs",
+          "source_sha256_before": "c17b96969c5c298ce82338c179f6130ae98a9bd4ed20566e6710aed5f235586b"
+        }
+      ],
+      "origin_directory": "vendor/rust/env_logger-0.11.11",
+      "roots": [
+        "test/foundation/logging"
       ]
     },
     "src/foundation/manyhow": {
@@ -64709,7 +64985,7 @@
       ]
     },
     "tools/web-bindings": {
-      "bytes": 13363,
+      "bytes": 13345,
       "directory": "tools/web-bindings",
       "file_count": 4,
       "files": [
@@ -64727,7 +65003,7 @@
         },
         {
           "path": "test/tools/web-bindings/unit/logging_tests.rs",
-          "sha256": "209f50042ad6f0b9f05421ab635e2902ca97c1c9fc9be304dfdaeb039b2b5dd9",
+          "sha256": "2342adb15913193512aaacc267c3d1d7cda1f4ef416a21889dd17f0cbb70c8e2",
           "source": "tools/web-bindings/src/logging_tests.rs",
           "source_sha256_before": "209f50042ad6f0b9f05421ab635e2902ca97c1c9fc9be304dfdaeb039b2b5dd9"
         },
@@ -64746,7 +65022,7 @@
   },
   "initial_test_relocation_sha256": "791ad728a408677dd54ef98e3feaffe825c5fc5670e888440615933d9498ecc3",
   "lockfiles_sha256": {
-    "Cargo.lock": "14abf45d5825b53f3798345513ff24919cbded03c12b1a156006eeb89459b5e9"
+    "Cargo.lock": "002995d59de6f7270d77daa648291b3abc4cc73cbd7874aa763704e68a98e593"
   },
   "manifests_sha256": {
     "Cargo.toml": "d4eb9ad428c26f50546105c8704f7ed0b4b75d50632a800c76a3256279001869",
@@ -64805,8 +65081,6 @@
     "src/foundation/dom-helpers/Cargo.toml": "0faa4e2e9280b28bf0fcad93cd120e86a64787b170c5a77997f68fbdf926b3d9",
     "src/foundation/either/Cargo.toml": "2ba22fccbda9c75dbb61faa588046507eb28c7d71daa0302b7c3a142b59ce9bc",
     "src/foundation/email_address/Cargo.toml": "5bf588a3c1e7b9d1c50d4f73f4aa5eaed8fb320d5724fc63676c2806a5700765",
-    "src/foundation/env_filter/Cargo.toml": "7fe801d55e1d54b3163bc5bcc06a2177fc011cd107d5bc52b67480b90ade475d",
-    "src/foundation/env_logger/Cargo.toml": "21d0fae4fb9b25dcca380edb88d8d3395ff0dd9c64965ca208263bc238153fe0",
     "src/foundation/equivalent/Cargo.toml": "aa0ce4f3911f935d92dc95ec1e0ff23ddde7bc2079f4bdbec220053fbd66cd94",
     "src/foundation/erased/Cargo.toml": "8f61e858b325f73d075c22e770c6e3c922768c5f5f9879c1034ff1e9bfe69130",
     "src/foundation/errno/Cargo.toml": "6124cd43b52f4fc37ca8d3153197e8a5f8d47769b48dad4f8a115d2040053e98",
@@ -64866,6 +65140,7 @@
     "src/foundation/linux-raw-sys/Cargo.toml": "ad0468cc8252281beb0940662c9c8b3e2f7f7b044281c3c3ed4b92ab51787505",
     "src/foundation/litemap/Cargo.toml": "2495d580648fbcef3f02874496c050449fe0faff035ad4cd7c262c2c3cc27480",
     "src/foundation/log/Cargo.toml": "e22a6c582975a74f045111d30b3b7dbe7a61bd8dd1a20230babeb8b08e21590b",
+    "src/foundation/logging/Cargo.toml": "80adbee020a431ec1cee1b83bd0f7db78996e400b12b491abb72d3602b72b76b",
     "src/foundation/manyhow-macros/Cargo.toml": "db7f2237c79b10b4a68612307418b4d02b753eeef15ba024f90e5a52e9d75b09",
     "src/foundation/manyhow/Cargo.toml": "05638c31f318027769be671ad03f2d0ad530c6a149cb9f8f19b33a73f4a1aa17",
     "src/foundation/matchit/Cargo.toml": "32661069f447c37c49bed5c80080ee274810d7bac2ca15d89c3d794cd7b21aba",
@@ -65017,7 +65292,7 @@
     "tools/perf-check/Cargo.toml": "1d43415d20414747a8ca1c5bb74a940ac0ff773226778906f4d6a5325a945e02",
     "tools/release-tools/Cargo.toml": "389ade4140b92ee59d358dc15f3b929f743de4d1987313fd1453e6508400676e",
     "tools/unicode-build/Cargo.toml": "dab9e4bdbf7d4ab482690fcfc6c1f2c5792d17b44d56235c52807d4f19cfb955",
-    "tools/web-bindings/Cargo.toml": "889b19aeea1913b9b062b042378acb97f573cb26069d496a46358260ed5956ad",
+    "tools/web-bindings/Cargo.toml": "b777d05affd49220d6a5a287dab9ab4fd0b9f659464b31b74794b49b003aa531",
     "tools/web-build/Cargo.toml": "abcaf645f7f7380a0dc5513229ca6fef3249e68b79ee2b2024fcfcaa96a7cf82"
   },
   "merges": [
@@ -72845,6 +73120,50 @@
         "path_in_vcs": "crates/jsonschema-referencing"
       },
       "version": "0.58.6"
+    },
+    {
+      "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。；保留上游全部过滤/解析用例与错误预期，将仅比较字符串的 snapbox 断言改为标准 assert_eq，离线测试不恢复上游测试框架依赖。",
+      "description": "Filter log events using environment variables",
+      "directory": "src/foundation/logging",
+      "files_sha256": {
+        "Cargo.toml": "80adbee020a431ec1cee1b83bd0f7db78996e400b12b491abb72d3602b72b76b",
+        "src/filter/directive.rs": "45695d91e33dcf93251542ded1930835a2dd4b231dd8826e77b1dad82b918235",
+        "src/filter/filter.rs": "30e821d0ca8acad9cba2e2cb9ce5acdf7102c96011228034b28e979593e6ee6a",
+        "src/filter/filtered_log.rs": "252a1ce0d4f87ca1ffd42f1b6ea95e7e50469511d87cea92dce5aab26ba103d0",
+        "src/filter/mod.rs": "72eb4b8de01ea064bfbea2e899297b26b5a99f560b44206f2fa6d6321a055d16",
+        "src/filter/op.rs": "9ccc08ebf820494aa788ac09b09f7d28f4632dc6dbdcc1ee8197bb98cef4ebb2",
+        "src/filter/parser.rs": "35fd05aba042aece95a27729d3a4b166a205c6e0c2c56dbb856106f2782e46f9",
+        "src/fmt/kv.rs": "15d2246a1d2624f297c96653d0eb19d2e408a521fb31d7f239572e9e76b2535c",
+        "src/fmt/mod.rs": "eac0aabf214cfae44b0a99cda1265afa941964499f2cd5ae5d9491a7de69e94c",
+        "src/lib.rs": "32e7879b6467514382daab4d1543001b186550f1c634dc81343c7b08691039e5",
+        "src/logger.rs": "5eabb7241895441a8ef1d8a7f11bcc23b16426e4d9f662711c294e5904396252",
+        "src/writer/buffer.rs": "61e4ec5a4fc1f78b1289fc54ad0c3c10c5cc3f8c050a16ccd2353adeb6b13ec9",
+        "src/writer/mod.rs": "31f7ebc33228c7ae4d2e022ad15cc43f79f4c11d3b97417e1df709a34710a6dc",
+        "src/writer/target.rs": "34d65a0db699a3848d26027c08246dd2753e395841a5614bf8325f23ed08c206"
+      },
+      "license": "MIT OR Apache-2.0",
+      "license_materials": [
+        "compliance/licenses/upstream/env_filter-2.0.0/LICENSE-APACHE",
+        "compliance/licenses/upstream/env_filter-2.0.0/LICENSE-MIT"
+      ],
+      "merged_into": "src/foundation/logging",
+      "name": "env_filter",
+      "origin_directory": "vendor/rust/env_filter-2.0.0",
+      "repository": "https://github.com/rust-cli/env_logger",
+      "status": "内部维护源码",
+      "upstream": {
+        "archive_sha256": "900d271a03799a1ee8d1ca9b19893b48ca674a9284fefcfb85f05e74ed314217",
+        "archive_url": "https://static.crates.io/crates/env_filter/env_filter-2.0.0.crate",
+        "name": "env_filter",
+        "version": "2.0.0"
+      },
+      "vcs": {
+        "git": {
+          "sha1": "cc2b2efcd7454be82ca49f8ac165b3fbc3095ae3"
+        },
+        "path_in_vcs": "crates/env_filter"
+      },
+      "version": "2.0.0"
     }
   ],
   "origin_records_sha256": {
@@ -75638,81 +75957,6 @@
         "path_in_vcs": ""
       },
       "version": "0.2.9"
-    },
-    "src/foundation/env_filter": {
-      "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。；保留上游全部过滤/解析用例与错误预期，将仅比较字符串的 snapbox 断言改为标准 assert_eq，离线测试不恢复上游测试框架依赖。",
-      "description": "Filter log events using environment variables",
-      "directory": "src/foundation/env_filter",
-      "files_sha256": {
-        "Cargo.toml": "7fe801d55e1d54b3163bc5bcc06a2177fc011cd107d5bc52b67480b90ade475d",
-        "src/directive.rs": "45695d91e33dcf93251542ded1930835a2dd4b231dd8826e77b1dad82b918235",
-        "src/filter.rs": "a1c2b5ca2c51c2738619313a66b981c543e5a499f263491d9740783d62245af8",
-        "src/filtered_log.rs": "5a2c431b7967e288cba7d0ba4f327c12cb399b8fbe9107c9c7af64d014da7053",
-        "src/lib.rs": "cd4aa9c4107b38aeded899f62eae7204c47c48bcc7a5e8d6e41d6711f1b22df6",
-        "src/op.rs": "9ccc08ebf820494aa788ac09b09f7d28f4632dc6dbdcc1ee8197bb98cef4ebb2",
-        "src/parser.rs": "2439e2e89f654ea92c33a1299ebf4d1a3f0b444e3512e485f8bd94d4b84a673c"
-      },
-      "license": "MIT OR Apache-2.0",
-      "license_materials": [
-        "compliance/licenses/upstream/env_filter-2.0.0/LICENSE-APACHE",
-        "compliance/licenses/upstream/env_filter-2.0.0/LICENSE-MIT"
-      ],
-      "merged_into": "无；通过统一内部源码源接入",
-      "name": "env_filter",
-      "origin_directory": "vendor/rust/env_filter-2.0.0",
-      "repository": "https://github.com/rust-cli/env_logger",
-      "status": "内部维护源码",
-      "upstream": {
-        "archive_sha256": "900d271a03799a1ee8d1ca9b19893b48ca674a9284fefcfb85f05e74ed314217",
-        "archive_url": "https://static.crates.io/crates/env_filter/env_filter-2.0.0.crate",
-        "name": "env_filter",
-        "version": "2.0.0"
-      },
-      "vcs": {
-        "git": {
-          "sha1": "cc2b2efcd7454be82ca49f8ac165b3fbc3095ae3"
-        },
-        "path_in_vcs": "crates/env_filter"
-      },
-      "version": "2.0.0"
-    },
-    "src/foundation/env_logger": {
-      "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 2026-10-20：裁剪不支持平台与缺失后端的依赖/feature边；当前逐文件摘要记录本地实现差异。 清理独立演示：移除 8 个独立示例程序及专属输入（7409 字节）；保留文档编译、真实测试及性能基准输入。；构建工具日志只保留 RUST_LOG 正则、级别/目标和颜色；删除未消费的时间戳 feature、API、实现与 jiff 可选边。；活跃文档默认输出示例同步为无时间戳，INFO 级别空格与实际补齐一致；不可重写的原始上游文档保持不变。",
-      "description": "A logging implementation for `log` which is configured via an environment\nvariable.",
-      "directory": "src/foundation/env_logger",
-      "files_sha256": {
-        "Cargo.toml": "21d0fae4fb9b25dcca380edb88d8d3395ff0dd9c64965ca208263bc238153fe0",
-        "src/fmt/kv.rs": "15d2246a1d2624f297c96653d0eb19d2e408a521fb31d7f239572e9e76b2535c",
-        "src/fmt/mod.rs": "16185db1d85e69b092eaee2b836a46113c00fa7224373a5cbb0836ebe6a48b69",
-        "src/lib.rs": "02d8003c277909ea4917da6f9ed7f9f58c5586e91a07d0b612ce19170f5ba53a",
-        "src/logger.rs": "d16f4e38e43fb131bec8108414a6218b0ec318c9c5d06e7e4d99511a683b9cd2",
-        "src/writer/buffer.rs": "61e4ec5a4fc1f78b1289fc54ad0c3c10c5cc3f8c050a16ccd2353adeb6b13ec9",
-        "src/writer/mod.rs": "1c7eecd146e5cb055ea9f26c68e0d5124e1ba1c6f859b606fe410c8888c6a6cd",
-        "src/writer/target.rs": "34d65a0db699a3848d26027c08246dd2753e395841a5614bf8325f23ed08c206"
-      },
-      "license": "MIT OR Apache-2.0",
-      "license_materials": [
-        "compliance/licenses/upstream/env_logger-0.11.11/LICENSE-APACHE",
-        "compliance/licenses/upstream/env_logger-0.11.11/LICENSE-MIT"
-      ],
-      "merged_into": "无；通过统一内部源码源接入",
-      "name": "env_logger",
-      "origin_directory": "vendor/rust/env_logger-0.11.11",
-      "repository": "https://github.com/rust-cli/env_logger",
-      "status": "内部维护源码",
-      "upstream": {
-        "archive_sha256": "de671bd27a75a797dc9ae289ba1e77276e75e2026408aab65185384e2d5cd3f6",
-        "archive_url": "https://static.crates.io/crates/env_logger/env_logger-0.11.11.crate",
-        "name": "env_logger",
-        "version": "0.11.11"
-      },
-      "vcs": {
-        "git": {
-          "sha1": "b4d3f2b8dd3f1c3362f07da8f6f4a30c701358cf"
-        },
-        "path_in_vcs": ""
-      },
-      "version": "0.11.11"
     },
     "src/foundation/equivalent": {
       "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。",
@@ -78819,6 +79063,50 @@
         "path_in_vcs": ""
       },
       "version": "0.4.34"
+    },
+    "src/foundation/logging": {
+      "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 2026-10-20：裁剪不支持平台与缺失后端的依赖/feature边；当前逐文件摘要记录本地实现差异。 清理独立演示：移除 8 个独立示例程序及专属输入（7409 字节）；保留文档编译、真实测试及性能基准输入。；构建工具日志只保留 RUST_LOG 正则、级别/目标和颜色；删除未消费的时间戳 feature、API、实现与 jiff 可选边。；活跃文档默认输出示例同步为无时间戳，INFO 级别空格与实际补齐一致；不可重写的原始上游文档保持不变。",
+      "description": "A logging implementation for `log` which is configured via an environment\nvariable.",
+      "directory": "src/foundation/logging",
+      "files_sha256": {
+        "Cargo.toml": "80adbee020a431ec1cee1b83bd0f7db78996e400b12b491abb72d3602b72b76b",
+        "src/filter/directive.rs": "45695d91e33dcf93251542ded1930835a2dd4b231dd8826e77b1dad82b918235",
+        "src/filter/filter.rs": "30e821d0ca8acad9cba2e2cb9ce5acdf7102c96011228034b28e979593e6ee6a",
+        "src/filter/filtered_log.rs": "252a1ce0d4f87ca1ffd42f1b6ea95e7e50469511d87cea92dce5aab26ba103d0",
+        "src/filter/mod.rs": "72eb4b8de01ea064bfbea2e899297b26b5a99f560b44206f2fa6d6321a055d16",
+        "src/filter/op.rs": "9ccc08ebf820494aa788ac09b09f7d28f4632dc6dbdcc1ee8197bb98cef4ebb2",
+        "src/filter/parser.rs": "35fd05aba042aece95a27729d3a4b166a205c6e0c2c56dbb856106f2782e46f9",
+        "src/fmt/kv.rs": "15d2246a1d2624f297c96653d0eb19d2e408a521fb31d7f239572e9e76b2535c",
+        "src/fmt/mod.rs": "eac0aabf214cfae44b0a99cda1265afa941964499f2cd5ae5d9491a7de69e94c",
+        "src/lib.rs": "32e7879b6467514382daab4d1543001b186550f1c634dc81343c7b08691039e5",
+        "src/logger.rs": "5eabb7241895441a8ef1d8a7f11bcc23b16426e4d9f662711c294e5904396252",
+        "src/writer/buffer.rs": "61e4ec5a4fc1f78b1289fc54ad0c3c10c5cc3f8c050a16ccd2353adeb6b13ec9",
+        "src/writer/mod.rs": "31f7ebc33228c7ae4d2e022ad15cc43f79f4c11d3b97417e1df709a34710a6dc",
+        "src/writer/target.rs": "34d65a0db699a3848d26027c08246dd2753e395841a5614bf8325f23ed08c206"
+      },
+      "license": "MIT OR Apache-2.0",
+      "license_materials": [
+        "compliance/licenses/upstream/env_logger-0.11.11/LICENSE-APACHE",
+        "compliance/licenses/upstream/env_logger-0.11.11/LICENSE-MIT"
+      ],
+      "merged_into": "无；通过统一内部源码源接入",
+      "name": "logging",
+      "origin_directory": "vendor/rust/env_logger-0.11.11",
+      "repository": "https://github.com/rust-cli/env_logger",
+      "status": "内部维护源码",
+      "upstream": {
+        "archive_sha256": "de671bd27a75a797dc9ae289ba1e77276e75e2026408aab65185384e2d5cd3f6",
+        "archive_url": "https://static.crates.io/crates/env_logger/env_logger-0.11.11.crate",
+        "name": "env_logger",
+        "version": "0.11.11"
+      },
+      "vcs": {
+        "git": {
+          "sha1": "b4d3f2b8dd3f1c3362f07da8f6f4a30c701358cf"
+        },
+        "path_in_vcs": ""
+      },
+      "version": "0.11.11"
     },
     "src/foundation/manyhow": {
       "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。",
@@ -87292,8 +87580,8 @@
       "description": "ZXS Web-only binding generator derived from wasm-bindgen-cli",
       "directory": "tools/web-bindings",
       "files_sha256": {
-        "Cargo.toml": "889b19aeea1913b9b062b042378acb97f573cb26069d496a46358260ed5956ad",
-        "src/main.rs": "d676636264823170023778fc004e9f262d954de549cfc8e6cb02de3ba8b5b42c"
+        "Cargo.toml": "b777d05affd49220d6a5a287dab9ab4fd0b9f659464b31b74794b49b003aa531",
+        "src/main.rs": "94d5fac4f2626c50e7e945aa3ce25beee3e621f6146b5bcabac3f11184bab058"
       },
       "license": "MIT OR Apache-2.0",
       "license_materials": [
@@ -100402,26 +100690,6 @@
             "compile"
           ]
         },
-        "src/foundation/env_filter": {
-          "features": [
-            "regex",
-            "std"
-          ],
-          "roles": [
-            "compile"
-          ]
-        },
-        "src/foundation/env_logger": {
-          "features": [
-            "auto-color",
-            "color",
-            "regex",
-            "terminal-style"
-          ],
-          "roles": [
-            "compile"
-          ]
-        },
         "src/foundation/equivalent": {
           "features": [],
           "roles": [
@@ -100545,6 +100813,17 @@
           "features": [
             "alloc",
             "std"
+          ],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/logging": {
+          "features": [
+            "auto-color",
+            "color",
+            "regex",
+            "terminal-style"
           ],
           "roles": [
             "compile"

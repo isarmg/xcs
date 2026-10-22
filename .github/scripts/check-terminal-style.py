@@ -9,7 +9,7 @@ def run(args, **kw):
 
 def check():
     manifest=ROOT/'src/foundation/terminal-style/Cargo.toml'
-    env=dict(os.environ,CARGO_BUILD_JOBS='2')
+    env=dict(os.environ,CARGO_BUILD_JOBS=os.environ.get('CARGO_BUILD_JOBS','2'))
     for features in ['', 'std','parser','parser-core','parser-utf8','output','parser-core,output']:
         args=['cargo','test','--offline','--manifest-path',str(manifest),'--no-default-features']
         if features: args+=['--features',features]
@@ -24,7 +24,7 @@ def check():
         work=Path(temp);(work/'src').mkdir()
         dep=lambda name: str(ROOT/'src/foundation'/name)
         base='[package]\nname="terminal-consumer-check"\nversion="0.0.0"\nedition="2021"\n[workspace]\n[dependencies]\n'
-        (work/'Cargo.toml').write_text(base+f'terminal-style={{path="{dep("terminal-style")}",features=["output"]}}\ncommand-line={{path="{dep("command-line")}"}}\nenv_logger={{path="{dep("env_logger")}"}}\nlog={{path="{dep("log")}"}}\n')
+        (work/'Cargo.toml').write_text(base+f'terminal-style={{path="{dep("terminal-style")}",features=["output"]}}\ncommand-line={{path="{dep("command-line")}"}}\nlogging={{path="{dep("logging")}"}}\nlog={{path="{dep("log")}"}}\n')
         (work/'src/lib.rs').write_text((ROOT/'test/ci/fixtures/terminal-style-consumers.rs').read_text())
         command=['cargo','test','--offline','--manifest-path',str(work/'Cargo.toml')]
         run(command,env=env)

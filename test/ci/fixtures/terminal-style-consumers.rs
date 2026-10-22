@@ -22,11 +22,11 @@ fn cli_and_logger_share_terminal_styles() {
         }
     }
     let bytes = Arc::new(Mutex::new(Vec::new()));
-    let mut logger = env_logger::Builder::new();
+    let mut logger = logging::Builder::new();
     logger
-        .target(env_logger::Target::Pipe(Box::new(Sink(bytes.clone()))))
+        .target(logging::Target::Pipe(Box::new(Sink(bytes.clone()))))
         .filter_level(log::LevelFilter::Info)
-        .write_style(env_logger::WriteStyle::Never);
+        .write_style(logging::WriteStyle::Never);
     logger.format(move |buf, record| writeln!(buf, "{green}{}{green:#}", record.args()));
     let logger = logger.build();
     log::Log::log(

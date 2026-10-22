@@ -3,18 +3,9 @@
 [package]
 edition = "2021"
 rust-version = "1.71"
-name = "env_logger"
+name = "logging"
 version = "0.11.11"
 build = false
-include = [
-    "build.rs",
-    "src/**/*",
-    "Cargo.toml",
-    "Cargo.lock",
-    "LICENSE*",
-    "README.md",
-    "examples/**/*",
-]
 autolib = false
 autobins = false
 autoexamples = false
@@ -24,7 +15,7 @@ description = """
 A logging implementation for `log` which is configured via an environment
 variable.
 """
-readme = "../../../docs/upstream/env_logger-0.11.11/README.md"
+readme = "../../../docs/components/logging.md"
 keywords = [
     "logging",
     "log",
@@ -39,11 +30,10 @@ auto-color = ["color", "terminal-style/output"]
 color = ["terminal-style/output"]
 default = ["auto-color", "regex"]
 kv = ["log/kv"]
-regex = ["env_filter/regex"]
-unstable-kv = ["kv"]
+regex = ["dep:regex"]
 
 [lib]
-name = "env_logger"
+name = "logging"
 path = "src/lib.rs"
 
 [dependencies.terminal-style]
@@ -51,11 +41,12 @@ path = "../terminal-style"
 default-features = false
 optional = true
 
-[dependencies.env_filter]
-version = "2.0.0"
-features = ["std"]
+[dependencies.regex]
+version = "1.12.3"
+features = ["matcher", "perf", "std"]
+optional = true
 default-features = false
-path = "../env_filter"
+path = "../regex"
 
 [dependencies.log]
 version = "0.4.29"
@@ -133,3 +124,7 @@ unused_qualifications = "warn"
 [lints.rust.rust_2018_idioms]
 level = "warn"
 priority = -1
+
+[[test]]
+name = "logging_contracts"
+path = "../../../test/logging/contracts.rs"

@@ -4302,49 +4302,46 @@
       ]
     },
     {
-      "directory": "src/foundation/env_filter",
-      "files": [
-        {
-          "path": "test/foundation/env_filter/unit/src/filter/tests_262.rs",
-          "sha256": "260729d835d32ec8d760c30138946aec9e77432e8d8bef1f66da9b3481077c51",
-          "source": "src/foundation/env_filter/src/filter.rs",
-          "source_sha256_before": "8d6309b9ebac3ab997dabc78b464066cfae8d07bd7a66bc8990bd5592c3bbd8e"
-        },
-        {
-          "path": "test/foundation/env_filter/unit/src/parser/tests_118.rs",
-          "sha256": "93f881ec3bae947dff08deb167ebf3401767f44ce88d30fd8fafed62766f85cd",
-          "source": "src/foundation/env_filter/src/parser.rs",
-          "source_sha256_before": "c17b96969c5c298ce82338c179f6130ae98a9bd4ed20566e6710aed5f235586b"
-        }
-      ],
+      "directory": "src/foundation/logging",
       "roots": [
-        "test/foundation/env_filter"
-      ]
-    },
-    {
-      "directory": "src/foundation/env_logger",
+        "test/foundation/logging"
+      ],
       "files": [
         {
-          "path": "test/foundation/env_logger/unit/src/fmt/mod/tests_557.rs",
+          "path": "test/foundation/logging/logger/unit/src/fmt/mod/tests_557.rs",
           "sha256": "5f90d3a9eca39d79b16e830a7a7cb3ff1b2553b2dfd4773e08bca70d0a03a3c2",
           "source": "src/foundation/env_logger/src/fmt/mod.rs",
-          "source_sha256_before": "33f4faa8323ad49b91b5b129d36ff11909e206d8e67e7f333a2d94e0b6229382"
+          "source_sha256_before": "33f4faa8323ad49b91b5b129d36ff11909e206d8e67e7f333a2d94e0b6229382",
+          "origin_directory": "vendor/rust/env_logger-0.11.11"
         },
         {
-          "path": "test/foundation/env_logger/unit/src/logger/tests_970.rs",
+          "path": "test/foundation/logging/logger/unit/src/logger/tests_970.rs",
           "sha256": "87b30834ce5c67e7ce52a43e1fd19736f40fcbb871bc46b0abf8a7015dcd6472",
           "source": "src/foundation/env_logger/src/logger.rs",
-          "source_sha256_before": "41ea3c1ccabd992f8dfa8fee4626be338f704c40189e725d47c6367bb5350698"
+          "source_sha256_before": "41ea3c1ccabd992f8dfa8fee4626be338f704c40189e725d47c6367bb5350698",
+          "origin_directory": "vendor/rust/env_logger-0.11.11"
         },
         {
-          "path": "test/foundation/env_logger/unit/src/writer/mod/tests_165.rs",
+          "path": "test/foundation/logging/logger/unit/src/writer/mod/tests_165.rs",
           "sha256": "bbdc48d6a04e07051da85ede81c20a8f034949451b418a9c71df4275cadd921d",
           "source": "src/foundation/env_logger/src/writer/mod.rs",
-          "source_sha256_before": "e1b92ece9c76e7c3d45338330e3d55b248f104ef781b621283ec8fcb4f9898be"
+          "source_sha256_before": "e1b92ece9c76e7c3d45338330e3d55b248f104ef781b621283ec8fcb4f9898be",
+          "origin_directory": "vendor/rust/env_logger-0.11.11"
+        },
+        {
+          "path": "test/foundation/logging/filter/unit/src/filter/tests_262.rs",
+          "sha256": "260729d835d32ec8d760c30138946aec9e77432e8d8bef1f66da9b3481077c51",
+          "source": "src/foundation/env_filter/src/filter.rs",
+          "source_sha256_before": "8d6309b9ebac3ab997dabc78b464066cfae8d07bd7a66bc8990bd5592c3bbd8e",
+          "origin_directory": "vendor/rust/env_filter-2.0.0"
+        },
+        {
+          "path": "test/foundation/logging/filter/unit/src/parser/tests_118.rs",
+          "sha256": "27b932456333424f044989e5b91d90e17f65b7ee7059b80d1513fb30def72e8a",
+          "source": "src/foundation/env_filter/src/parser.rs",
+          "source_sha256_before": "c17b96969c5c298ce82338c179f6130ae98a9bd4ed20566e6710aed5f235586b",
+          "origin_directory": "vendor/rust/env_filter-2.0.0"
         }
-      ],
-      "roots": [
-        "test/foundation/env_logger"
       ]
     },
     {

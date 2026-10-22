@@ -163,4 +163,4 @@ fn parse_write_style(spec: &str) -> WriteStyle {
 }
 
 #[cfg(test)]
-include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/env_logger/unit/src/writer/mod/tests_165.rs"));
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/logging/logger/unit/src/writer/mod/tests_165.rs"));

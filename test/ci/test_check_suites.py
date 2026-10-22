@@ -62,7 +62,7 @@ class SuiteCoverageTests(unittest.TestCase):
 
     def test_build_tools_keep_log_filter_and_formatter_regressions(self):
         calls = self.suite("build-tools")
-        self.assertIn({"tool": "cargo", "args": ["test", "--locked", "--offline", "--lib", "-p", "env_logger", "-p", "env_filter"]}, calls)
+        self.assertIn({"tool": "python3", "args": [".github/scripts/check-logging.py"]}, calls)
         self.assertTrue(any(call["tool"] == "cargo" and "web-bindings" in call["args"] for call in calls))
 
     def test_removed_demo_suite_fails_before_running_tools(self):

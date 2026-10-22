@@ -23,10 +23,10 @@ impl Write for Output {
 #[test]
 fn build_logging_keeps_target_level_and_regex_filters_without_timestamps() {
     let output = Output::default();
-    let logger = env_logger::Builder::new()
+    let logger = logging::Builder::new()
         .parse_filters("off,wasm_bindgen_cli_support=debug/retain")
-        .write_style(env_logger::WriteStyle::Never)
-        .target(env_logger::Target::Pipe(Box::new(output.clone())))
+        .write_style(logging::WriteStyle::Never)
+        .target(logging::Target::Pipe(Box::new(output.clone())))
         .build();
     for (target, message, level) in [
         ("wasm_bindgen_cli_support", "retain detail", Level::Debug),
@@ -51,10 +51,10 @@ fn build_logging_keeps_target_level_and_regex_filters_without_timestamps() {
 #[test]
 fn explicit_color_style_remains_available() {
     let output = Output::default();
-    let logger = env_logger::Builder::new()
+    let logger = logging::Builder::new()
         .parse_filters("warn")
-        .write_style(env_logger::WriteStyle::Always)
-        .target(env_logger::Target::Pipe(Box::new(output.clone())))
+        .write_style(logging::WriteStyle::Always)
+        .target(logging::Target::Pipe(Box::new(output.clone())))
         .build();
     logger.log(
         &Record::builder()

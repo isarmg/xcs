@@ -7,11 +7,11 @@
 //! A simple logger that can be configured via environment variables, for use
 //! with the logging facade exposed by the [`log` crate][log-crate-url].
 //!
-//! Despite having "env" in its name, **`env_logger`** can also be configured by
+//! Logging can also be configured by
 //! other means besides environment variables. See [the examples][gh-repo-examples]
 //! in the source repository for more approaches.
 //!
-//! By default, `env_logger` writes logs to `stderr`, but can be configured to
+//! By default, `logging` writes logs to `stderr`, but can be configured to
 //! instead write them to `stdout`.
 //! The project build-tool formatter omits wall-clock timestamps and retains
 //! level/target filtering and terminal styling.
@@ -21,7 +21,7 @@
 //! ```
 //! use log::{debug, error, log_enabled, info, Level};
 //!
-//! env_logger::init();
+//! logging::init();
 //!
 //! debug!("this is a debug {}", "message");
 //! error!("this is printed by default");
@@ -180,7 +180,7 @@
 //!     use log::info;
 //!
 //!     fn init() {
-//!         let _ = env_logger::builder().is_test(true).try_init();
+//!         let _ = logging::builder().is_test(true).try_init();
 //!     }
 //!
 //!     #[test]
@@ -222,7 +222,7 @@
 //!   from user inputs
 //!
 //! Note: deactivating the build-time feature `color` is not a mitigation as that removes all ANSI escape code
-//! stripping from `env_logger`.
+//! stripping from `logging`.
 //!
 //! </div>
 //!
@@ -232,7 +232,7 @@
 //! The project default emits level and target without wall-clock timestamps:
 //!
 //! ```
-//! env_logger::builder()
+//! logging::builder()
 //!     .init();
 //! ```
 //!
@@ -242,7 +242,7 @@
 //! guarantees about the stability of its output across major, minor or patch version
 //! bumps during `0.x`.
 //!
-//! If you want to capture or interpret the output of `env_logger` programmatically
+//! If you want to capture or interpret the output of `logging` programmatically
 //! then you should use a custom format.
 //!
 //! ### Using a custom format
@@ -253,7 +253,7 @@
 //! ```
 //! use std::io::Write;
 //!
-//! env_logger::builder()
+//! logging::builder()
 //!     .format(|buf, record| {
 //!         writeln!(buf, "{}: {}", record.level(), record.args())
 //!     })
@@ -264,15 +264,15 @@
 //!
 //! ## Specifying defaults for environment variables
 //!
-//! `env_logger` can read configuration from environment variables.
+//! `logging` can read configuration from environment variables.
 //! If these variables aren't present, the default value to use can be tweaked with the [`Env`] type.
 //! The following example defaults to log `warn` and above if the `RUST_LOG` environment variable
 //! isn't set:
 //!
 //! ```
-//! use env_logger::Env;
+//! use logging::Env;
 //!
-//! env_logger::Builder::from_env(Env::default().default_filter_or("warn")).init();
+//! logging::Builder::from_env(Env::default().default_filter_or("warn")).init();
 //! ```
 //!
 //! [gh-repo-examples]: https://github.com/rust-cli/env_logger/tree/main/examples
@@ -284,6 +284,9 @@
 #![warn(clippy::print_stdout)]
 #![allow(clippy::test_attr_in_doctest)]
 
+extern crate alloc;
+
+pub mod filter;
 mod logger;
 mod writer;
 
@@ -292,6 +295,10 @@ pub mod fmt;
 pub use self::fmt::{Target, WriteStyle};
 pub use self::logger::*;
 
-#[doc = include_str!("../../../../docs/upstream/env_logger-0.11.11/README.md")]
+#[doc = include_str!("../../../../docs/components/logging.md")]
 #[cfg(doctest)]
 pub struct ReadmeDoctests;
+
+#[cfg(doctest)]
+#[path = "../../../../test/logging/readme_doctests.rs"]
+mod upstream_readme_doctests;

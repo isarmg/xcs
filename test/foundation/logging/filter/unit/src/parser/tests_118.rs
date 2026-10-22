@@ -1,6 +1,5 @@
 #[cfg(test)]
 mod tests {
-    use crate::ParseError;
     use log::LevelFilter;
 
     use super::{parse_spec, ParseResult};

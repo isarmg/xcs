@@ -61,7 +61,7 @@ where
 }
 
 fn main() {
-    env_logger::init();
+    logging::init();
     if let Err(error) = run(std::env::args_os()) {
         eprintln!("error: {error:?}");
         std::process::exit(1);
