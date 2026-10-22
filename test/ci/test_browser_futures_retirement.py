@@ -3,6 +3,11 @@ import base64
 import gzip
 import hashlib
 import json
+import importlib.util
+import os
+import subprocess
+import tempfile
+from unittest import mock
 from pathlib import Path
 import tomllib
 import unittest
@@ -52,14 +57,92 @@ class BrowserFuturesRetirement(unittest.TestCase):
             self.assertNotIn('WASM_BINDGEN_USE_JS_SYS', path.read_text())
             self.assertNotIn('use_js_sys_futures', path.read_text())
 
-    def test_ci_requires_browser_execution_without_disabling_security(self):
-        workflow = (ROOT / '.github/workflows/ci.yml').read_text()
-        self.assertIn("if: matrix.suite == 'foundation-language'", workflow)
-        self.assertIn('echo "ZXS_CHROMIUM=$chrome" >> "$GITHUB_ENV"', workflow)
+    def test_ci_and_release_require_browser_execution_without_disabling_security(self):
+        for filename, job, next_job in (
+            ('ci.yml', 'tests', 'web-production'),
+            ('release.yml', 'verify', 'linux-web'),
+        ):
+            with self.subTest(workflow=filename):
+                workflow = (ROOT / '.github/workflows' / filename).read_text()
+                job_source = workflow.split(f'  {job}:\n', 1)[1].split(f'  {next_job}:\n', 1)[0]
+                self.assertIn("    env:\n      ZXS_REQUIRE_BROWSER: '1'", job_source)
+                self.assertIn("if: matrix.suite == 'foundation-language'\n"
+                              "        run: bash .github/scripts/prepare-browser-contract.sh", job_source)
+                self.assertIn('foundation-language', job_source.split('    steps:', 1)[0])
+                self.assertLess(job_source.index('prepare-browser-contract.sh'),
+                                job_source.index('bash .github/scripts/check.sh'))
+        setup = (ROOT / '.github/scripts/prepare-browser-contract.sh').read_text()
+        self.assertIn('command -v google-chrome', setup)
+        self.assertIn('echo "ZXS_CHROMIUM=$chrome"', setup)
         script = (ROOT / '.github/scripts/check-web-bindgen-scope.py').read_text()
-        self.assertIn("os.environ.get('ZXS_CHROMIUM')", script)
         for flag in ('--no-sandbox', '--disable-setuid-sandbox', '--disable-web-security'):
-            self.assertNotIn(flag, script)
+            self.assertNotIn(flag, script + setup)
+
+    def test_shared_browser_setup_exports_only_a_working_browser(self):
+        script = ROOT / '.github/scripts/prepare-browser-contract.sh'
+        with tempfile.TemporaryDirectory() as directory:
+            directory = Path(directory)
+            browser = directory / 'google-chrome'
+            environment = directory / 'environment'
+            env = {'PATH': str(directory), 'GITHUB_ENV': str(environment)}
+            result = subprocess.run(['/bin/bash', str(script)], env=env, capture_output=True)
+            self.assertNotEqual(result.returncode, 0)
+            self.assertFalse(environment.exists())
+            browser.write_text('#!/bin/sh\nexit 1\n')
+            browser.chmod(0o700)
+            result = subprocess.run(['/bin/bash', str(script)], env=env, capture_output=True)
+            self.assertNotEqual(result.returncode, 0)
+            self.assertFalse(environment.exists())
+            browser.write_text('#!/bin/sh\necho Chrome test fixture\n')
+            result = subprocess.run(['/bin/bash', str(script)], env=env, capture_output=True)
+            self.assertEqual(result.returncode, 0, result.stderr)
+            self.assertEqual(environment.read_text(), f'ZXS_CHROMIUM={browser}\n')
+
+    def load_browser_check(self):
+        spec = importlib.util.spec_from_file_location(
+            'web_bindgen_scope', ROOT / '.github/scripts/check-web-bindgen-scope.py')
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        return module
+
+    def test_required_browser_missing_fails_before_compilation(self):
+        module = self.load_browser_check()
+        with mock.patch.dict(os.environ, {'ZXS_REQUIRE_BROWSER': '1'}, clear=True), \
+                mock.patch.object(module, 'cargo') as cargo:
+            with self.assertRaisesRegex(RuntimeError, 'ZXS_CHROMIUM is required'):
+                module.check()
+            cargo.assert_not_called()
+
+    def test_optional_local_browser_probe_still_skips(self):
+        module = self.load_browser_check()
+        with mock.patch.dict(os.environ, {}, clear=True):
+            self.assertEqual(module.browser_check(Path('/unused')), 'browser execution not requested')
+
+    def test_configured_missing_browser_fails_even_in_local_mode(self):
+        module = self.load_browser_check()
+        for required in ('0', '1'):
+            with self.subTest(required=required), mock.patch.dict(os.environ, {
+                'ZXS_REQUIRE_BROWSER': required, 'ZXS_CHROMIUM': '/nonexistent/browser',
+            }, clear=True):
+                with self.assertRaisesRegex(RuntimeError, 'not executable'):
+                    module.browser_configuration()
+
+    def test_required_browser_executes_fixture_and_rejects_failed_runtime(self):
+        module = self.load_browser_check()
+        with tempfile.TemporaryDirectory() as directory, \
+                mock.patch.dict(os.environ, {'ZXS_REQUIRE_BROWSER': '1', 'ZXS_CHROMIUM': '/browser'}, clear=True), \
+                mock.patch.object(module.shutil, 'which', return_value='/browser'), \
+                mock.patch.object(module.subprocess, 'run') as run:
+            output = Path(directory)
+            run.return_value = subprocess.CompletedProcess([], 0, '<body>{"status":"passed","checks":["async"]}</body>', '')
+            self.assertEqual(module.browser_check(output), '1 actual Chromium async runtime checks passed')
+            self.assertEqual((output / 'index.html').read_text(),
+                             (ROOT / 'test/wasm-binding-macros/browser-runtime.html').read_text())
+            self.assertEqual(run.call_args.args[0][0], '/browser')
+            self.assertIn('--dump-dom', run.call_args.args[0])
+            run.return_value = subprocess.CompletedProcess([], 0, '<body>{"status":"failed"}</body>', '')
+            with self.assertRaises(AssertionError):
+                module.browser_check(output)
 
     def test_dispatch_preserves_std_without_enabling_eval(self):
         manifest = tomllib.loads((ROOT / 'src/foundation/task-dispatch/Cargo.toml').read_text())

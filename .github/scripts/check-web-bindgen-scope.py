@@ -8,6 +8,7 @@ import http.server
 import json
 import os
 import threading
+import shutil
 
 ROOT = Path(__file__).resolve().parents[2]
 TARGET = Path(os.environ.get('CARGO_TARGET_DIR', ROOT / 'target/web-bindgen-scope-check'))
@@ -18,9 +19,21 @@ def cargo(*arguments, capture=False):
                           capture_output=capture, text=capture)
 
 
-def browser_check(output):
-    """Opt-in actual Chromium execution, never a Node/native substitute."""
+def browser_configuration():
+    """Local probes may opt out; CI/release verification must execute Chromium."""
     browser = os.environ.get('ZXS_CHROMIUM')
+    if not browser:
+        if os.environ.get('ZXS_REQUIRE_BROWSER') == '1':
+            raise RuntimeError('ZXS_CHROMIUM is required for browser contract verification')
+        return None
+    if not shutil.which(browser):
+        raise RuntimeError(f'ZXS_CHROMIUM is not executable: {browser}')
+    return browser
+
+
+def browser_check(output):
+    """Execute actual Chromium, never a Node/native substitute."""
+    browser = browser_configuration()
     if not browser:
         return 'browser execution not requested'
     (output / 'index.html').write_text(
@@ -51,6 +64,7 @@ def browser_check(output):
 
 
 def check():
+    browser_configuration()  # Fail before compiling if required browser setup is missing.
     (ROOT / 'target').mkdir(exist_ok=True)
     with tempfile.TemporaryDirectory(prefix='web-bindgen-scope-', dir=ROOT / 'target') as temporary:
         work = Path(temporary)
