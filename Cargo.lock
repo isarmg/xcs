@@ -459,8 +459,8 @@ version = "0.7.1"
 dependencies = [
  "data-serialization",
  "itoa",
- "ryu",
  "url-encoding",
+ "zmij",
 ]
 
 [[package]]
@@ -1204,10 +1204,6 @@ dependencies = [
 
 [[package]]
 name = "rustversion"
-version = "1.0.23"
-
-[[package]]
-name = "ryu"
 version = "1.0.23"
 
 [[package]]

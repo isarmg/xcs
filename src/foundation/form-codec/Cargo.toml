@@ -22,9 +22,9 @@ test = false
 version = "1"
 path = "../itoa"
 
-[dependencies.ryu]
+[dependencies.zmij]
 version = "1"
-path = "../ryu"
+path = "../zmij"
 
 [dependencies.data-serialization]
 version = "1.0.69"

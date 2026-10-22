@@ -192,3 +192,12 @@ external-test transfers retain cexpr attribution; the removed nom and
 minimal-lexical production/test bytes are authenticated in complete retirement
 archives. SDK-independent and actual-libclang checks have distinct foundation
 shards; the existing system-SQLite and Samba SDK gates are not weakened.
+
+## Shared form float formatting (2026-10-22)
+
+[Form float formatting](form-float-formatting.md) now uses the existing zmij
+implementation directly. The sole ryu consumer is removed, with all former
+source/test bytes archived and authenticated. Positive exponents intentionally
+use a plus sign, percent-encoded as `%2B` in forms; this unreleased format has no
+legacy-spelling compatibility adapter. Numerical bit round-trips and actual
+HTTP form/query consumers are checked independently of archival preservation.

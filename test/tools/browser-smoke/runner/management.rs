@@ -411,11 +411,24 @@ fn login_setup(browser: &Browser, username: &str, password: &str, count: usize) 
 }
 fn select_preset(browser: &Browser, expected_limit: usize) -> Result<()> {
     browser.click(&browser.button("Use local configuration preset", "使用本地预置方案")?)?;
-    browser.click(&browser.css("details [role='combobox']")?)?;
-    browser.click(&browser.element(
-        "xpath",
-        "//*[@role='option' and normalize-space(.)='four-disk-preset']",
-    )?)?;
+    // Scrolling the trigger into view can close its popover. Reacquire and
+    // reopen the control on each attempt instead of retrying a hidden option.
+    // Keep real WebDriver pointer clicks: do not select through script state.
+    wait_for("visible four-disk preset selection", || {
+        if browser.script("return document.querySelector('details [role=combobox] .zxs-select-value')?.textContent === 'four-disk-preset'")? == true {
+            return Ok(());
+        }
+        if browser.script("return document.querySelector('details [role=combobox]')?.getAttribute('aria-expanded') === 'true'")? != true {
+            let trigger = browser.css("details [role='combobox']")?;
+            browser.command("POST", &format!("/element/{trigger}/click"), Some(json!({})))?;
+        }
+        let option = browser.element(
+            "xpath",
+            "//*[@role='option' and normalize-space(.)='four-disk-preset']",
+        )?;
+        browser.command("POST", &format!("/element/{option}/click"), Some(json!({})))?;
+        Err("waiting for preset selection to render".into())
+    })?;
     browser.click(&browser.button("Review preset summary", "查看预置方案摘要")?)?;
     wait_for("real sanitized preset preview", || {
         let value=browser.script("const e=document.querySelector('[data-setup-preset-summary]'); return e ? JSON.parse(e.textContent) : null")?;

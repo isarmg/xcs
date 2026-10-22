@@ -47424,7 +47424,7 @@
     }
   },
   "external_test_mappings_sha256": {
-    "compliance/external-tests/foundation.json": "52315fdfc5a780ac7825829037a8f95dc588c13deea6b57fbcd8b8cd9edd09c4",
+    "compliance/external-tests/foundation.json": "fadf63553191114814bc890a1be43976dc7e1e23c6d0f43a71749573c05e5bf1",
     "compliance/external-tests/integrated.json": "976578b7514d285c9214c408327f9b344f3c7649b4ae3b63839e8806b4677d96",
     "compliance/external-tests/ring.json": "3e5a834ea832ea11a0da5cdeab898e9c2e2d5229becc1988edc3462cfb51dab1"
   },
@@ -64317,77 +64317,6 @@
         "test/foundation/rustversion"
       ]
     },
-    "src/foundation/ryu": {
-      "bytes": 32919,
-      "directory": "src/foundation/ryu",
-      "file_count": 10,
-      "files": [
-        {
-          "path": "test/foundation/ryu/modules/src/tests.rs",
-          "sha256": "4c1bfe1e7e6515779528dddcfd53ba3f6333618132e53a9c675b2bca69e9f8b0",
-          "source": "src/foundation/ryu/src/tests.rs",
-          "source_sha256_before": "4c1bfe1e7e6515779528dddcfd53ba3f6333618132e53a9c675b2bca69e9f8b0"
-        },
-        {
-          "path": "test/foundation/ryu/tests/common_test.rs",
-          "sha256": "8aded3d5ebba9432fa594e38c43adeefbf2807290278e6c0c690654ca4475ffb",
-          "source": "src/foundation/ryu/tests/common_test.rs",
-          "source_sha256_before": "599781a637d9b9756858aabfe5c38a0734a550debd3d94774f33792b7b3c8240"
-        },
-        {
-          "path": "test/foundation/ryu/tests/d2s_intrinsics_test.rs",
-          "sha256": "473ccadc47b4eabecda97923e7e6c2f23e9cd5bbb7e7ae594392c1b9a251d058",
-          "source": "src/foundation/ryu/tests/d2s_intrinsics_test.rs",
-          "source_sha256_before": "15d11b70810bf04f33f8b185bf7f010a436a4edb47fa4648b1a036568c2c5d15"
-        },
-        {
-          "path": "test/foundation/ryu/tests/d2s_table_test.rs",
-          "sha256": "74a63901bf5bacb84a96314eec083f4722a23c9a871fbef47c3299fa5cfc3ce3",
-          "source": "src/foundation/ryu/tests/d2s_table_test.rs",
-          "source_sha256_before": "7e06679c3486feab200ebd82d090457f0cdae2503610d721ced3739dbc86c574"
-        },
-        {
-          "path": "test/foundation/ryu/tests/d2s_test.rs",
-          "sha256": "5cadb01403383bfef181d22cc0d8764e4f46f7a84655166e6b75081132498fc7",
-          "source": "src/foundation/ryu/tests/d2s_test.rs",
-          "source_sha256_before": "5cadb01403383bfef181d22cc0d8764e4f46f7a84655166e6b75081132498fc7"
-        },
-        {
-          "path": "test/foundation/ryu/tests/exhaustive.rs",
-          "sha256": "9b54ee69d695ac3121df7f44812494722fd1af53f6da263dd2ee1a4d38c50d03",
-          "source": "src/foundation/ryu/tests/exhaustive.rs",
-          "source_sha256_before": "9b54ee69d695ac3121df7f44812494722fd1af53f6da263dd2ee1a4d38c50d03"
-        },
-        {
-          "path": "test/foundation/ryu/tests/f2s_test.rs",
-          "sha256": "168f6e32d86fb98fda9afad0022e3b189e9e1f60756de8c9338913c0668ff768",
-          "source": "src/foundation/ryu/tests/f2s_test.rs",
-          "source_sha256_before": "168f6e32d86fb98fda9afad0022e3b189e9e1f60756de8c9338913c0668ff768"
-        },
-        {
-          "path": "test/foundation/ryu/tests/macros/mod.rs",
-          "sha256": "8e90a674b3960f9516cb38f4eea0e0981ff902c3b33572ebdb6c5528d3ffa72c",
-          "source": "src/foundation/ryu/tests/macros/mod.rs",
-          "source_sha256_before": "8e90a674b3960f9516cb38f4eea0e0981ff902c3b33572ebdb6c5528d3ffa72c"
-        },
-        {
-          "path": "test/foundation/ryu/tests/s2d_test.rs",
-          "sha256": "6060aae026fedbd842ec061751c9cc37328aaeffb4f28bd518f39b02ac801eed",
-          "source": "src/foundation/ryu/tests/s2d_test.rs",
-          "source_sha256_before": "75c3a1044881718db65e05f25c9f6e1d005392dddb2e8dafb799668bb6a9a5c3"
-        },
-        {
-          "path": "test/foundation/ryu/tests/s2f_test.rs",
-          "sha256": "193ddf8d87c2ef8e9d3ab34df03e1a43651ae8847ce60a039aa43db985eb2f16",
-          "source": "src/foundation/ryu/tests/s2f_test.rs",
-          "source_sha256_before": "ca44faee70f56f9ef51349418c41a67561fc46ae07c5d2bf0fe6f95ffd1a44f6"
-        }
-      ],
-      "origin_directory": "vendor/rust/ryu-1.0.23",
-      "roots": [
-        "test/foundation/ryu"
-      ]
-    },
     "src/foundation/schema-validation": {
       "bytes": 2948644,
       "directory": "src/foundation/schema-validation",
@@ -74227,7 +74156,7 @@
   },
   "initial_test_relocation_sha256": "791ad728a408677dd54ef98e3feaffe825c5fc5670e888440615933d9498ecc3",
   "lockfiles_sha256": {
-    "Cargo.lock": "f39fa897313bf221618696bb492445393a917d419d9c4c2f982a1ad32d5193cc"
+    "Cargo.lock": "c8c8e6ab67730aec283f6754f5f576588b46c4fef93e7bbe4f9460b29d79a45c"
   },
   "manifests_sha256": {
     "Cargo.toml": "4fa15cfe7d2baf5436dbc9b9c42bd6acb37fa93bd5d03823f8d09715fe4e6e6e",
@@ -74296,7 +74225,7 @@
     "src/foundation/fluent-uri/Cargo.toml": "692c6bf23842b7d50b9c79a92611a1b02881d376508b5c41b369d37e25a0fed9",
     "src/foundation/flume/Cargo.toml": "824eb0ed39b8a1892ad8a71e19f683f9da9535bda5042f250abf3cfde3575fd7",
     "src/foundation/foldhash/Cargo.toml": "bc35d02f08be6a083c9d129eddec208b1852b1879fef8c35a5530488df02c11f",
-    "src/foundation/form-codec/Cargo.toml": "9e4d18e46086a14de316b64e0715c2e7256ee279bfbde2fd2c419960a0e9a0d2",
+    "src/foundation/form-codec/Cargo.toml": "9fd9c72e8d425222efe3dd7a907fe9ab9d1bb7fa2ee06039ce29c198c96eac89",
     "src/foundation/fraction/Cargo.toml": "b1754c5d5bf8344da47c2d12a04f1d9be05ac46954996b20c6a9b9167c071f57",
     "src/foundation/futures-intrusive/Cargo.toml": "be262a474612f1b367d512c8a8527a05161d8d53f73f26941c73dbd3ff4bd6ad",
     "src/foundation/futures-macro/Cargo.toml": "0d1662f1717dfa40934c1571305a99fa73a6bfccc7ef39ebd5aaa59037bc5665",
@@ -74388,7 +74317,6 @@
     "src/foundation/rustls-webpki/Cargo.toml": "c458316c514704512744182403f378af437e697453b3108acda2e217a4652f93",
     "src/foundation/rustls/Cargo.toml": "655395f275d51fe335f55c1a05cf6143771062774862715c184df13528493ee2",
     "src/foundation/rustversion/Cargo.toml": "9249b48982e3bc0add712bb704fe2641ab11f6af228340085379b7ef512248b0",
-    "src/foundation/ryu/Cargo.toml": "3c23ab8489e6f020b06c3a9d6c20b7a0a3acba10279426a29ec32d2f3c77503c",
     "src/foundation/schema-validation/Cargo.toml": "0ba61d144f7fe9d1e76c1aa9ccd7767d1cf863aee3c66da565afc409ba10220a",
     "src/foundation/scopeguard/Cargo.toml": "bddc43c330d01a5c952cce813d647e74b3d17a9f08455af27f9b7c8bf21f0ba2",
     "src/foundation/semver/Cargo.toml": "f8e1816795cfed32f5d6bbea8ca33af4634b9a2d9d9b3aa0b7038cbfe2d9ccb7",
@@ -86204,13 +86132,13 @@
       "description": "`x-www-form-urlencoded` meets Serde",
       "directory": "src/foundation/form-codec",
       "files_sha256": {
-        "Cargo.toml": "9e4d18e46086a14de316b64e0715c2e7256ee279bfbde2fd2c419960a0e9a0d2",
+        "Cargo.toml": "9fd9c72e8d425222efe3dd7a907fe9ab9d1bb7fa2ee06039ce29c198c96eac89",
         "src/de.rs": "9ade5a43f568d88e288474f8acef3d8bcf5713ebf7f917f1482a34a67991f231",
         "src/lib.rs": "83718fe61b847408cd08da3515ce4f4ec45998615605b6e878461313986d8571",
         "src/ser/key.rs": "7c63549432038fa1162ec7162326a535df8426138233a601666be4451eafd758",
         "src/ser/mod.rs": "63a89aab6e00a2df09a7a3b53e32fc9e4847d8d7d129b92c74e7ae854b712dff",
         "src/ser/pair.rs": "0383ebd43aa1447bb46b8478e679f026fde8fba6cfc1e58e2386b120ee34ada3",
-        "src/ser/part.rs": "657d4aa7003c4c532eda7e8b8761b370ad5fd92177518ca5bf1171e0d6254040",
+        "src/ser/part.rs": "120ae1537447f1d4e4491eca7ffa4fcef112392d0f69b2769fe59a06e4bbf51d",
         "src/ser/value.rs": "877ad0db380493f3aeb388eb2c1f9f1d17b1c7eb43cf2b04f6ae51a9c08e7930"
       },
       "license": "MIT/Apache-2.0",
@@ -91689,55 +91617,6 @@
       "vcs": {
         "git": {
           "sha1": "3a7c76605450b9a7299c6502a421909de9126a59"
-        },
-        "path_in_vcs": ""
-      },
-      "version": "1.0.23"
-    },
-    "src/foundation/ryu": {
-      "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 2026-10-20：移除不可达条件实现并修复稳定工具链编译诊断；当前逐文件摘要记录本地实现差异。",
-      "description": "Fast floating point to string conversion",
-      "directory": "src/foundation/ryu",
-      "files_sha256": {
-        "Cargo.toml": "3c23ab8489e6f020b06c3a9d6c20b7a0a3acba10279426a29ec32d2f3c77503c",
-        "benches/bench.rs": "06fc162566376801dbdbd091bfecb0dc3414a2abe7da55ba57c680ade9177f25",
-        "examples/upstream_benchmark.rs": "cc1a31c913449aba1ab735b51dc1cc398983dd93224e4da47604ac1ef4f5d96e",
-        "src/buffer/mod.rs": "12343e5860d5100c412e3229d368ea5e71d31db252256122fe9562a937ab2a43",
-        "src/common.rs": "89a5cdfcc24b6f677f276621457b480d2d07cf21acbbcb824c17530bc19a018c",
-        "src/d2s.rs": "95547e395b7d4d50098cc8b9a83edf8c267315315a8fd9fb6455c7a66fa9da30",
-        "src/d2s_full_table.rs": "9b0186acbc6d65dc55c17e16125be707a2bfb920d22b35d33234b4cc38566a36",
-        "src/d2s_intrinsics.rs": "e34a935b91761444ad9aaec3792da3d06282da3e6f2b8fdab385ea72e448e97b",
-        "src/d2s_small_table.rs": "f24f11ff07e9b2a82531b081075a2bb4340aa6f5a9bc13b1270e5ab6b53fe47a",
-        "src/digit_table.rs": "02351ca54cb8cb3679f635115dd094f32fd91750e9f66103c1ee9ec3db507072",
-        "src/f2s.rs": "6756b70b6dcb1cbf8697915f544b144bb6ead64d63ddf8fed515e130fdad3638",
-        "src/f2s_intrinsics.rs": "3586a351f9269d38a759103b0ac6e9434eb62536473e002655ec424ba32538bf",
-        "src/lib.rs": "f25f58096db23223259d9f9b1d5aa7f6b6b3fe15264b7f3db7f9f3350d96fe33",
-        "src/parse.rs": "7f8aa7e007caf5dcb03abdc4238157724bb742d0823a3b8a01646fa1f1129154",
-        "src/pretty/exponent.rs": "10da3e37ab6ac8cd50aae610feeee66e47674f554df377bca61bdd6ea7715887",
-        "src/pretty/mantissa.rs": "d1d94063abc8644b865ad5489fb3662c7043db89fb2b9bf2db2153d5b6db88a0",
-        "src/pretty/mod.rs": "b9dbcef9b65ee7a463c2513adf23d04160d436f6ae7084e42087f94667308ef4",
-        "src/s2d.rs": "14e62ec17a66eeba27044ea380a2fdd538e3742c8b6cca6a0f073120d20117e3",
-        "src/s2f.rs": "683160d9d4c07714c35edc6fad1a59ffa878ab12a81d5fce9173f67b22d873cb"
-      },
-      "license": "Apache-2.0 OR BSL-1.0",
-      "license_materials": [
-        "compliance/licenses/upstream/ryu-1.0.23/LICENSE-APACHE",
-        "compliance/licenses/upstream/ryu-1.0.23/LICENSE-BOOST"
-      ],
-      "merged_into": "无；通过统一内部源码源接入",
-      "name": "ryu",
-      "origin_directory": "vendor/rust/ryu-1.0.23",
-      "repository": "https://github.com/dtolnay/ryu",
-      "status": "内部维护源码",
-      "upstream": {
-        "archive_sha256": "9774ba4a74de5f7b1c1451ed6cd5285a32eddb5cccb8cc655a4e50009e06477f",
-        "archive_url": "https://static.crates.io/crates/ryu/ryu-1.0.23.crate",
-        "name": "ryu",
-        "version": "1.0.23"
-      },
-      "vcs": {
-        "git": {
-          "sha1": "f0b52bb194befe6fd242154f2182fafd43a819b8"
         },
         "path_in_vcs": ""
       },
@@ -108319,12 +108198,6 @@
             "runtime"
           ]
         },
-        "src/foundation/ryu": {
-          "features": [],
-          "roles": [
-            "runtime"
-          ]
-        },
         "src/foundation/scopeguard": {
           "features": [],
           "roles": [
@@ -111426,12 +111299,6 @@
             "process",
             "std"
           ],
-          "roles": [
-            "compile"
-          ]
-        },
-        "src/foundation/ryu": {
-          "features": [],
           "roles": [
             "compile"
           ]
@@ -115788,6 +115655,136 @@
         "path_in_vcs": ""
       },
       "version": "0.5.18"
+    },
+    "src/foundation/ryu": {
+      "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 2026-10-20：移除不可达条件实现并修复稳定工具链编译诊断；当前逐文件摘要记录本地实现差异。",
+      "description": "Fast floating point to string conversion",
+      "directory": "src/foundation/ryu",
+      "files_sha256": {
+        "Cargo.toml": "3c23ab8489e6f020b06c3a9d6c20b7a0a3acba10279426a29ec32d2f3c77503c",
+        "benches/bench.rs": "06fc162566376801dbdbd091bfecb0dc3414a2abe7da55ba57c680ade9177f25",
+        "examples/upstream_benchmark.rs": "cc1a31c913449aba1ab735b51dc1cc398983dd93224e4da47604ac1ef4f5d96e",
+        "src/buffer/mod.rs": "12343e5860d5100c412e3229d368ea5e71d31db252256122fe9562a937ab2a43",
+        "src/common.rs": "89a5cdfcc24b6f677f276621457b480d2d07cf21acbbcb824c17530bc19a018c",
+        "src/d2s.rs": "95547e395b7d4d50098cc8b9a83edf8c267315315a8fd9fb6455c7a66fa9da30",
+        "src/d2s_full_table.rs": "9b0186acbc6d65dc55c17e16125be707a2bfb920d22b35d33234b4cc38566a36",
+        "src/d2s_intrinsics.rs": "e34a935b91761444ad9aaec3792da3d06282da3e6f2b8fdab385ea72e448e97b",
+        "src/d2s_small_table.rs": "f24f11ff07e9b2a82531b081075a2bb4340aa6f5a9bc13b1270e5ab6b53fe47a",
+        "src/digit_table.rs": "02351ca54cb8cb3679f635115dd094f32fd91750e9f66103c1ee9ec3db507072",
+        "src/f2s.rs": "6756b70b6dcb1cbf8697915f544b144bb6ead64d63ddf8fed515e130fdad3638",
+        "src/f2s_intrinsics.rs": "3586a351f9269d38a759103b0ac6e9434eb62536473e002655ec424ba32538bf",
+        "src/lib.rs": "f25f58096db23223259d9f9b1d5aa7f6b6b3fe15264b7f3db7f9f3350d96fe33",
+        "src/parse.rs": "7f8aa7e007caf5dcb03abdc4238157724bb742d0823a3b8a01646fa1f1129154",
+        "src/pretty/exponent.rs": "10da3e37ab6ac8cd50aae610feeee66e47674f554df377bca61bdd6ea7715887",
+        "src/pretty/mantissa.rs": "d1d94063abc8644b865ad5489fb3662c7043db89fb2b9bf2db2153d5b6db88a0",
+        "src/pretty/mod.rs": "b9dbcef9b65ee7a463c2513adf23d04160d436f6ae7084e42087f94667308ef4",
+        "src/s2d.rs": "14e62ec17a66eeba27044ea380a2fdd538e3742c8b6cca6a0f073120d20117e3",
+        "src/s2f.rs": "683160d9d4c07714c35edc6fad1a59ffa878ab12a81d5fce9173f67b22d873cb"
+      },
+      "license": "Apache-2.0 OR BSL-1.0",
+      "license_materials": [
+        "compliance/licenses/upstream/ryu-1.0.23/LICENSE-APACHE",
+        "compliance/licenses/upstream/ryu-1.0.23/LICENSE-BOOST"
+      ],
+      "merged_into": "无；通过统一内部源码源接入",
+      "name": "ryu",
+      "origin_directory": "vendor/rust/ryu-1.0.23",
+      "repository": "https://github.com/dtolnay/ryu",
+      "retirement": {
+        "bytes": 107241,
+        "category": "consumer-specialization",
+        "external_tests": {
+          "bytes": 32919,
+          "directory": "src/foundation/ryu",
+          "file_count": 10,
+          "files": [
+            {
+              "path": "test/foundation/ryu/modules/src/tests.rs",
+              "sha256": "4c1bfe1e7e6515779528dddcfd53ba3f6333618132e53a9c675b2bca69e9f8b0",
+              "source": "src/foundation/ryu/src/tests.rs",
+              "source_sha256_before": "4c1bfe1e7e6515779528dddcfd53ba3f6333618132e53a9c675b2bca69e9f8b0"
+            },
+            {
+              "path": "test/foundation/ryu/tests/common_test.rs",
+              "sha256": "8aded3d5ebba9432fa594e38c43adeefbf2807290278e6c0c690654ca4475ffb",
+              "source": "src/foundation/ryu/tests/common_test.rs",
+              "source_sha256_before": "599781a637d9b9756858aabfe5c38a0734a550debd3d94774f33792b7b3c8240"
+            },
+            {
+              "path": "test/foundation/ryu/tests/d2s_intrinsics_test.rs",
+              "sha256": "473ccadc47b4eabecda97923e7e6c2f23e9cd5bbb7e7ae594392c1b9a251d058",
+              "source": "src/foundation/ryu/tests/d2s_intrinsics_test.rs",
+              "source_sha256_before": "15d11b70810bf04f33f8b185bf7f010a436a4edb47fa4648b1a036568c2c5d15"
+            },
+            {
+              "path": "test/foundation/ryu/tests/d2s_table_test.rs",
+              "sha256": "74a63901bf5bacb84a96314eec083f4722a23c9a871fbef47c3299fa5cfc3ce3",
+              "source": "src/foundation/ryu/tests/d2s_table_test.rs",
+              "source_sha256_before": "7e06679c3486feab200ebd82d090457f0cdae2503610d721ced3739dbc86c574"
+            },
+            {
+              "path": "test/foundation/ryu/tests/d2s_test.rs",
+              "sha256": "5cadb01403383bfef181d22cc0d8764e4f46f7a84655166e6b75081132498fc7",
+              "source": "src/foundation/ryu/tests/d2s_test.rs",
+              "source_sha256_before": "5cadb01403383bfef181d22cc0d8764e4f46f7a84655166e6b75081132498fc7"
+            },
+            {
+              "path": "test/foundation/ryu/tests/exhaustive.rs",
+              "sha256": "9b54ee69d695ac3121df7f44812494722fd1af53f6da263dd2ee1a4d38c50d03",
+              "source": "src/foundation/ryu/tests/exhaustive.rs",
+              "source_sha256_before": "9b54ee69d695ac3121df7f44812494722fd1af53f6da263dd2ee1a4d38c50d03"
+            },
+            {
+              "path": "test/foundation/ryu/tests/f2s_test.rs",
+              "sha256": "168f6e32d86fb98fda9afad0022e3b189e9e1f60756de8c9338913c0668ff768",
+              "source": "src/foundation/ryu/tests/f2s_test.rs",
+              "source_sha256_before": "168f6e32d86fb98fda9afad0022e3b189e9e1f60756de8c9338913c0668ff768"
+            },
+            {
+              "path": "test/foundation/ryu/tests/macros/mod.rs",
+              "sha256": "8e90a674b3960f9516cb38f4eea0e0981ff902c3b33572ebdb6c5528d3ffa72c",
+              "source": "src/foundation/ryu/tests/macros/mod.rs",
+              "source_sha256_before": "8e90a674b3960f9516cb38f4eea0e0981ff902c3b33572ebdb6c5528d3ffa72c"
+            },
+            {
+              "path": "test/foundation/ryu/tests/s2d_test.rs",
+              "sha256": "6060aae026fedbd842ec061751c9cc37328aaeffb4f28bd518f39b02ac801eed",
+              "source": "src/foundation/ryu/tests/s2d_test.rs",
+              "source_sha256_before": "75c3a1044881718db65e05f25c9f6e1d005392dddb2e8dafb799668bb6a9a5c3"
+            },
+            {
+              "path": "test/foundation/ryu/tests/s2f_test.rs",
+              "sha256": "193ddf8d87c2ef8e9d3ab34df03e1a43651ae8847ce60a039aa43db985eb2f16",
+              "source": "src/foundation/ryu/tests/s2f_test.rs",
+              "source_sha256_before": "ca44faee70f56f9ef51349418c41a67561fc46ae07c5d2bf0fe6f95ffd1a44f6"
+            }
+          ],
+          "origin_directory": "vendor/rust/ryu-1.0.23",
+          "roots": [
+            "test/foundation/ryu"
+          ]
+        },
+        "file_count": 19,
+        "reason": "Replace the sole form-codec float formatter with the existing zmij implementation; intentionally canonicalize positive exponents with a plus sign while preserving finite bit round-trips, nonfinite spelling, and form percent-encoding.",
+        "targets": [
+          "wasm32-unknown-unknown",
+          "x86_64-unknown-linux-gnu"
+        ]
+      },
+      "status": "内部维护源码",
+      "upstream": {
+        "archive_sha256": "9774ba4a74de5f7b1c1451ed6cd5285a32eddb5cccb8cc655a4e50009e06477f",
+        "archive_url": "https://static.crates.io/crates/ryu/ryu-1.0.23.crate",
+        "name": "ryu",
+        "version": "1.0.23"
+      },
+      "vcs": {
+        "git": {
+          "sha1": "f0b52bb194befe6fd242154f2182fafd43a819b8"
+        },
+        "path_in_vcs": ""
+      },
+      "version": "1.0.23"
     },
     "src/foundation/same-file": {
       "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 2026-10-20：裁剪不支持平台与缺失后端的依赖/feature边；移除不可达条件实现并修复稳定工具链编译诊断；当前逐文件摘要记录本地实现差异。 清理独立演示：移除 2 个独立示例程序及专属输入（930 字节）；保留文档编译、真实测试及性能基准输入。",
@@ -123847,6 +123844,7 @@
     "src/foundation/rand_core-0.10.1": "7fb72e3ec9865643f07151b78ccdaac7ce2b5492f6aacf3a82d0ff171889fd19",
     "src/foundation/rand_pcg": "e1ed8f5e2931a5975e4f3984f42420069cf32a758d02398a0d8364397bfbb7de",
     "src/foundation/redox_syscall": "704f75661ff61ace178b7f5c4e26b52ed723934c8e07ccb9957b79936dca095c",
+    "src/foundation/ryu": "db84904d40032645153d736166ab5a9c8bc63cd884ce42de68d708673aa9317d",
     "src/foundation/same-file": "1a08c36bd3c6cf09c5f57776cd777df98f4280206b1d932341ba6b4b2390ffca",
     "src/foundation/sha2-0.10.9": "1ead106fffdba3ac43380ddc28538c803d85219acbaafdb59d77bdad3036f120",
     "src/foundation/shlex-1.3.0": "a198aca124ac3353a3eca07d3efd506de43cb5e442873120c1d5f55723bf4dfd",

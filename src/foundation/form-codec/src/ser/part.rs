@@ -227,9 +227,9 @@ impl<S: Sink> PartSerializer<S> {
 
     fn serialize_floating<F>(self, value: F) -> Result<S::Ok, Error>
     where
-        F: ryu::Float,
+        F: zmij::Float,
     {
-        let mut buf = ryu::Buffer::new();
+        let mut buf = zmij::Buffer::new();
         let part = buf.format(value);
         ser::Serializer::serialize_str(self, part)
     }

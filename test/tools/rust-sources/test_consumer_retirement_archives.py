@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Authenticate complete retired parser source and test replay material."""
+"""Authenticate complete retired consumer-specialization replay material."""
 import base64
 import gzip
 import hashlib
@@ -10,10 +10,10 @@ import unittest
 ROOT = Path(__file__).resolve().parents[3]
 
 
-class BindingParserRetirement(unittest.TestCase):
-    def test_retired_parser_archives_match_exact_catalog_receipts(self):
+class ConsumerRetirementArchives(unittest.TestCase):
+    def test_retired_archives_match_exact_catalog_receipts(self):
         catalog = json.loads((ROOT / 'compliance/rust-sources.json').read_text())
-        for name in ('nom', 'minimal-lexical'):
+        for name in ('nom', 'minimal-lexical', 'ryu'):
             with self.subTest(package=name):
                 directory = 'src/foundation/' + name
                 package = dict(catalog['retired'][directory])

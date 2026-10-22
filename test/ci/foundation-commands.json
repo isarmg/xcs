@@ -195,6 +195,12 @@
     {
       "tool": "python3",
       "args": [
+        ".github/scripts/check-form-floats.py"
+      ]
+    },
+    {
+      "tool": "python3",
+      "args": [
         ".github/scripts/check-binding-expressions.py"
       ]
     },

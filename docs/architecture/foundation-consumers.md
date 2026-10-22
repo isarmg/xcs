@@ -23,11 +23,11 @@ flowchart TD
 
 | 入口 | Cargo 根包目录 | 目标 | 来源数 / runtime / compile |
 | --- | --- | --- | --- |
-| root-native | src/auth/Cargo.toml, src/contract/Cargo.toml, src/naming/Cargo.toml, src/platform/Cargo.toml, src/engine/Cargo.toml, src/server/Cargo.toml, src/client/Cargo.toml, src/rescue/Cargo.toml | x86_64-unknown-linux-gnu | 146 / 125 / 22 |
+| root-native | src/auth/Cargo.toml, src/contract/Cargo.toml, src/naming/Cargo.toml, src/platform/Cargo.toml, src/engine/Cargo.toml, src/server/Cargo.toml, src/client/Cargo.toml, src/rescue/Cargo.toml | x86_64-unknown-linux-gnu | 145 / 124 / 22 |
 | web | src/web/Cargo.toml | wasm32-unknown-unknown | 86 / 52 / 39 |
 | smb | src/smb/Cargo.toml, src/smb-vfs/Cargo.toml | x86_64-unknown-linux-gnu | 33 / 14 / 26 |
 | build-tools | tools/web-build/Cargo.toml, tools/release-tools/Cargo.toml, tools/web-bindings/Cargo.toml | x86_64-unknown-linux-gnu | 58 / 0 / 58 |
-| validation-tools | tools/contract-check/Cargo.toml, tools/browser-smoke/Cargo.toml, tools/unicode-build/Cargo.toml, tools/perf-check/Cargo.toml | x86_64-unknown-linux-gnu | 161 / 0 / 161 |
+| validation-tools | tools/contract-check/Cargo.toml, tools/browser-smoke/Cargo.toml, tools/unicode-build/Cargo.toml, tools/perf-check/Cargo.toml | x86_64-unknown-linux-gnu | 160 / 0 / 160 |
 
 角色可重叠，计数不可相加。显式验证成员：src/foundation/ring。
 
@@ -188,7 +188,6 @@ flowchart TD
 | src/foundation/rustls-pki-types (rustls-pki-types@1.15.1) | src/client [dev]; src/foundation/reqwest [normal, optional, cfg(not(target_arch = "wasm32"))]; src/foundation/rustls [normal] alias=pki-types; src/foundation/rustls-webpki [normal] alias=pki-types; src/foundation/webpki-roots [normal] alias=pki-types | root-native@x86_64-unknown-linux-gnu: runtime; features=alloc,default,std |
 | src/foundation/rustls-webpki (rustls-webpki@0.103.16) | src/client [dev]; src/foundation/rustls [normal] alias=webpki | root-native@x86_64-unknown-linux-gnu: runtime; features=alloc,default,ring,std |
 | src/foundation/rustversion (rustversion@1.0.23) | src/foundation/rustls [build, optional]; src/foundation/wasm-bindgen [build] alias=rustversion-compat | web@wasm32-unknown-unknown: compile; features=(none) |
-| src/foundation/ryu (ryu@1.0.23) | src/foundation/form-codec [normal] | root-native@x86_64-unknown-linux-gnu: runtime; features=(none); validation-tools@x86_64-unknown-linux-gnu: compile; features=(none) |
 | src/foundation/schema-validation (schema-validation@0.58.6) | tools/contract-check [normal] | validation-tools@x86_64-unknown-linux-gnu: compile; features=json-codec,pattern,reference,validator,value |
 | src/foundation/scopeguard (scopeguard@1.2.0) | src/foundation/synchronization [normal] | root-native@x86_64-unknown-linux-gnu: runtime; features=(none); validation-tools@x86_64-unknown-linux-gnu: compile; features=(none) |
 | src/foundation/semver (semver@1.0.28) | src/foundation/rustc_version [normal]; src/foundation/wasmparser [normal, optional]; tools/release-tools [normal] | web@wasm32-unknown-unknown: compile; features=default,std; build-tools@x86_64-unknown-linux-gnu: compile; features=default,std |
@@ -273,7 +272,7 @@ flowchart TD
 | src/foundation/zerotrie (zerotrie@0.2.5) | src/foundation/icu_provider [normal, optional]; src/foundation/unicode-properties [normal] | root-native@x86_64-unknown-linux-gnu: runtime; features=yoke,zerofrom; validation-tools@x86_64-unknown-linux-gnu: compile; features=yoke,zerofrom |
 | src/foundation/zerovec (zerovec@0.11.8) | src/foundation/icu_collections [normal]; src/foundation/icu_locale_core [normal, optional]; src/foundation/icu_provider [normal]; src/foundation/potential_utf [normal, optional]; src/foundation/tinystr [normal, optional]; src/foundation/unicode-normalizer [normal]; src/foundation/unicode-properties [normal]; src/foundation/zerotrie [normal, optional] | root-native@x86_64-unknown-linux-gnu: runtime; features=derive,yoke; validation-tools@x86_64-unknown-linux-gnu: compile; features=derive,yoke |
 | src/foundation/zerovec-derive (zerovec-derive@0.11.6) | src/foundation/zerovec [normal, optional] | root-native@x86_64-unknown-linux-gnu: compile; features=(none); validation-tools@x86_64-unknown-linux-gnu: compile; features=(none) |
-| src/foundation/zmij (zmij@1.0.23) | src/foundation/json-codec [normal]; src/foundation/schema-validation [normal, optional] | root-native@x86_64-unknown-linux-gnu: runtime; features=(none); web@wasm32-unknown-unknown: runtime; features=(none); smb@x86_64-unknown-linux-gnu: compile+runtime; features=(none); build-tools@x86_64-unknown-linux-gnu: compile; features=(none); validation-tools@x86_64-unknown-linux-gnu: compile; features=(none) |
+| src/foundation/zmij (zmij@1.0.23) | src/foundation/form-codec [normal]; src/foundation/json-codec [normal]; src/foundation/schema-validation [normal, optional] | root-native@x86_64-unknown-linux-gnu: runtime; features=(none); web@wasm32-unknown-unknown: runtime; features=(none); smb@x86_64-unknown-linux-gnu: compile+runtime; features=(none); build-tools@x86_64-unknown-linux-gnu: compile; features=(none); validation-tools@x86_64-unknown-linux-gnu: compile; features=(none) |
 | src/interface (zxs-web-core@0.8.19) | src/macros [dev]; src/web [normal] | web@wasm32-unknown-unknown: runtime; features=csr,default |
 | src/macros (view-macros@0.8.19) | src/interface [normal] alias=view_macros | web@wasm32-unknown-unknown: compile; features=(none) |
 | src/naming (unicode-normalization@0.1.24) | src/engine [normal]; src/server [normal]; src/web [normal] | root-native@x86_64-unknown-linux-gnu: runtime; features=(none); web@wasm32-unknown-unknown: runtime; features=(none); validation-tools@x86_64-unknown-linux-gnu: compile; features=(none) |
