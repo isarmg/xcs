@@ -384,21 +384,16 @@ fn select_preset(browser: &Browser, expected_limit: usize) -> Result<()> {
         }
     })
 }
-fn preset_setup(
-    browser: &Browser,
-    daemon: &Path,
-    web: &Path,
-    root: &Path,
-    password: &str,
-) -> Result<()> {
-    let fixture = SetupFixture::new(root, "preset-web-setup", 4)?;
+fn write_preset(fixture: &SetupFixture) -> Result<(storage_engine::Config, std::path::PathBuf)> {
     let mut config = storage_engine::Config::development([
         fixture.disks["candidate-0"].clone(),
         fixture.disks["candidate-1"].clone(),
         fixture.disks["candidate-2"].clone(),
     ]);
-    let mut fourth = config.disks[1].clone();
-    fourth.slot_id = "B02".into();
+    let mut fourth = config.disks[2].clone();
+    fourth.slot_id = "D01".into();
+    fourth.level = 4;
+    fourth.upstream_slot_id = Some("C01".into());
     fourth.disk_id = storage_engine::new_id("disk");
     fourth.root = fixture.disks["candidate-3"].clone();
     fourth.metadata_member = false;
@@ -411,6 +406,17 @@ fn preset_setup(
         .mode(0o600)
         .open(&preset)?
         .write_all(&json_codec::to_vec(&config)?)?;
+    Ok((config, preset))
+}
+fn preset_setup(
+    browser: &Browser,
+    daemon: &Path,
+    web: &Path,
+    root: &Path,
+    password: &str,
+) -> Result<()> {
+    let fixture = SetupFixture::new(root, "preset-web-setup", 4)?;
+    let (mut config, preset) = write_preset(&fixture)?;
     let _server = fixture.launch(daemon, web, Some(&preset))?;
     fixture.open(browser)?;
     select_preset(browser, 17)?;
@@ -532,4 +538,46 @@ fn completion_fixture_has_service_proof_without_published_authority() {
     assert!(fixture.pool.join("config.json").exists());
     assert!(!fixture.pool.join("management-authority.json").exists());
     assert!(!fixture.management.join("management-auth.json").exists());
+}
+
+#[test]
+fn browser_preset_fixture_has_valid_topology_and_sanitized_preview() {
+    use storage_server::setup_recovery::{PresetPreviewRequest, SetupRecovery};
+    let root = tempfile::tempdir().unwrap();
+    let fixture = SetupFixture::new(root.path(), "preset-fixture-unit", 4).unwrap();
+    let (config, preset) = write_preset(&fixture).unwrap();
+    let service = SetupRecovery::new(
+        fixture.pool.clone(),
+        fixture.management.clone(),
+        fixture.disks.clone(),
+    )
+    .unwrap()
+    .allow_development_mode()
+    .with_presets(std::collections::BTreeMap::from([(
+        "four-disk-preset".into(),
+        preset,
+    )]));
+    let permit = service.authorize_bootstrap(&fixture.key).unwrap();
+    let preview = service
+        .preview_preset(
+            &permit,
+            PresetPreviewRequest {
+                preset_id: "four-disk-preset".into(),
+            },
+        )
+        .unwrap();
+    let summary = &preview["configuration"];
+    assert_eq!(summary["max_workspaces"], 17);
+    assert_eq!(summary["disks"].as_array().unwrap().len(), 4);
+    assert_eq!(summary["disks"][3]["candidate_id"], "candidate-3");
+    assert_eq!(config.disks[3].upstream_slot_id.as_deref(), Some("C01"));
+    assert!(!summary.to_string().contains(fixture.root.to_str().unwrap()));
+    assert!(
+        summary["disks"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .all(|disk| disk.get("root").is_none())
+    );
+    assert!(!fixture.pool.join("config.json").exists());
 }
