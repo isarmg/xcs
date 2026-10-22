@@ -1,5 +1,6 @@
 use super::*;
 
+#[cfg(feature = "sqlite-pool")]
 fn test_identity(schema_sha256: String) -> Result<SchemaIdentity, SchemaIdentityError> {
     SchemaIdentity::new("test-product", "0.3.0", 1, schema_sha256)
 }
@@ -60,6 +61,7 @@ async fn candidate_reader_is_read_only_bounded_and_never_creates_a_database()
 }
 
 #[tokio::test]
+#[cfg(feature = "sqlite-pool")]
 async fn explicit_creation_applies_pragmas_to_every_connection_and_reopens()
 -> Result<(), Box<dyn std::error::Error>> {
     let directory = tempfile::tempdir()?;
@@ -126,6 +128,7 @@ async fn explicit_creation_applies_pragmas_to_every_connection_and_reopens()
 }
 
 #[tokio::test]
+#[cfg(feature = "sqlite-pool")]
 async fn missing_existing_and_invalid_options_are_typed_and_do_not_create()
 -> Result<(), Box<dyn std::error::Error>> {
     let directory = tempfile::tempdir()?;
@@ -150,6 +153,7 @@ async fn missing_existing_and_invalid_options_are_typed_and_do_not_create()
 }
 
 #[tokio::test]
+#[cfg(feature = "sqlite-pool")]
 async fn sqlx_adapter_verifies_metadata_shape_values_and_fingerprint()
 -> Result<(), Box<dyn std::error::Error>> {
     let directory = tempfile::tempdir()?;
@@ -209,6 +213,7 @@ async fn sqlx_adapter_verifies_metadata_shape_values_and_fingerprint()
 }
 
 #[tokio::test]
+#[cfg(feature = "sqlite-pool")]
 async fn foreign_key_check_reports_the_violating_rows() -> Result<(), Box<dyn std::error::Error>> {
     let directory = tempfile::tempdir()?;
     let database_path = directory.path().join("foreign-keys.sqlite3");
@@ -280,6 +285,7 @@ async fn metadata_excess_is_detected_with_only_two_rows_materialized()
 }
 
 #[tokio::test]
+#[cfg(feature = "sqlite-pool")]
 async fn pool_limits_apply_to_replacement_connections_and_invalid_creation_is_readonly()
 -> Result<(), Box<dyn std::error::Error>> {
     let directory = tempfile::tempdir()?;
@@ -401,6 +407,7 @@ async fn schema_budget_rejects_complete_excess_and_preserves_canonical_bytes()
 }
 
 #[tokio::test]
+#[cfg(feature = "sqlite-pool")]
 async fn foreign_key_evidence_stays_bounded_for_many_violations()
 -> Result<(), Box<dyn std::error::Error>> {
     let directory = tempfile::tempdir()?;
@@ -435,25 +442,27 @@ async fn foreign_key_evidence_stays_bounded_for_many_violations()
 }
 
 #[test]
+#[cfg(feature = "sqlite-pool")]
 fn checkpoint_result_distinguishes_busy_and_incomplete() {
     assert!(matches!(
-        validate_checkpoint_result((1, 8, 3)),
+        pool::validate_checkpoint_result((1, 8, 3)),
         Err(Error::CheckpointBusy {
             log_frames: 8,
             checkpointed_frames: 3
         })
     ));
     assert!(matches!(
-        validate_checkpoint_result((0, 8, 3)),
+        pool::validate_checkpoint_result((0, 8, 3)),
         Err(Error::CheckpointIncomplete {
             log_frames: 8,
             checkpointed_frames: 3
         })
     ));
-    assert!(validate_checkpoint_result((0, 8, 8)).is_ok());
+    assert!(pool::validate_checkpoint_result((0, 8, 8)).is_ok());
 }
 
 #[tokio::test]
+#[cfg(feature = "sqlite-pool")]
 async fn live_reader_makes_truncate_checkpoint_report_busy()
 -> Result<(), Box<dyn std::error::Error>> {
     let directory = tempfile::tempdir()?;

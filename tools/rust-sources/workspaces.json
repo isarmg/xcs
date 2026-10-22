@@ -9,7 +9,8 @@
     {"id": "web", "manifests": ["src/web/Cargo.toml"], "targets": ["wasm32-unknown-unknown"], "role": "runtime", "purpose": "正式浏览器界面及整合后的界面内核", "production": true},
     {"id": "smb", "manifests": ["src/smb/Cargo.toml", "src/smb-vfs/Cargo.toml"], "targets": ["x86_64-unknown-linux-gnu"], "role": "runtime", "purpose": "Linux amd64 Samba 桥接协议与真实 SDK VFS 模块", "production": true},
     {"id": "build-tools", "manifests": ["tools/web-build/Cargo.toml", "tools/release-tools/Cargo.toml", "tools/web-bindings/Cargo.toml"], "targets": ["x86_64-unknown-linux-gnu"], "role": "compile", "purpose": "产品 Web 绑定、构建与发布工具", "production": true},
-    {"id": "validation-tools", "manifests": ["tools/contract-check/Cargo.toml", "tools/browser-smoke/Cargo.toml", "tools/unicode-build/Cargo.toml", "tools/perf-check/Cargo.toml"], "targets": ["x86_64-unknown-linux-gnu"], "role": "compile", "purpose": "契约、浏览器、命名表及性能验证工具", "production": false}
+    {"id": "validation-tools", "manifests": ["tools/contract-check/Cargo.toml", "tools/browser-smoke/Cargo.toml", "tools/unicode-build/Cargo.toml", "tools/perf-check/Cargo.toml"], "targets": ["x86_64-unknown-linux-gnu"], "role": "compile", "purpose": "契约、浏览器、命名表及性能验证工具", "production": false},
+    {"id": "sqlite-pool-validation", "manifests": ["src/platform/Cargo.toml"], "targets": ["x86_64-unknown-linux-gnu"], "role": "compile", "purpose": "SQLite 可选连接池与快照适配器回归验证", "production": false, "features": ["platform-io/sqlite-pool"]}
   ],
   "integrated_sources": ["src/macros", "tools/web-bindings"],
   "verification_members": ["src/foundation/ring"],

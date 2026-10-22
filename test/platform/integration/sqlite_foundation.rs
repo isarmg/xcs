@@ -1,7 +1,11 @@
-use sqlite_access::{Connection, Row, sqlite::SqlitePoolOptions};
+#[cfg(feature = "sqlite-pool")]
+use sqlite_access::sqlite::SqlitePoolOptions;
+use sqlite_access::{Connection, Row};
+#[cfg(feature = "sqlite-pool")]
 use std::time::Duration;
 
 #[tokio::test]
+#[cfg(feature = "sqlite-pool")]
 async fn pool_timeout_rollback_savepoint_and_statement_eviction() -> Result<(), sqlite_access::Error>
 {
     let options = sqlite_access::sqlite::SqliteConnectOptions::new()

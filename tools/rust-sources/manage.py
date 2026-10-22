@@ -110,6 +110,8 @@ def structure(root, policy):
     if (root / "test").is_symlink():
         raise ValueError("test source root symlink")
     verify_target_policy(policy)
+    for profile in policy.get("profiles", []):
+        profile_features(root, profile)
     if any(path.startswith("test/") for path in project_manifests(root)):
         raise ValueError("Cargo package manifests are forbidden beneath test/")
     if manifests(root) != {"Cargo.toml"}:
@@ -253,12 +255,50 @@ def verify_feature_edges(root):
                         raise ValueError(f"dangling dependency feature: {relative} {alias}/{feature}")
 
 
-def cargo_metadata(root, manifest="Cargo.toml", target=None, cargo_home=None):
+def profile_features(root, profile):
+    """Only explicit, tested capabilities may extend a validation closure.
+
+    Feature selection is qualified by a selected workspace member, never by an
+    arbitrary dependency or Cargo's all-features switch. Production profiles
+    continue to resolve with their existing default workspace feature graph.
+    """
+    values = profile.get("features", [])
+    if (not isinstance(values, list)
+            or any(not isinstance(value, str) or not re.fullmatch(r"[A-Za-z0-9_-]+/[A-Za-z0-9_-]+", value)
+                   for value in values)
+            or len(values) != len(set(values))):
+        raise ValueError(f"invalid explicit profile features: {profile['id']}")
+    if not values:
+        return ()
+    if profile.get("production") is not False or profile.get("role") != "compile":
+        raise ValueError("explicit capability features require a non-production compile profile")
+    paths = profile.get("manifests", [])
+    if (not isinstance(paths, list) or not paths or any(not isinstance(path, str) for path in paths)
+            or len(paths) != len(set(paths)) or profile.get("packages")):
+        raise ValueError("explicit capability features require selected workspace manifests")
+    workspace = tomllib.loads((root / "Cargo.toml").read_text(encoding="utf-8"))["workspace"]
+    declared = {}
+    for relative in paths:
+        path = safe_path(root, relative)
+        if path.name != "Cargo.toml" or Path(relative).parent.as_posix() not in workspace["members"]:
+            raise ValueError(f"capability root is not an explicit workspace member: {relative}")
+        manifest = tomllib.loads(path.read_text(encoding="utf-8"))
+        declared[manifest["package"]["name"]] = manifest.get("features", {})
+    for value in values:
+        package, feature = value.split("/")
+        if feature not in declared.get(package, {}):
+            raise ValueError(f"capability feature is not declared by a selected root: {value}")
+    return tuple(sorted(values))
+
+
+def cargo_metadata(root, manifest="Cargo.toml", target=None, cargo_home=None, features=()):
     if manifest != "Cargo.toml":
         raise ValueError("metadata must resolve the single root workspace")
     command = ["cargo", "metadata", "--locked", "--offline", "--format-version", "1", "--manifest-path", str(root / manifest)]
     if target:
         command += ["--filter-platform", target]
+    if features:
+        command += ["--features", ",".join(features)]
     environment = os.environ.copy()
     if cargo_home:
         environment["CARGO_HOME"] = str(cargo_home)
@@ -457,11 +497,16 @@ def resolutions(root, policy, merged_sources=()):
     with tempfile.TemporaryDirectory(prefix="zxs-empty-cargo-") as home:
         for entry in entries(policy):
             target = entry["target"]
-            if target not in metadata:
-                metadata[target] = cargo_metadata(root, "Cargo.toml", target, home)
-                verify_source_paths(root, metadata[target])
-            selected = selected_sources(root, metadata[target], entry.get("role", "runtime"), source_directories(root, policy) | set(merged_sources), entry)
-            result.append(dict(manifest="Cargo.toml", profile=entry["id"], target=target, packages=selected))
+            features = profile_features(root, entry)
+            key = (target, features)
+            if key not in metadata:
+                metadata[key] = cargo_metadata(root, "Cargo.toml", target, home, features=features)
+                verify_source_paths(root, metadata[key])
+            selected = selected_sources(root, metadata[key], entry.get("role", "runtime"), source_directories(root, policy) | set(merged_sources), entry)
+            resolution = dict(manifest="Cargo.toml", profile=entry["id"], target=target, packages=selected)
+            if features:
+                resolution["requested_features"] = list(features)
+            result.append(resolution)
     return result
 
 
@@ -696,7 +741,11 @@ def refresh(root, retire_plan=None, upgrade_plan_data=None, rename_plan_data=Non
         raise ValueError('consolidated owner lifecycle requires an explicit chain-aware adapter')
     consolidation_previous = dict(previous, packages=consolidated, merges=merged_inputs,
         schema=max(previous.get('schema', 0), 8 if consolidation_history else 0),
-        consolidations=consolidation_history, consolidation_records_sha256=source_consolidation.hashes(consolidation_history))
+        consolidations=consolidation_history, consolidation_records_sha256=source_consolidation.hashes(consolidation_history),
+        # Consumed rename/move proofs revalidate this transitional catalog.
+        # Project only the exact external transitions authenticated by prepare;
+        # the on-disk mapping is independently checked against them below.
+        external_tests=source_consolidation.remap_previous_external(previous.get('external_tests', {}), consolidated_now))
     renamed, renames = source_naming.prepare(root, consolidation_previous, rename_plan_data, files)
     rename_paths = {p for old, row in renames.items() if old in previous['packages']
                     for p in (old, row['destination_directory'])}
@@ -809,7 +858,10 @@ def document(catalog, policy):
                      + " 显式登记在同一个根 workspace，不属于 default-members；这是上游回归对象，不是新业务组件。"
                      + " 追加测试材料的精确来源单独保存于 compliance/provenance/supplemental，不改写原始发布包记录。")
     for profile in policy.get("profiles", policy["workspaces"]):
-        lines.append("| " + " | ".join(map(cell, [profile.get("id", "workspace"), profile.get("purpose", "根工作区"), ", ".join(profile["targets"])])) + " |")
+        purpose = profile.get("purpose", "根工作区")
+        if profile.get("features"):
+            purpose += "；非产品默认，显式验证特性：" + ", ".join(profile["features"])
+        lines.append("| " + " | ".join(map(cell, [profile.get("id", "workspace"), purpose, ", ".join(profile["targets"])])) + " |")
     lines += ["", "## 逐项来源、许可与改造", "", "| 原始身份 | 当前组件 / 位置 | 许可材料 | 用途与闭包 | 修改及合并 |", "| --- | --- | --- | --- | --- |"]
     for key, package in sorted(catalog["packages"].items()):
         upstream = package["upstream"]
@@ -962,10 +1014,11 @@ def verify(root, metadata=False):
     superseded_sources(root, catalog, records)
     verify_origin_coverage(catalog, records)
     verify_retained_closure(catalog, policy)
-    expected = {(entry["manifest"], entry["id"], entry["target"]) for entry in entries(policy)}
-    actual = {(item["manifest"], item.get("profile", "workspace"), item["target"]) for item in catalog["resolutions"]}
+    expected = {(entry["manifest"], entry["id"], entry["target"], profile_features(root, entry)) for entry in entries(policy)}
+    actual = {(item["manifest"], item.get("profile", "workspace"), item["target"], tuple(item.get("requested_features", [])))
+              for item in catalog["resolutions"]}
     if expected != actual or len(actual) != len(catalog["resolutions"]):
-        raise ValueError("resolution inventory drift: root profile/target coverage")
+        raise ValueError("resolution inventory drift: root profile/target/requested-feature coverage")
     identities = sorted(upstream_identity(record["upstream"]) for record in records.values())
     if sorted(upstream_identity(record) for record in catalog["upstream_identities"]) != identities:
         raise ValueError("upstream advisory identity inventory drift")

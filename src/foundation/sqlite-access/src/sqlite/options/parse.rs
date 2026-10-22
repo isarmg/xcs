@@ -3,8 +3,11 @@ use std::path::{Path, PathBuf};
 use std::str::FromStr;
 use std::sync::atomic::{AtomicUsize, Ordering};
 
-use url_encoding::percent::{percent_decode_str, percent_encode, AsciiSet};
+#[cfg(feature = "url")]
 use url_encoding::address::Url;
+use url_encoding::percent::percent_decode_str;
+#[cfg(feature = "url")]
+use url_encoding::percent::{percent_encode, AsciiSet};
 
 use crate::sqlite::error::Error;
 use crate::sqlite::SqliteConnectOptions;
@@ -115,6 +118,7 @@ impl SqliteConnectOptions {
         Ok(options)
     }
 
+    #[cfg(feature = "url")]
     pub(crate) fn build_url(&self) -> Url {
         // https://url.spec.whatwg.org/#path-percent-encode-set
         static PATH_ENCODE_SET: AsciiSet = url_encoding::percent::CONTROLS
@@ -189,5 +193,11 @@ include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/sqlite-a
 #[cfg(test)]
 include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/sqlite-access/sqlite/functions/src/options/parse/test_parse_shared_in_memory_213.rs"));
 
-#[cfg(test)]
+#[cfg(all(test, feature = "url"))]
 include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/sqlite-access/sqlite/functions/src/options/parse/it_returns_the_parsed_url_222.rs"));
+
+#[cfg(test)]
+include!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/../../../test/platform/unit/sqlite/driver/direct_parser_contract.rs"
+));

@@ -19,8 +19,29 @@ class PlatformScope(unittest.TestCase):
             {(entry["id"], entry["target"]) for entry in manager.entries(policy)},
             {("root-native", manager.NATIVE_TARGET), ("web", manager.WEB_TARGET),
              ("smb", manager.NATIVE_TARGET), ("build-tools", manager.NATIVE_TARGET),
-             ("validation-tools", manager.NATIVE_TARGET)},
+             ("validation-tools", manager.NATIVE_TARGET), ("sqlite-pool-validation", manager.NATIVE_TARGET)},
         )
+
+    def test_sqlite_pool_validation_matches_the_real_retained_capability(self):
+        policy = manager.read_json(ROOT / manager.POLICY)
+        optional = next(profile for profile in policy["profiles"] if profile["id"] == "sqlite-pool-validation")
+        self.assertEqual(optional["manifests"], ["src/platform/Cargo.toml"])
+        self.assertEqual(optional["role"], "compile")
+        self.assertIs(optional["production"], False)
+        self.assertEqual(manager.profile_features(ROOT, optional), ("platform-io/sqlite-pool",))
+        self.assertTrue(all(not profile.get("features") for profile in policy["profiles"] if profile is not optional))
+        platform = tomllib.loads((ROOT / "src/platform/Cargo.toml").read_text())
+        driver = tomllib.loads((ROOT / "src/foundation/sqlite-access/Cargo.toml").read_text())
+        notification = tomllib.loads((ROOT / "src/foundation/async-notification/Cargo.toml").read_text())
+        self.assertIn("sqlite-access/pool", platform["features"]["sqlite-pool"])
+        self.assertIn("dep:async-notification", driver["features"]["pool"])
+        self.assertTrue(driver["dependencies"]["async-notification"]["optional"])
+        self.assertTrue(driver["dependencies"]["async-notification"]["default-features"])
+        self.assertIn("std", notification["features"]["default"])
+        self.assertIn("dep:parking", notification["features"]["std"])
+        parking = notification["target"]['cfg(not(target_family = "wasm"))']["dependencies"]["parking"]
+        self.assertEqual(parking["path"], "../parking")
+        self.assertTrue(parking["optional"])
 
     def test_linux_uapi_preserves_every_amd64_feature_and_binding(self):
         directory = ROOT / "src/foundation/linux-raw-sys"

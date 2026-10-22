@@ -1,6 +1,9 @@
 use crate::database::Database;
 use crate::error::Error;
-use crate::pool::{MaybePoolConnection, Pool, PoolConnection};
+#[cfg(feature = "pool")]
+use crate::pool::{Pool, PoolConnection};
+#[cfg(feature = "pool")]
+use crate::transaction::TransactionConnection;
 
 use crate::transaction::Transaction;
 use futures::future::BoxFuture;
@@ -77,6 +80,7 @@ pub trait Acquire<'c> {
     fn begin(self) -> BoxFuture<'c, Result<Transaction<'c, Self::Database>, Error>>;
 }
 
+#[cfg(feature = "pool")]
 impl<'a, DB: Database> Acquire<'a> for &'_ Pool<DB> {
     type Database = DB;
 
@@ -90,7 +94,7 @@ impl<'a, DB: Database> Acquire<'a> for &'_ Pool<DB> {
         let conn = self.acquire();
 
         Box::pin(async move {
-            Transaction::begin(MaybePoolConnection::PoolConnection(conn.await?), None).await
+            Transaction::begin(TransactionConnection::PoolConnection(conn.await?), None).await
         })
     }
 }

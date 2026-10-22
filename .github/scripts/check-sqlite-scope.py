@@ -39,7 +39,7 @@ def check(root):
         manifest.write_text('[package]\nname = "sqlite-api-scope"\nversion = "0.0.0"\nedition = "2021"\n'
                             '[workspace]\n[dependencies]\n' + declarations + '\n')
         source = work / 'src/lib.rs'
-        source.write_text('pub fn accepts(_: Option<sqlite_access::SqlitePool>) {}\n')
+        source.write_text('pub fn accepts(_: Option<sqlite_access::SqliteConnection>) {}\n')
         subprocess.run(['cargo', 'generate-lockfile', '--offline', '--manifest-path', str(manifest)], cwd=root, check=True)
         command = ['cargo', 'check', '--locked', '--offline', '--manifest-path', str(manifest),
                    '--target-dir', str(root / 'target/sqlite-scope-check')]
@@ -55,7 +55,7 @@ def check(root):
                 result = subprocess.run(command + ['--features', f'{package}/{feature}'], cwd=root, text=True, capture_output=True)
                 if not result.returncode or f'does not have that feature' not in result.stderr:
                     raise AssertionError(f'retired feature unexpectedly accepted or unrelated failure: {package}/{feature}\n{result.stderr}')
-        retained = ['sqlite-access/json', 'sqlite-access/uuid', 'sqlite-access/regexp', 'sqlite-access/sqlite-deserialize',
+        retained = ['sqlite-access/pool', 'sqlite-access/url', 'sqlite-access/json', 'sqlite-access/uuid', 'sqlite-access/regexp', 'sqlite-access/sqlite-deserialize',
                     'sqlite-access/sqlite-load-extension', 'sqlite-access/sqlite-preupdate-hook',
                     'sqlite-access/sqlite-unlock-notify', 'sqlite-access/offline']
         subprocess.run(command + ['--features', ','.join(retained)], cwd=root, check=True)

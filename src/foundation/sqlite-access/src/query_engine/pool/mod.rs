@@ -73,15 +73,12 @@ use crate::transaction::Transaction;
 
 pub use self::connection::PoolConnection;
 use self::inner::PoolInner;
-#[doc(hidden)]
-pub use self::maybe::MaybePoolConnection;
 pub use self::options::{PoolConnectionMetadata, PoolOptions};
+#[doc(hidden)]
+use crate::transaction::TransactionConnection;
 
 #[macro_use]
 mod executor;
-
-#[macro_use]
-pub mod maybe;
 
 mod connection;
 mod inner;
@@ -370,7 +367,7 @@ impl<DB: Database> Pool<DB> {
     /// Retrieves a connection and immediately begins a new transaction.
     pub async fn begin(&self) -> Result<Transaction<'static, DB>, Error> {
         Transaction::begin(
-            MaybePoolConnection::PoolConnection(self.acquire().await?),
+            TransactionConnection::PoolConnection(self.acquire().await?),
             None,
         )
         .await
@@ -379,7 +376,7 @@ impl<DB: Database> Pool<DB> {
     /// Attempts to retrieve a connection and immediately begins a new transaction if successful.
     pub async fn try_begin(&self) -> Result<Option<Transaction<'static, DB>>, Error> {
         match self.try_acquire() {
-            Some(conn) => Transaction::begin(MaybePoolConnection::PoolConnection(conn), None)
+            Some(conn) => Transaction::begin(TransactionConnection::PoolConnection(conn), None)
                 .await
                 .map(Some),
 
@@ -393,7 +390,7 @@ impl<DB: Database> Pool<DB> {
         statement: impl SqlSafeStr,
     ) -> Result<Transaction<'static, DB>, Error> {
         Transaction::begin(
-            MaybePoolConnection::PoolConnection(self.acquire().await?),
+            TransactionConnection::PoolConnection(self.acquire().await?),
             Some(statement.into_sql_str()),
         )
         .await
@@ -407,7 +404,7 @@ impl<DB: Database> Pool<DB> {
     ) -> Result<Option<Transaction<'static, DB>>, Error> {
         match self.try_acquire() {
             Some(conn) => Transaction::begin(
-                MaybePoolConnection::PoolConnection(conn),
+                TransactionConnection::PoolConnection(conn),
                 Some(statement.into_sql_str()),
             )
             .await

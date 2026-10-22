@@ -370,9 +370,34 @@ class NestedManager(unittest.TestCase):
     stage = manager_fixture.ManageConsolidation.stage
     commit = manager_fixture.ManageConsolidation.commit
 
-    def nested(self, secondary):
+    def renamed_input(self):
+        """Exercise a real consumed rename, not a mocked lifecycle validator."""
         manager = manager_fixture.manager
-        self.commit(external=True)
+        before = deepcopy(self.catalog['packages'][self.secondary])
+        destination = 'src/foundation/renamed-side'
+        (self.root / self.secondary).rename(self.root / destination)
+        (self.root / destination / 'Cargo.toml').write_text(
+            '[package]\nname="renamed-side"\nversion="2.0.0"\n')
+        row = dict(directory=self.secondary, package=before,
+            destination_directory=destination, destination_name='renamed-side',
+            reason='Reviewed functional identity', files_sha256=manager.files(self.root / destination),
+            external_tests=None, destination_external_tests=None)
+        self._workspace([(self.primary, 'mini', '1.0.0'), (destination, 'renamed-side', '2.0.0')])
+        self.refresh(rename_plan_data=dict(schema=1, packages=[row])); self.verify()
+        self.secondary = destination
+        plan, previous = self.stage(external=True)
+        import source_history_chain
+        plan['packages'][0]['input_history'] = source_history_chain.expected(previous,
+            {item['package']['directory']: item['package'] for item in plan['packages'][0]['inputs']},
+            self.destination)
+        self.refresh(consolidate_plan_data=plan); self.verify()
+
+    def nested(self, secondary, prior_rename=False):
+        manager = manager_fixture.manager
+        if prior_rename:
+            self.renamed_input()
+        else:
+            self.commit(external=True)
         old = self.destination
         extra = 'src/foundation/extra'
         path = self.root / extra; path.mkdir()
@@ -387,6 +412,20 @@ class NestedManager(unittest.TestCase):
         added.update(name='extra', version='3.0.0', directory=extra, origin_directory='old/extra',
                      upstream=upstream, files_sha256=manager.files(path))
         self.catalog['packages'][extra] = added
+        if prior_rename:
+            test_root = 'test/foundation/extra'
+            (self.root / test_root).mkdir()
+            data = b'assert_eq!(3, 3);\n'
+            (self.root / test_root / 'test.rs').write_bytes(data)
+            mapping = manager.read_json(self.mapping)
+            mapping['owners'].append(dict(directory=extra, roots=[test_root], files=[dict(
+                source=extra + '/lib.rs', path=test_root + '/test.rs',
+                source_sha256_before=added['files_sha256']['lib.rs'], sha256=manager.digest(data))]))
+            self.mapping.write_text(json.dumps(mapping))
+            external, receipts = manager.external_tests.load(self.root,
+                manager.source_owners(self.catalog['packages'], self.catalog['merges']),
+                self.catalog['renames'], manager.external_transfers.grants(self.catalog['consolidations']))
+            self.catalog.update(external_tests=external, external_test_mappings_sha256=receipts)
         self._workspace([(old, 'combined-core', '1.0.0'), (extra, 'extra', '3.0.0')])
         self.save_catalog(); self.refresh(); self.verify()
         before = deepcopy(self.catalog)
@@ -413,6 +452,20 @@ class NestedManager(unittest.TestCase):
                 routes[original] = dict(destination=row['path'], replacements=[])
         else:
             routes = {row['path']: dict(destination=row['path'], replacements=[]) for row in external['files']}
+        if prior_rename:
+            original = before['external_tests'][extra]['files'][0]
+            moved = external['roots'][0] + '/extra.rs'
+            (self.root / original['path']).rename(self.root / moved)
+            shutil.rmtree(self.root / before['external_tests'][extra]['roots'][0])
+            external['files'].append(dict(original, path=moved,
+                origin_directory=before['external_tests'][extra]['origin_directory']))
+            external['file_count'] += 1
+            external['bytes'] += (self.root / moved).stat().st_size
+            routes[original['path']] = dict(destination=moved, replacements=[])
+            # CLI's suggestions.rs -> suggestions/mod.rs is part of the
+            # consolidation itself, not an unsupported owner lifecycle move.
+            (path / 'module').mkdir()
+            (path / 'side.rs').rename(path / 'module/side.rs')
         self._write_after_mapping(external)
         prior_key = next(iter(before['consolidations']))
         record = dict(primary_directory=extra if secondary else old, destination_directory=destination,
@@ -425,6 +478,8 @@ class NestedManager(unittest.TestCase):
                          extra: {'Cargo.toml': dict(archive_base64=base64.b64encode(raw).decode()),
                                  'lib.rs': dict(destination='extra.rs')}},
             new_files={}, external_file_routes=routes, destination_external_tests=external)
+        if prior_rename:
+            record['file_routes'][old]['side.rs'] = dict(destination='module/side.rs')
         if secondary:
             record['file_routes'][old]['Cargo.toml'] = dict(archive_base64=base64.b64encode(old_manifest).decode())
             record['file_routes'][extra]['Cargo.toml'] = dict(destination='Cargo.toml')
@@ -433,10 +488,21 @@ class NestedManager(unittest.TestCase):
         self.assertEqual(len(self.catalog['packages']), 1)
         self.assertEqual(len(self.catalog['merges']), 2)
         self.assertEqual(self.catalog['consolidations'][prior_key], before['consolidations'][prior_key])
+        self.assertEqual(self.catalog['renames'], before['renames'])
         self.assertEqual(self.catalog['origin_records_sha256'], before['origin_records_sha256'])
-        frozen = (self.root / manager.CATALOG).read_bytes()
+        frozen = {relative: (self.root / relative).read_bytes() for relative in (manager.CATALOG, manager.DOC)}
         self.refresh(); self.verify()
-        self.assertEqual((self.root / manager.CATALOG).read_bytes(), frozen)
+        self.assertEqual({relative: (self.root / relative).read_bytes() for relative in frozen}, frozen)
+        if prior_rename:
+            # The transient projection must not excuse a wrong actual mapping.
+            original_mapping = self.mapping.read_bytes()
+            mapping = manager.read_json(self.mapping)
+            mapping['owners'][0]['files'][-1]['origin_directory'] = 'old/mini'
+            self.mapping.write_text(json.dumps(mapping))
+            with self.assertRaises(ValueError):
+                self.refresh()
+            self.assertEqual((self.root / manager.CATALOG).read_bytes(), frozen[manager.CATALOG])
+            self.mapping.write_bytes(original_mapping)
         # Loss or re-attribution must never be learned by refresh.
         self.catalog['merges'].pop(); self.save_catalog()
         with self.assertRaisesRegex(ValueError, 'origin coverage'):
@@ -447,6 +513,12 @@ class NestedManager(unittest.TestCase):
 
     def test_nested_secondary_refresh_verify_repeat(self):
         self.nested(True)
+
+    def test_nested_primary_consumed_rename_external_union_and_internal_route(self):
+        self.nested(False, prior_rename=True)
+
+    def test_nested_secondary_consumed_rename_external_union_and_internal_route(self):
+        self.nested(True, prior_rename=True)
 
 
 if __name__ == '__main__':

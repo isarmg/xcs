@@ -1,17 +1,20 @@
-use crate::sqlite::{SqliteConnectOptions, SqliteConnection};
-use log::LevelFilter;
 use crate::connection::ConnectOptions;
 use crate::error::Error;
 use crate::executor::Executor;
 use crate::sql_str::AssertSqlSafe;
+use crate::sqlite::{SqliteConnectOptions, SqliteConnection};
+use log::LevelFilter;
 use std::fmt::Write;
+#[cfg(feature = "url")]
 use std::str::FromStr;
 use std::time::Duration;
+#[cfg(feature = "url")]
 use url_encoding::address::Url;
 
 impl ConnectOptions for SqliteConnectOptions {
     type Connection = SqliteConnection;
 
+    #[cfg(feature = "url")]
     fn from_url(url: &Url) -> Result<Self, Error> {
         // SQLite URL parsing is handled specially;
         // we want to treat the following URLs as equivalent:
@@ -24,6 +27,7 @@ impl ConnectOptions for SqliteConnectOptions {
         Self::from_str(url.as_str())
     }
 
+    #[cfg(feature = "url")]
     fn to_url_lossy(&self) -> Url {
         self.build_url()
     }

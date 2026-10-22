@@ -9,6 +9,7 @@ use std::fmt::Debug;
 use std::future::Future;
 use std::str::FromStr;
 use std::time::Duration;
+#[cfg(feature = "url")]
 use url_encoding::address::Url;
 
 /// Represents a single database connection.
@@ -221,6 +222,7 @@ pub trait ConnectOptions: 'static + Send + Sync + FromStr<Err = Error> + Debug +
     type Connection: Connection<Options = Self> + ?Sized;
 
     /// Parse the `ConnectOptions` from a URL.
+    #[cfg(feature = "url")]
     fn from_url(url: &Url) -> Result<Self, Error>;
 
     /// Get a connection URL that may be used to connect to the same database as this `ConnectOptions`.
@@ -248,6 +250,7 @@ pub trait ConnectOptions: 'static + Send + Sync + FromStr<Err = Error> + Debug +
     /// This defaults to `unimplemented!()`.
     ///
     /// Individual drivers should override this to implement the intended behavior.
+    #[cfg(feature = "url")]
     fn to_url_lossy(&self) -> Url {
         unimplemented!()
     }

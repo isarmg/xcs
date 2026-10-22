@@ -54,6 +54,7 @@ pub fn private_level_filter_to_levels(
     tracing_level.zip(filter.to_level())
 }
 
+#[cfg(feature = "pool")]
 pub(crate) fn private_level_filter_to_trace_level(
     filter: log::LevelFilter,
 ) -> Option<tracing::Level> {

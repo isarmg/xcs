@@ -1,16 +1,19 @@
-//! Asynchronous SQLite queries, pools, transactions and typed values.
+//! Asynchronous SQLite queries, transactions and typed values.
+//!
+//! Direct workers are runtime-independent. Tokio-backed pools and typed general
+//! URL conversion are available through the opt-in `pool` and `url` features.
 #![recursion_limit = "512"]
 #![deny(unsafe_code)]
 #![warn(future_incompatible, rust_2018_idioms)]
 
 #[macro_use]
 mod query_engine;
-pub use query_engine::*;
+#[cfg(feature = "pool")]
 pub(crate) use query_engine::rt;
+pub use query_engine::*;
 
 #[allow(unsafe_code)]
 pub mod sqlite;
-
 
 pub use query_engine::acquire::Acquire;
 pub use query_engine::arguments::{Arguments, IntoArguments};
@@ -22,6 +25,7 @@ pub use query_engine::database::{self, Database};
 pub use query_engine::describe::Describe;
 pub use query_engine::executor::{Execute, Executor};
 pub use query_engine::from_row::FromRow;
+#[cfg(feature = "pool")]
 pub use query_engine::pool::{self, Pool};
 #[doc(hidden)]
 pub use query_engine::query::query_with_result as __query_with_result;
@@ -44,13 +48,13 @@ pub use query_engine::Either;
 #[doc(inline)]
 pub use query_engine::error::{self, Error, Result};
 
-pub use sqlite::{
-    Sqlite, SqliteConnection, SqliteExecutor, SqlitePool, SqliteTransaction,
-};
+pub use sqlite::{Sqlite, SqliteConnection, SqliteExecutor, SqliteTransaction};
 
+#[cfg(feature = "pool")]
+pub use sqlite::SqlitePool;
 
-pub use encode::Encode;
 pub use decode::Decode;
+pub use encode::Encode;
 /// Convenience re-export of common traits.
 pub mod prelude {
     pub use super::Acquire;
@@ -65,3 +69,7 @@ pub mod prelude {
     pub use super::Statement;
     pub use super::Type;
 }
+
+#[cfg(test)]
+#[path = "../../../../test/platform/unit/sqlite/driver/direct_connection.rs"]
+mod direct_connection_tests;

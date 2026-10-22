@@ -6,8 +6,14 @@ use futures::future::BoxFuture;
 
 use crate::database::Database;
 use crate::error::Error;
-use crate::pool::MaybePoolConnection;
+// Preserve the recorded physical path for immutable source-history ownership.
+// This implementation belongs to transactions, not the optional pool module;
+// it is not a legacy public module or compatibility wrapper.
+#[path = "pool/maybe.rs"]
+mod connection;
 use crate::sql_str::{AssertSqlSafe, SqlSafeStr, SqlStr};
+#[doc(hidden)]
+pub use connection::TransactionConnection;
 
 /// Generic management of database transactions.
 ///
@@ -51,7 +57,8 @@ pub trait TransactionManager {
 
 /// An in-progress database transaction or savepoint.
 ///
-/// A transaction starts with a call to [`Pool::begin`] or [`Connection::begin`].
+/// A transaction starts with [`Connection::begin`] or, with the `pool` feature,
+/// `Pool::begin`.
 ///
 /// A transaction should end with a call to [`commit`] or [`rollback`]. If neither are called
 /// before the transaction goes out-of-scope, [`rollback`] is called. In other
@@ -80,14 +87,13 @@ pub trait TransactionManager {
 /// ```
 /// [`Executor`]: crate::executor::Executor
 /// [`Connection::begin`]: crate::connection::Connection::begin()
-/// [`Pool::begin`]: crate::pool::Pool::begin()
 /// [`commit`]: Self::commit()
 /// [`rollback`]: Self::rollback()
 pub struct Transaction<'c, DB>
 where
     DB: Database,
 {
-    connection: MaybePoolConnection<'c, DB>,
+    connection: TransactionConnection<'c, DB>,
     open: bool,
 }
 
@@ -97,7 +103,7 @@ where
 {
     #[doc(hidden)]
     pub fn begin(
-        conn: impl Into<MaybePoolConnection<'c, DB>>,
+        conn: impl Into<TransactionConnection<'c, DB>>,
         statement: Option<SqlStr>,
     ) -> BoxFuture<'c, Result<Self, Error>> {
         let conn = conn.into();

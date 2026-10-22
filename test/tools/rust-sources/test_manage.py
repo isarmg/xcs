@@ -1103,6 +1103,78 @@ class SourcePolicy(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "closure resolution/features drift"):
                 self.verify(metadata=True)
 
+    def test_capability_features_are_explicit_and_owned_by_selected_members(self):
+        manifest = self.root / "src/app/Cargo.toml"
+        manifest.write_text(manifest.read_text() + '\n[features]\npool=[]\ntrace=[]\n')
+        profile = dict(self.policy["profiles"][0], role="compile", production=False,
+                       features=["app/trace", "app/pool"])
+        self.assertEqual(manager.profile_features(self.root, profile), ("app/pool", "app/trace"))
+        self.assertEqual(manager.profile_features(self.root, self.policy["profiles"][0]), ())
+        for features in (None, "app/pool", [None], ["pool"], ["app/*"], ["app/pool,app/trace"],
+                         ["app/pool/extra"], ["app/pool", "app/pool"]):
+            with self.subTest(features=features), self.assertRaisesRegex(ValueError, "invalid explicit profile features"):
+                manager.profile_features(self.root, dict(profile, features=features))
+        for changes in ({"production": True}, {"production": None}, {"role": "runtime"}):
+            with self.subTest(changes=changes), self.assertRaisesRegex(ValueError, "non-production compile"):
+                manager.profile_features(self.root, dict(profile, **changes))
+        for changes in ({"manifests": []}, {"manifests": "src/app/Cargo.toml"}, {"manifests": [None]},
+                        {"manifests": ["src/app/Cargo.toml"] * 2}, {"packages": ["app"]}):
+            with self.subTest(changes=changes), self.assertRaisesRegex(ValueError, "selected workspace manifests"):
+                manager.profile_features(self.root, dict(profile, **changes))
+        with self.assertRaisesRegex(ValueError, "not an explicit workspace member"):
+            manager.profile_features(self.root, dict(profile, manifests=["src/foundation/mini/Cargo.toml"]))
+        for features in (["app/missing"], ["mini/pool"]):
+            with self.subTest(features=features), self.assertRaisesRegex(ValueError, "not declared by a selected root"):
+                manager.profile_features(self.root, dict(profile, features=features))
+
+    def test_capability_metadata_cache_cannot_contaminate_default_profiles(self):
+        manifest = self.root / "src/app/Cargo.toml"
+        manifest.write_text(manifest.read_text() + '\n[features]\npool=[]\ntrace=[]\n')
+        default = self.policy["profiles"][0]
+        optional = dict(default, id="pool", role="compile", production=False, features=["app/pool"])
+        combined = dict(optional, id="pool-trace", features=["app/trace", "app/pool"])
+        policy = dict(self.policy, profiles=[default, optional, dict(default, id="default-after-pool"), combined,
+                                            dict(combined, id="same-features-reordered", features=["app/pool", "app/trace"])])
+        parking = self.root / "src/foundation/parking"
+        parking.mkdir()
+        (parking / "Cargo.toml").write_text('[package]\nname="parking"\nversion="1.0.0"\n')
+        enabled = deepcopy(self.metadata)
+        enabled["packages"].append(dict(id="parking", name="parking", manifest_path=str(parking / "Cargo.toml"),
+                                        source=None, targets=[{"kind": ["lib"]}]))
+        enabled["resolve"]["nodes"][1]["deps"].append(dict(pkg="parking", dep_kinds=[{"kind": None}]))
+        enabled["resolve"]["nodes"].append(dict(id="parking", features=[], deps=[]))
+        def metadata(_root, _manifest, _target, _home, features=()):
+            return enabled if "app/pool" in features else self.metadata
+        with patch.object(manager, "cargo_metadata", side_effect=metadata) as execute:
+            results = manager.resolutions(self.root, policy)
+        self.assertEqual([call.kwargs["features"] for call in execute.call_args_list],
+                         [(), ("app/pool",), ("app/pool", "app/trace")])
+        baseline = dict(manifest="Cargo.toml", profile=default["id"], target=default["targets"][0],
+                        packages={"src/foundation/mini": {"roles": ["runtime"], "features": ["enabled"]}})
+        self.assertEqual(results[0], baseline)
+        self.assertEqual(results[2], dict(baseline, profile="default-after-pool"))
+        for index in (1, 3, 4):
+            self.assertEqual(results[index]["packages"]["src/foundation/parking"]["roles"], ["compile"])
+            self.assertEqual(results[index]["requested_features"], sorted(policy["profiles"][index]["features"]))
+        self.assertIn("非产品默认，显式验证特性：app/pool", manager.document(self.catalog, policy))
+
+    def test_requested_capability_features_are_bound_even_without_metadata_recheck(self):
+        self.catalog["resolutions"][0]["requested_features"] = ["app/pool"]
+        self.save_catalog()
+        with self.assertRaisesRegex(ValueError, "resolution inventory drift"):
+            self.verify()
+
+    def test_omitting_requested_capability_features_is_rejected(self):
+        manifest = self.root / "src/app/Cargo.toml"
+        manifest.write_text(manifest.read_text() + '\n[features]\npool=[]\n')
+        self.policy["profiles"][0].update(role="compile", production=False, features=["app/pool"])
+        self.write_json(manager.POLICY, self.policy)
+        self.refresh()
+        self.catalog["resolutions"][0].pop("requested_features")
+        self.save_catalog()
+        with self.assertRaisesRegex(ValueError, "resolution inventory drift"):
+            self.verify()
+
     def test_unused_retained_source_is_rejected_by_closed_scope_policy(self):
         self.policy["require_reachable_sources"] = True
         self.write_json(manager.POLICY, self.policy)
@@ -1136,6 +1208,15 @@ class DescriptionPaths(unittest.TestCase):
 
 
 class MetadataProcess(unittest.TestCase):
+    def test_metadata_forwards_only_requested_capability_features(self):
+        result = subprocess.CompletedProcess([], 0, stdout='{"packages": []}', stderr="")
+        with patch.object(manager.subprocess, "run", return_value=result) as execute:
+            manager.cargo_metadata(Path("/repository"), features=("app/pool", "app/trace"))
+        command = execute.call_args.args[0]
+        self.assertEqual(command[-2:], ["--features", "app/pool,app/trace"])
+        self.assertNotIn("--all-features", command)
+        self.assertNotIn("--no-default-features", command)
+
     def test_metadata_explicitly_uses_empty_home_offline_lock_and_target(self):
         metadata = {"packages": []}
         result = subprocess.CompletedProcess([], 0, stdout=json.dumps(metadata), stderr="")

@@ -64,7 +64,7 @@ class ManageConsolidation(unittest.TestCase):
     def _install_external_baseline(self):
         owners = []
         for directory, label in ((self.primary, 'mini'), (self.secondary, 'side')):
-            relative = 'test/foundation/' + label
+            relative = 'test/foundation/' + directory.rsplit('/', 1)[1]
             path = self.root / relative
             path.mkdir(parents=True)
             data = ('assert_eq!(' + label + '::value(), ' + ('1' if label == 'mini' else '2') + ');\n').encode()

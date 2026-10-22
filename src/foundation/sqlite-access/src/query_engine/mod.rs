@@ -16,6 +16,7 @@ pub mod error;
 #[macro_use]
 pub mod arguments;
 
+#[cfg(feature = "pool")]
 #[macro_use]
 pub mod pool;
 
@@ -58,19 +59,21 @@ pub mod sql_str;
 
 pub mod raw_sql;
 pub mod row;
+#[cfg(feature = "pool")]
 pub(crate) mod rt;
+#[cfg(feature = "pool")]
 pub mod sync;
 pub mod type_info;
 pub mod value;
 pub mod value_debug;
 
-
 pub use either::Either;
 pub use hash_table::{hash_map, HashMap};
 pub use indexmap::IndexMap;
-pub use url_encoding::percent;
 pub use smallvec::SmallVec;
+#[cfg(feature = "url")]
 pub use url_encoding::address::{self, Url};
+pub use url_encoding::percent;
 
 /// Helper module to get drivers compiling again that used to be in this crate,
 /// to avoid having to replace tons of `use crate::<...>` imports.
@@ -79,9 +82,11 @@ pub use url_encoding::address::{self, Url};
 /// would want to implement itself.
 pub mod driver_prelude {
     pub use crate::{
-        acquire, common, decode, describe, encode, executor, ext, from_row, logger, pool, query,
-        query_as, query_builder, query_scalar, sync,
+        acquire, common, decode, describe, encode, executor, ext, from_row, logger, query,
+        query_as, query_builder, query_scalar,
     };
+    #[cfg(feature = "pool")]
+    pub use crate::{pool, sync};
 
     pub use crate::error::{Error, Result};
     pub use crate::{hash_map, HashMap};

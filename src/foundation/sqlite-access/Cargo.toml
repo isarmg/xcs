@@ -28,6 +28,9 @@ name = "sqlite_access"
 path = "src/lib.rs"
 
 [features]
+# Direct SQLite workers need neither a Tokio runtime nor a general URL parser.
+pool = ["dep:tokio", "dep:concurrent-collections", "dep:async-notification"]
+url = ["url-encoding/parser"]
 serialization = ["dep:data-serialization"]
 json = ["serialization", "dep:json-codec"]
 offline = ["serialization", "either/serialization"]
@@ -49,6 +52,7 @@ optional = true
 path = "../bit-vec"
 
 [dependencies.concurrent-collections]
+optional = true
 path = "../concurrent-collections"
 
 [dependencies.either]
@@ -56,6 +60,7 @@ version = "1.6.1"
 path = "../either"
 
 [dependencies.async-notification]
+optional = true
 path = "../async-notification"
 default-features = true
 
@@ -109,6 +114,7 @@ default-features = false
 path = "../error-definition"
 
 [dependencies.tokio]
+optional = true
 version = "1.25.0"
 features = ["time", "sync", "rt"]
 default-features = false
@@ -162,4 +168,4 @@ disallowed_methods = "deny"
 [dependencies.url-encoding]
 path = "../url-encoding"
 default-features = false
-features = ["form", "parser", "std"]
+features = ["form", "std"]

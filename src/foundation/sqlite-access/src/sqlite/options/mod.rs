@@ -40,20 +40,17 @@ use crate::IndexMap;
 ///
 /// ```rust,no_run
 /// # async fn example() -> sqlite_access::Result<()> {
-/// use sqlite_access::ConnectOptions;
-/// use sqlite_access::sqlite::{SqliteConnectOptions, SqliteJournalMode, SqlitePool};
+/// use sqlite_access::{ConnectOptions, Connection};
+/// use sqlite_access::sqlite::{SqliteConnectOptions, SqliteJournalMode};
 /// use std::str::FromStr;
 ///
 /// let opts = SqliteConnectOptions::from_str("sqlite://data.db")?
 ///     .journal_mode(SqliteJournalMode::Wal)
 ///     .read_only(true);
 ///
-/// // use in a pool
-/// let pool = SqlitePool::connect_with(opts).await?;
-///
-/// // or connect directly
-/// # let opts = SqliteConnectOptions::from_str("sqlite://data.db")?;
+/// // Direct SQLite workers do not require a Tokio runtime.
 /// let conn = opts.connect().await?;
+/// conn.close().await?;
 /// #
 /// # Ok(())
 /// # }

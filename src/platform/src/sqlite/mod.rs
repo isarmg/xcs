@@ -10,8 +10,8 @@ use crate::schema_identity::{
 };
 use error_definition::Error;
 use sqlite_access::{
-    Connection, Executor, Row, Sqlite, SqliteConnection, SqlitePool,
-    sqlite::{SqliteConnectOptions, SqliteJournalMode, SqlitePoolOptions, SqliteSynchronous},
+    Connection, Executor, Row, Sqlite, SqliteConnection,
+    sqlite::{SqliteConnectOptions, SqliteJournalMode, SqliteSynchronous},
 };
 use std::{io, path::Path, path::PathBuf, time::Duration};
 
@@ -29,10 +29,18 @@ pub use trusted_ddl::{DdlFingerprintError, fingerprint_trusted_ddl};
 #[cfg(target_os = "linux")]
 mod validation_snapshot;
 #[cfg(target_os = "linux")]
+pub use validation_snapshot::{SnapshotError, SnapshotLimits, ValidationSnapshot};
+
+#[cfg(all(target_os = "linux", feature = "sqlite-pool"))]
 pub use validation_snapshot::{
-    SnapshotError, SnapshotLimits, ValidationSnapshot, ValidationSnapshotPool,
-    open_validation_snapshot, open_validation_snapshot_with_connection_limits,
+    ValidationSnapshotPool, open_validation_snapshot,
+    open_validation_snapshot_with_connection_limits,
 };
+
+#[cfg(feature = "sqlite-pool")]
+mod pool;
+#[cfg(feature = "sqlite-pool")]
+pub use pool::*;
 
 pub use crate::schema_identity::{
     Error as SchemaIdentityError, IdentityField, PRODUCT_METADATA_DDL, ProductMetadataColumn,
@@ -40,157 +48,12 @@ pub use crate::schema_identity::{
 };
 
 pub const BUSY_TIMEOUT: Duration = Duration::from_secs(5);
-pub const DEFAULT_ACQUIRE_TIMEOUT: Duration = Duration::from_secs(10);
 /// Maximum fingerprinted schema objects; an excess is rejected in full.
 pub const MAX_SCHEMA_OBJECTS: usize = 1024;
 /// Maximum aggregate UTF-8 bytes in the four fingerprinted fields.
 pub const MAX_SCHEMA_BYTES: usize = 4 * 1024 * 1024;
 /// Maximum retained foreign-key violation evidence, independent of row count.
 pub const MAX_FOREIGN_KEY_EVIDENCE: usize = 32;
-
-/// The intentionally small set of product-selectable pool settings.
-///
-/// Durability and correctness PRAGMAs are not configurable: every connection
-/// uses WAL, foreign keys, a five-second busy timeout and FULL synchronous.
-#[derive(Clone, Debug, Eq, PartialEq)]
-pub struct PoolOptions {
-    max_connections: u32,
-    min_connections: u32,
-    acquire_timeout: Duration,
-    connection_limits: Option<ConnectionLimits>,
-}
-
-impl PoolOptions {
-    pub const fn new(max_connections: u32) -> Self {
-        Self {
-            max_connections,
-            min_connections: 0,
-            acquire_timeout: DEFAULT_ACQUIRE_TIMEOUT,
-            connection_limits: None,
-        }
-    }
-
-    pub const fn with_min_connections(mut self, min_connections: u32) -> Self {
-        self.min_connections = min_connections;
-        self
-    }
-
-    pub const fn with_acquire_timeout(mut self, acquire_timeout: Duration) -> Self {
-        self.acquire_timeout = acquire_timeout;
-        self
-    }
-
-    /// Apply native limits before product statements on every new connection,
-    /// including connections replacing closed or failed pool members.
-    pub const fn with_connection_limits(mut self, limits: ConnectionLimits) -> Self {
-        self.connection_limits = Some(limits);
-        self
-    }
-
-    pub const fn max_connections(&self) -> u32 {
-        self.max_connections
-    }
-
-    pub const fn min_connections(&self) -> u32 {
-        self.min_connections
-    }
-
-    pub const fn acquire_timeout(&self) -> Duration {
-        self.acquire_timeout
-    }
-
-    pub fn validate(&self) -> Result<(), PoolOptionsError> {
-        if self.max_connections == 0 {
-            return Err(PoolOptionsError::ZeroMaxConnections);
-        }
-        if self.min_connections > self.max_connections {
-            return Err(PoolOptionsError::MinConnectionsExceedMax {
-                min_connections: self.min_connections,
-                max_connections: self.max_connections,
-            });
-        }
-        if self.acquire_timeout.is_zero() {
-            return Err(PoolOptionsError::ZeroAcquireTimeout);
-        }
-        if let Some(limits) = self.connection_limits {
-            limits
-                .validate()
-                .map_err(|_| PoolOptionsError::InvalidConnectionLimits)?;
-        }
-        Ok(())
-    }
-}
-
-impl Default for PoolOptions {
-    fn default() -> Self {
-        Self::new(10)
-    }
-}
-
-/// Open an existing SQLite file. This operation never asks SQLite to create a
-/// missing file and reports an initially missing path as a typed error.
-pub async fn open_existing(
-    database_path: impl AsRef<Path>,
-    options: PoolOptions,
-) -> Result<SqlitePool, Error> {
-    options.validate()?;
-    let database_path = database_path.as_ref();
-    match database_path.try_exists() {
-        Ok(true) => {}
-        Ok(false) => {
-            return Err(Error::DatabaseDoesNotExist {
-                path: database_path.to_path_buf(),
-            });
-        }
-        Err(source) => {
-            return Err(Error::InspectDatabase {
-                path: database_path.to_path_buf(),
-                source,
-            });
-        }
-    }
-    connect(database_path, false, options).await
-}
-
-/// Open a SQLite file, explicitly allowing SQLite to create it when missing.
-/// This is not a schema initializer and may also open an already-existing file.
-pub async fn create_if_missing(
-    database_path: impl AsRef<Path>,
-    options: PoolOptions,
-) -> Result<SqlitePool, Error> {
-    options.validate()?;
-    connect(database_path.as_ref(), true, options).await
-}
-
-async fn connect(
-    database_path: &Path,
-    create_if_missing: bool,
-    options: PoolOptions,
-) -> Result<SqlitePool, Error> {
-    let connect_options = index_connect_options(database_path, create_if_missing);
-    let pool = SqlitePoolOptions::new()
-        .max_connections(options.max_connections)
-        .min_connections(options.min_connections)
-        .acquire_timeout(options.acquire_timeout)
-        .after_connect(move |connection, _| {
-            Box::pin(async move {
-                // The query index never needs writable_schema or raw page writes.
-                enable_defensive(connection)
-                    .await
-                    .map_err(|error| sqlite_access::Error::Io(io::Error::other(error)))?;
-                if let Some(limits) = options.connection_limits {
-                    apply_connection_limits(connection, limits)
-                        .await
-                        .map_err(|error| sqlite_access::Error::Io(io::Error::other(error)))?;
-                }
-                Ok(())
-            })
-        })
-        .connect_with(connect_options)
-        .await
-        .map_err(pool_connect_error)?;
-    Ok(pool)
-}
 
 /// Fixed connection policy for the rebuildable ZXS index.
 ///
@@ -253,11 +116,11 @@ pub async fn open_index_connection(
         if let Err(close_error) = connection.close().await {
             // A caller must not interpret the original corruption code as
             // permission to move files while native closure remains uncertain.
-            return Err(pool_connect_error(sqlite_access::Error::Io(
-                io::Error::other(close_error),
-            )));
+            return Err(connect_error(sqlite_access::Error::Io(io::Error::other(
+                close_error,
+            ))));
         }
-        return Err(pool_connect_error(error));
+        return Err(connect_error(error));
     }
     Ok(connection)
 }
@@ -293,16 +156,16 @@ pub async fn open_index_read_connection(database_path: &Path) -> Result<SqliteCo
     .await;
     if let Err(error) = initialized {
         if let Err(close_error) = connection.close().await {
-            return Err(pool_connect_error(sqlite_access::Error::Io(
-                io::Error::other(close_error),
-            )));
+            return Err(connect_error(sqlite_access::Error::Io(io::Error::other(
+                close_error,
+            ))));
         }
-        return Err(pool_connect_error(error));
+        return Err(connect_error(error));
     }
     Ok(connection)
 }
 
-fn pool_connect_error(error: sqlite_access::Error) -> Error {
+fn connect_error(error: sqlite_access::Error) -> Error {
     if let sqlite_access::Error::Io(source) = error {
         let kind = source.kind();
         if let Some(inner) = source.into_inner() {
@@ -316,75 +179,12 @@ fn pool_connect_error(error: sqlite_access::Error) -> Error {
     Error::Sqlx(error)
 }
 
-/// Require the complete integrity-check result to be the single value `ok`.
-pub async fn integrity_check(pool: &SqlitePool) -> Result<(), Error> {
-    let messages: Vec<String> = sqlite_access::query_scalar("PRAGMA integrity_check")
-        .fetch_all(pool)
-        .await?;
-    if messages.len() != 1 || !messages[0].eq_ignore_ascii_case("ok") {
-        return Err(Error::IntegrityCheckFailed { messages });
-    }
-    Ok(())
-}
-
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct ForeignKeyViolation {
     pub table: String,
     pub row_id: Option<i64>,
     pub parent: String,
     pub foreign_key_index: i64,
-}
-
-/// Require `PRAGMA foreign_key_check` to return no violations.
-///
-/// Failure retains at most the first 32 violations as evidence. It never treats
-/// a partial evidence collection as a successful integrity check.
-pub async fn foreign_key_check(pool: &SqlitePool) -> Result<(), Error> {
-    let violations = sqlite_access::query(
-        "SELECT \"table\", rowid, parent, fkid FROM pragma_foreign_key_check LIMIT 32",
-    )
-    .fetch_all(pool)
-    .await?
-    .into_iter()
-    .map(|row| {
-        Ok(ForeignKeyViolation {
-            table: row.try_get(0)?,
-            row_id: row.try_get(1)?,
-            parent: row.try_get(2)?,
-            foreign_key_index: row.try_get(3)?,
-        })
-    })
-    .collect::<Result<Vec<_>, sqlite_access::Error>>()?;
-    if !violations.is_empty() {
-        return Err(Error::ForeignKeyViolations { violations });
-    }
-    Ok(())
-}
-
-/// Truncate-checkpoint the WAL and reject both busy and incomplete results.
-pub async fn checkpoint(pool: &SqlitePool) -> Result<(), Error> {
-    let result: (i64, i64, i64) = sqlite_access::query_as("PRAGMA wal_checkpoint(TRUNCATE)")
-        .fetch_one(pool)
-        .await?;
-    validate_checkpoint_result(result)
-}
-
-fn validate_checkpoint_result(
-    (busy, log_frames, checkpointed_frames): (i64, i64, i64),
-) -> Result<(), Error> {
-    if busy != 0 {
-        return Err(Error::CheckpointBusy {
-            log_frames,
-            checkpointed_frames,
-        });
-    }
-    if log_frames != checkpointed_frames {
-        return Err(Error::CheckpointIncomplete {
-            log_frames,
-            checkpointed_frames,
-        });
-    }
-    Ok(())
 }
 
 /// Read the canonically filtered and ordered rows using any SQLx SQLite
@@ -473,21 +273,6 @@ pub async fn require_current_schema(
     Ok(actual)
 }
 
-/// Pool convenience wrapper around [`read_schema_identity`].
-pub async fn read_pool_schema_identity(pool: &SqlitePool) -> Result<SchemaIdentity, Error> {
-    let mut connection = pool.acquire().await?;
-    read_schema_identity(&mut connection).await
-}
-
-/// Pool convenience wrapper around [`require_current_schema`].
-pub async fn require_pool_current_schema(
-    pool: &SqlitePool,
-    expected: &SchemaIdentity,
-) -> Result<SchemaIdentity, Error> {
-    let mut connection = pool.acquire().await?;
-    require_current_schema(&mut connection, expected).await
-}
-
 async fn validate_metadata_table(connection: &mut SqliteConnection) -> Result<(), Error> {
     let ddl: Option<String> = sqlite_access::query_scalar(
         "SELECT sql FROM sqlite_schema WHERE type='table' AND name='product_metadata'",
@@ -561,25 +346,9 @@ async fn read_metadata_rows(
     Ok(metadata)
 }
 
-#[derive(Clone, Copy, Debug, Eq, PartialEq, Error)]
-pub enum PoolOptionsError {
-    #[error("max_connections must be greater than zero")]
-    ZeroMaxConnections,
-    #[error(
-        "min_connections ({min_connections}) must not exceed max_connections ({max_connections})"
-    )]
-    MinConnectionsExceedMax {
-        min_connections: u32,
-        max_connections: u32,
-    },
-    #[error("acquire_timeout must be greater than zero")]
-    ZeroAcquireTimeout,
-    #[error("connection limits are outside the supported bounds")]
-    InvalidConnectionLimits,
-}
-
 #[derive(Debug, Error)]
 pub enum Error {
+    #[cfg(feature = "sqlite-pool")]
     #[error(transparent)]
     InvalidPoolOptions(#[from] PoolOptionsError),
     #[error("SQLite database does not exist: {path}", path = .path.display())]

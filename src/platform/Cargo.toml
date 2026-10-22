@@ -6,6 +6,11 @@ rust-version.workspace = true
 license.workspace = true
 description = "ZXS filesystem durability, SQLite index, and credential primitives"
 
+[features]
+# Retained multi-connection adapters for async embedders and diagnostics.
+# The storage engine uses direct connections and does not enable this capability.
+sqlite-pool = ["sqlite-access/pool", "dep:tokio"]
+
 [dependencies]
 blake3.workspace = true
 futures = { version = "0.3.34", path = "../foundation/futures", default-features = false, features = ["executor", "std"] }
@@ -19,7 +24,7 @@ sha2 = {version = "0.11.0", path = "../foundation/sha2"}
 sqlite-access = { version = "=0.9.0", default-features = false, features = ["sqlite-bundled"], path = "../foundation/sqlite-access"}
 tempfile.workspace = true
 error-definition.workspace = true
-tokio = { version = "1.53.2", default-features = false, features = ["rt"], path = "../foundation/tokio"}
+tokio = { version = "1.53.2", default-features = false, features = ["rt"], optional = true, path = "../foundation/tokio"}
 zeroize = {version = "1.8", path = "../foundation/zeroize"}
 
 [dev-dependencies]

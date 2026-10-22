@@ -19,11 +19,11 @@ use std::{fmt::Debug, future};
 ///
 /// Implemented for the following:
 ///
-///  * [`&Pool`](super::pool::Pool)
+///  * `&Pool` (with the `pool` feature)
 ///  * [`&mut Connection`](super::connection::Connection)
 ///
 /// The [`Executor`] impls for [`Transaction`](crate::transaction::Transaction)
-/// and [`PoolConnection`](crate::pool::PoolConnection) have been deleted because they
+/// and `PoolConnection` (with the `pool` feature) have been deleted because they
 /// cannot exist in the new crate architecture without rewriting the Executor trait entirely.
 /// To fix this breakage, simply add a dereference where an impl [`Executor`] is expected, as
 /// they both dereference to the inner connection type which will still implement it:

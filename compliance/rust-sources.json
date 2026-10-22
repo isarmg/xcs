@@ -47424,7 +47424,7 @@
     }
   },
   "external_test_mappings_sha256": {
-    "compliance/external-tests/foundation.json": "939d6def31d60e797f5037f2f0250d291952804fc4d05f11adeda450f08b84fa",
+    "compliance/external-tests/foundation.json": "44f8a3cf3863589e1bd3e2458ee8a654928199afb3460df30209f59902602f44",
     "compliance/external-tests/integrated.json": "029fd33a9d77c8ba8c7fa0d73f9febf9682235914bec93b64c05cc7c65565395",
     "compliance/external-tests/ring.json": "3e5a834ea832ea11a0da5cdeab898e9c2e2d5229becc1988edc3462cfb51dab1"
   },
@@ -66226,7 +66226,7 @@
       ]
     },
     "src/foundation/sqlite-access": {
-      "bytes": 192493,
+      "bytes": 193196,
       "directory": "src/foundation/sqlite-access",
       "file_count": 48,
       "files": [
@@ -66527,7 +66527,7 @@
         {
           "origin_directory": "vendor/rust/sqlx-sqlite-0.9.0",
           "path": "test/foundation/sqlite-access/sqlite/functions/src/options/parse/it_returns_the_parsed_url_222.rs",
-          "sha256": "58dd1db4708fe0c90db8bdbc8f665ea8b4054d26cf501c034de1f554b025040d",
+          "sha256": "6938dddcd0c7ff05b8e9f65c44d713b079643a38e09b74d6b91f83f99e799650",
           "source": "src/foundation/sqlx-sqlite/src/options/parse.rs",
           "source_sha256_before": "d94008fcdd7e03e2df1c6c0d788cc55cde42e772a83efb6e5f4839249154e156"
         },
@@ -66562,7 +66562,7 @@
         {
           "origin_directory": "vendor/rust/sqlx-sqlite-0.9.0",
           "path": "test/foundation/sqlite-access/sqlite/unit/src/regexp/tests_173.rs",
-          "sha256": "f3ace8a2d848bbd64cda7d05f671cc58d20d7fb3566dd9e81b16a68fc5e8c195",
+          "sha256": "20fe43830b155b94655fe768f65747981ec972ea1a14fc02c2708f9629195e9e",
           "source": "src/foundation/sqlx-sqlite/src/regexp.rs",
           "source_sha256_before": "ea7a509291d3c9fcbaaa97cd02a139ee5be4608db68adac94829e160ac2cf6a1"
         }
@@ -74263,7 +74263,7 @@
     "src/foundation/smallvec/Cargo.toml": "7f4809c1243c4cb0854b7878cedcbcf9b1b8a30f667333eb9edb76f990b77f05",
     "src/foundation/socket2/Cargo.toml": "a748169b0a61eda1988393bf74d1a3f13b9033cb29b83240a74eb7b2be808a92",
     "src/foundation/spin/Cargo.toml": "b5996fae3be64ef8d7b80f6e3880903b3015cdd91f3eb968daf6833c1e0272e9",
-    "src/foundation/sqlite-access/Cargo.toml": "94753ec30198470607c5fd71c8dbbbdd7cbe3e81f2d5977f4c023784131bf74f",
+    "src/foundation/sqlite-access/Cargo.toml": "d7ce7a3b5709afeab1f5404b51a7b58e4cfbaf403845110c5579507672732993",
     "src/foundation/stable_deref_trait/Cargo.toml": "4f080b924f2ae5fa6c2a7fd2d5fdcc08728c189503b520c2fec8132495f21256",
     "src/foundation/strsim/Cargo.toml": "7312930e6b154cde7b4ab50ba717760e952876c630e36cb82365d5b0a214600c",
     "src/foundation/strum/Cargo.toml": "ce19c4c3938857512107c5ca185a1aba6fed8b5ddc302e82cec8b11727482035",
@@ -74332,7 +74332,7 @@
     "src/interface/Cargo.toml": "4285805516dd931ac504c09dee0819647816e4bb8dc82e79581ff3ca02de0285",
     "src/macros/Cargo.toml": "34ae205cb1da53da61bfa0e625f47e99dc524011aa56d26452234c48cbd9f5c7",
     "src/naming/Cargo.toml": "6599ac90d88b7a74eeb47444aa4fdad2002161798ae72cfe4b18e3d42eae1a9a",
-    "src/platform/Cargo.toml": "d485ed3e1fb2989a7576a2ec74d9e6bcaafe01813867c9f55949b380b726a4d7",
+    "src/platform/Cargo.toml": "6315b1efba0b551f24bf231da2c7a83d13ac64b5a2d0d13c99d281eb85eae1f0",
     "src/rescue/Cargo.toml": "8d5bd0f02eff46f12595c50064d4f801718b022f1bc37fc9e09f47dae31760d1",
     "src/server/Cargo.toml": "f731d0326c6120887c050b5727cc44eefce4d854d91a95ab8ffb3cfe6dae2096",
     "src/smb-vfs/Cargo.toml": "51a70ac5f679a92b4b781fdd3d92f4827eae29cf6548591f92749a7fcac26c7b",
@@ -75669,34 +75669,34 @@
       "description": "Core of SQLx, the rust SQL toolkit. Not intended to be used directly.",
       "directory": "src/foundation/sqlite-access",
       "files_sha256": {
-        "Cargo.toml": "94753ec30198470607c5fd71c8dbbbdd7cbe3e81f2d5977f4c023784131bf74f",
+        "Cargo.toml": "d7ce7a3b5709afeab1f5404b51a7b58e4cfbaf403845110c5579507672732993",
         "benches/sqlite/describe.rs": "e3846b1cd17054663e135116aecde934c2d20f3b83592562a3e34596168f0e94",
         "contrib/ide/vscode/settings.json": "af1e5804fd68126c54f709b71aee3c7dd4dca964f509257c2dd331006dda66ad",
         "gen-changelog.sh": "be0292a711d7a7bb03b57b9b3534dbb34d084189ed85d32c528d0a39e2e156a7",
-        "src/lib.rs": "221e7c47296423fed6d3aee6bf8bda1bb48d5c2ef5c049776a4b1796ca6be72a",
-        "src/query_engine/acquire.rs": "ee0f17ab6d10e35d975292780e1b401335e2a97fe3c26d1fb48a7d7befd33689",
+        "src/lib.rs": "3a12ea02fe5126c4275d2ff76073fcf4d2fdb8dada65b7ec57324a79f153bbe0",
+        "src/query_engine/acquire.rs": "acfccb66b95c3943fad6d090918a217c9c47180c5606abe622a397def9dd89fd",
         "src/query_engine/arguments.rs": "988065552995906e6cd4b6d5dbf7bb35c47a69a173336460b39975bdb9dc7fa4",
         "src/query_engine/column.rs": "e0e740058d79fc636e87c1470d965f5a335295b13b18946b34740dc7a86f9a2d",
         "src/query_engine/common/mod.rs": "13ebe463198f937d331f1fc1c0eddfd8f45ac2599925d829b7c9a8fb5f97f080",
         "src/query_engine/common/statement_cache.rs": "14a82d9719afac1abc088809c23c87f07069fafecaf0ba12cf64d02c802c3e62",
-        "src/query_engine/connection.rs": "404c1a78ab0be33046e034b1328ca3f145851bfb27683ab1e2b36dac479a86bc",
+        "src/query_engine/connection.rs": "9cae13dd4a7e3cdc263e9a7445ead036a4ae6ab6d615bb403598c8391923fd1f",
         "src/query_engine/database.rs": "e242d2c0d1329755871849cd09f676513ca65cd3a5332d9b1996db78b7ba3864",
         "src/query_engine/decode.rs": "942dc7f6fd05a19d4e948d8183f352822f7cb5bd49de59ea5d05e73e9dc0e477",
         "src/query_engine/describe.rs": "e5633f24aaa6348c21a4cea3c0f5fa06e267e96805a91b4108f39146d7894bd7",
         "src/query_engine/encode.rs": "4e1c442ae363c7a6398294620e01ca48dc90369e18eeeb069001a676b8cc077e",
-        "src/query_engine/error.rs": "0c5ad05ec331c9d060959e83ab6aea9b6e84ec9187d4f13632bd2bb646d88ef6",
-        "src/query_engine/executor.rs": "991622bce72371aad85a52d637dc0ed53f5ec2014ba65de3e2fccc0c247db619",
+        "src/query_engine/error.rs": "eaf116afe64d172699bc2622c02c5b41e24bcdb63613cefbbccd7367ab6ac787",
+        "src/query_engine/executor.rs": "cd94ea9bd425bc6c553c5e57fa38861e5156bba10468d43cbfea22ea19ecf38a",
         "src/query_engine/ext/async_stream.rs": "a925cdeef03a8f769da009f0d1b95048a7088afebfc6e1a217d536a79559ff49",
         "src/query_engine/ext/mod.rs": "252205889bf4b6947f2378ab834c09048a891ecd64e050bbd43f6bdaa586571c",
         "src/query_engine/ext/ustr.rs": "564da63d89e79fa6cd4299dea2e1a9934b2a2feb0256a8e83b25e6382c3921c5",
         "src/query_engine/from_row.rs": "842604671d17c98ef39ce19dc7fe407d1e8804cc905bd1ab32a5b2635d7e8704",
-        "src/query_engine/logger.rs": "3a69f769fcc7e29c85782559c23202f8e0a164ad99b516d0049fa90a543f3926",
-        "src/query_engine/mod.rs": "c5354a07248ce4f0a21170b0653507390329283ad63185df05085b0479f64e4c",
+        "src/query_engine/logger.rs": "caa6dc42726f26b523cabaef1cea32a70e2ca94f1c4f88a2afbd2e118dac1ed2",
+        "src/query_engine/mod.rs": "fe3e188fb8bae2c4c1e3407ba9e8d521234f4c3720d0b1750bf0ba75da00d7d8",
         "src/query_engine/pool/connection.rs": "02a5e46ccbf34257ff0463d6fa840611dd4e2c7d12ebb13c1cc5998210c4ba90",
         "src/query_engine/pool/executor.rs": "75a6851c6196df8faab2f138e5a1f189efb16cc5473fd700186971c4eea7ca83",
         "src/query_engine/pool/inner.rs": "7850a4da6b191b912e7d5285795c69463f3e7692ef1ec7be11dfe9d5b9063694",
-        "src/query_engine/pool/maybe.rs": "add426222f6f6ba9f8b2027c0b5ec4bf6fd32de5043488358da45fedd0244dc2",
-        "src/query_engine/pool/mod.rs": "9266614739d0b7bccff24339d0731e042918b6d0fe0cce9791486b724518fee0",
+        "src/query_engine/pool/maybe.rs": "aa6f22c1b5ef2372abb6afa50371766484b9ffa88c62af950ddc4420da3bfb83",
+        "src/query_engine/pool/mod.rs": "36883bd04b156d20a87f40f7efe0c51d0ccd30646df6d11b7a66a963abac44d7",
         "src/query_engine/pool/options.rs": "61b51593070dbc3e87479a6d9d3c4788921128a3795b0720bcb5df28831c9246",
         "src/query_engine/query.rs": "49fe2ed8b0b8a036dd6a27d0062fe682a3573fd7d7f474db2c407c3ea82e2a43",
         "src/query_engine/query_as.rs": "77bc19bb31f303398e21e3f8687977fccf122e02e9793a1dd02e5b60e57882c9",
@@ -75708,7 +75708,7 @@
         "src/query_engine/sql_str.rs": "57550e4bc95deb464b520dfbf0287fd6214c4f8167383c9c8b512793c75f7832",
         "src/query_engine/statement.rs": "26463cdbf8de36428d2d8b4feb458f9819d10bc23029ca4f3cee8a84609aac26",
         "src/query_engine/sync.rs": "73fcc7f07fd16072a10832ac8d3cd3b4f707965047b5147fb9469be037027ac1",
-        "src/query_engine/transaction.rs": "5af79902def61cbb46acea8c0146041596853884d945b5b516a020ebfde7c147",
+        "src/query_engine/transaction.rs": "3b3bbe6960e1bd244e0f02b5474dc96a53308cdd57fe20205c43c50d221f7fec",
         "src/query_engine/type_info.rs": "d75095c7f1b1ea24b0ab32e03640f01671cef74b1a56b1f2e2f9ec0ad4534d3b",
         "src/query_engine/types/json.rs": "635fa0c60182bee309e48ff278fa346b093ed1e47a1ac6bf2bc24206e8a4e52d",
         "src/query_engine/types/mod.rs": "d4eefbe91592cf4e4d1602f1f396aadd2faebc63d0331b0893f5eacee1b56d76",
@@ -75733,13 +75733,13 @@
         "src/sqlite/connection/worker.rs": "cd4425c5babbf70e909404852d27ebfc1a8ed7b94a7bed97f98e6c570ec02c7e",
         "src/sqlite/database.rs": "ed71ce60e754b9ce483e9c6d2dca8e0663174e5db2c7351270e463983b2dff7a",
         "src/sqlite/error.rs": "4c3f7ed4bfd6b2411a7343f4ffd1823ba367743b141b3338eb78c2a608685a9c",
-        "src/sqlite/mod.rs": "673392a5c10b638e4bfd90dd95b505597cfd17f3803ebcbb7e69bb47b395fac3",
+        "src/sqlite/mod.rs": "f72c2512ff6021ae7781b02b071a2f7c47008861c22f9df5920654920c46dadf",
         "src/sqlite/options/auto_vacuum.rs": "959a62df6c1a8da4dd3a99643c180494b9906be72884c0b0767fa876efba2945",
-        "src/sqlite/options/connect.rs": "b2cc3d2528d15ac78f9ec77cac7304c05fac1534a957eb9647b87472e23d2849",
+        "src/sqlite/options/connect.rs": "b68b449473413a49267d6d3a56a99eb801713f9555f30a9c3caee3106cca3eb6",
         "src/sqlite/options/journal_mode.rs": "e2621add6bf0f97d2a2c8aab5e896e168bbb2d3fa15a25d6665c6aba467fc8aa",
         "src/sqlite/options/locking_mode.rs": "b488fa79f83fd6196316f4a1cdfd8da963bb7199eb1934ec45789f315b1e16e0",
-        "src/sqlite/options/mod.rs": "6ad22380ed895cf635e1e5a481beb59088764dd6e513d53a364f050015e0ec18",
-        "src/sqlite/options/parse.rs": "27c4cb54fe57419ac1134e9198b9769b8678c3960dd371dac37063b6e0edbc3b",
+        "src/sqlite/options/mod.rs": "da944b2653ed59f4db5e3f28c0a926d2425df3f4cb205796ece59221f832b99f",
+        "src/sqlite/options/parse.rs": "f38afd00e000a1a548aae8eb273fb1a03b316438f5382793c1d485d5bea4344f",
         "src/sqlite/options/synchronous.rs": "b0760eac136041e2fd25c0f8c4fd8161d515c168dd0e7a1b153d5cb7c2c3f13a",
         "src/sqlite/query_result.rs": "9cff47b8f77ea6502d1e965e07574a756807b34c01144865a00236151f26d1c5",
         "src/sqlite/regexp.rs": "eb12c125ce58cf46beeb5321f6e2c5e62506bf0ec538448c494d4adeb598bac7",
@@ -75792,34 +75792,34 @@
       "description": "SQLite driver implementation for SQLx. Not for direct use; see the `sqlx` crate for details.",
       "directory": "src/foundation/sqlite-access",
       "files_sha256": {
-        "Cargo.toml": "94753ec30198470607c5fd71c8dbbbdd7cbe3e81f2d5977f4c023784131bf74f",
+        "Cargo.toml": "d7ce7a3b5709afeab1f5404b51a7b58e4cfbaf403845110c5579507672732993",
         "benches/sqlite/describe.rs": "e3846b1cd17054663e135116aecde934c2d20f3b83592562a3e34596168f0e94",
         "contrib/ide/vscode/settings.json": "af1e5804fd68126c54f709b71aee3c7dd4dca964f509257c2dd331006dda66ad",
         "gen-changelog.sh": "be0292a711d7a7bb03b57b9b3534dbb34d084189ed85d32c528d0a39e2e156a7",
-        "src/lib.rs": "221e7c47296423fed6d3aee6bf8bda1bb48d5c2ef5c049776a4b1796ca6be72a",
-        "src/query_engine/acquire.rs": "ee0f17ab6d10e35d975292780e1b401335e2a97fe3c26d1fb48a7d7befd33689",
+        "src/lib.rs": "3a12ea02fe5126c4275d2ff76073fcf4d2fdb8dada65b7ec57324a79f153bbe0",
+        "src/query_engine/acquire.rs": "acfccb66b95c3943fad6d090918a217c9c47180c5606abe622a397def9dd89fd",
         "src/query_engine/arguments.rs": "988065552995906e6cd4b6d5dbf7bb35c47a69a173336460b39975bdb9dc7fa4",
         "src/query_engine/column.rs": "e0e740058d79fc636e87c1470d965f5a335295b13b18946b34740dc7a86f9a2d",
         "src/query_engine/common/mod.rs": "13ebe463198f937d331f1fc1c0eddfd8f45ac2599925d829b7c9a8fb5f97f080",
         "src/query_engine/common/statement_cache.rs": "14a82d9719afac1abc088809c23c87f07069fafecaf0ba12cf64d02c802c3e62",
-        "src/query_engine/connection.rs": "404c1a78ab0be33046e034b1328ca3f145851bfb27683ab1e2b36dac479a86bc",
+        "src/query_engine/connection.rs": "9cae13dd4a7e3cdc263e9a7445ead036a4ae6ab6d615bb403598c8391923fd1f",
         "src/query_engine/database.rs": "e242d2c0d1329755871849cd09f676513ca65cd3a5332d9b1996db78b7ba3864",
         "src/query_engine/decode.rs": "942dc7f6fd05a19d4e948d8183f352822f7cb5bd49de59ea5d05e73e9dc0e477",
         "src/query_engine/describe.rs": "e5633f24aaa6348c21a4cea3c0f5fa06e267e96805a91b4108f39146d7894bd7",
         "src/query_engine/encode.rs": "4e1c442ae363c7a6398294620e01ca48dc90369e18eeeb069001a676b8cc077e",
-        "src/query_engine/error.rs": "0c5ad05ec331c9d060959e83ab6aea9b6e84ec9187d4f13632bd2bb646d88ef6",
-        "src/query_engine/executor.rs": "991622bce72371aad85a52d637dc0ed53f5ec2014ba65de3e2fccc0c247db619",
+        "src/query_engine/error.rs": "eaf116afe64d172699bc2622c02c5b41e24bcdb63613cefbbccd7367ab6ac787",
+        "src/query_engine/executor.rs": "cd94ea9bd425bc6c553c5e57fa38861e5156bba10468d43cbfea22ea19ecf38a",
         "src/query_engine/ext/async_stream.rs": "a925cdeef03a8f769da009f0d1b95048a7088afebfc6e1a217d536a79559ff49",
         "src/query_engine/ext/mod.rs": "252205889bf4b6947f2378ab834c09048a891ecd64e050bbd43f6bdaa586571c",
         "src/query_engine/ext/ustr.rs": "564da63d89e79fa6cd4299dea2e1a9934b2a2feb0256a8e83b25e6382c3921c5",
         "src/query_engine/from_row.rs": "842604671d17c98ef39ce19dc7fe407d1e8804cc905bd1ab32a5b2635d7e8704",
-        "src/query_engine/logger.rs": "3a69f769fcc7e29c85782559c23202f8e0a164ad99b516d0049fa90a543f3926",
-        "src/query_engine/mod.rs": "c5354a07248ce4f0a21170b0653507390329283ad63185df05085b0479f64e4c",
+        "src/query_engine/logger.rs": "caa6dc42726f26b523cabaef1cea32a70e2ca94f1c4f88a2afbd2e118dac1ed2",
+        "src/query_engine/mod.rs": "fe3e188fb8bae2c4c1e3407ba9e8d521234f4c3720d0b1750bf0ba75da00d7d8",
         "src/query_engine/pool/connection.rs": "02a5e46ccbf34257ff0463d6fa840611dd4e2c7d12ebb13c1cc5998210c4ba90",
         "src/query_engine/pool/executor.rs": "75a6851c6196df8faab2f138e5a1f189efb16cc5473fd700186971c4eea7ca83",
         "src/query_engine/pool/inner.rs": "7850a4da6b191b912e7d5285795c69463f3e7692ef1ec7be11dfe9d5b9063694",
-        "src/query_engine/pool/maybe.rs": "add426222f6f6ba9f8b2027c0b5ec4bf6fd32de5043488358da45fedd0244dc2",
-        "src/query_engine/pool/mod.rs": "9266614739d0b7bccff24339d0731e042918b6d0fe0cce9791486b724518fee0",
+        "src/query_engine/pool/maybe.rs": "aa6f22c1b5ef2372abb6afa50371766484b9ffa88c62af950ddc4420da3bfb83",
+        "src/query_engine/pool/mod.rs": "36883bd04b156d20a87f40f7efe0c51d0ccd30646df6d11b7a66a963abac44d7",
         "src/query_engine/pool/options.rs": "61b51593070dbc3e87479a6d9d3c4788921128a3795b0720bcb5df28831c9246",
         "src/query_engine/query.rs": "49fe2ed8b0b8a036dd6a27d0062fe682a3573fd7d7f474db2c407c3ea82e2a43",
         "src/query_engine/query_as.rs": "77bc19bb31f303398e21e3f8687977fccf122e02e9793a1dd02e5b60e57882c9",
@@ -75831,7 +75831,7 @@
         "src/query_engine/sql_str.rs": "57550e4bc95deb464b520dfbf0287fd6214c4f8167383c9c8b512793c75f7832",
         "src/query_engine/statement.rs": "26463cdbf8de36428d2d8b4feb458f9819d10bc23029ca4f3cee8a84609aac26",
         "src/query_engine/sync.rs": "73fcc7f07fd16072a10832ac8d3cd3b4f707965047b5147fb9469be037027ac1",
-        "src/query_engine/transaction.rs": "5af79902def61cbb46acea8c0146041596853884d945b5b516a020ebfde7c147",
+        "src/query_engine/transaction.rs": "3b3bbe6960e1bd244e0f02b5474dc96a53308cdd57fe20205c43c50d221f7fec",
         "src/query_engine/type_info.rs": "d75095c7f1b1ea24b0ab32e03640f01671cef74b1a56b1f2e2f9ec0ad4534d3b",
         "src/query_engine/types/json.rs": "635fa0c60182bee309e48ff278fa346b093ed1e47a1ac6bf2bc24206e8a4e52d",
         "src/query_engine/types/mod.rs": "d4eefbe91592cf4e4d1602f1f396aadd2faebc63d0331b0893f5eacee1b56d76",
@@ -75856,13 +75856,13 @@
         "src/sqlite/connection/worker.rs": "cd4425c5babbf70e909404852d27ebfc1a8ed7b94a7bed97f98e6c570ec02c7e",
         "src/sqlite/database.rs": "ed71ce60e754b9ce483e9c6d2dca8e0663174e5db2c7351270e463983b2dff7a",
         "src/sqlite/error.rs": "4c3f7ed4bfd6b2411a7343f4ffd1823ba367743b141b3338eb78c2a608685a9c",
-        "src/sqlite/mod.rs": "673392a5c10b638e4bfd90dd95b505597cfd17f3803ebcbb7e69bb47b395fac3",
+        "src/sqlite/mod.rs": "f72c2512ff6021ae7781b02b071a2f7c47008861c22f9df5920654920c46dadf",
         "src/sqlite/options/auto_vacuum.rs": "959a62df6c1a8da4dd3a99643c180494b9906be72884c0b0767fa876efba2945",
-        "src/sqlite/options/connect.rs": "b2cc3d2528d15ac78f9ec77cac7304c05fac1534a957eb9647b87472e23d2849",
+        "src/sqlite/options/connect.rs": "b68b449473413a49267d6d3a56a99eb801713f9555f30a9c3caee3106cca3eb6",
         "src/sqlite/options/journal_mode.rs": "e2621add6bf0f97d2a2c8aab5e896e168bbb2d3fa15a25d6665c6aba467fc8aa",
         "src/sqlite/options/locking_mode.rs": "b488fa79f83fd6196316f4a1cdfd8da963bb7199eb1934ec45789f315b1e16e0",
-        "src/sqlite/options/mod.rs": "6ad22380ed895cf635e1e5a481beb59088764dd6e513d53a364f050015e0ec18",
-        "src/sqlite/options/parse.rs": "27c4cb54fe57419ac1134e9198b9769b8678c3960dd371dac37063b6e0edbc3b",
+        "src/sqlite/options/mod.rs": "da944b2653ed59f4db5e3f28c0a926d2425df3f4cb205796ece59221f832b99f",
+        "src/sqlite/options/parse.rs": "f38afd00e000a1a548aae8eb273fb1a03b316438f5382793c1d485d5bea4344f",
         "src/sqlite/options/synchronous.rs": "b0760eac136041e2fd25c0f8c4fd8161d515c168dd0e7a1b153d5cb7c2c3f13a",
         "src/sqlite/query_result.rs": "9cff47b8f77ea6502d1e965e07574a756807b34c01144865a00236151f26d1c5",
         "src/sqlite/regexp.rs": "eb12c125ce58cf46beeb5321f6e2c5e62506bf0ec538448c494d4adeb598bac7",
@@ -92402,34 +92402,34 @@
       "description": "🧰 The Rust SQL Toolkit. An async, pure Rust SQL crate featuring compile-time checked queries without a DSL. Supports PostgreSQL, MySQL, and SQLite.",
       "directory": "src/foundation/sqlite-access",
       "files_sha256": {
-        "Cargo.toml": "94753ec30198470607c5fd71c8dbbbdd7cbe3e81f2d5977f4c023784131bf74f",
+        "Cargo.toml": "d7ce7a3b5709afeab1f5404b51a7b58e4cfbaf403845110c5579507672732993",
         "benches/sqlite/describe.rs": "e3846b1cd17054663e135116aecde934c2d20f3b83592562a3e34596168f0e94",
         "contrib/ide/vscode/settings.json": "af1e5804fd68126c54f709b71aee3c7dd4dca964f509257c2dd331006dda66ad",
         "gen-changelog.sh": "be0292a711d7a7bb03b57b9b3534dbb34d084189ed85d32c528d0a39e2e156a7",
-        "src/lib.rs": "221e7c47296423fed6d3aee6bf8bda1bb48d5c2ef5c049776a4b1796ca6be72a",
-        "src/query_engine/acquire.rs": "ee0f17ab6d10e35d975292780e1b401335e2a97fe3c26d1fb48a7d7befd33689",
+        "src/lib.rs": "3a12ea02fe5126c4275d2ff76073fcf4d2fdb8dada65b7ec57324a79f153bbe0",
+        "src/query_engine/acquire.rs": "acfccb66b95c3943fad6d090918a217c9c47180c5606abe622a397def9dd89fd",
         "src/query_engine/arguments.rs": "988065552995906e6cd4b6d5dbf7bb35c47a69a173336460b39975bdb9dc7fa4",
         "src/query_engine/column.rs": "e0e740058d79fc636e87c1470d965f5a335295b13b18946b34740dc7a86f9a2d",
         "src/query_engine/common/mod.rs": "13ebe463198f937d331f1fc1c0eddfd8f45ac2599925d829b7c9a8fb5f97f080",
         "src/query_engine/common/statement_cache.rs": "14a82d9719afac1abc088809c23c87f07069fafecaf0ba12cf64d02c802c3e62",
-        "src/query_engine/connection.rs": "404c1a78ab0be33046e034b1328ca3f145851bfb27683ab1e2b36dac479a86bc",
+        "src/query_engine/connection.rs": "9cae13dd4a7e3cdc263e9a7445ead036a4ae6ab6d615bb403598c8391923fd1f",
         "src/query_engine/database.rs": "e242d2c0d1329755871849cd09f676513ca65cd3a5332d9b1996db78b7ba3864",
         "src/query_engine/decode.rs": "942dc7f6fd05a19d4e948d8183f352822f7cb5bd49de59ea5d05e73e9dc0e477",
         "src/query_engine/describe.rs": "e5633f24aaa6348c21a4cea3c0f5fa06e267e96805a91b4108f39146d7894bd7",
         "src/query_engine/encode.rs": "4e1c442ae363c7a6398294620e01ca48dc90369e18eeeb069001a676b8cc077e",
-        "src/query_engine/error.rs": "0c5ad05ec331c9d060959e83ab6aea9b6e84ec9187d4f13632bd2bb646d88ef6",
-        "src/query_engine/executor.rs": "991622bce72371aad85a52d637dc0ed53f5ec2014ba65de3e2fccc0c247db619",
+        "src/query_engine/error.rs": "eaf116afe64d172699bc2622c02c5b41e24bcdb63613cefbbccd7367ab6ac787",
+        "src/query_engine/executor.rs": "cd94ea9bd425bc6c553c5e57fa38861e5156bba10468d43cbfea22ea19ecf38a",
         "src/query_engine/ext/async_stream.rs": "a925cdeef03a8f769da009f0d1b95048a7088afebfc6e1a217d536a79559ff49",
         "src/query_engine/ext/mod.rs": "252205889bf4b6947f2378ab834c09048a891ecd64e050bbd43f6bdaa586571c",
         "src/query_engine/ext/ustr.rs": "564da63d89e79fa6cd4299dea2e1a9934b2a2feb0256a8e83b25e6382c3921c5",
         "src/query_engine/from_row.rs": "842604671d17c98ef39ce19dc7fe407d1e8804cc905bd1ab32a5b2635d7e8704",
-        "src/query_engine/logger.rs": "3a69f769fcc7e29c85782559c23202f8e0a164ad99b516d0049fa90a543f3926",
-        "src/query_engine/mod.rs": "c5354a07248ce4f0a21170b0653507390329283ad63185df05085b0479f64e4c",
+        "src/query_engine/logger.rs": "caa6dc42726f26b523cabaef1cea32a70e2ca94f1c4f88a2afbd2e118dac1ed2",
+        "src/query_engine/mod.rs": "fe3e188fb8bae2c4c1e3407ba9e8d521234f4c3720d0b1750bf0ba75da00d7d8",
         "src/query_engine/pool/connection.rs": "02a5e46ccbf34257ff0463d6fa840611dd4e2c7d12ebb13c1cc5998210c4ba90",
         "src/query_engine/pool/executor.rs": "75a6851c6196df8faab2f138e5a1f189efb16cc5473fd700186971c4eea7ca83",
         "src/query_engine/pool/inner.rs": "7850a4da6b191b912e7d5285795c69463f3e7692ef1ec7be11dfe9d5b9063694",
-        "src/query_engine/pool/maybe.rs": "add426222f6f6ba9f8b2027c0b5ec4bf6fd32de5043488358da45fedd0244dc2",
-        "src/query_engine/pool/mod.rs": "9266614739d0b7bccff24339d0731e042918b6d0fe0cce9791486b724518fee0",
+        "src/query_engine/pool/maybe.rs": "aa6f22c1b5ef2372abb6afa50371766484b9ffa88c62af950ddc4420da3bfb83",
+        "src/query_engine/pool/mod.rs": "36883bd04b156d20a87f40f7efe0c51d0ccd30646df6d11b7a66a963abac44d7",
         "src/query_engine/pool/options.rs": "61b51593070dbc3e87479a6d9d3c4788921128a3795b0720bcb5df28831c9246",
         "src/query_engine/query.rs": "49fe2ed8b0b8a036dd6a27d0062fe682a3573fd7d7f474db2c407c3ea82e2a43",
         "src/query_engine/query_as.rs": "77bc19bb31f303398e21e3f8687977fccf122e02e9793a1dd02e5b60e57882c9",
@@ -92441,7 +92441,7 @@
         "src/query_engine/sql_str.rs": "57550e4bc95deb464b520dfbf0287fd6214c4f8167383c9c8b512793c75f7832",
         "src/query_engine/statement.rs": "26463cdbf8de36428d2d8b4feb458f9819d10bc23029ca4f3cee8a84609aac26",
         "src/query_engine/sync.rs": "73fcc7f07fd16072a10832ac8d3cd3b4f707965047b5147fb9469be037027ac1",
-        "src/query_engine/transaction.rs": "5af79902def61cbb46acea8c0146041596853884d945b5b516a020ebfde7c147",
+        "src/query_engine/transaction.rs": "3b3bbe6960e1bd244e0f02b5474dc96a53308cdd57fe20205c43c50d221f7fec",
         "src/query_engine/type_info.rs": "d75095c7f1b1ea24b0ab32e03640f01671cef74b1a56b1f2e2f9ec0ad4534d3b",
         "src/query_engine/types/json.rs": "635fa0c60182bee309e48ff278fa346b093ed1e47a1ac6bf2bc24206e8a4e52d",
         "src/query_engine/types/mod.rs": "d4eefbe91592cf4e4d1602f1f396aadd2faebc63d0331b0893f5eacee1b56d76",
@@ -92466,13 +92466,13 @@
         "src/sqlite/connection/worker.rs": "cd4425c5babbf70e909404852d27ebfc1a8ed7b94a7bed97f98e6c570ec02c7e",
         "src/sqlite/database.rs": "ed71ce60e754b9ce483e9c6d2dca8e0663174e5db2c7351270e463983b2dff7a",
         "src/sqlite/error.rs": "4c3f7ed4bfd6b2411a7343f4ffd1823ba367743b141b3338eb78c2a608685a9c",
-        "src/sqlite/mod.rs": "673392a5c10b638e4bfd90dd95b505597cfd17f3803ebcbb7e69bb47b395fac3",
+        "src/sqlite/mod.rs": "f72c2512ff6021ae7781b02b071a2f7c47008861c22f9df5920654920c46dadf",
         "src/sqlite/options/auto_vacuum.rs": "959a62df6c1a8da4dd3a99643c180494b9906be72884c0b0767fa876efba2945",
-        "src/sqlite/options/connect.rs": "b2cc3d2528d15ac78f9ec77cac7304c05fac1534a957eb9647b87472e23d2849",
+        "src/sqlite/options/connect.rs": "b68b449473413a49267d6d3a56a99eb801713f9555f30a9c3caee3106cca3eb6",
         "src/sqlite/options/journal_mode.rs": "e2621add6bf0f97d2a2c8aab5e896e168bbb2d3fa15a25d6665c6aba467fc8aa",
         "src/sqlite/options/locking_mode.rs": "b488fa79f83fd6196316f4a1cdfd8da963bb7199eb1934ec45789f315b1e16e0",
-        "src/sqlite/options/mod.rs": "6ad22380ed895cf635e1e5a481beb59088764dd6e513d53a364f050015e0ec18",
-        "src/sqlite/options/parse.rs": "27c4cb54fe57419ac1134e9198b9769b8678c3960dd371dac37063b6e0edbc3b",
+        "src/sqlite/options/mod.rs": "da944b2653ed59f4db5e3f28c0a926d2425df3f4cb205796ece59221f832b99f",
+        "src/sqlite/options/parse.rs": "f38afd00e000a1a548aae8eb273fb1a03b316438f5382793c1d485d5bea4344f",
         "src/sqlite/options/synchronous.rs": "b0760eac136041e2fd25c0f8c4fd8161d515c168dd0e7a1b153d5cb7c2c3f13a",
         "src/sqlite/query_result.rs": "9cff47b8f77ea6502d1e965e07574a756807b34c01144865a00236151f26d1c5",
         "src/sqlite/regexp.rs": "eb12c125ce58cf46beeb5321f6e2c5e62506bf0ec538448c494d4adeb598bac7",
@@ -96707,7 +96707,7 @@
       "version": "0.2.129"
     }
   },
-  "policy_sha256": "154891c0f71b6a59ac4969525ed65c5424ca3e60ef75090462c4782faa816178",
+  "policy_sha256": "c64dd9d6ab1ec7c4eec625468301a82640899ce82ae5b6c51d503085994b35cf",
   "post_consolidation_benchmark_relocation": "8a08cc5b47c335b9e6aa2b7361ab7259fdc394c8dad16c29efb3e90d330ffbbc",
   "proof_routing_receipts": [
     "42cbfc30f0e5db58801c1806abba6926e34a3279dd0697bc1b4cdf2c98fbcce0",
@@ -107136,16 +107136,6 @@
             "runtime"
           ]
         },
-        "src/foundation/async-notification": {
-          "features": [
-            "default",
-            "locks",
-            "std"
-          ],
-          "roles": [
-            "runtime"
-          ]
-        },
         "src/foundation/atoi": {
           "features": [
             "default",
@@ -107255,16 +107245,6 @@
             "std",
             "suggestions",
             "usage"
-          ],
-          "roles": [
-            "runtime"
-          ]
-        },
-        "src/foundation/concurrent-collections": {
-          "features": [
-            "alloc",
-            "default",
-            "std"
           ],
           "roles": [
             "runtime"
@@ -107760,12 +107740,6 @@
             "race",
             "std"
           ],
-          "roles": [
-            "runtime"
-          ]
-        },
-        "src/foundation/parking": {
-          "features": [],
           "roles": [
             "runtime"
           ]
@@ -110184,16 +110158,6 @@
             "compile"
           ]
         },
-        "src/foundation/async-notification": {
-          "features": [
-            "default",
-            "locks",
-            "std"
-          ],
-          "roles": [
-            "compile"
-          ]
-        },
         "src/foundation/atoi": {
           "features": [
             "default",
@@ -110335,16 +110299,6 @@
             "std",
             "suggestions",
             "usage"
-          ],
-          "roles": [
-            "compile"
-          ]
-        },
-        "src/foundation/concurrent-collections": {
-          "features": [
-            "alloc",
-            "default",
-            "std"
           ],
           "roles": [
             "compile"
@@ -110894,12 +110848,6 @@
             "race",
             "std"
           ],
-          "roles": [
-            "compile"
-          ]
-        },
-        "src/foundation/parking": {
-          "features": [],
           "roles": [
             "compile"
           ]
@@ -111589,6 +111537,907 @@
         }
       },
       "profile": "validation-tools",
+      "target": "x86_64-unknown-linux-gnu"
+    },
+    {
+      "manifest": "Cargo.toml",
+      "packages": {
+        "src/foundation/allocator-api2": {
+          "features": [
+            "alloc"
+          ],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/arrayvec": {
+          "features": [],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/async-notification": {
+          "features": [
+            "default",
+            "locks",
+            "std"
+          ],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/atoi": {
+          "features": [
+            "default",
+            "std"
+          ],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/autocfg": {
+          "features": [],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/blake3": {
+          "features": [
+            "default",
+            "std"
+          ],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/bytes": {
+          "features": [
+            "default",
+            "std"
+          ],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/cc": {
+          "features": [],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/cfg-if": {
+          "features": [],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/cmov": {
+          "features": [],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/concurrent-collections": {
+          "features": [
+            "alloc",
+            "default",
+            "std"
+          ],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/const-oid": {
+          "features": [],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/constant_time_eq": {
+          "features": [
+            "std"
+          ],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/cpu-feature-detect": {
+          "features": [],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/cryptographic-core": {
+          "features": [
+            "alloc",
+            "block-api",
+            "default",
+            "mac",
+            "oid"
+          ],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/ctutils": {
+          "features": [],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/data-serialization": {
+          "features": [
+            "alloc",
+            "default",
+            "derive",
+            "error-path",
+            "std"
+          ],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/displaydoc": {
+          "features": [],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/either": {
+          "features": [
+            "default",
+            "std",
+            "use_std"
+          ],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/equivalent": {
+          "features": [],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/errno": {
+          "features": [
+            "default",
+            "std"
+          ],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/error-definition": {
+          "features": [
+            "default",
+            "std"
+          ],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/error-definition-macros": {
+          "features": [],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/fastrand": {
+          "features": [
+            "alloc",
+            "default",
+            "std"
+          ],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/flag-set": {
+          "features": [
+            "std"
+          ],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/flume": {
+          "features": [
+            "async"
+          ],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/foldhash": {
+          "features": [],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/futures": {
+          "features": [
+            "alloc",
+            "async-await",
+            "async-await-macro",
+            "channel",
+            "executor",
+            "io",
+            "shared-state",
+            "sink",
+            "std",
+            "utilities"
+          ],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/futures-intrusive": {
+          "features": [
+            "alloc",
+            "default",
+            "std"
+          ],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/futures-macro": {
+          "features": [],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/hash-table": {
+          "features": [
+            "allocator-api2",
+            "default",
+            "default-hasher",
+            "equivalent",
+            "inline-more",
+            "raw-entry",
+            "serialization"
+          ],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/hashlink": {
+          "features": [],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/hybrid-array": {
+          "features": [],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/icu_collections": {
+          "features": [],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/icu_locale_core": {
+          "features": [
+            "zerovec"
+          ],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/icu_provider": {
+          "features": [
+            "baked"
+          ],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/indexmap": {
+          "features": [
+            "default",
+            "serialization",
+            "std"
+          ],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/itoa": {
+          "features": [],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/json-codec": {
+          "features": [
+            "default",
+            "float_roundtrip",
+            "raw_value",
+            "std"
+          ],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/lazy_static": {
+          "features": [],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/libc": {
+          "features": [
+            "default",
+            "std"
+          ],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/libsqlite3-sys": {
+          "features": [
+            "bundled",
+            "bundled_bindings",
+            "cc",
+            "default",
+            "min_sqlite_version_3_34_1",
+            "pkg-config"
+          ],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/linux-raw-sys": {
+          "features": [
+            "auxvec",
+            "elf",
+            "errno",
+            "general",
+            "ioctl",
+            "no_std",
+            "prctl"
+          ],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/litemap": {
+          "features": [],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/log": {
+          "features": [
+            "alloc",
+            "std"
+          ],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/memchr": {
+          "features": [
+            "alloc",
+            "default",
+            "std"
+          ],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/mio": {
+          "features": [
+            "net",
+            "os-ext",
+            "os-poll"
+          ],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/nu-ansi-term": {
+          "features": [
+            "default",
+            "std"
+          ],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/numeric": {
+          "features": [
+            "alloc",
+            "bigint",
+            "collection",
+            "complex",
+            "integer",
+            "iter",
+            "rational",
+            "std"
+          ],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/once_cell": {
+          "features": [
+            "alloc",
+            "default",
+            "race",
+            "std"
+          ],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/parking": {
+          "features": [],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/pin-project-lite": {
+          "features": [],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/pkg-config": {
+          "features": [],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/potential_utf": {
+          "features": [
+            "zerovec"
+          ],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/proc-macro2": {
+          "features": [
+            "default",
+            "proc-macro",
+            "span-locations"
+          ],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/quote": {
+          "features": [
+            "default",
+            "proc-macro"
+          ],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/regex": {
+          "features": [
+            "alloc",
+            "automata",
+            "default",
+            "dfa-build",
+            "dfa-onepass",
+            "dfa-search",
+            "engine-perf",
+            "hybrid",
+            "literal",
+            "literal-perf",
+            "matcher",
+            "meta",
+            "nfa",
+            "nfa-backtrack",
+            "nfa-pikevm",
+            "nfa-thompson",
+            "perf",
+            "perf-backtrack",
+            "perf-dfa",
+            "perf-inline",
+            "perf-literal",
+            "perf-literal-multisubstring",
+            "perf-literal-substring",
+            "perf-onepass",
+            "std",
+            "syntax",
+            "unicode",
+            "unicode-age",
+            "unicode-bool",
+            "unicode-case",
+            "unicode-gencat",
+            "unicode-perl",
+            "unicode-script",
+            "unicode-segment",
+            "unicode-word-boundary"
+          ],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/rust-syntax": {
+          "features": [
+            "clone-impls",
+            "default",
+            "derive",
+            "extra-traits",
+            "fold",
+            "full",
+            "parsing",
+            "printing",
+            "proc-macro",
+            "visit",
+            "visit-mut"
+          ],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/rustix": {
+          "features": [
+            "alloc",
+            "default",
+            "fs",
+            "mount",
+            "process",
+            "std"
+          ],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/scopeguard": {
+          "features": [],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/serialization-derive": {
+          "features": [
+            "default"
+          ],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/sha2": {
+          "features": [
+            "alloc",
+            "default",
+            "oid"
+          ],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/sharded-slab": {
+          "features": [],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/shell-tokenizer": {
+          "features": [
+            "default",
+            "std"
+          ],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/signal-hook-registry": {
+          "features": [],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/slab": {
+          "features": [
+            "std"
+          ],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/smallvec": {
+          "features": [
+            "const_generics",
+            "const_new"
+          ],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/socket2": {
+          "features": [
+            "all"
+          ],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/spin": {
+          "features": [
+            "barrier",
+            "default",
+            "lazy",
+            "lock_api",
+            "mutex",
+            "once",
+            "rwlock",
+            "spin_mutex"
+          ],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/sqlite-access": {
+          "features": [
+            "pool",
+            "sqlite-bundled"
+          ],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/stable_deref_trait": {
+          "features": [
+            "alloc",
+            "std"
+          ],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/synchronization": {
+          "features": [
+            "atomic_usize",
+            "locks",
+            "parking",
+            "std"
+          ],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/synstructure": {
+          "features": [
+            "default",
+            "proc-macro"
+          ],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/system-entropy": {
+          "features": [
+            "std",
+            "wasm_js"
+          ],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/tempfile": {
+          "features": [
+            "default",
+            "system-entropy"
+          ],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/thread_local": {
+          "features": [],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/tinystr": {
+          "features": [
+            "zerovec"
+          ],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/tokio": {
+          "features": [
+            "adapters",
+            "adapters-io",
+            "bytes",
+            "default",
+            "fs",
+            "io-util",
+            "libc",
+            "macros",
+            "mio",
+            "net",
+            "rt",
+            "rt-multi-thread",
+            "signal",
+            "signal-hook-registry",
+            "socket2",
+            "sync",
+            "time",
+            "tokio-macros"
+          ],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/tokio-macros": {
+          "features": [],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/tracing": {
+          "features": [
+            "alloc",
+            "ansi",
+            "attributes",
+            "collector",
+            "collector-default",
+            "default",
+            "env-filter",
+            "fmt",
+            "log",
+            "log-bridge",
+            "log-tracer",
+            "pattern",
+            "registry",
+            "smallvec",
+            "std",
+            "tracing-attributes"
+          ],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/tracing-attributes": {
+          "features": [],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/typenum": {
+          "features": [
+            "const-generics"
+          ],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/unicode-ident": {
+          "features": [],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/unicode-normalizer": {
+          "features": [
+            "compiled_data"
+          ],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/unicode-properties": {
+          "features": [
+            "compiled_data"
+          ],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/url-encoding": {
+          "features": [
+            "alloc",
+            "default",
+            "domain",
+            "form",
+            "parser",
+            "std",
+            "unicode-normalizer",
+            "unicode-properties"
+          ],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/utf8_iter": {
+          "features": [],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/writeable": {
+          "features": [],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/yoke": {
+          "features": [
+            "derive",
+            "zerofrom"
+          ],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/yoke-derive": {
+          "features": [],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/zerofrom": {
+          "features": [
+            "derive"
+          ],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/zerofrom-derive": {
+          "features": [],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/zeroize": {
+          "features": [
+            "alloc",
+            "default"
+          ],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/zerotrie": {
+          "features": [
+            "yoke",
+            "zerofrom"
+          ],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/zerovec": {
+          "features": [
+            "derive",
+            "yoke"
+          ],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/zerovec-derive": {
+          "features": [],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/zmij": {
+          "features": [],
+          "roles": [
+            "compile"
+          ]
+        }
+      },
+      "profile": "sqlite-pool-validation",
+      "requested_features": [
+        "platform-io/sqlite-pool"
+      ],
       "target": "x86_64-unknown-linux-gnu"
     }
   ],

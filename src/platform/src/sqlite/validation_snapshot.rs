@@ -3,6 +3,7 @@
 //! connections: closing raw descriptors can affect SQLite's POSIX locks.
 
 use sha2::{Digest, Sha256};
+#[cfg(feature = "sqlite-pool")]
 use sqlite_access::{
     SqlitePool,
     sqlite::{SqliteConnectOptions, SqlitePoolOptions},
@@ -39,6 +40,8 @@ impl Default for SnapshotLimits {
 /// A private coherent main/WAL/journal generation; SHM is inspected and locked
 /// but never copied. This is a transient validation artifact, not a backup.
 pub struct ValidationSnapshot {
+    // Own the private files for the entire snapshot lifetime, even without a pool.
+    #[cfg_attr(not(feature = "sqlite-pool"), allow(dead_code))]
     directory: Arc<tempfile::TempDir>,
     database: PathBuf,
 }
@@ -110,12 +113,14 @@ impl ValidationSnapshot {
 
     /// Open the already-captured generation after another read-only adapter
     /// has closed its connection. No source recapture or generation change.
+    #[cfg(feature = "sqlite-pool")]
     pub async fn into_pool(self) -> Result<ValidationSnapshotPool, SnapshotError> {
         open_snapshot_pool(self, None).await
     }
 
     /// Open this exact captured generation with native limits applied to every
     /// newly established connection before any validation statement is prepared.
+    #[cfg(feature = "sqlite-pool")]
     pub async fn into_pool_with_connection_limits(
         self,
         limits: crate::sqlite::ConnectionLimits,
@@ -125,11 +130,13 @@ impl ValidationSnapshot {
     }
 }
 
+#[cfg(feature = "sqlite-pool")]
 pub struct ValidationSnapshotPool {
     pool: SqlitePool,
     _snapshot: ValidationSnapshot,
 }
 
+#[cfg(feature = "sqlite-pool")]
 impl ValidationSnapshotPool {
     pub fn pool(&self) -> &SqlitePool {
         &self.pool
@@ -142,6 +149,7 @@ impl ValidationSnapshotPool {
 /// Copy under SQLite's native read locks, then open only the private copy. WAL
 /// recovery and hot-journal rollback may write to that copy, never the source.
 /// SQL access is query-only after connection, including business validation.
+#[cfg(feature = "sqlite-pool")]
 pub async fn open_validation_snapshot(
     path: impl AsRef<Path>,
 ) -> Result<ValidationSnapshotPool, SnapshotError> {
@@ -152,6 +160,7 @@ pub async fn open_validation_snapshot(
     snapshot.into_pool().await
 }
 
+#[cfg(feature = "sqlite-pool")]
 pub async fn open_validation_snapshot_with_connection_limits(
     path: impl AsRef<Path>,
     limits: crate::sqlite::ConnectionLimits,
@@ -164,6 +173,7 @@ pub async fn open_validation_snapshot_with_connection_limits(
     snapshot.into_pool_with_connection_limits(limits).await
 }
 
+#[cfg(feature = "sqlite-pool")]
 async fn open_snapshot_pool(
     snapshot: ValidationSnapshot,
     limits: Option<crate::sqlite::ConnectionLimits>,
@@ -206,6 +216,7 @@ async fn open_snapshot_pool(
     })
 }
 
+#[cfg(feature = "sqlite-pool")]
 fn snapshot_connect_error(error: sqlite_access::Error) -> SnapshotError {
     if let sqlite_access::Error::Io(source) = error {
         let kind = source.kind();
@@ -525,6 +536,6 @@ pub enum SnapshotError {
     Sqlx(#[from] sqlite_access::Error),
 }
 
-#[cfg(test)]
+#[cfg(all(test, feature = "sqlite-pool"))]
 #[path = "../../../../test/platform/unit/sqlite/validation_snapshot/tests.rs"]
 mod tests;

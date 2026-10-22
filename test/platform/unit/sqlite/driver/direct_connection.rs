@@ -1,0 +1,235 @@
+//! Direct-worker contracts run with no pool, Tokio or general URL parser.
+use crate::{sqlite::SqliteConnectOptions, Connection, Error, SqliteConnection};
+use futures::executor::block_on;
+use std::{
+    path::PathBuf,
+    sync::atomic::{AtomicUsize, Ordering},
+};
+
+type TestResult = Result<(), Box<dyn std::error::Error>>;
+
+struct Directory(PathBuf);
+impl Directory {
+    fn new() -> std::io::Result<Self> {
+        static SEQUENCE: AtomicUsize = AtomicUsize::new(0);
+        let path = std::env::current_dir()?.join(format!(
+            ".sqlite-direct-test-{}-{}",
+            std::process::id(),
+            SEQUENCE.fetch_add(1, Ordering::Relaxed)
+        ));
+        std::fs::create_dir(&path)?;
+        Ok(Self(path))
+    }
+}
+impl Drop for Directory {
+    fn drop(&mut self) {
+        let _ = std::fs::remove_dir_all(&self.0);
+    }
+}
+
+#[test]
+fn direct_memory_transactions_savepoints_rollback_and_errors() -> TestResult {
+    block_on(async {
+        let mut connection = SqliteConnection::connect_with(
+            &SqliteConnectOptions::new().statement_cache_capacity(2),
+        )
+        .await?;
+        crate::query("CREATE TABLE entries(value INTEGER UNIQUE)")
+            .execute(&mut connection)
+            .await?;
+        let mut transaction = connection.begin().await?;
+        crate::query("INSERT INTO entries VALUES(1)")
+            .execute(&mut *transaction)
+            .await?;
+        let mut nested = transaction.begin().await?;
+        crate::query("INSERT INTO entries VALUES(2)")
+            .execute(&mut *nested)
+            .await?;
+        nested.rollback().await?;
+        transaction.commit().await?;
+        let mut dropped = connection.begin().await?;
+        crate::query("INSERT INTO entries VALUES(3)")
+            .execute(&mut *dropped)
+            .await?;
+        drop(dropped);
+        assert_eq!(
+            crate::query_scalar::<_, i64>("SELECT value FROM entries")
+                .fetch_all(&mut connection)
+                .await?,
+            [1]
+        );
+        assert!(crate::query("INSERT INTO entries VALUES(1)")
+            .execute(&mut connection)
+            .await
+            .is_err());
+        // A statement error does not poison the native connection or its channels.
+        assert_eq!(
+            crate::query_scalar::<_, i64>("SELECT 7")
+                .fetch_one(&mut connection)
+                .await?,
+            7
+        );
+        assert!(connection.cached_statements_size() <= 2);
+        connection.clear_cached_statements().await?;
+        assert_eq!(connection.cached_statements_size(), 0);
+        connection.close().await?;
+        Ok(())
+    })
+}
+
+#[test]
+fn filename_absolute_relative_unicode_percent_and_query_characters_are_literal() -> TestResult {
+    let directory = Directory::new()?;
+    block_on(async {
+        for relative in [false, true] {
+            // Windows forbids a literal question mark in a filename. The parser-only
+            // contract still covers that character on every platform.
+            let prefix = if relative { "relative" } else { "absolute" };
+            let suffix = if cfg!(windows) {
+                "#%25 Ω.sqlite"
+            } else {
+                "?#%25 Ω.sqlite"
+            };
+            let absolute = directory.0.join(format!("{prefix} {suffix}"));
+            let filename = if relative {
+                absolute.strip_prefix(std::env::current_dir()?)?.to_owned()
+            } else {
+                absolute.clone()
+            };
+            let options = SqliteConnectOptions::new()
+                .filename(&filename)
+                .create_if_missing(true);
+            let mut connection = SqliteConnection::connect_with(&options).await?;
+            crate::query("CREATE TABLE retained(value TEXT)")
+                .execute(&mut connection)
+                .await?;
+            crate::query("INSERT INTO retained VALUES('持久 Ω')")
+                .execute(&mut connection)
+                .await?;
+            connection.close().await?;
+            assert!(absolute.is_file());
+            // immutable forces SQLite URI serialization, preserving literal filename bytes.
+            let options = SqliteConnectOptions::new()
+                .filename(&filename)
+                .read_only(true)
+                .immutable(true);
+            let mut reopened = SqliteConnection::connect_with(&options).await?;
+            assert_eq!(
+                crate::query_scalar::<_, String>("SELECT value FROM retained")
+                    .fetch_one(&mut reopened)
+                    .await?,
+                "持久 Ω"
+            );
+            assert!(crate::query("DELETE FROM retained")
+                .execute(&mut reopened)
+                .await
+                .is_err());
+            reopened.close().await?;
+        }
+        Ok(())
+    })
+}
+
+#[test]
+fn missing_nul_and_non_utf8_filenames_fail_without_creating_files() -> TestResult {
+    let directory = Directory::new()?;
+    block_on(async {
+        let missing = directory.0.join("missing.sqlite");
+        assert!(
+            SqliteConnection::connect_with(&SqliteConnectOptions::new().filename(&missing))
+                .await
+                .is_err()
+        );
+        assert!(!missing.exists());
+        let nul = SqliteConnectOptions::new()
+            .filename("nul\0.sqlite")
+            .create_if_missing(true);
+        assert!(
+            matches!(SqliteConnection::connect_with(&nul).await, Err(Error::Io(error)) if error.kind() == std::io::ErrorKind::InvalidData)
+        );
+        #[cfg(unix)]
+        {
+            use std::os::unix::ffi::OsStringExt;
+            let non_utf8 = directory.0.join(std::ffi::OsString::from_vec(
+                b"non-utf8-\xff.sqlite".to_vec(),
+            ));
+            let options = SqliteConnectOptions::new()
+                .filename(&non_utf8)
+                .create_if_missing(true);
+            assert!(
+                matches!(SqliteConnection::connect_with(&options).await, Err(Error::Io(error)) if error.kind() == std::io::ErrorKind::InvalidData)
+            );
+            assert!(!non_utf8.exists());
+        }
+        Ok(())
+    })
+}
+
+#[test]
+fn parsed_memory_options_share_only_the_selected_database() -> TestResult {
+    block_on(async {
+        let options: SqliteConnectOptions = "sqlite::memory:?cache=shared".parse()?;
+        let mut writer = SqliteConnection::connect_with(&options).await?;
+        crate::query("CREATE TABLE entries(value INTEGER)")
+            .execute(&mut writer)
+            .await?;
+        crate::query("INSERT INTO entries VALUES(9)")
+            .execute(&mut writer)
+            .await?;
+        let mut reader = SqliteConnection::connect_with(&options).await?;
+        assert_eq!(
+            crate::query_scalar::<_, i64>("SELECT value FROM entries")
+                .fetch_one(&mut reader)
+                .await?,
+            9
+        );
+        let mut separate = SqliteConnection::connect("sqlite::memory:").await?;
+        assert!(crate::query("SELECT value FROM entries")
+            .fetch_one(&mut separate)
+            .await
+            .is_err());
+        separate.close().await?;
+        reader.close().await?;
+        writer.close().await?;
+        Ok(())
+    })
+}
+
+#[test]
+fn parsed_percent_filename_and_query_options_reopen_readonly() -> TestResult {
+    let directory = Directory::new()?;
+    block_on(async {
+        let path = directory.0.join(if cfg!(windows) {
+            "parsed #% Ω.sqlite"
+        } else {
+            "parsed ?#% Ω.sqlite"
+        });
+        let encoded = url_encoding::percent::percent_encode(
+            path.to_str().unwrap().as_bytes(),
+            url_encoding::percent::NON_ALPHANUMERIC,
+        );
+        let options: SqliteConnectOptions =
+            format!("sqlite://{encoded}?mode=rwc&cache=private").parse()?;
+        let mut writer = SqliteConnection::connect_with(&options).await?;
+        crate::query("CREATE TABLE retained(value INTEGER)")
+            .execute(&mut writer)
+            .await?;
+        writer.close().await?;
+        assert!(path.is_file());
+        let options: SqliteConnectOptions =
+            format!("sqlite:{encoded}?mode=ro&immutable=1").parse()?;
+        let mut reader = SqliteConnection::connect_with(&options).await?;
+        assert_eq!(
+            crate::query_scalar::<_, i64>("SELECT count(*) FROM retained")
+                .fetch_one(&mut reader)
+                .await?,
+            0
+        );
+        assert!(crate::query("INSERT INTO retained VALUES(1)")
+            .execute(&mut reader)
+            .await
+            .is_err());
+        reader.close().await?;
+        Ok(())
+    })
+}

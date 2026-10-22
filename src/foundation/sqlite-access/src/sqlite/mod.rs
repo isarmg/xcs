@@ -69,7 +69,6 @@
 // invariants.
 #![allow(unsafe_code)]
 
-
 pub use arguments::{SqliteArgumentValue, SqliteArguments, SqliteArgumentsBuffer};
 pub use column::SqliteColumn;
 #[cfg(feature = "sqlite-deserialize")]
@@ -114,9 +113,11 @@ mod value_debug;
 mod regexp;
 
 /// An alias for [`Pool`][crate::sqlite::pool::Pool], specialized for SQLite.
+#[cfg(feature = "pool")]
 pub type SqlitePool = crate::sqlite::pool::Pool<Sqlite>;
 
 /// An alias for [`PoolOptions`][crate::sqlite::pool::PoolOptions], specialized for SQLite.
+#[cfg(feature = "pool")]
 pub type SqlitePoolOptions = crate::sqlite::pool::PoolOptions<Sqlite>;
 
 /// An alias for [`Executor<'_, Database = Sqlite>`][Executor].

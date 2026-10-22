@@ -1,5 +1,7 @@
 """SQLite executable coverage stays wired to real tests and isolated Cargo locks."""
+import contextlib
 import importlib.util
+import io
 import os
 from pathlib import Path
 import subprocess
@@ -56,8 +58,10 @@ class SqliteFamily(unittest.TestCase):
             dependencies = manifest["dependencies"]
             self.assertEqual(dependencies["sqlite-access"]["features"], [])
             self.assertFalse(dependencies["sqlite-access"]["default-features"])
-            for name in ("sqlite-access", "tokio", "hash-table", "hashlink"):
-                self.assertEqual(Path(dependencies[name]["path"]), ROOT / "src/foundation" / name)
+            self.assertEqual(set(dependencies), {"sqlite-access"})
+            self.assertEqual(manifest["features"]["sqlite-pool"], ["sqlite-access/pool"])
+            for name, entry in {**dependencies, **manifest["dev-dependencies"]}.items():
+                self.assertEqual(Path(entry["path"]), ROOT / "src/foundation" / name)
             self.assertIn("workspace", manifest)
             self.assertEqual({row["path"] for row in manifest["test"]},
                              {str(ROOT / path) for path in module.INTEGRATION_TESTS.values()})
@@ -72,11 +76,56 @@ class SqliteFamily(unittest.TestCase):
             for entry in parsed["dependencies"].values():
                 if isinstance(entry, dict) and "path" in entry:
                     self.assertTrue(Path(entry["path"]).is_relative_to(ROOT / "src/foundation"))
-            original = ROOT / "test/foundation/sqlite-access"
-            for path in original.rglob("*"):
-                if path.is_file():
-                    self.assertEqual(path.read_bytes(), (work / path.relative_to(ROOT)).read_bytes())
+            self.assertEqual(module.FAMILY_TEST_ROOTS,
+                             ("test/foundation/sqlite-access", "test/platform/unit/sqlite/driver"))
+            for relative in module.FAMILY_TEST_ROOTS:
+                for path in (ROOT / relative).rglob("*"):
+                    if path.is_file():
+                        self.assertEqual(path.read_bytes(), (work / path.relative_to(ROOT)).read_bytes())
             self.assertFalse((manifest.parent / "Cargo.lock").exists())
+
+    def test_transaction_owns_the_original_source_without_a_pool_wrapper(self):
+        query_engine = ROOT / "src/foundation/sqlite-access/src/query_engine"
+        transaction = (query_engine / "transaction.rs").read_text()
+        self.assertIn('#[path = "pool/maybe.rs"]\nmod connection;', transaction)
+        self.assertTrue((query_engine / "pool/maybe.rs").is_file())
+        self.assertFalse((query_engine / "transaction/connection.rs").exists())
+        self.assertNotIn("mod maybe;", (query_engine / "pool/mod.rs").read_text())
+        implementation = (query_engine / "pool/maybe.rs").read_text()
+        self.assertIn("pub enum TransactionConnection", implementation)
+        self.assertNotIn("MaybePoolConnection", implementation)
+
+    def test_gate_preserves_maintained_sources_and_root_lock(self):
+        # Exercise every file mutation and the finally assertions without executing Cargo.
+        with patch.object(module, "execute") as execute, patch.object(module, "check_direct_dependencies"), \
+                contextlib.redirect_stdout(io.StringIO()):
+            module.check(ROOT)
+        platform_tests = [call.args[0] for call in execute.call_args_list
+                          if call.args[0][:2] == ["cargo", "test"] and "platform-io" in call.args[0]]
+        self.assertEqual(len(platform_tests), 2)
+        for command in platform_tests:
+            self.assertEqual(command[-3:], ["sqlite::", "--", "--test-threads=1"])
+
+    def test_direct_graph_rejects_optional_runtime_and_unicode_dependencies(self):
+        direct = "consumer v0.0.0|\nsqlite-access v0.9.0|sqlite-bundled\nurl-encoding v2.5.8|alloc,form,std\n"
+        module.assert_direct_dependencies(direct)
+        for package in module.DIRECT_EXCLUDED_PACKAGES:
+            with self.assertRaises(AssertionError):
+                module.assert_direct_dependencies(direct + f"{package} v1.0.0|\n")
+        for before, after in (("alloc,form,std", "alloc,form,std,parser"),
+                              ("alloc,form,std", "alloc,form,std,domain"),
+                              ("sqlite-bundled", "sqlite-bundled,pool"),
+                              ("sqlite-bundled", "sqlite-bundled,url")):
+            with self.assertRaises(AssertionError):
+                module.assert_direct_dependencies(direct.replace(before, after))
+
+    def test_required_regressions_must_run_and_pass(self):
+        for output in ("", "test unit::required ... ignored", "test unit::required ... FAILED"):
+            with patch.object(module.subprocess, "run", return_value=subprocess.CompletedProcess([], 0, output, "")):
+                with self.assertRaises(AssertionError):
+                    module.execute(["cargo"], ROOT, required_tests=("required",))
+        with patch.object(module.subprocess, "run", return_value=subprocess.CompletedProcess([], 0, "test unit::required ... ok", "")):
+            module.execute(["cargo"], ROOT, required_tests=("required",))
 
     def test_zero_or_missing_tests_cannot_claim_coverage(self):
         for text in ("", "test result: ok. 0 passed; 0 failed;", "test result: ok. 7 passed; 0 failed;"):

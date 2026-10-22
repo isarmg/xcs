@@ -17858,7 +17858,7 @@
         {
           "origin_directory": "vendor/rust/sqlx-sqlite-0.9.0",
           "path": "test/foundation/sqlite-access/sqlite/functions/src/options/parse/it_returns_the_parsed_url_222.rs",
-          "sha256": "58dd1db4708fe0c90db8bdbc8f665ea8b4054d26cf501c034de1f554b025040d",
+          "sha256": "6938dddcd0c7ff05b8e9f65c44d713b079643a38e09b74d6b91f83f99e799650",
           "source": "src/foundation/sqlx-sqlite/src/options/parse.rs",
           "source_sha256_before": "d94008fcdd7e03e2df1c6c0d788cc55cde42e772a83efb6e5f4839249154e156"
         },
@@ -17893,7 +17893,7 @@
         {
           "origin_directory": "vendor/rust/sqlx-sqlite-0.9.0",
           "path": "test/foundation/sqlite-access/sqlite/unit/src/regexp/tests_173.rs",
-          "sha256": "f3ace8a2d848bbd64cda7d05f671cc58d20d7fb3566dd9e81b16a68fc5e8c195",
+          "sha256": "20fe43830b155b94655fe768f65747981ec972ea1a14fc02c2708f9629195e9e",
           "source": "src/foundation/sqlx-sqlite/src/regexp.rs",
           "source_sha256_before": "ea7a509291d3c9fcbaaa97cd02a139ee5be4608db68adac94829e160ac2cf6a1"
         }
