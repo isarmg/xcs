@@ -24,3 +24,7 @@ storage-engine = { path = "../engine" }
 
 [dev-dependencies]
 tempfile.workspace = true
+
+[[test]]
+name = "cli_startup"
+path = "../../test/admin/cli_startup.rs"

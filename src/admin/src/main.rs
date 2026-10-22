@@ -16,15 +16,21 @@ fn print(value: impl data_serialization::Serialize) -> Result<()> {
 fn op(value: Option<String>) -> String {
     value.unwrap_or_else(|| storage_engine::new_id("op"))
 }
-#[tokio::main]
-async fn main() {
+fn main() {
     tracing::collector::fmt()
         .with_env_filter(
             tracing::collector::EnvFilter::try_from_default_env().unwrap_or_else(|_| "warn".into()),
         )
         .with_writer(std::io::stderr)
         .init();
-    if let Err(error) = run(Args::parse()).await {
+    // Help, version, and argument errors must exit before starting runtime workers.
+    let args = Args::parse();
+    run_with_runtime(args);
+}
+
+#[tokio::main]
+async fn run_with_runtime(args: Args) {
+    if let Err(error) = run(args).await {
         eprintln!("zxs: {error}");
         std::process::exit(1);
     }

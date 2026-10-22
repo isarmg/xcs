@@ -6,6 +6,18 @@ use std::path::Path;
 use tokio::io::{AsyncReadExt, AsyncSeekExt, AsyncWriteExt};
 use tokio_util::io::ReaderStream;
 
+// Match the hashing pass's maximum read size without reserving a large body
+// buffer for tiny files. Clamp before converting to usize (including on wasm).
+fn upload_chunk_capacity(length: u64) -> usize {
+    length.clamp(4 * 1024, 256 * 1024) as usize
+}
+
+fn upload_stream(file: tokio::fs::File, length: u64) -> ReaderStream<tokio::fs::File> {
+    // Remain demand-driven: no producer task, read-ahead queue, or whole-file
+    // buffering. Tokio performs at most one blocking read per file at a time.
+    ReaderStream::with_capacity(file, upload_chunk_capacity(length))
+}
+
 /// A hashed, rewound upload ready for dispatch. Preparing does not send bytes.
 pub struct PreparedUpload {
     request: reqwest::RequestBuilder,
@@ -33,7 +45,7 @@ impl Client {
         .await
     }
 
-    /// Open and validate the selected descriptor before handing it to a native picker registry.
+    /// Open and validate a regular-file descriptor for a management CLI upload.
     pub async fn open_upload_source(source: &Path) -> Result<tokio::fs::File, Error> {
         let mut options = tokio::fs::OpenOptions::new();
         options.read(true);
@@ -54,7 +66,7 @@ impl Client {
     }
 
     /// Stream an already selected descriptor without reopening its original path.
-    /// Ownership prevents shared seek offsets or concurrent reuse by native callers.
+    /// Ownership prevents shared seek offsets or concurrent reuse by callers.
     pub async fn upload_open_file(
         &self,
         workspace: &str,
@@ -90,6 +102,8 @@ impl Client {
             }
             hasher.update(&buffer[..count]);
         }
+        // Release the hash scratch space before reserving the streamed body.
+        drop(buffer);
         file.seek(std::io::SeekFrom::Start(0)).await?;
         let content_hash = hasher.finalize().to_hex().to_string();
         let mut url = self.url(&format!(
@@ -106,7 +120,10 @@ impl Client {
             .header("x-zxs-logical-size", metadata.len().to_string())
             .header("x-zxs-upload-generation", "1")
             .header("x-zxs-content-hash", content_hash)
-            .body(reqwest::Body::wrap_stream(ReaderStream::new(file)));
+            .body(reqwest::Body::wrap_stream(upload_stream(
+                file,
+                metadata.len(),
+            )));
         if let Some(token) = &self.token {
             request = request.bearer_auth(token);
         }
@@ -201,3 +218,7 @@ impl Client {
         Ok(())
     }
 }
+
+#[cfg(test)]
+#[path = "../../../test/client/unit/upload_stream_tests.rs"]
+mod upload_stream_tests;

@@ -4,6 +4,8 @@
 
 `storage-admin` 构建出 `zxs`，支持本机存储管理和通过 `storage-client` 访问远端 API。输出为 JSON，失败退出码非零。`zxs --help` 和各子命令 `--help` 列出实际参数。
 
+参数解析先于 Tokio 运行时构造：帮助、版本和参数错误直接退出，不创建工作线程；实际命令仍通过多线程运行时执行。`test/admin/cli_startup.rs` 用真实二进制进程验证该边界与退出码。
+
 ## 构建与初始化
 
 ```sh
