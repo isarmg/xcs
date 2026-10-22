@@ -27,7 +27,7 @@ flowchart TD
 | web | src/web/Cargo.toml | wasm32-unknown-unknown | 86 / 52 / 39 |
 | smb | src/smb/Cargo.toml, src/smb-vfs/Cargo.toml | x86_64-unknown-linux-gnu | 36 / 14 / 29 |
 | build-tools | tools/web-build/Cargo.toml, tools/release-tools/Cargo.toml, tools/web-bindings/Cargo.toml | x86_64-unknown-linux-gnu | 58 / 0 / 58 |
-| validation-tools | tools/contract-check/Cargo.toml, tools/browser-smoke/Cargo.toml, tools/unicode-build/Cargo.toml, tools/perf-check/Cargo.toml | x86_64-unknown-linux-gnu | 164 / 0 / 164 |
+| validation-tools | tools/contract-check/Cargo.toml, tools/browser-smoke/Cargo.toml, tools/unicode-build/Cargo.toml, tools/perf-check/Cargo.toml | x86_64-unknown-linux-gnu | 162 / 0 / 162 |
 
 角色可重叠，计数不可相加。显式验证成员：src/foundation/ring。
 
@@ -192,7 +192,6 @@ flowchart TD
 | src/foundation/rustls-webpki (rustls-webpki@0.103.16) | src/client [dev]; src/foundation/rustls [normal] alias=webpki | root-native@x86_64-unknown-linux-gnu: runtime; features=alloc,default,ring,std |
 | src/foundation/rustversion (rustversion@1.0.23) | src/foundation/rustls [build, optional]; src/foundation/wasm-bindgen [build] alias=rustversion-compat | web@wasm32-unknown-unknown: compile; features=(none) |
 | src/foundation/ryu (ryu@1.0.23) | src/foundation/form-codec [normal] | root-native@x86_64-unknown-linux-gnu: runtime; features=(none); validation-tools@x86_64-unknown-linux-gnu: compile; features=(none) |
-| src/foundation/same-file (same-file@1.0.6) | src/foundation/walkdir [normal] | validation-tools@x86_64-unknown-linux-gnu: compile; features=(none) |
 | src/foundation/schema-validation (schema-validation@0.58.6) | tools/contract-check [normal] | validation-tools@x86_64-unknown-linux-gnu: compile; features=json-codec,pattern,reference,validator,value |
 | src/foundation/scopeguard (scopeguard@1.2.0) | src/foundation/synchronization [normal] | root-native@x86_64-unknown-linux-gnu: runtime; features=(none); validation-tools@x86_64-unknown-linux-gnu: compile; features=(none) |
 | src/foundation/semver (semver@1.0.28) | src/foundation/rustc_version [normal]; src/foundation/wasmparser [normal, optional]; tools/release-tools [normal] | web@wasm32-unknown-unknown: compile; features=default,std; build-tools@x86_64-unknown-linux-gnu: compile; features=default,std |
@@ -255,7 +254,6 @@ flowchart TD
 | src/foundation/view-alternatives (view-alternatives@0.1.9) | src/foundation/view-renderer [normal]; src/interface [normal] | web@wasm32-unknown-unknown: runtime; features=default,no_std |
 | src/foundation/view-renderer (view-renderer@0.2.19) | src/foundation/dom-helpers [normal]; src/interface [normal] | web@wasm32-unknown-unknown: runtime; features=reactive-state,shared-value |
 | src/foundation/vsimd (vsimd@0.8.0) | src/foundation/uuid-simd [normal] | validation-tools@x86_64-unknown-linux-gnu: compile; features=alloc,detect,std |
-| src/foundation/walkdir (walkdir@2.5.0) | tools/contract-check [normal] | validation-tools@x86_64-unknown-linux-gnu: compile; features=(none) |
 | src/foundation/walrus (walrus@0.27.2) | src/foundation/wasm-bindgen-cli-support [normal] | build-tools@x86_64-unknown-linux-gnu: compile; features=parallel,rayon |
 | src/foundation/walrus-macro (walrus-macro@0.26.0) | src/foundation/walrus [normal] | build-tools@x86_64-unknown-linux-gnu: compile; features=(none) |
 | src/foundation/want (want@0.3.2) | src/foundation/http-transport [normal, optional] | root-native@x86_64-unknown-linux-gnu: runtime; features=(none); validation-tools@x86_64-unknown-linux-gnu: compile; features=(none) |

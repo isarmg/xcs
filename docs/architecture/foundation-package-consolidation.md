@@ -47,7 +47,7 @@
 24. `flate2` + `miniz_oxide` + `adler2` + `simd-adler32`：4 → 1。
 25. `regex` + `regex-automata` + `regex-syntax` + `aho-corasick`：4 → 1。
 26. `time` + `time-core` + `deranged` + `num-conv` + `powerfmt`：5 → 1。
-27. `walkdir` + `same-file`：2 → 1。
+27. `walkdir` + `same-file`：原计划 2 → 1；2026-10-22 实际 2 → 0，唯一消费者改用 std::fs 文档扫描，见 [专项验收](../reports/document-scanner-20261022.md)。
 28. `wasm-bindgen-macro` + `wasm-bindgen-macro-support`：2 → 1。
 
 这些候选在当前已解析依赖图上收缩后，没有新增循环依赖；这不代表全部可选 feature、构建脚本、类型一致性和所有目标平台都已验证。现有开发/测试依赖关系必须单独判定，不能把 dev-only 环误当作生产依赖环或忽略新产生的生产环。

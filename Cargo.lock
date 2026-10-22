@@ -289,7 +289,6 @@ dependencies = [
  "storage-contract",
  "toml",
  "url-encoding",
- "walkdir",
 ]
 
 [[package]]
@@ -1233,10 +1232,6 @@ name = "ryu"
 version = "1.0.23"
 
 [[package]]
-name = "same-file"
-version = "1.0.6"
-
-[[package]]
 name = "schema-validation"
 version = "0.58.6"
 dependencies = [
@@ -1887,13 +1882,6 @@ dependencies = [
 [[package]]
 name = "vsimd"
 version = "0.8.0"
-
-[[package]]
-name = "walkdir"
-version = "2.5.0"
-dependencies = [
- "same-file",
-]
 
 [[package]]
 name = "walrus"

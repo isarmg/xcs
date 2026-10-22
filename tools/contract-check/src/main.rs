@@ -1,5 +1,6 @@
 //! Fully offline documentation and published-contract checks.
 mod document_links;
+mod document_scan;
 use data_serialization::Serialize;
 use json_codec::{Value, json};
 use std::{
@@ -649,29 +650,10 @@ fn run(root: &Path) -> Result<Report> {
     let links = regex::Regex::new(r"\[[^\]\n]*\]\(([^)\s]+)\)")?;
     let scheme = regex::Regex::new(r"^[A-Za-z]+:")?;
     let mut paths = vec![root.join("README.md")];
-    for entry in walkdir::WalkDir::new(root.join("docs"))
-        .into_iter()
-        .filter_entry(|e| {
-            // Archived upstream documentation keeps original bytes and
-            // historical links; compliance receipts verify that archive.
-            // This gate validates maintained project documentation.
-            e.path() != root.join("docs/upstream")
-                && !matches!(
-                    e.file_name().to_str(),
-                    Some("dist" | ".dist-staging" | ".dist-backup" | "target")
-                )
-        })
-    {
-        let entry = entry?;
-        if entry.file_type().is_file()
-            && entry
-                .path()
-                .extension()
-                .is_some_and(|extension| extension == "md")
-        {
-            paths.push(entry.into_path());
-        }
-    }
+    paths.extend(document_scan::scan(
+        &root.join("docs"),
+        &root.join("docs/upstream"),
+    )?);
     paths.sort();
     let mut checked = 0;
     let mut generated = 0;

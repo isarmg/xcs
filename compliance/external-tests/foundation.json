@@ -16034,20 +16034,6 @@
       ]
     },
     {
-      "directory": "src/foundation/same-file",
-      "files": [
-        {
-          "path": "test/foundation/same-file/unit/src/lib/tests_378.rs",
-          "sha256": "e757eb9e92718f0ac548aab7f4d67e798fb5b6f3972b4a50e88be3d7f10799fc",
-          "source": "src/foundation/same-file/src/lib.rs",
-          "source_sha256_before": "b22c2f0b5cad2248f16f4f42add52b2dc0c627631f71ee67a8c38fe305048f85"
-        }
-      ],
-      "roots": [
-        "test/foundation/same-file"
-      ]
-    },
-    {
       "directory": "src/foundation/schema-validation",
       "files": [
         {
@@ -23295,32 +23281,6 @@
       ],
       "roots": [
         "test/foundation/vsimd"
-      ]
-    },
-    {
-      "directory": "src/foundation/walkdir",
-      "files": [
-        {
-          "path": "test/foundation/walkdir/modules/src/tests/mod.rs",
-          "sha256": "bbce9174bfdbb4a81a9000f702be056b63b439cb8f1bcac64b8569368627d56d",
-          "source": "src/foundation/walkdir/src/tests/mod.rs",
-          "source_sha256_before": "bbce9174bfdbb4a81a9000f702be056b63b439cb8f1bcac64b8569368627d56d"
-        },
-        {
-          "path": "test/foundation/walkdir/modules/src/tests/recursive.rs",
-          "sha256": "b6305e7cc9f905ce6b7328ac9fb5b07e5a73fa549c0b84ef890fb442d1bbcb7c",
-          "source": "src/foundation/walkdir/src/tests/recursive.rs",
-          "source_sha256_before": "b6305e7cc9f905ce6b7328ac9fb5b07e5a73fa549c0b84ef890fb442d1bbcb7c"
-        },
-        {
-          "path": "test/foundation/walkdir/modules/src/tests/util.rs",
-          "sha256": "ca72ef96f82bb87d8c93d13d581ebb65efcd53fffa87097a84437acecbc30faa",
-          "source": "src/foundation/walkdir/src/tests/util.rs",
-          "source_sha256_before": "ca72ef96f82bb87d8c93d13d581ebb65efcd53fffa87097a84437acecbc30faa"
-        }
-      ],
-      "roots": [
-        "test/foundation/walkdir"
       ]
     },
     {

@@ -13,7 +13,6 @@ regex = {version = "1", path = "../../src/foundation/regex"}
 data-serialization = { version = "1", features = ["derive"], path = "../../src/foundation/data-serialization"}
 json-codec = {version = "1", path = "../../src/foundation/json-codec"}
 toml = {version = "0.8.23", path = "../../src/foundation/toml"}
-walkdir = {version = "2", path = "../../src/foundation/walkdir"}
 storage-contract.workspace = true
 
 [[test]]
@@ -23,3 +22,10 @@ path = "../../test/tools/contract-check/gitignore.rs"
 [[test]]
 name = "source_export"
 path = "../../test/tools/contract-check/source_export.rs"
+
+[[test]]
+name = "document_scan"
+path = "../../test/tools/contract-check/document_scan.rs"
+
+[lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(walker_oracle)'] }

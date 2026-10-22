@@ -49,6 +49,7 @@ case "${1:-}" in
     cargo test --locked --offline -p web-app -p web-interface -p view-macros
     ;;
   contracts)
+    python3 test/tools/contract-check/check_document_scan.py
     cargo test --locked --offline -p contract-check
     cargo run --locked --offline -p contract-check -- --root .
     ;;

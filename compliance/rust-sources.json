@@ -38632,7 +38632,7 @@
     }
   },
   "external_test_mappings_sha256": {
-    "compliance/external-tests/foundation.json": "4506bce6abfffd8f12efb9c22dcd355fdd91caff8e7d44c7f142f4e40c147836",
+    "compliance/external-tests/foundation.json": "71e41f8911c42f49efc6deb8a67014fe39e096187523a122fc8fb0de8aceeeba",
     "compliance/external-tests/integrated.json": "976578b7514d285c9214c408327f9b344f3c7649b4ae3b63839e8806b4677d96",
     "compliance/external-tests/ring.json": "3e5a834ea832ea11a0da5cdeab898e9c2e2d5229becc1988edc3462cfb51dab1"
   },
@@ -55875,23 +55875,6 @@
         "test/foundation/ryu"
       ]
     },
-    "src/foundation/same-file": {
-      "bytes": 5476,
-      "directory": "src/foundation/same-file",
-      "file_count": 1,
-      "files": [
-        {
-          "path": "test/foundation/same-file/unit/src/lib/tests_378.rs",
-          "sha256": "e757eb9e92718f0ac548aab7f4d67e798fb5b6f3972b4a50e88be3d7f10799fc",
-          "source": "src/foundation/same-file/src/lib.rs",
-          "source_sha256_before": "b22c2f0b5cad2248f16f4f42add52b2dc0c627631f71ee67a8c38fe305048f85"
-        }
-      ],
-      "origin_directory": "vendor/rust/same-file-1.0.6",
-      "roots": [
-        "test/foundation/same-file"
-      ]
-    },
     "src/foundation/schema-validation": {
       "bytes": 2948644,
       "directory": "src/foundation/schema-validation",
@@ -63310,35 +63293,6 @@
         "test/foundation/vsimd"
       ]
     },
-    "src/foundation/walkdir": {
-      "bytes": 36981,
-      "directory": "src/foundation/walkdir",
-      "file_count": 3,
-      "files": [
-        {
-          "path": "test/foundation/walkdir/modules/src/tests/mod.rs",
-          "sha256": "bbce9174bfdbb4a81a9000f702be056b63b439cb8f1bcac64b8569368627d56d",
-          "source": "src/foundation/walkdir/src/tests/mod.rs",
-          "source_sha256_before": "bbce9174bfdbb4a81a9000f702be056b63b439cb8f1bcac64b8569368627d56d"
-        },
-        {
-          "path": "test/foundation/walkdir/modules/src/tests/recursive.rs",
-          "sha256": "b6305e7cc9f905ce6b7328ac9fb5b07e5a73fa549c0b84ef890fb442d1bbcb7c",
-          "source": "src/foundation/walkdir/src/tests/recursive.rs",
-          "source_sha256_before": "b6305e7cc9f905ce6b7328ac9fb5b07e5a73fa549c0b84ef890fb442d1bbcb7c"
-        },
-        {
-          "path": "test/foundation/walkdir/modules/src/tests/util.rs",
-          "sha256": "ca72ef96f82bb87d8c93d13d581ebb65efcd53fffa87097a84437acecbc30faa",
-          "source": "src/foundation/walkdir/src/tests/util.rs",
-          "source_sha256_before": "ca72ef96f82bb87d8c93d13d581ebb65efcd53fffa87097a84437acecbc30faa"
-        }
-      ],
-      "origin_directory": "vendor/rust/walkdir-2.5.0",
-      "roots": [
-        "test/foundation/walkdir"
-      ]
-    },
     "src/foundation/walrus": {
       "bytes": 42032,
       "directory": "src/foundation/walrus",
@@ -65433,7 +65387,7 @@
   },
   "initial_test_relocation_sha256": "791ad728a408677dd54ef98e3feaffe825c5fc5670e888440615933d9498ecc3",
   "lockfiles_sha256": {
-    "Cargo.lock": "9be40b6f0419c2146bf324343ea584afc629c16378e104021a53ebe0c7116a57"
+    "Cargo.lock": "55904ea91b1d99157f82078dd5992e1b6be71cef99e00b06e9f7228646b334da"
   },
   "manifests_sha256": {
     "Cargo.toml": "4fa15cfe7d2baf5436dbc9b9c42bd6acb37fa93bd5d03823f8d09715fe4e6e6e",
@@ -65598,7 +65552,6 @@
     "src/foundation/rustls/Cargo.toml": "655395f275d51fe335f55c1a05cf6143771062774862715c184df13528493ee2",
     "src/foundation/rustversion/Cargo.toml": "9249b48982e3bc0add712bb704fe2641ab11f6af228340085379b7ef512248b0",
     "src/foundation/ryu/Cargo.toml": "3c23ab8489e6f020b06c3a9d6c20b7a0a3acba10279426a29ec32d2f3c77503c",
-    "src/foundation/same-file/Cargo.toml": "0350c0b34351b2f986ab3a08834e93bf3730ad934c5fb2deebfb8c1ef2ff58dc",
     "src/foundation/schema-validation/Cargo.toml": "0ba61d144f7fe9d1e76c1aa9ccd7767d1cf863aee3c66da565afc409ba10220a",
     "src/foundation/scopeguard/Cargo.toml": "bddc43c330d01a5c952cce813d647e74b3d17a9f08455af27f9b7c8bf21f0ba2",
     "src/foundation/semver/Cargo.toml": "f8e1816795cfed32f5d6bbea8ca33af4634b9a2d9d9b3aa0b7038cbfe2d9ccb7",
@@ -65661,7 +65614,6 @@
     "src/foundation/view-alternatives/Cargo.toml": "6e5019fd2c08432eb4b5082d751114f98f1700b39b389a8343c024e4a91c87e0",
     "src/foundation/view-renderer/Cargo.toml": "e1a0774563898f664a99446d36d54f76f8027a4737b9e222d40bda208b7ebafe",
     "src/foundation/vsimd/Cargo.toml": "74c0c460a11240dad53e1045a669e03c7143f134715cfaad958eb40de244392c",
-    "src/foundation/walkdir/Cargo.toml": "44b8a660af8f5e2d3583098e8a1ec3d085bc1e9554a4f7d16c5321bb57a53a65",
     "src/foundation/walrus-macro/Cargo.toml": "2f1cb1a5bafa0fefaaefc6190efbd2ce8db66ee1b13732287126a7fd76a9242d",
     "src/foundation/walrus/Cargo.toml": "000bec3ce31caa7077b94965a98356edc2a3808ed2b3da2a0c667a0002643895",
     "src/foundation/want/Cargo.toml": "8e577e9914b75b840b6f0e14c46cf59495c2504d62921e329b517d3ca6a77e9e",
@@ -65696,7 +65648,7 @@
     "src/smb/Cargo.toml": "0230542f6e28f238d877f417d3931941df428d65086cfe8d0005c15ebefcdb82",
     "src/web/Cargo.toml": "9b95bebf076be95b6e4d3e04c7de7dd2a4079906695446b525b4f1cfe13cf5f8",
     "tools/browser-smoke/Cargo.toml": "1fb2aa0063e3ea53e9db74334e3b2d7812ea4e2dc1d3e389e22573e85d8269ee",
-    "tools/contract-check/Cargo.toml": "50939ec6d4d02fc11279f6df6d0e0a6fc63d58e4e1b666c32be0003d161d1469",
+    "tools/contract-check/Cargo.toml": "0e96a9fcd06731392db429a5a5b548fc7981ca5cc5942f49a5f5c00389f3d70e",
     "tools/perf-check/Cargo.toml": "1d43415d20414747a8ca1c5bb74a940ac0ff773226778906f4d6a5325a945e02",
     "tools/release-tools/Cargo.toml": "389ade4140b92ee59d358dc15f3b929f743de4d1987313fd1453e6508400676e",
     "tools/unicode-build/Cargo.toml": "dab9e4bdbf7d4ab482690fcfc6c1f2c5792d17b44d56235c52807d4f19cfb955",
@@ -82568,41 +82520,6 @@
       },
       "version": "1.0.23"
     },
-    "src/foundation/same-file": {
-      "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 2026-10-20：裁剪不支持平台与缺失后端的依赖/feature边；移除不可达条件实现并修复稳定工具链编译诊断；当前逐文件摘要记录本地实现差异。 清理独立演示：移除 2 个独立示例程序及专属输入（930 字节）；保留文档编译、真实测试及性能基准输入。",
-      "description": "A simple crate for determining whether two file paths point to the same file.",
-      "directory": "src/foundation/same-file",
-      "files_sha256": {
-        "Cargo.toml": "0350c0b34351b2f986ab3a08834e93bf3730ad934c5fb2deebfb8c1ef2ff58dc",
-        "src/lib.rs": "9734d1b2fe339973ed0e1d4d74869ff41923bee8a88e8a51155e3ca17be6b147",
-        "src/unix.rs": "1b01c159c81471fc4b8536a038ce80c26158fbc78e5360e24062ae5bed3316ed",
-        "src/unknown.rs": "bfde4e9ac88f500c0ccb69165383682ddd24bf7d7ddaf5859426e1fd4b2f9359",
-        "src/win.rs": "94f912cc3734f60608d0ee2b0c664afb65fc96e5b0b223a53565fb8998c03fa3"
-      },
-      "license": "Unlicense/MIT",
-      "license_materials": [
-        "compliance/licenses/upstream/same-file-1.0.6/COPYING",
-        "compliance/licenses/upstream/same-file-1.0.6/LICENSE-MIT",
-        "compliance/licenses/upstream/same-file-1.0.6/UNLICENSE"
-      ],
-      "merged_into": "无；通过统一内部源码源接入",
-      "name": "same-file",
-      "origin_directory": "vendor/rust/same-file-1.0.6",
-      "repository": "https://github.com/BurntSushi/same-file",
-      "status": "内部维护源码",
-      "upstream": {
-        "archive_sha256": "93fc1dc3aaa9bfed95e02e6eadabb4baf7e3078b0bd1b4d7b6b0b68378900502",
-        "archive_url": "https://static.crates.io/crates/same-file/same-file-1.0.6.crate",
-        "name": "same-file",
-        "version": "1.0.6"
-      },
-      "vcs": {
-        "git": {
-          "sha1": "5799cd323b8eefd17a089c950dac113f66c89c9e"
-        }
-      },
-      "version": "1.0.6"
-    },
     "src/foundation/schema-validation": {
       "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。",
       "description": "JSON schema validaton library",
@@ -86277,44 +86194,6 @@
         "path_in_vcs": "crates/vsimd"
       },
       "version": "0.8.0"
-    },
-    "src/foundation/walkdir": {
-      "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 2026-10-20：裁剪不支持平台与缺失后端的依赖/feature边；移除不可达条件实现并修复稳定工具链编译诊断；当前逐文件摘要记录本地实现差异。",
-      "description": "Recursively walk a directory.",
-      "directory": "src/foundation/walkdir",
-      "files_sha256": {
-        "Cargo.toml": "44b8a660af8f5e2d3583098e8a1ec3d085bc1e9554a4f7d16c5321bb57a53a65",
-        "compare/nftw.c": "6b900b0ac78ce8ece1995f834b194fa14d87d744cabba8f475f0e10b21722c56",
-        "compare/walk.py": "d49e26d0b8b2b201d00f2f46bf1f9db46f873c27332da679c9a7adbbf54462d2",
-        "src/dent.rs": "ca573f4533370a09851579f5940f7cd9bd121b2f30ec51d29a40afdce984683b",
-        "src/error.rs": "ba58bf6f59d196567435d4b66699a928cc237fc7c8df01dc37ab822509905b7c",
-        "src/lib.rs": "e53d83cb63226119d927a3a5e4290df58cb5b1b2cb03a0689c2db0200c391c58",
-        "src/util.rs": "14e0da711cad4825ead21446cd61a1444fd49bab853a8a239d8cb74b2caab351"
-      },
-      "license": "Unlicense/MIT",
-      "license_materials": [
-        "compliance/licenses/upstream/walkdir-2.5.0/COPYING",
-        "compliance/licenses/upstream/walkdir-2.5.0/LICENSE-MIT",
-        "compliance/licenses/upstream/walkdir-2.5.0/UNLICENSE"
-      ],
-      "merged_into": "无；通过统一内部源码源接入",
-      "name": "walkdir",
-      "origin_directory": "vendor/rust/walkdir-2.5.0",
-      "repository": "https://github.com/BurntSushi/walkdir",
-      "status": "内部维护源码",
-      "upstream": {
-        "archive_sha256": "29790946404f91d9c5d06f9874efddea1dc06c5efe94541a7d6863108e3a5e4b",
-        "archive_url": "https://static.crates.io/crates/walkdir/walkdir-2.5.0.crate",
-        "name": "walkdir",
-        "version": "2.5.0"
-      },
-      "vcs": {
-        "git": {
-          "sha1": "4f26be4d450910916ea11533b2efc52b9a6483bc"
-        },
-        "path_in_vcs": ""
-      },
-      "version": "2.5.0"
     },
     "src/foundation/walrus": {
       "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 清理独立演示：移除 3 个独立示例程序及专属输入（4331 字节）；保留文档编译、真实测试及性能基准输入。",
@@ -102393,12 +102272,6 @@
             "compile"
           ]
         },
-        "src/foundation/same-file": {
-          "features": [],
-          "roles": [
-            "compile"
-          ]
-        },
         "src/foundation/schema-validation": {
           "features": [
             "json-codec",
@@ -102856,12 +102729,6 @@
             "detect",
             "std"
           ],
-          "roles": [
-            "compile"
-          ]
-        },
-        "src/foundation/walkdir": {
-          "features": [],
           "roles": [
             "compile"
           ]
@@ -106346,6 +106213,68 @@
       },
       "version": "0.5.18"
     },
+    "src/foundation/same-file": {
+      "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 2026-10-20：裁剪不支持平台与缺失后端的依赖/feature边；移除不可达条件实现并修复稳定工具链编译诊断；当前逐文件摘要记录本地实现差异。 清理独立演示：移除 2 个独立示例程序及专属输入（930 字节）；保留文档编译、真实测试及性能基准输入。",
+      "description": "A simple crate for determining whether two file paths point to the same file.",
+      "directory": "src/foundation/same-file",
+      "files_sha256": {
+        "Cargo.toml": "0350c0b34351b2f986ab3a08834e93bf3730ad934c5fb2deebfb8c1ef2ff58dc",
+        "src/lib.rs": "9734d1b2fe339973ed0e1d4d74869ff41923bee8a88e8a51155e3ca17be6b147",
+        "src/unix.rs": "1b01c159c81471fc4b8536a038ce80c26158fbc78e5360e24062ae5bed3316ed",
+        "src/unknown.rs": "bfde4e9ac88f500c0ccb69165383682ddd24bf7d7ddaf5859426e1fd4b2f9359",
+        "src/win.rs": "94f912cc3734f60608d0ee2b0c664afb65fc96e5b0b223a53565fb8998c03fa3"
+      },
+      "license": "Unlicense/MIT",
+      "license_materials": [
+        "compliance/licenses/upstream/same-file-1.0.6/COPYING",
+        "compliance/licenses/upstream/same-file-1.0.6/LICENSE-MIT",
+        "compliance/licenses/upstream/same-file-1.0.6/UNLICENSE"
+      ],
+      "merged_into": "无；通过统一内部源码源接入",
+      "name": "same-file",
+      "origin_directory": "vendor/rust/same-file-1.0.6",
+      "repository": "https://github.com/BurntSushi/same-file",
+      "retirement": {
+        "bytes": 21554,
+        "category": "consumer-specialization",
+        "external_tests": {
+          "bytes": 5476,
+          "directory": "src/foundation/same-file",
+          "file_count": 1,
+          "files": [
+            {
+              "path": "test/foundation/same-file/unit/src/lib/tests_378.rs",
+              "sha256": "e757eb9e92718f0ac548aab7f4d67e798fb5b6f3972b4a50e88be3d7f10799fc",
+              "source": "src/foundation/same-file/src/lib.rs",
+              "source_sha256_before": "b22c2f0b5cad2248f16f4f42add52b2dc0c627631f71ee67a8c38fe305048f85"
+            }
+          ],
+          "origin_directory": "vendor/rust/same-file-1.0.6",
+          "roots": [
+            "test/foundation/same-file"
+          ]
+        },
+        "file_count": 5,
+        "reason": "Replace the sole documentation traversal consumer with iterative std::fs scanning; no generic traversal or file-identity API remains.",
+        "targets": [
+          "wasm32-unknown-unknown",
+          "x86_64-unknown-linux-gnu"
+        ]
+      },
+      "status": "内部维护源码",
+      "upstream": {
+        "archive_sha256": "93fc1dc3aaa9bfed95e02e6eadabb4baf7e3078b0bd1b4d7b6b0b68378900502",
+        "archive_url": "https://static.crates.io/crates/same-file/same-file-1.0.6.crate",
+        "name": "same-file",
+        "version": "1.0.6"
+      },
+      "vcs": {
+        "git": {
+          "sha1": "5799cd323b8eefd17a089c950dac113f66c89c9e"
+        }
+      },
+      "version": "1.0.6"
+    },
     "src/foundation/sha2-0.10.9": {
       "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。",
       "description": "Pure Rust implementation of the SHA-2 hash function family\nincluding SHA-224, SHA-256, SHA-384, and SHA-512.",
@@ -108010,6 +107939,83 @@
         }
       },
       "version": "0.2.15"
+    },
+    "src/foundation/walkdir": {
+      "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 2026-10-20：裁剪不支持平台与缺失后端的依赖/feature边；移除不可达条件实现并修复稳定工具链编译诊断；当前逐文件摘要记录本地实现差异。",
+      "description": "Recursively walk a directory.",
+      "directory": "src/foundation/walkdir",
+      "files_sha256": {
+        "Cargo.toml": "44b8a660af8f5e2d3583098e8a1ec3d085bc1e9554a4f7d16c5321bb57a53a65",
+        "compare/nftw.c": "6b900b0ac78ce8ece1995f834b194fa14d87d744cabba8f475f0e10b21722c56",
+        "compare/walk.py": "d49e26d0b8b2b201d00f2f46bf1f9db46f873c27332da679c9a7adbbf54462d2",
+        "src/dent.rs": "ca573f4533370a09851579f5940f7cd9bd121b2f30ec51d29a40afdce984683b",
+        "src/error.rs": "ba58bf6f59d196567435d4b66699a928cc237fc7c8df01dc37ab822509905b7c",
+        "src/lib.rs": "e53d83cb63226119d927a3a5e4290df58cb5b1b2cb03a0689c2db0200c391c58",
+        "src/util.rs": "14e0da711cad4825ead21446cd61a1444fd49bab853a8a239d8cb74b2caab351"
+      },
+      "license": "Unlicense/MIT",
+      "license_materials": [
+        "compliance/licenses/upstream/walkdir-2.5.0/COPYING",
+        "compliance/licenses/upstream/walkdir-2.5.0/LICENSE-MIT",
+        "compliance/licenses/upstream/walkdir-2.5.0/UNLICENSE"
+      ],
+      "merged_into": "无；通过统一内部源码源接入",
+      "name": "walkdir",
+      "origin_directory": "vendor/rust/walkdir-2.5.0",
+      "repository": "https://github.com/BurntSushi/walkdir",
+      "retirement": {
+        "bytes": 65270,
+        "category": "consumer-specialization",
+        "external_tests": {
+          "bytes": 36981,
+          "directory": "src/foundation/walkdir",
+          "file_count": 3,
+          "files": [
+            {
+              "path": "test/foundation/walkdir/modules/src/tests/mod.rs",
+              "sha256": "bbce9174bfdbb4a81a9000f702be056b63b439cb8f1bcac64b8569368627d56d",
+              "source": "src/foundation/walkdir/src/tests/mod.rs",
+              "source_sha256_before": "bbce9174bfdbb4a81a9000f702be056b63b439cb8f1bcac64b8569368627d56d"
+            },
+            {
+              "path": "test/foundation/walkdir/modules/src/tests/recursive.rs",
+              "sha256": "b6305e7cc9f905ce6b7328ac9fb5b07e5a73fa549c0b84ef890fb442d1bbcb7c",
+              "source": "src/foundation/walkdir/src/tests/recursive.rs",
+              "source_sha256_before": "b6305e7cc9f905ce6b7328ac9fb5b07e5a73fa549c0b84ef890fb442d1bbcb7c"
+            },
+            {
+              "path": "test/foundation/walkdir/modules/src/tests/util.rs",
+              "sha256": "ca72ef96f82bb87d8c93d13d581ebb65efcd53fffa87097a84437acecbc30faa",
+              "source": "src/foundation/walkdir/src/tests/util.rs",
+              "source_sha256_before": "ca72ef96f82bb87d8c93d13d581ebb65efcd53fffa87097a84437acecbc30faa"
+            }
+          ],
+          "origin_directory": "vendor/rust/walkdir-2.5.0",
+          "roots": [
+            "test/foundation/walkdir"
+          ]
+        },
+        "file_count": 7,
+        "reason": "Replace the sole documentation traversal consumer with iterative std::fs scanning; no generic traversal or file-identity API remains.",
+        "targets": [
+          "wasm32-unknown-unknown",
+          "x86_64-unknown-linux-gnu"
+        ]
+      },
+      "status": "内部维护源码",
+      "upstream": {
+        "archive_sha256": "29790946404f91d9c5d06f9874efddea1dc06c5efe94541a7d6863108e3a5e4b",
+        "archive_url": "https://static.crates.io/crates/walkdir/walkdir-2.5.0.crate",
+        "name": "walkdir",
+        "version": "2.5.0"
+      },
+      "vcs": {
+        "git": {
+          "sha1": "4f26be4d450910916ea11533b2efc52b9a6483bc"
+        },
+        "path_in_vcs": ""
+      },
+      "version": "2.5.0"
     },
     "src/foundation/wasi": {
       "changes": "锁文件超集保留，未在登记的 normal/build 闭包选中；未声称属于生产运行代码。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。",
@@ -114263,6 +114269,7 @@
     "src/foundation/rand_core-0.10.1": "7fb72e3ec9865643f07151b78ccdaac7ce2b5492f6aacf3a82d0ff171889fd19",
     "src/foundation/rand_pcg": "e1ed8f5e2931a5975e4f3984f42420069cf32a758d02398a0d8364397bfbb7de",
     "src/foundation/redox_syscall": "704f75661ff61ace178b7f5c4e26b52ed723934c8e07ccb9957b79936dca095c",
+    "src/foundation/same-file": "1a08c36bd3c6cf09c5f57776cd777df98f4280206b1d932341ba6b4b2390ffca",
     "src/foundation/sha2-0.10.9": "1ead106fffdba3ac43380ddc28538c803d85219acbaafdb59d77bdad3036f120",
     "src/foundation/shlex-1.3.0": "a198aca124ac3353a3eca07d3efd506de43cb5e442873120c1d5f55723bf4dfd",
     "src/foundation/sqlx-macros": "7958f40c9a91c6129102eafede62655a54e1c3709276c9447e947cb9cce8658a",
@@ -114272,6 +114279,7 @@
     "src/foundation/tokio-stream": "d59440b128d9939d6c0d707ff0a0413efec9db3ba3257584cfdd4e42d8e3b8c3",
     "src/foundation/valuable": "92165393b90a97d9f5807076595f4f8558d9ca1845f7eabcf7171a85b459dd42",
     "src/foundation/vcpkg": "070f28ea70171838168e08eb024d79d86c7e94436574ebdf14b25db655662225",
+    "src/foundation/walkdir": "e9ebee64bc59bc8291ba6d98d17df03e2c3146b42f0fcb5bafe73d3430e6cc6c",
     "src/foundation/wasi": "7d6527ad787c0cbcba880a574a3af007af42dbc2d4b751e981f369e0ea3dc94f",
     "src/foundation/wasip2": "f1372bdd80c5c551f767e8ec93d31f55d9693b019593aff01f00e786cf6b5a9e",
     "src/foundation/wasm-streams": "242e8380921fcfa5d4b73a6697abfbbaa735fc2fab94a0a90af667be96f2439b",
