@@ -33,7 +33,7 @@ were not delivered as verified.
 
 The final source also separates unit tests under test/, removes the unreleased
 version suffix from the private storage namespace, and retains a reproducible
-optional SIMD correctness gate at test/evidence/web-blake3-simd, documented in
+optional SIMD correctness gate at test/tools/web-blake3-simd, documented in
 [the manual gate guide](../tools/web-blake3-simd.md). It is not wired
 CI or a browser performance benchmark.
 

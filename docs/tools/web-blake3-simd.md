@@ -3,7 +3,7 @@
 Run from the repository root on Linux amd64:
 
 ```sh
-bash test/evidence/web-blake3-simd/run-check.sh
+bash test/tools/web-blake3-simd/run-check.sh
 ```
 
 An optional first argument selects another read-only source repository. Requires an existing Rust toolchain matching the repository, the installed `wasm32-unknown-unknown` target, Node with WebAssembly SIMD, a C toolchain for native BLAKE3, and Bash/coreutils. No tools or dependencies are downloaded. The script copies foundation sources into a temporary directory, materializes its Cargo.toml.in template outside the repository and generates its own fixture lockfile, builds offline with one job, and removes its temporary files on exit. It does not modify or build the source repository.

@@ -9,7 +9,7 @@ export async function verifyDownloads(page) {
   const download = page.getByRole('button', {name: /^(Download|下载)$/});
   const cancel = page.getByRole('button', {name: /^(Cancel download|取消下载)$/});
   const cases = [];
-  const fixture = await readFile(new URL('../../tools/browser-smoke/runner/download_faults.js', import.meta.url), 'utf8');
+  const fixture = await readFile(new URL('../runner/download_faults.js', import.meta.url), 'utf8');
   await page.evaluate(`(() => {${fixture}})()`);
   try {
     for (const mode of ['valid', 'valid-large', 'corruption', 'truncated', 'overrun', 'quota', 'close-failure', 'picker-cancel', 'cancel', 'idle-timeout', 'total-timeout']) {

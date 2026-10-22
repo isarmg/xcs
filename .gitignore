@@ -8,8 +8,6 @@
 !/test/evidence/**/*.sh
 # 源码分类清单属于验证输入。
 !/test/evidence/probes.json
-# 隔离测试工作区的清单模板，不是仓库内的额外 Cargo workspace。
-!/test/evidence/web-blake3-simd/fixture/Cargo.toml.in
 
 # 单仓库的编译缓存与交付产物。
 # 根 Cargo.lock、.cargo/config.toml 和 rust-toolchain.toml 属于源码。

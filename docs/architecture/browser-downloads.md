@@ -126,7 +126,7 @@ unlimited-memory fallback.
 Rust tests cover incremental digest/length boundaries, corruption, truncation,
 excess body bytes, empty content, a real 65 MiB stream hashed using a reused small
 buffer, >4 GiB admission, exact browser-integer bounds, and session-admission regression.
-`test/evidence/large-downloads/browser-probe.mjs` is a real-browser-testable harness
+`test/tools/browser-smoke/downloads/browser-probe.mjs` is a real-browser-testable harness
 for shipped WASM. Its injected faults and browser execution status must be reported
 separately from native device/disk acceptance. Neither compilation nor the presence
 of that harness proves that a native picker, quota failure or mobile save was run.

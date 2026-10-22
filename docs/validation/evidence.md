@@ -46,3 +46,10 @@ URL 仅允许显式端口的 HTTP 回环地址 `127.0.0.1` 或 `[::1]`，不允�
 本次只修复脚本可移植性、误访问/覆盖风险和维护边界；没有伪造新的历史运行、重写旧报告结论，
 也没有为了通过测试修改生产 G4 或旧像素期望。需要扩展当前回归时，应在维护套件里明确新增需求和夹具，
 而不是把整套历史脚本假称为当前验收。
+
+## 维护工具与历史归档分离
+
+历史清单仍精确覆盖 `test/evidence` 中除 `_support` 外的所有 `.mjs`，不用于登记当前维护的工具。
+可选下载 helper 位于 `test/tools/browser-smoke/downloads/browser-probe.mjs`，仅供准备好的 Playwright runner 显式导入；它不自行启动浏览器，登记或语法检查不表示已执行浏览器验收。实际 Chrome CI 继续使用已有 browser-smoke runner 的下载夹具。
+可选 SIMD 正确性工具位于 `test/tools/web-blake3-simd`，需通过 `run-check.sh` 提供 SIMD WASM、portable WASM 和 native reference 输入，不是无参数 CI 入口，也不证明浏览器性能。
+`test/ci/test_manual_web_tools.py` 在静态 CI 中检查这两个工具的语法和仓库相对路径，但不会执行浏览器或编译 SIMD 夹具。
