@@ -353,6 +353,10 @@ impl ServerConfig {
     }
 }
 
+// A conservative, per-router bound for general HTTP backend jobs. This is
+// independent of content/upload admission and is not a process-wide I/O budget.
+const HTTP_BACKEND_SLOTS: usize = 8;
+
 #[derive(Clone)]
 struct AppState {
     backend: Arc<dyn Backend>,
@@ -361,6 +365,7 @@ struct AppState {
     attempts: Arc<Mutex<HashMap<String, http_auth::Attempts>>>,
     pending_logins: Arc<Mutex<std::collections::HashSet<String>>>,
     password_slots: Arc<tokio::sync::Semaphore>,
+    backend_slots: Arc<tokio::sync::Semaphore>,
     upload_slots: Arc<transfer_limits::Admission>,
     read_slots: Arc<transfer_limits::Admission>,
     upload_claims: Arc<Mutex<std::collections::BTreeSet<String>>>,
@@ -415,6 +420,7 @@ fn router_shared(
         attempts: Arc::new(Mutex::new(HashMap::new())),
         pending_logins: Arc::new(Mutex::new(std::collections::HashSet::new())),
         password_slots: Arc::new(tokio::sync::Semaphore::new(4)),
+        backend_slots: Arc::new(tokio::sync::Semaphore::new(HTTP_BACKEND_SLOTS)),
         upload_slots: transfer_limits::Admission::new(&config.http_transfer_limits),
         read_slots: transfer_limits::Admission::new(&config.http_transfer_limits),
         upload_claims: Arc::new(Mutex::new(Default::default())),
@@ -641,10 +647,20 @@ async fn call(
     action: crate::BackendAction,
     input: Value,
 ) -> Result<Json<Value>, ApiError> {
-    tokio::task::spawn_blocking(move || state.backend.call(action, &identity, input))
-        .await
-        .map_err(ApiError::join)?
-        .map(Json)
+    let permit = state
+        .backend_slots
+        .clone()
+        .try_acquire_owned()
+        .map_err(|_| ApiError::limit("HTTP backend capacity reached"))?;
+    tokio::task::spawn_blocking(move || {
+        // The job, including time queued in Tokio, owns admission. Dropping the
+        // HTTP future must not release capacity while blocking work continues.
+        let _permit = permit;
+        state.backend.call(action, &identity, input)
+    })
+    .await
+    .map_err(ApiError::join)?
+    .map(Json)
 }
 async fn json_body(request: Request) -> Result<Value, ApiError> {
     let bytes = http_boundary::read_body(request, 1024 * 1024).await?;
@@ -891,3 +907,7 @@ async fn capabilities(State(state): State<AppState>) -> Result<Json<Value>, ApiE
 #[cfg(test)]
 #[path = "../../../test/server/unit/tests.rs"]
 mod tests;
+
+#[cfg(test)]
+#[path = "../../../test/server/unit/backend_admission.rs"]
+mod backend_admission_tests;
