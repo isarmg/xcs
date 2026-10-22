@@ -1,0 +1,50 @@
+"""Keep post-packaging acceptance bound to extracted release artifacts."""
+from pathlib import Path
+import unittest
+
+ROOT = Path(__file__).resolve().parents[2]
+
+
+class ReleaseAcceptance(unittest.TestCase):
+    def test_release_checks_extracted_archives_before_upload(self):
+        workflow = (ROOT / '.github/workflows/release.yml').read_text()
+        self.assertLess(workflow.index('release-package.sh'), workflow.index('release-acceptance.sh'))
+        self.assertLess(workflow.index('release-acceptance.sh'), workflow.index('actions/upload-artifact'))
+        script = (ROOT / '.github/scripts/release-acceptance.sh').read_text()
+        self.assertIn('tar -xzf "release-assets/zxs-${RELEASE_VERSION}', script)
+        self.assertIn('tar -xzf "release-assets/web-interface-${RELEASE_VERSION}', script)
+        self.assertIn('--cli-bin "$work/server/zxs" --web-dir "$work/web/public"', script)
+        self.assertIn('cargo run --locked --offline --release -p browser-smoke', script)
+        self.assertNotIn('target/native/debug/zxs', script)
+
+    def test_main_ci_accepts_extracted_archives_without_duplicate_browser_suite(self):
+        workflow = (ROOT / '.github/workflows/ci.yml').read_text()
+        browser = workflow.split('  browser-smoke:\n', 1)[1].split('  smb-sdk:', 1)[0]
+        self.assertIn('name: web-dist', browser)
+        self.assertIn('cargo build --locked --offline --release --package storage-server --package storage-rescue', browser)
+        self.assertLess(browser.index('release-package.sh'), browser.index('release-acceptance.sh'))
+        self.assertIn('check-csr-browser.py', browser)
+        self.assertNotIn('check.sh browser-smoke', browser)
+        self.assertIn('ZXS_SMOKE_SCREENSHOT:', browser)
+
+    def test_release_rebuilds_both_native_products_before_packaging(self):
+        workflow = (ROOT / '.github/workflows/release.yml').read_text()
+        build = 'cargo build --locked --offline --release --package storage-server --package storage-rescue'
+        self.assertLess(workflow.index(build), workflow.index('release-package.sh'))
+        documentation = (ROOT / 'docs/release.md').read_text()
+        self.assertIn('不是原生构建收据', documentation)
+        self.assertIn('修改源码后不能沿用旧', documentation)
+
+    def test_installation_recipe_has_one_authoritative_source(self):
+        release = (ROOT / 'docs/release.md').read_text()
+        install = (ROOT / 'docs/templates/release-install.md').read_text()
+        self.assertIn('(templates/release-install.md)', release)
+        self.assertNotIn('sha256sum ', release)
+        self.assertIn('set -eu\nsha256sum --check SHA256SUMS', install)
+        self.assertIn('`public/`', install)
+        self.assertTrue((ROOT / 'test/ci/release-publish.sh').is_file())
+        self.assertNotIn('.github/scripts/tests/', release)
+
+
+if __name__ == '__main__':
+    unittest.main()

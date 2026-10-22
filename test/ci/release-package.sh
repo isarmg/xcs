@@ -28,6 +28,17 @@ done
 printf '[SMB integration](components/smb.md)\n' >> "$fixture/docs/release.md"
 printf '[Operations](../25-operation-manual.md)\n' > "$fixture/docs/components/smb.md"
 cp docs/templates/release-install.md "$fixture/docs/templates/"
+# Reproduce the real material size without putting thousands of files online.
+python3 - "$fixture" <<'PYFIXTURE'
+from pathlib import Path
+import sys
+root = Path(sys.argv[1])
+for index in range(4100):
+    (root / "compliance/provenance" / f"record-{index}.json").write_text("{}\n")
+legal = root / "build/web/compliance"
+legal.mkdir()
+(legal / "NOTICE.md").write_bytes((root / "compliance/NOTICE.md").read_bytes())
+PYFIXTURE
 python3 test/ci/web_dist_fixture.py "$fixture"
 RELEASE_VERSION=0.1.0 bash "$fixture/.github/scripts/release-package.sh"
 for archive in "$fixture"/release-assets/*.tar.gz; do
@@ -58,7 +69,13 @@ PY
       cmp "$fixture/target/native/release/$name" "$output/$name"
     done
   else
-    cmp "$fixture/build/web/pkg/zxs_bg.wasm" "$output/pkg/zxs_bg.wasm"
+    cmp "$fixture/build/web/pkg/zxs_bg.wasm" "$output/public/pkg/zxs_bg.wasm"
+    cmp "$fixture/build/web/build-manifest.json" "$output/public/build-manifest.json"
+    cmp "$fixture/compliance/NOTICE.md" "$output/public/compliance/NOTICE.md"
+    test ! -e "$output/public/docs"
+    test ! -e "$output/public/compliance/provenance"
+    test "$(find "$output/compliance" -type f | wc -l)" -gt 4096
+    test "$(find "$output/public" -type f | wc -l)" -lt 4096
   fi
 done
 # Assemble the same two real archives with a fixed source identity, without
@@ -101,7 +118,7 @@ archive.write_bytes(original)
 result = install()
 assert result.returncode == 0, result.stderr.decode()
 assert (server / "docs/components/smb.md").is_file()
-assert (web / "pkg/zxs_bg.wasm").read_bytes() == b"wasm fixture\n"
+assert (web / "public/pkg/zxs_bg.wasm").read_bytes() == b"wasm fixture\n"
 # A second copy-and-paste must stop before extracting over existing files.
 (server / "zxs").write_bytes(b"existing installation\n")
 retry = install()

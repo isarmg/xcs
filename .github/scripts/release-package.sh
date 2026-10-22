@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
-# Package verified snapshots, never a mutable or stale distribution tree.
+# Package a verified Web snapshot and regular native files. Native freshness
+# belongs to the caller: rebuild both native products immediately beforehand.
+# This script does not attest native source/binary correspondence.
 set -euo pipefail
 cd "$(dirname "${BASH_SOURCE[0]}")/../.."
 : "${RELEASE_VERSION:?}"
@@ -15,8 +17,11 @@ python3 .github/scripts/verify-web-dist.py --root "$PWD" --stage "$work/snapshot
 material=(compliance README.md docs)
 tar -czf "$work/native.tar.gz" \
   -C "$work/snapshot/native" zxs zxs-rescue -C "$work/snapshot/material" "${material[@]}"
+# Keep the verified browser tree (including its hashed legal subset) separate
+# from complete documentation/provenance, which is not a static asset tree.
+mv "$work/snapshot/web" "$work/snapshot/public"
 tar -czf "$work/web.tar.gz" \
-  --exclude=./compliance -C "$work/snapshot/web" . -C "$work/snapshot/material" "${material[@]}"
+  -C "$work/snapshot" public -C "$work/snapshot/material" "${material[@]}"
 [[ ! -L release-assets ]]
 mkdir -p release-assets
 mv -T -- "$work/native.tar.gz" "release-assets/zxs-${RELEASE_VERSION}-x86_64-unknown-linux-gnu.tar.gz"

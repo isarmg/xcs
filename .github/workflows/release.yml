@@ -94,11 +94,12 @@ jobs:
           rustup show active-toolchain
           rustup target add wasm32-unknown-unknown
       - run: bash .github/scripts/check.sh web-production
-      - name: Exercise production Web against the real server
+      - name: Check browser harness and generated template
         run: |
           export CHROME_BIN="$(command -v google-chrome)"
           export CHROMEDRIVER="$(command -v chromedriver)"
-          bash .github/scripts/check.sh browser-smoke
+          cargo test --locked --offline --release -p browser-smoke
+          python3 .github/scripts/check-csr-browser.py
       - name: Build Linux service and local maintenance entrypoint
         run: |
           python3 .github/scripts/check-rust-diagnostics.py -- \
@@ -106,6 +107,11 @@ jobs:
           target/native/release/zxs --help
           target/native/release/zxs-rescue --help
           bash .github/scripts/release-package.sh
+      - name: Accept extracted release archives with the release service and browser
+        run: |
+          export CHROME_BIN="$(command -v google-chrome)"
+          export CHROMEDRIVER="$(command -v chromedriver)"
+          bash .github/scripts/release-acceptance.sh
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: release-linux-web
@@ -117,8 +123,12 @@ jobs:
           path: build/web/
           if-no-files-found: error
 
+  smb-sdk:
+    needs: static
+    uses: ./.github/workflows/smb-sdk.yml
+
   assemble:
-    needs: [version, verify, linux-web]
+    needs: [version, verify, linux-web, smb-sdk]
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     env:

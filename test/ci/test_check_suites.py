@@ -149,7 +149,7 @@ class SuiteCoverageTests(unittest.TestCase):
                 if predecessor != "static":
                     self.assertIn("    needs: static\n", jobs[predecessor])
                     # Release assets cannot be assembled before all shards pass.
-                    self.assertIn("    needs: [version, verify, linux-web]\n", jobs["assemble"])
+                    self.assertIn("    needs: [version, verify, linux-web, smb-sdk]\n", jobs["assemble"])
                     self.assertIn("    needs: [version, assemble]\n", jobs["publish"])
 
     def test_crypto_budget_retains_full_ring_matrix(self):

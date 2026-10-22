@@ -21,7 +21,7 @@ class WorkflowContexts(unittest.TestCase):
 
     def test_every_rust_job_initializes_cargo_home_before_toolchain_use(self):
         expected = {
-            "ci.yml": {"tests", "web-production", "browser-smoke", "smb-sdk"},
+            "ci.yml": {"tests", "web-production", "browser-smoke"},
             "release.yml": {"version", "verify", "linux-web"},
         }
         for name, rust_jobs in expected.items():
@@ -34,6 +34,19 @@ class WorkflowContexts(unittest.TestCase):
                 with self.subTest(workflow=name, job=job):
                     body = jobs[job]
                     self.assertLess(body.index("initialize-cargo-home.sh"), body.index("rustup "))
+
+    def test_release_and_ci_share_same_commit_samba_sdk_gate(self):
+        workflows = SCRIPTS.parent / "workflows"
+        for name in ("ci.yml", "release.yml"):
+            source = (workflows / name).read_text()
+            self.assertIn("uses: ./.github/workflows/smb-sdk.yml", source)
+        release = (workflows / "release.yml").read_text()
+        self.assertIn("needs: [version, verify, linux-web, smb-sdk]", release)
+        sdk = (workflows / "smb-sdk.yml").read_text()
+        self.assertIn("workflow_call:", sdk)
+        self.assertIn("bash .github/scripts/smb-sdk.sh", sdk)
+        self.assertLess(sdk.index("initialize-cargo-home.sh"), sdk.index("rustup "))
+        self.assertNotIn("ref:", sdk)  # checkout must use the caller's commit
 
     def test_workflow_env_rejects_runner_and_other_job_only_contexts(self):
         for expression in ("runner.temp", "Runner['temp']", "toJSON(runner)",

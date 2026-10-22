@@ -108,10 +108,11 @@ jobs:
           retention-days: 7
 
   browser-smoke:
-    name: Browser smoke (Chrome)
+    name: Extracted release browser smoke (Chrome)
     needs: web-production
     runs-on: ubuntu-24.04
-    timeout-minutes: 30
+    # Compile one release-profile graph for both product and browser harness.
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -145,11 +146,18 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install --no-install-recommends -y fonts-noto-cjk
-      - name: Run browser smoke against the real server and WASM app
+      - name: Build and exercise extracted release packages
         env:
           ZXS_SMOKE_SCREENSHOT: artifacts/web-file-manager.png
           ZXS_VIEWPORT_PREVIEWS: artifacts/viewport-previews
-        run: bash .github/scripts/check.sh browser-smoke
+        run: |
+          export RELEASE_VERSION="$(python3 -c 'import tomllib; print(tomllib.load(open("Cargo.toml", "rb"))["workspace"]["package"]["version"])')"
+          python3 .github/scripts/check-rust-diagnostics.py -- \
+            cargo build --locked --offline --release --package storage-server --package storage-rescue --message-format=json
+          cargo test --locked --offline --release -p browser-smoke
+          bash .github/scripts/release-package.sh
+          bash .github/scripts/release-acceptance.sh
+          python3 .github/scripts/check-csr-browser.py
       - name: Retain template browser result and exact input identity
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
@@ -175,28 +183,5 @@ jobs:
           retention-days: 7
 
   smb-sdk:
-    name: Samba 4.23.0 real SDK ABI and FFI tests
     needs: static
-    runs-on: ubuntu-24.04
-    timeout-minutes: 45
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-      - name: Initialize isolated Cargo home
-        run: bash .github/scripts/initialize-cargo-home.sh
-      - name: Install repository Rust toolchain
-        run: rustup show active-toolchain
-      - name: Install official Ubuntu SDK build prerequisites
-        run: |
-          sudo apt-get update
-          sudo apt-get install --no-install-recommends -y \
-            build-essential pkg-config python3 perl libparse-yapp-perl flex bison m4 \
-            clang libclang-dev libgnutls28-dev libkrb5-dev zlib1g-dev libpopt-dev
-      - name: Cache pinned configured Samba source and real libraries
-        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
-        with:
-          path: target/smb-sdk
-          key: samba-4.23.0-${{ runner.os }}-${{ runner.arch }}-ubuntu24-${{ hashFiles('.github/scripts/smb-sdk.sh') }}
-      - name: Build official SDK and validate the Rust VFS
-        run: bash .github/scripts/smb-sdk.sh
+    uses: ./.github/workflows/smb-sdk.yml
