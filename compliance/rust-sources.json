@@ -19,7 +19,8 @@
     "eafb0b4185a7c210506e15a28d87995a7ff4898a240281ec013b11ec70a2acd3": "eafb0b4185a7c210506e15a28d87995a7ff4898a240281ec013b11ec70a2acd3",
     "f8932c62a4c5148866ef0a7651507467033344188f02694bfbffced61db248e4": "f8932c62a4c5148866ef0a7651507467033344188f02694bfbffced61db248e4",
     "f9ca98767ea1270edde6843571ba5055ac95a067a2e57d9312293364a299ac0b": "f9ca98767ea1270edde6843571ba5055ac95a067a2e57d9312293364a299ac0b",
-    "fae6f9b66a7b4143705badfcac36827715e98623ce3baa43b8690ba3c563eff8": "fae6f9b66a7b4143705badfcac36827715e98623ce3baa43b8690ba3c563eff8"
+    "fae6f9b66a7b4143705badfcac36827715e98623ce3baa43b8690ba3c563eff8": "fae6f9b66a7b4143705badfcac36827715e98623ce3baa43b8690ba3c563eff8",
+    "fba600eeee064cff8cbc991a4641e269af7c78fa9f405992f229d2852d91fa69": "fba600eeee064cff8cbc991a4641e269af7c78fa9f405992f229d2852d91fa69"
   },
   "consolidations": {
     "0370cbc712e60a95abc07a7d2553132c2761e28b07bb16daad571e76126ac6d1": {
@@ -29940,10 +29941,225 @@
       },
       "primary_directory": "src/foundation/digest-0.11.3",
       "reason": "Consolidate hash traits, block buffering and common cryptographic types into one maintained cryptographic core; preserve each original source and test origin."
+    },
+    "fba600eeee064cff8cbc991a4641e269af7c78fa9f405992f229d2852d91fa69": {
+      "destination_directory": "src/foundation/wasm-binding-macros",
+      "destination_external_tests": {
+        "bytes": 35064,
+        "directory": "src/foundation/wasm-binding-macros",
+        "file_count": 3,
+        "files": [
+          {
+            "origin_directory": "vendor/rust/wasm-bindgen-macro-support-0.2.129",
+            "path": "test/foundation/wasm-binding-macros/unit/src/codegen/tests_5747.rs",
+            "sha256": "7f4c50310cfce2d908ffbdbed0a3d53ad3e324e03d6bd9eb205fa84f4c70a631",
+            "source": "src/foundation/wasm-bindgen-macro-support/src/codegen.rs",
+            "source_sha256_before": "1407bc9989776038c1b2ab57a17fe36cafb9ad2f943ae24bf1ad83ecd905191b"
+          },
+          {
+            "origin_directory": "vendor/rust/wasm-bindgen-macro-support-0.2.129",
+            "path": "test/foundation/wasm-binding-macros/unit/src/generics/tests_796.rs",
+            "sha256": "0554cc79cc95e1cbf4ecde648d9e8815fd9c8f588cbe9c4cbe5449997f82dbca",
+            "source": "src/foundation/wasm-bindgen-macro-support/src/generics.rs",
+            "source_sha256_before": "91be53d06ad9c62f8c618a53afe54422db10805a94f3fb4c2942736864cbc820"
+          },
+          {
+            "origin_directory": "vendor/rust/wasm-bindgen-macro-support-0.2.129",
+            "path": "test/foundation/wasm-binding-macros/unit/src/parser/tests_3446.rs",
+            "sha256": "79f7675c13495fb8b4f91e5b75d33aa3b26ea93890905fc1abedffba4ab59f84",
+            "source": "src/foundation/wasm-bindgen-macro-support/src/parser.rs",
+            "source_sha256_before": "f8471ec0a0159479500e661355b113fd0ff25281ae073ed5725d52d34faa3ac2"
+          }
+        ],
+        "origin_directory": "vendor/rust/wasm-bindgen-macro-0.2.129",
+        "roots": [
+          "test/foundation/wasm-binding-macros"
+        ]
+      },
+      "destination_files_sha256": {
+        "Cargo.toml": "2185ec235c19160cdf244f0caeb3828408f97cf3e6b1426cbade6df78bd6b424",
+        "src/ast.rs": "71f29778b186f3bf1276ba12779009bd27f9d33c15f0408d4f470ac3eb75260e",
+        "src/codegen.rs": "665a85e1b720b05e50b35a8162e397f587e1163a28571c7db7c4e9e862289d62",
+        "src/encode.rs": "d6ef124ccea39626616dec87434913035cb1cee4001754f6d823b878268dfb6f",
+        "src/error.rs": "92ad4a2b83ac4ea826d5f1a5b88d3446fae16934216d49b0aee9aa617649d783",
+        "src/generics.rs": "c8103531b6b1e55601f2c8d4ebecb0d3dd7650040ce50fa5c5bba26586853aee",
+        "src/hash.rs": "9858c07a0d17b5c3b8fda8009392dc534eecabb701eaf44e9aa9fee643a07fab",
+        "src/lib.rs": "40a43b32e8e4efc000d3632dd6ac0300b9d497972ce6163dc61a1274816f23d3",
+        "src/parser.rs": "7ac8e8e62486cbfd21b5332f7dc32bf36f6dab521ce2e1c1b6b9cf21fa35582e",
+        "src/worker.js": "cb5c33dd41cfad622abce5464a3ceae478904ea16ddc3c6c769ee33e0c086692"
+      },
+      "destination_name": "wasm-binding-macros",
+      "external_file_routes": {
+        "test/foundation/wasm-bindgen-macro-support/unit/src/codegen/tests_5747.rs": {
+          "destination": "test/foundation/wasm-binding-macros/unit/src/codegen/tests_5747.rs",
+          "replacements": []
+        },
+        "test/foundation/wasm-bindgen-macro-support/unit/src/generics/tests_796.rs": {
+          "destination": "test/foundation/wasm-binding-macros/unit/src/generics/tests_796.rs",
+          "replacements": []
+        },
+        "test/foundation/wasm-bindgen-macro-support/unit/src/parser/tests_3446.rs": {
+          "destination": "test/foundation/wasm-binding-macros/unit/src/parser/tests_3446.rs",
+          "replacements": []
+        }
+      },
+      "file_routes": {
+        "src/foundation/wasm-bindgen-macro": {
+          "Cargo.toml": {
+            "destination": "Cargo.toml"
+          },
+          "src/lib.rs": {
+            "destination": "src/lib.rs"
+          },
+          "src/worker.js": {
+            "destination": "src/worker.js"
+          }
+        },
+        "src/foundation/wasm-bindgen-macro-support": {
+          "Cargo.toml": {
+            "archive_base64": "IyBJbnRlcm5hbCBzb3VyY2UgY29tcG9uZW50LiBPcmlnaW5hbCBtYW5pZmVzdCBhbmQgb3JpZ2luOiBjb21wbGlhbmNlL3Byb3ZlbmFuY2UuCgpbcGFja2FnZV0KZWRpdGlvbiA9ICIyMDIxIgpydXN0LXZlcnNpb24gPSAiMS44MSIKbmFtZSA9ICJ3YXNtLWJpbmRnZW4tbWFjcm8tc3VwcG9ydCIKdmVyc2lvbiA9ICIwLjIuMTI5IgphdXRob3JzID0gWyJUaGUgd2FzbS1iaW5kZ2VuIERldmVsb3BlcnMiXQpidWlsZCA9IGZhbHNlCmluY2x1ZGUgPSBbCiAgICAiL0xJQ0VOU0UtKiIsCiAgICAiL3NyYyIsCl0KYXV0b2xpYiA9IGZhbHNlCmF1dG9iaW5zID0gZmFsc2UKYXV0b2V4YW1wbGVzID0gZmFsc2UKYXV0b3Rlc3RzID0gZmFsc2UKYXV0b2JlbmNoZXMgPSBmYWxzZQpkZXNjcmlwdGlvbiA9ICJJbXBsZW1lbnRhdGlvbiBBUElzIGZvciB0aGUgYCNbd2FzbV9iaW5kZ2VuXWAgYXR0cmlidXRlIgpob21lcGFnZSA9ICJodHRwczovL3dhc20tYmluZGdlbi5naXRodWIuaW8vd2FzbS1iaW5kZ2VuLyIKZG9jdW1lbnRhdGlvbiA9ICJodHRwczovL2RvY3MucnMvd2FzbS1iaW5kZ2VuIgpyZWFkbWUgPSBmYWxzZQpsaWNlbnNlID0gIk1JVCBPUiBBcGFjaGUtMi4wIgpyZXBvc2l0b3J5ID0gImh0dHBzOi8vZ2l0aHViLmNvbS93YXNtLWJpbmRnZW4vd2FzbS1iaW5kZ2VuL3RyZWUvbWFpbi9jcmF0ZXMvbWFjcm8tc3VwcG9ydCIKCltmZWF0dXJlc10KZXh0cmEtdHJhaXRzID0gWyJydXN0LXN5bnRheC9leHRyYS10cmFpdHMiXQpzdHJpY3QtbWFjcm8gPSBbXQoKW2xpYl0KbmFtZSA9ICJ3YXNtX2JpbmRnZW5fbWFjcm9fc3VwcG9ydCIKcGF0aCA9ICJzcmMvbGliLnJzIgoKW2RlcGVuZGVuY2llcy5idW1wYWxvXQp2ZXJzaW9uID0gIjMuMC4wIgpwYXRoID0gIi4uL2J1bXBhbG8iCgpbZGVwZW5kZW5jaWVzLnByb2MtbWFjcm8yXQp2ZXJzaW9uID0gIjEuMCIKcGF0aCA9ICIuLi9wcm9jLW1hY3JvMiIKCltkZXBlbmRlbmNpZXMucXVvdGVdCnZlcnNpb24gPSAiMS4wIgpwYXRoID0gIi4uL3F1b3RlIgoKW2RlcGVuZGVuY2llcy5ydXN0LXN5bnRheF0KdmVyc2lvbiA9ICIzLjAiCmZlYXR1cmVzID0gWwogICAgInZpc2l0IiwKICAgICJ2aXNpdC1tdXQiLAogICAgImZ1bGwiLAogICAgImV4dHJhLXRyYWl0cyIsCl0KcGF0aCA9ICIuLi9ydXN0LXN5bnRheCIKCltkZXBlbmRlbmNpZXMud2FzbS1iaW5kZ2VuLXNoYXJlZF0KdmVyc2lvbiA9ICI9MC4yLjEyOSIKcGF0aCA9ICIuLi93YXNtLWJpbmRnZW4tc2hhcmVkIgoKW2xpbnRzLmNsaXBweV0KbGFyZ2VfZW51bV92YXJpYW50ID0gImFsbG93IgpuZXdfd2l0aG91dF9kZWZhdWx0ID0gImFsbG93IgpvdmVybHlfY29tcGxleF9ib29sX2V4cHIgPSAiYWxsb3ciCnRvb19tYW55X2FyZ3VtZW50cyA9ICJhbGxvdyIKdHlwZV9jb21wbGV4aXR5ID0gImFsbG93Igp1bmlubGluZWRfZm9ybWF0X2FyZ3MgPSAid2FybiIKCltsaW50cy5ydXN0XQp1bnVzZWRfbGlmZXRpbWVzID0gIndhcm4iCgpbbGludHMucnVzdC51bmV4cGVjdGVkX2NmZ3NdCmxldmVsID0gIndhcm4iCnByaW9yaXR5ID0gMApjaGVjay1jZmcgPSBbCiAgICAiY2ZnKHdhc21fYmluZGdlbl91bnN0YWJsZV90ZXN0X2NvdmVyYWdlKSIsCiAgICAiY2ZnKHdhc21fYmluZGdlbl91c2VfanNfc3lzKSIsCiAgICAiY2ZnKHh4eF9kZWJ1Z19vbmx5X3ByaW50X2dlbmVyYXRlZF9jb2RlKSIsCiAgICAiY2ZnKGxlZ2FjeV9laCkiLAogICAgImNmZyh0b2tpb191bnN0YWJsZSkiLAogICAgImNmZyh3YXNtX2JpbmRnZW5fdW5zdGFibGVfdG9raW8pIiwKICAgICJjZmcod2FzbV9iaW5kZ2VuX3Vuc3RhYmxlX2pzcGkpIiwKXQo="
+          },
+          "src/ast.rs": {
+            "destination": "src/ast.rs"
+          },
+          "src/codegen.rs": {
+            "destination": "src/codegen.rs"
+          },
+          "src/encode.rs": {
+            "destination": "src/encode.rs"
+          },
+          "src/error.rs": {
+            "destination": "src/error.rs"
+          },
+          "src/generics.rs": {
+            "destination": "src/generics.rs"
+          },
+          "src/hash.rs": {
+            "destination": "src/hash.rs"
+          },
+          "src/lib.rs": {
+            "destination": "src/lib.rs"
+          },
+          "src/parser.rs": {
+            "destination": "src/parser.rs"
+          }
+        }
+      },
+      "inputs": [
+        {
+          "external_tests": null,
+          "package": {
+            "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。",
+            "description": "Definition of the `#[wasm_bindgen]` attribute, an internal dependency",
+            "directory": "src/foundation/wasm-bindgen-macro",
+            "files_sha256": {
+              "Cargo.toml": "18ca164ec7a6c183d2c79e8bb92a0118e12efca514ca74d725d4cc36a2d33372",
+              "src/lib.rs": "70fd5a23812befee8ff7cd4f85caf581d38d14d6dcfa77e8c98115d47710b8c2",
+              "src/worker.js": "cb5c33dd41cfad622abce5464a3ceae478904ea16ddc3c6c769ee33e0c086692"
+            },
+            "license": "MIT OR Apache-2.0",
+            "license_materials": [
+              "compliance/licenses/upstream/wasm-bindgen-macro-0.2.129/LICENSE-APACHE",
+              "compliance/licenses/upstream/wasm-bindgen-macro-0.2.129/LICENSE-MIT"
+            ],
+            "merged_into": "无；通过统一内部源码源接入",
+            "name": "wasm-bindgen-macro",
+            "origin_directory": "vendor/rust/wasm-bindgen-macro-0.2.129",
+            "repository": "https://github.com/wasm-bindgen/wasm-bindgen/tree/master/crates/macro",
+            "status": "内部维护源码",
+            "upstream": {
+              "archive_sha256": "2e29d0c35b16e224a7eeb5cd2d25e3e1968fbd65604117b44d3b789d00ee8535",
+              "archive_url": "https://static.crates.io/crates/wasm-bindgen-macro/wasm-bindgen-macro-0.2.129.crate",
+              "name": "wasm-bindgen-macro",
+              "version": "0.2.129"
+            },
+            "vcs": {
+              "git": {
+                "sha1": "165586f854c852bcbc4d14d8a75a0a0e0d0abc12"
+              },
+              "path_in_vcs": "crates/macro"
+            },
+            "version": "0.2.129"
+          }
+        },
+        {
+          "external_tests": {
+            "bytes": 35064,
+            "directory": "src/foundation/wasm-bindgen-macro-support",
+            "file_count": 3,
+            "files": [
+              {
+                "path": "test/foundation/wasm-bindgen-macro-support/unit/src/codegen/tests_5747.rs",
+                "sha256": "7f4c50310cfce2d908ffbdbed0a3d53ad3e324e03d6bd9eb205fa84f4c70a631",
+                "source": "src/foundation/wasm-bindgen-macro-support/src/codegen.rs",
+                "source_sha256_before": "1407bc9989776038c1b2ab57a17fe36cafb9ad2f943ae24bf1ad83ecd905191b"
+              },
+              {
+                "path": "test/foundation/wasm-bindgen-macro-support/unit/src/generics/tests_796.rs",
+                "sha256": "0554cc79cc95e1cbf4ecde648d9e8815fd9c8f588cbe9c4cbe5449997f82dbca",
+                "source": "src/foundation/wasm-bindgen-macro-support/src/generics.rs",
+                "source_sha256_before": "91be53d06ad9c62f8c618a53afe54422db10805a94f3fb4c2942736864cbc820"
+              },
+              {
+                "path": "test/foundation/wasm-bindgen-macro-support/unit/src/parser/tests_3446.rs",
+                "sha256": "79f7675c13495fb8b4f91e5b75d33aa3b26ea93890905fc1abedffba4ab59f84",
+                "source": "src/foundation/wasm-bindgen-macro-support/src/parser.rs",
+                "source_sha256_before": "f8471ec0a0159479500e661355b113fd0ff25281ae073ed5725d52d34faa3ac2"
+              }
+            ],
+            "origin_directory": "vendor/rust/wasm-bindgen-macro-support-0.2.129",
+            "roots": [
+              "test/foundation/wasm-bindgen-macro-support"
+            ]
+          },
+          "package": {
+            "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。",
+            "description": "Implementation APIs for the `#[wasm_bindgen]` attribute",
+            "directory": "src/foundation/wasm-bindgen-macro-support",
+            "files_sha256": {
+              "Cargo.toml": "48030fb942f4e7ca10609cba080a191f843574106d36bbaf38c6f6d32c2d1313",
+              "src/ast.rs": "71f29778b186f3bf1276ba12779009bd27f9d33c15f0408d4f470ac3eb75260e",
+              "src/codegen.rs": "0ff1bc78ae9b3dde33c3fda6eff6a5f4268d37c696d57f6d374cf0c6af299ecd",
+              "src/encode.rs": "d6ef124ccea39626616dec87434913035cb1cee4001754f6d823b878268dfb6f",
+              "src/error.rs": "594947cad4dccb1d16e37c54799bdbc910791ae75a15c5f2a3a8513fde847938",
+              "src/generics.rs": "c546283abbc64b17b9e98ca394da9ecbf7c41667c83741ffa188a87feb108e8d",
+              "src/hash.rs": "9858c07a0d17b5c3b8fda8009392dc534eecabb701eaf44e9aa9fee643a07fab",
+              "src/lib.rs": "64a432a0f2b4e047e8dc9c22eca86d3135954a31e3b62e8bd99e3e8026bb2025",
+              "src/parser.rs": "592cc4a1c7af162615f9e8e393634c6cd59b1d1701d6cca61ea2dfff7d87cc0b"
+            },
+            "license": "MIT OR Apache-2.0",
+            "license_materials": [
+              "compliance/licenses/upstream/wasm-bindgen-macro-support-0.2.129/LICENSE-APACHE",
+              "compliance/licenses/upstream/wasm-bindgen-macro-support-0.2.129/LICENSE-MIT"
+            ],
+            "merged_into": "无；通过统一内部源码源接入",
+            "name": "wasm-bindgen-macro-support",
+            "origin_directory": "vendor/rust/wasm-bindgen-macro-support-0.2.129",
+            "repository": "https://github.com/wasm-bindgen/wasm-bindgen/tree/main/crates/macro-support",
+            "status": "内部维护源码",
+            "upstream": {
+              "archive_sha256": "6f501a8bc3719dba86ef8ae4728879c08001bea749eb1333ac5b91e040e2a6b7",
+              "archive_url": "https://static.crates.io/crates/wasm-bindgen-macro-support/wasm-bindgen-macro-support-0.2.129.crate",
+              "name": "wasm-bindgen-macro-support",
+              "version": "0.2.129"
+            },
+            "vcs": {
+              "git": {
+                "sha1": "165586f854c852bcbc4d14d8a75a0a0e0d0abc12"
+              },
+              "path_in_vcs": "crates/macro-support"
+            },
+            "version": "0.2.129"
+          }
+        }
+      ],
+      "new_files": {},
+      "primary_directory": "src/foundation/wasm-bindgen-macro",
+      "reason": "Internalize the sole-consumer host macro implementation into one proc-macro package, preserving canonical WASM ABI generation and strict-macro validation. Keep target runtime, shared wire encoding, CLI and futures separate; eliminate only the public support boundary and forwarding facade."
     }
   },
   "external_test_mappings_sha256": {
-    "compliance/external-tests/foundation.json": "fd4846dbf45a10c4e32367fc9bebb35932da37be937ee84ef180ba1128d0fa2a",
+    "compliance/external-tests/foundation.json": "1e92603f2fbab59398a26439ecbadfbfcbbc9cf0b266ace55839c3f476e3861c",
     "compliance/external-tests/integrated.json": "b9d3cdc7b7678cb7dec3dff2b120b11d1754ddc86ec66194ce97d53a4f8d2033",
     "compliance/external-tests/ring.json": "3e5a834ea832ea11a0da5cdeab898e9c2e2d5229becc1988edc3462cfb51dab1"
   },
@@ -54623,35 +54839,6 @@
         "test/foundation/wasm-bindgen-cli-support"
       ]
     },
-    "src/foundation/wasm-bindgen-macro-support": {
-      "bytes": 35064,
-      "directory": "src/foundation/wasm-bindgen-macro-support",
-      "file_count": 3,
-      "files": [
-        {
-          "path": "test/foundation/wasm-bindgen-macro-support/unit/src/codegen/tests_5747.rs",
-          "sha256": "7f4c50310cfce2d908ffbdbed0a3d53ad3e324e03d6bd9eb205fa84f4c70a631",
-          "source": "src/foundation/wasm-bindgen-macro-support/src/codegen.rs",
-          "source_sha256_before": "1407bc9989776038c1b2ab57a17fe36cafb9ad2f943ae24bf1ad83ecd905191b"
-        },
-        {
-          "path": "test/foundation/wasm-bindgen-macro-support/unit/src/generics/tests_796.rs",
-          "sha256": "0554cc79cc95e1cbf4ecde648d9e8815fd9c8f588cbe9c4cbe5449997f82dbca",
-          "source": "src/foundation/wasm-bindgen-macro-support/src/generics.rs",
-          "source_sha256_before": "91be53d06ad9c62f8c618a53afe54422db10805a94f3fb4c2942736864cbc820"
-        },
-        {
-          "path": "test/foundation/wasm-bindgen-macro-support/unit/src/parser/tests_3446.rs",
-          "sha256": "79f7675c13495fb8b4f91e5b75d33aa3b26ea93890905fc1abedffba4ab59f84",
-          "source": "src/foundation/wasm-bindgen-macro-support/src/parser.rs",
-          "source_sha256_before": "f8471ec0a0159479500e661355b113fd0ff25281ae073ed5725d52d34faa3ac2"
-        }
-      ],
-      "origin_directory": "vendor/rust/wasm-bindgen-macro-support-0.2.129",
-      "roots": [
-        "test/foundation/wasm-bindgen-macro-support"
-      ]
-    },
     "src/foundation/wasm-bindgen-shared": {
       "bytes": 2060,
       "directory": "src/foundation/wasm-bindgen-shared",
@@ -54667,6 +54854,38 @@
       "origin_directory": "vendor/rust/wasm-bindgen-shared-0.2.129",
       "roots": [
         "test/foundation/wasm-bindgen-shared"
+      ]
+    },
+    "src/foundation/wasm-binding-macros": {
+      "bytes": 35064,
+      "directory": "src/foundation/wasm-binding-macros",
+      "file_count": 3,
+      "files": [
+        {
+          "origin_directory": "vendor/rust/wasm-bindgen-macro-support-0.2.129",
+          "path": "test/foundation/wasm-binding-macros/unit/src/codegen/tests_5747.rs",
+          "sha256": "7f4c50310cfce2d908ffbdbed0a3d53ad3e324e03d6bd9eb205fa84f4c70a631",
+          "source": "src/foundation/wasm-bindgen-macro-support/src/codegen.rs",
+          "source_sha256_before": "1407bc9989776038c1b2ab57a17fe36cafb9ad2f943ae24bf1ad83ecd905191b"
+        },
+        {
+          "origin_directory": "vendor/rust/wasm-bindgen-macro-support-0.2.129",
+          "path": "test/foundation/wasm-binding-macros/unit/src/generics/tests_796.rs",
+          "sha256": "0554cc79cc95e1cbf4ecde648d9e8815fd9c8f588cbe9c4cbe5449997f82dbca",
+          "source": "src/foundation/wasm-bindgen-macro-support/src/generics.rs",
+          "source_sha256_before": "91be53d06ad9c62f8c618a53afe54422db10805a94f3fb4c2942736864cbc820"
+        },
+        {
+          "origin_directory": "vendor/rust/wasm-bindgen-macro-support-0.2.129",
+          "path": "test/foundation/wasm-binding-macros/unit/src/parser/tests_3446.rs",
+          "sha256": "79f7675c13495fb8b4f91e5b75d33aa3b26ea93890905fc1abedffba4ab59f84",
+          "source": "src/foundation/wasm-bindgen-macro-support/src/parser.rs",
+          "source_sha256_before": "f8471ec0a0159479500e661355b113fd0ff25281ae073ed5725d52d34faa3ac2"
+        }
+      ],
+      "origin_directory": "vendor/rust/wasm-bindgen-macro-0.2.129",
+      "roots": [
+        "test/foundation/wasm-binding-macros"
       ]
     },
     "src/foundation/wasm-encoder": {
@@ -56418,7 +56637,7 @@
   },
   "initial_test_relocation_sha256": "791ad728a408677dd54ef98e3feaffe825c5fc5670e888440615933d9498ecc3",
   "lockfiles_sha256": {
-    "Cargo.lock": "8e8321b58be8936d776d39bfab5f5a4b7774338fd57b845e8ba6e473f15a89e0"
+    "Cargo.lock": "5ac1563cd6bf6193e6b1471edfedb47fdc1f0397ef62759a003f677f6b76195c"
   },
   "manifests_sha256": {
     "Cargo.toml": "d4eb9ad428c26f50546105c8704f7ed0b4b75d50632a800c76a3256279001869",
@@ -56668,10 +56887,9 @@
     "src/foundation/want/Cargo.toml": "8e577e9914b75b840b6f0e14c46cf59495c2504d62921e329b517d3ca6a77e9e",
     "src/foundation/wasm-bindgen-cli-support/Cargo.toml": "ba84120c4b38b78580d989dcd34ea2f569424c20113f698b2b476a412beee686",
     "src/foundation/wasm-bindgen-futures/Cargo.toml": "0eaec7e0850444e2c9622f213641a8920bcb01fa47a3be9e802e605d349df9b8",
-    "src/foundation/wasm-bindgen-macro-support/Cargo.toml": "48030fb942f4e7ca10609cba080a191f843574106d36bbaf38c6f6d32c2d1313",
-    "src/foundation/wasm-bindgen-macro/Cargo.toml": "18ca164ec7a6c183d2c79e8bb92a0118e12efca514ca74d725d4cc36a2d33372",
     "src/foundation/wasm-bindgen-shared/Cargo.toml": "2ac59793219a07b62a58cba208e349310ab05a4faedc8a1bd4824296d84f7b74",
-    "src/foundation/wasm-bindgen/Cargo.toml": "50395a8ee84be13556d9d7b2e87e9a786a534fd6954d2544292f3ff96361da06",
+    "src/foundation/wasm-bindgen/Cargo.toml": "5f2307d7fd0aad9a5aad3559c09c690aa1264e5b8c721b51c56409fd0f4156af",
+    "src/foundation/wasm-binding-macros/Cargo.toml": "2185ec235c19160cdf244f0caeb3828408f97cf3e6b1426cbade6df78bd6b424",
     "src/foundation/wasm-encoder/Cargo.toml": "e1d54f6793283fc8d13eae42277dd7a843884d8de6be845d08478f9789a90b86",
     "src/foundation/wasmparser/Cargo.toml": "501b29ecbf9c428fbaab6afed7479400e1f2ad19c3e871ceeef687d456f34c81",
     "src/foundation/web-sys/Cargo.toml": "77f1cb6dc9dbed3bdf9983483c8fb1087a6e8e9c309dc1e177ec99f6993fceb8",
@@ -63158,6 +63376,46 @@
         "path_in_vcs": ""
       },
       "version": "0.3.10"
+    },
+    {
+      "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。",
+      "description": "Implementation APIs for the `#[wasm_bindgen]` attribute",
+      "directory": "src/foundation/wasm-binding-macros",
+      "files_sha256": {
+        "Cargo.toml": "2185ec235c19160cdf244f0caeb3828408f97cf3e6b1426cbade6df78bd6b424",
+        "src/ast.rs": "71f29778b186f3bf1276ba12779009bd27f9d33c15f0408d4f470ac3eb75260e",
+        "src/codegen.rs": "665a85e1b720b05e50b35a8162e397f587e1163a28571c7db7c4e9e862289d62",
+        "src/encode.rs": "d6ef124ccea39626616dec87434913035cb1cee4001754f6d823b878268dfb6f",
+        "src/error.rs": "92ad4a2b83ac4ea826d5f1a5b88d3446fae16934216d49b0aee9aa617649d783",
+        "src/generics.rs": "c8103531b6b1e55601f2c8d4ebecb0d3dd7650040ce50fa5c5bba26586853aee",
+        "src/hash.rs": "9858c07a0d17b5c3b8fda8009392dc534eecabb701eaf44e9aa9fee643a07fab",
+        "src/lib.rs": "40a43b32e8e4efc000d3632dd6ac0300b9d497972ce6163dc61a1274816f23d3",
+        "src/parser.rs": "7ac8e8e62486cbfd21b5332f7dc32bf36f6dab521ce2e1c1b6b9cf21fa35582e",
+        "src/worker.js": "cb5c33dd41cfad622abce5464a3ceae478904ea16ddc3c6c769ee33e0c086692"
+      },
+      "license": "MIT OR Apache-2.0",
+      "license_materials": [
+        "compliance/licenses/upstream/wasm-bindgen-macro-support-0.2.129/LICENSE-APACHE",
+        "compliance/licenses/upstream/wasm-bindgen-macro-support-0.2.129/LICENSE-MIT"
+      ],
+      "merged_into": "src/foundation/wasm-binding-macros",
+      "name": "wasm-bindgen-macro-support",
+      "origin_directory": "vendor/rust/wasm-bindgen-macro-support-0.2.129",
+      "repository": "https://github.com/wasm-bindgen/wasm-bindgen/tree/main/crates/macro-support",
+      "status": "内部维护源码",
+      "upstream": {
+        "archive_sha256": "6f501a8bc3719dba86ef8ae4728879c08001bea749eb1333ac5b91e040e2a6b7",
+        "archive_url": "https://static.crates.io/crates/wasm-bindgen-macro-support/wasm-bindgen-macro-support-0.2.129.crate",
+        "name": "wasm-bindgen-macro-support",
+        "version": "0.2.129"
+      },
+      "vcs": {
+        "git": {
+          "sha1": "165586f854c852bcbc4d14d8a75a0a0e0d0abc12"
+        },
+        "path_in_vcs": "crates/macro-support"
+      },
+      "version": "0.2.129"
     }
   ],
   "origin_records_sha256": {
@@ -76501,26 +76759,26 @@
       "description": "Easy support for interacting between JS and Rust.",
       "directory": "src/foundation/wasm-bindgen",
       "files_sha256": {
-        "Cargo.toml": "50395a8ee84be13556d9d7b2e87e9a786a534fd6954d2544292f3ff96361da06",
+        "Cargo.toml": "5f2307d7fd0aad9a5aad3559c09c690aa1264e5b8c721b51c56409fd0f4156af",
         "build.rs": "363b0c2cf7b1353ff702898612ab98956a87fa85e943b41377627c08a053406a",
         "src/cache/intern.rs": "b354990c27d418b201a918782f1aa736c2cafd31fcde694bb19aa58c5bc47449",
         "src/cache/mod.rs": "8989143b55160dbc142cb20c6e066cf0a3f70d6c97fbc9aa0fac59bd62bd865b",
         "src/cast.rs": "156a9b71bf9af03c5c378a1939032dfc628edbefce4aa8c37fb14948abf7a9f4",
-        "src/closure.rs": "d3a2e285b7c582c970594dfd9edd9ee822c7c9b86ee8b236497b296c441ef5b7",
+        "src/closure.rs": "60200ce68a5a4ab571cb258dfbd56a93af99a15c467d19096b502c039a1a971a",
         "src/convert/closures.rs": "f1004f4a022f4d063414bc67720fbb04327955c02837241b37fb8298f5fd345e",
         "src/convert/impls.rs": "ac05832029e8d9646a86964139fc1809c05758896c61c800268339eae8bd040c",
         "src/convert/mod.rs": "a284115f8080ee36ea60d6a111d4247856bdee76c4a5b738465f60a97c593eca",
         "src/convert/slices.rs": "3d6ac72ff8e49c10d77878cc79678ce48f12af0d23cf753e3f76a1092c2cb2bb",
-        "src/convert/traits.rs": "6e801101609c6d26b359ed393c249cf272af95f75dac29f3f00f80fe510f6051",
+        "src/convert/traits.rs": "0abf7e54c592cb8e7bdf10884e7fb717098c3d07fc1ae9324e173b3a687eddda",
         "src/describe.rs": "29151817be351854766ebfd70d931405178fbafcd1c9781b31a029a706adca5f",
         "src/externref.rs": "dcd05f64a0d3a3e171a3feec38b6ff759fa4cd69cd693351873f94de128f3101",
         "src/handler.rs": "fd187aadf360c2d13e9153fd58a5b640b656dfa892e9bdbe726f96b0636a7f09",
-        "src/lib.rs": "a15c9065bc3c70072332a1eaf0ce39c867dc72049cf00e5e2aa423deb1dfcbe5",
+        "src/lib.rs": "695bfa2a642c5be4fd2ec63b893f9a94883820c32d36f7f2f3659cebd9b6f60d",
         "src/link.rs": "96fdb40e29ffae7b9621d78eec24437bdc6db2473f6d2f8eff1f987d2b566852",
         "src/parent.rs": "d9f90c6eaa6bf00cae48858305eff077947e6558f02da493033f4e4fc09ac7ce",
         "src/rt/marker.rs": "2c2334073043f70df7082e139854de283779c8490a62aeed741bd66f45e3a07f",
-        "src/rt/mod.rs": "07acc9a0e021e7021c2f35f0f49c1f086707417d75407f53ee766a031b8232ec",
-        "src/sys.rs": "6a9a677faab18f40ab30fb5f0a2a0f655ebdcec1ab6688fdb4ec269e7642dd76"
+        "src/rt/mod.rs": "e6493dc745da3cc4ea32149e64386235ecd76bdafb3ffea57e3d8113de038eb0",
+        "src/sys.rs": "450f0df48bf7027c02427578f87a21e29f6cec21df6ffe06ce284ae198ab969b"
       },
       "license": "MIT OR Apache-2.0",
       "license_materials": [
@@ -76634,78 +76892,6 @@
       },
       "version": "0.4.79"
     },
-    "src/foundation/wasm-bindgen-macro": {
-      "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。",
-      "description": "Definition of the `#[wasm_bindgen]` attribute, an internal dependency",
-      "directory": "src/foundation/wasm-bindgen-macro",
-      "files_sha256": {
-        "Cargo.toml": "18ca164ec7a6c183d2c79e8bb92a0118e12efca514ca74d725d4cc36a2d33372",
-        "src/lib.rs": "70fd5a23812befee8ff7cd4f85caf581d38d14d6dcfa77e8c98115d47710b8c2",
-        "src/worker.js": "cb5c33dd41cfad622abce5464a3ceae478904ea16ddc3c6c769ee33e0c086692"
-      },
-      "license": "MIT OR Apache-2.0",
-      "license_materials": [
-        "compliance/licenses/upstream/wasm-bindgen-macro-0.2.129/LICENSE-APACHE",
-        "compliance/licenses/upstream/wasm-bindgen-macro-0.2.129/LICENSE-MIT"
-      ],
-      "merged_into": "无；通过统一内部源码源接入",
-      "name": "wasm-bindgen-macro",
-      "origin_directory": "vendor/rust/wasm-bindgen-macro-0.2.129",
-      "repository": "https://github.com/wasm-bindgen/wasm-bindgen/tree/master/crates/macro",
-      "status": "内部维护源码",
-      "upstream": {
-        "archive_sha256": "2e29d0c35b16e224a7eeb5cd2d25e3e1968fbd65604117b44d3b789d00ee8535",
-        "archive_url": "https://static.crates.io/crates/wasm-bindgen-macro/wasm-bindgen-macro-0.2.129.crate",
-        "name": "wasm-bindgen-macro",
-        "version": "0.2.129"
-      },
-      "vcs": {
-        "git": {
-          "sha1": "165586f854c852bcbc4d14d8a75a0a0e0d0abc12"
-        },
-        "path_in_vcs": "crates/macro"
-      },
-      "version": "0.2.129"
-    },
-    "src/foundation/wasm-bindgen-macro-support": {
-      "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。",
-      "description": "Implementation APIs for the `#[wasm_bindgen]` attribute",
-      "directory": "src/foundation/wasm-bindgen-macro-support",
-      "files_sha256": {
-        "Cargo.toml": "48030fb942f4e7ca10609cba080a191f843574106d36bbaf38c6f6d32c2d1313",
-        "src/ast.rs": "71f29778b186f3bf1276ba12779009bd27f9d33c15f0408d4f470ac3eb75260e",
-        "src/codegen.rs": "0ff1bc78ae9b3dde33c3fda6eff6a5f4268d37c696d57f6d374cf0c6af299ecd",
-        "src/encode.rs": "d6ef124ccea39626616dec87434913035cb1cee4001754f6d823b878268dfb6f",
-        "src/error.rs": "594947cad4dccb1d16e37c54799bdbc910791ae75a15c5f2a3a8513fde847938",
-        "src/generics.rs": "c546283abbc64b17b9e98ca394da9ecbf7c41667c83741ffa188a87feb108e8d",
-        "src/hash.rs": "9858c07a0d17b5c3b8fda8009392dc534eecabb701eaf44e9aa9fee643a07fab",
-        "src/lib.rs": "64a432a0f2b4e047e8dc9c22eca86d3135954a31e3b62e8bd99e3e8026bb2025",
-        "src/parser.rs": "592cc4a1c7af162615f9e8e393634c6cd59b1d1701d6cca61ea2dfff7d87cc0b"
-      },
-      "license": "MIT OR Apache-2.0",
-      "license_materials": [
-        "compliance/licenses/upstream/wasm-bindgen-macro-support-0.2.129/LICENSE-APACHE",
-        "compliance/licenses/upstream/wasm-bindgen-macro-support-0.2.129/LICENSE-MIT"
-      ],
-      "merged_into": "无；通过统一内部源码源接入",
-      "name": "wasm-bindgen-macro-support",
-      "origin_directory": "vendor/rust/wasm-bindgen-macro-support-0.2.129",
-      "repository": "https://github.com/wasm-bindgen/wasm-bindgen/tree/main/crates/macro-support",
-      "status": "内部维护源码",
-      "upstream": {
-        "archive_sha256": "6f501a8bc3719dba86ef8ae4728879c08001bea749eb1333ac5b91e040e2a6b7",
-        "archive_url": "https://static.crates.io/crates/wasm-bindgen-macro-support/wasm-bindgen-macro-support-0.2.129.crate",
-        "name": "wasm-bindgen-macro-support",
-        "version": "0.2.129"
-      },
-      "vcs": {
-        "git": {
-          "sha1": "165586f854c852bcbc4d14d8a75a0a0e0d0abc12"
-        },
-        "path_in_vcs": "crates/macro-support"
-      },
-      "version": "0.2.129"
-    },
     "src/foundation/wasm-bindgen-shared": {
       "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。",
       "description": "Shared support between wasm-bindgen and wasm-bindgen cli, an internal\ndependency.",
@@ -76738,6 +76924,46 @@
           "sha1": "165586f854c852bcbc4d14d8a75a0a0e0d0abc12"
         },
         "path_in_vcs": "crates/shared"
+      },
+      "version": "0.2.129"
+    },
+    "src/foundation/wasm-binding-macros": {
+      "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。",
+      "description": "Definition of the `#[wasm_bindgen]` attribute, an internal dependency",
+      "directory": "src/foundation/wasm-binding-macros",
+      "files_sha256": {
+        "Cargo.toml": "2185ec235c19160cdf244f0caeb3828408f97cf3e6b1426cbade6df78bd6b424",
+        "src/ast.rs": "71f29778b186f3bf1276ba12779009bd27f9d33c15f0408d4f470ac3eb75260e",
+        "src/codegen.rs": "665a85e1b720b05e50b35a8162e397f587e1163a28571c7db7c4e9e862289d62",
+        "src/encode.rs": "d6ef124ccea39626616dec87434913035cb1cee4001754f6d823b878268dfb6f",
+        "src/error.rs": "92ad4a2b83ac4ea826d5f1a5b88d3446fae16934216d49b0aee9aa617649d783",
+        "src/generics.rs": "c8103531b6b1e55601f2c8d4ebecb0d3dd7650040ce50fa5c5bba26586853aee",
+        "src/hash.rs": "9858c07a0d17b5c3b8fda8009392dc534eecabb701eaf44e9aa9fee643a07fab",
+        "src/lib.rs": "40a43b32e8e4efc000d3632dd6ac0300b9d497972ce6163dc61a1274816f23d3",
+        "src/parser.rs": "7ac8e8e62486cbfd21b5332f7dc32bf36f6dab521ce2e1c1b6b9cf21fa35582e",
+        "src/worker.js": "cb5c33dd41cfad622abce5464a3ceae478904ea16ddc3c6c769ee33e0c086692"
+      },
+      "license": "MIT OR Apache-2.0",
+      "license_materials": [
+        "compliance/licenses/upstream/wasm-bindgen-macro-0.2.129/LICENSE-APACHE",
+        "compliance/licenses/upstream/wasm-bindgen-macro-0.2.129/LICENSE-MIT"
+      ],
+      "merged_into": "无；通过统一内部源码源接入",
+      "name": "wasm-binding-macros",
+      "origin_directory": "vendor/rust/wasm-bindgen-macro-0.2.129",
+      "repository": "https://github.com/wasm-bindgen/wasm-bindgen/tree/master/crates/macro",
+      "status": "内部维护源码",
+      "upstream": {
+        "archive_sha256": "2e29d0c35b16e224a7eeb5cd2d25e3e1968fbd65604117b44d3b789d00ee8535",
+        "archive_url": "https://static.crates.io/crates/wasm-bindgen-macro/wasm-bindgen-macro-0.2.129.crate",
+        "name": "wasm-bindgen-macro",
+        "version": "0.2.129"
+      },
+      "vcs": {
+        "git": {
+          "sha1": "165586f854c852bcbc4d14d8a75a0a0e0d0abc12"
+        },
+        "path_in_vcs": "crates/macro"
       },
       "version": "0.2.129"
     },
@@ -90504,23 +90730,17 @@
             "runtime"
           ]
         },
-        "src/foundation/wasm-bindgen-macro": {
-          "features": [],
-          "roles": [
-            "compile"
-          ]
-        },
-        "src/foundation/wasm-bindgen-macro-support": {
-          "features": [],
-          "roles": [
-            "compile"
-          ]
-        },
         "src/foundation/wasm-bindgen-shared": {
           "features": [],
           "roles": [
             "compile",
             "runtime"
+          ]
+        },
+        "src/foundation/wasm-binding-macros": {
+          "features": [],
+          "roles": [
+            "compile"
           ]
         },
         "src/foundation/web-sys": {

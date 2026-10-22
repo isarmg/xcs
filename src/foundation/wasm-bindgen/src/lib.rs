@@ -132,13 +132,13 @@ pub mod prelude {
     pub use crate::JsValue;
     pub use crate::UnwrapThrowExt;
     #[doc(hidden)]
-    pub use wasm_bindgen_macro::__wasm_bindgen_class_marker;
-    pub use wasm_bindgen_macro::wasm_bindgen;
+    pub use wasm_binding_macros::__wasm_bindgen_class_marker;
+    pub use wasm_binding_macros::wasm_bindgen;
 
     pub use crate::JsError;
 }
 
-pub use wasm_bindgen_macro::link_to;
+pub use wasm_binding_macros::link_to;
 
 pub mod closure;
 pub mod convert;
@@ -1224,7 +1224,7 @@ impl TryFromJsValue for usize {
 }
 
 // Intrinsics that are simply JS function bindings and can be self-hosted via the macro.
-#[wasm_bindgen_macro::wasm_bindgen(wasm_bindgen = crate)]
+#[wasm_binding_macros::wasm_bindgen(wasm_bindgen = crate)]
 extern "C" {
     #[wasm_bindgen(js_namespace = Array, js_name = isArray)]
     fn __wbindgen_is_array(v: &JsValue) -> bool;
@@ -1253,7 +1253,7 @@ extern "C" {
 
 // Intrinsics which are handled by cli-support but for which we can use
 // standard wasm-bindgen ABI conversions.
-#[wasm_bindgen_macro::wasm_bindgen(wasm_bindgen = crate, raw_module = "__wbindgen_placeholder__")]
+#[wasm_binding_macros::wasm_bindgen(wasm_bindgen = crate, raw_module = "__wbindgen_placeholder__")]
 extern "C" {
     #[cfg(not(wbg_reference_types))]
     fn __wbindgen_externref_heap_live_count() -> u32;

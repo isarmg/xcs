@@ -5745,4 +5745,4 @@ fn fn_trait_bound_sig(
 }
 
 #[cfg(test)]
-include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/wasm-bindgen-macro-support/unit/src/codegen/tests_5747.rs"));
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/wasm-binding-macros/unit/src/codegen/tests_5747.rs"));

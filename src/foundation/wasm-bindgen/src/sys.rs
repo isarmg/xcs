@@ -8,7 +8,7 @@ use crate::JsGeneric;
 use crate::JsValue;
 use core::fmt;
 use core::ops::Deref;
-use wasm_bindgen_macro::wasm_bindgen;
+use wasm_binding_macros::wasm_bindgen;
 
 /// Marker trait for types which represent `Resolution` or `Promise<Resolution>`.
 ///

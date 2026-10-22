@@ -58,7 +58,7 @@ use crate::{convert::*, JsCast};
 use core::marker::PhantomData;
 use core::panic::AssertUnwindSafe;
 
-#[wasm_bindgen_macro::wasm_bindgen(wasm_bindgen = crate)]
+#[wasm_binding_macros::wasm_bindgen(wasm_bindgen = crate)]
 extern "C" {
     // `no_into_js_generic` is required because closures are deliberately
     // not `Clone`: duplicating the Rust wrapper over a JS callback would

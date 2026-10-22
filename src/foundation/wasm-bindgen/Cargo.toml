@@ -37,7 +37,7 @@ rustversion = []
 serialization-serialize = ["serialization", "json-codec", "std"]
 spans = []
 std = []
-strict-macro = ["wasm-bindgen-macro/strict-macro"]
+strict-macro = ["wasm-binding-macros/strict-macro"]
 xxx_debug_only_print_generated_code = []
 
 [lib]
@@ -64,9 +64,9 @@ version = "1.0"
 optional = true
 path = "../json-codec"
 
-[dependencies.wasm-bindgen-macro]
+[dependencies.wasm-binding-macros]
 version = "=0.2.129"
-path = "../wasm-bindgen-macro"
+path = "../wasm-binding-macros"
 
 [dependencies.wasm-bindgen-shared]
 version = "=0.2.129"

@@ -35,16 +35,6 @@ enum Repr {
 }
 
 impl Diagnostic {
-    /// Generate a `Diagnostic` from an informational message with no Span
-    pub fn error<T: Into<String>>(text: T) -> Diagnostic {
-        Diagnostic {
-            inner: Repr::Single {
-                text: text.into(),
-                span: None,
-            },
-        }
-    }
-
     /// Generate a `Diagnostic` from a Span and an informational message
     pub fn span_error<T: Into<String>>(span: Span, text: T) -> Diagnostic {
         Diagnostic {
@@ -77,15 +67,7 @@ impl Diagnostic {
         }
     }
 
-    /// Immediately trigger a panic from this `Diagnostic`
-    #[allow(unconditional_recursion)]
-    pub fn panic(&self) -> ! {
-        match &self.inner {
-            Repr::Single { text, .. } => panic!("{}", text),
-            Repr::SyntaxError(error) => panic!("{}", error),
-            Repr::Multi { diagnostics } => diagnostics[0].panic(),
-        }
-    }
+
 }
 
 impl From<Error> for Diagnostic {

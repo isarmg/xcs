@@ -330,7 +330,7 @@ impl<T: WasmAbi> WasmRet<T> {
 }
 
 /// [`TryFromJsValue`] is a trait for converting a JavaScript value ([`JsValue`])
-/// into a Rust type. It is used by the [`wasm_bindgen`](wasm_bindgen_macro::wasm_bindgen)
+/// into a Rust type. It is used by the [`wasm_bindgen`](wasm_binding_macros::wasm_bindgen)
 /// proc-macro to allow conversion to user types.
 ///
 /// The semantics of this trait for various types are designed to provide a runtime

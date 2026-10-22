@@ -3330,6 +3330,9 @@ pub fn check_unused_attrs(tokens: &mut TokenStream) {
                 if *error {
                     let text = format!("invalid attribute {ident} in this position");
                     quote::quote_spanned! { ident.span() => ::core::compile_error!(#text); }
+                } else if cfg!(feature = "strict-macro") {
+                    let text = format!("unused wasm_bindgen attribute {ident}");
+                    quote::quote_spanned! { ident.span() => ::core::compile_error!(#text); }
                 } else {
                     quote::quote! { let #ident: (); }
                 }
@@ -3444,4 +3447,4 @@ fn main(program: &ast::Program, mut f: ItemFn, tokens: &mut TokenStream) -> Resu
 }
 
 #[cfg(test)]
-include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/wasm-bindgen-macro-support/unit/src/parser/tests_3446.rs"));
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/wasm-binding-macros/unit/src/parser/tests_3446.rs"));

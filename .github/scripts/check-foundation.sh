@@ -46,6 +46,7 @@ case "${1:-}" in
     python3 .github/scripts/check-toml-consolidation.py
     python3 .github/scripts/check-pattern-matching.py
     python3 .github/scripts/check-web-bindgen-scope.py
+    python3 .github/scripts/check-wasm-binding-macros.py
     python3 .github/scripts/check-unicode-data-family.py
     python3 .github/scripts/check-url-encoding.py
     ;;

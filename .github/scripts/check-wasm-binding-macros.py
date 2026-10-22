@@ -1,0 +1,63 @@
+#!/usr/bin/env python3
+"""Exercise the actual host proc macro, target runtime, and removed API boundary."""
+from pathlib import Path
+import os, shutil, subprocess, tempfile, tomllib
+ROOT = Path(__file__).resolve().parents[2]
+def check():
+    macro = ROOT / 'src/foundation/wasm-binding-macros'
+    manifest = tomllib.loads((macro/'Cargo.toml').read_text())
+    assert manifest['features'] == {'strict-macro': [], 'extra-traits': []}
+    for old in ('wasm-bindgen-macro', 'wasm-bindgen-macro-support'):
+        assert not (ROOT/'src/foundation'/old).exists()
+    env = dict(os.environ, CARGO_BUILD_JOBS='2')
+    def run(args, expected=None):
+        result = subprocess.run(['cargo', *args], cwd=ROOT, env=env, text=True, capture_output=True)
+        if expected is None:
+            assert result.returncode == 0, result.stdout + result.stderr
+        else:
+            assert result.returncode != 0 and expected in result.stderr, result.stdout + result.stderr
+        return result
+    # Mirror only the governed package/test tree to avoid creating a nested lock.
+    # Every dependency remains the real repository source, never a stub.
+    with tempfile.TemporaryDirectory(prefix='zxs-wasm-host-') as temporary:
+        work=Path(temporary);mirror=work/'src/foundation/wasm-binding-macros'
+        shutil.copytree(macro, mirror)
+        shutil.copytree(ROOT/'test/foundation/wasm-binding-macros', work/'test/foundation/wasm-binding-macros')
+        text=(mirror/'Cargo.toml').read_text()
+        for row in manifest['dependencies'].values():
+            text=text.replace(f'path = "{row["path"]}"', f'path = "{(macro/row["path"]).resolve()}"')
+        (mirror/'Cargo.toml').write_text(text)
+        flags=['--offline','--manifest-path',str(mirror/'Cargo.toml')]
+        run(['generate-lockfile',*flags])
+        for features in ([], ['--all-features']):
+            result = run(['test','--locked',*flags,'--lib',*features])
+            assert '31 passed' in result.stdout, result.stdout
+            assert 'warning:' not in result.stderr, result.stderr
+    with tempfile.TemporaryDirectory(prefix='zxs-wasm-macro-') as temporary:
+        work=Path(temporary);(work/'src').mkdir()
+        manifest=work/'Cargo.toml';source=work/'src/lib.rs'
+        manifest.write_text('[package]\nname="wasm-macro-contract"\nversion="0.0.0"\nedition="2021"\n[workspace]\n[features]\nstrict=["wasm-bindgen/strict-macro"]\n[dependencies]\nwasm-bindgen={path="'+str(ROOT/'src/foundation/wasm-bindgen')+'"}\nwasm-binding-macros={path="'+str(macro)+'"}\n')
+        flags=['--offline','--manifest-path',str(manifest)]
+        source.write_text('');run(['generate-lockfile',*flags]);flags+=['--locked']
+        source.write_text((ROOT/'test/wasm-binding-macros/native.rs').read_text())
+        run(['test',*flags]);run(['check',*flags,'--target','wasm32-unknown-unknown'])
+        # Broad existing frontend fixture: structs, getters/setters, enums,
+        # Unicode, custom sections and payload unions through the canonical ABI.
+        source.write_text((ROOT/'test/tools/web-bindings/fixtures/contract.rs').read_text())
+        run(['check',*flags]);run(['check',*flags,'--target','wasm32-unknown-unknown','--features','strict'])
+        source.write_text((ROOT/'test/wasm-binding-macros/strict.rs').read_text())
+        result=run(['check',*flags]);assert 'unused variable: `catch`' in result.stderr, result.stderr
+        run(['check',*flags,'--features','strict'], 'unused wasm_bindgen attribute catch')
+        negatives=[
+            ('#[wasm_bindgen(not_a_real_option)] pub fn bad() {}', 'unknown attribute'),
+            ('#[wasm_bindgen] pub fn bad<T>(value: T) {}', 'lifetime or type parameters'),
+            ('#[wasm_bindgen] pub const fn bad() {}', 'const'),
+            ('pub fn bad() -> String { wasm_bindgen::link_to!(); }', 'requires a module'),
+            ('#[wasm_bindgen(js_name = 42)] pub fn bad() {}', 'expected'),
+            ('use wasm_binding_macros::expand;', 'unresolved import'),
+        ]
+        for code,diagnostic in negatives:
+            source.write_text('use wasm_bindgen::prelude::*;\n'+code+'\n')
+            run(['check',*flags], diagnostic)
+    print('WASM macro boundary: 31+31 host tests, native execution, native/WASM frontend fixtures, and 7 negative contracts passed')
+if __name__ == '__main__': check()

@@ -30,7 +30,7 @@ pub extern crate std;
 
 pub mod marker;
 
-pub use wasm_bindgen_macro::BindgenedStruct;
+pub use wasm_binding_macros::BindgenedStruct;
 
 /// Wrapper implementation for JsValue errors, with atomics and std handling
 pub fn js_panic(err: JsValue) {
@@ -1031,7 +1031,7 @@ pub const fn encode_u32_to_fixed_len_bytes(value: u32) -> [u8; 5] {
     feature = "std",
     panic = "unwind"
 ))]
-#[wasm_bindgen_macro::wasm_bindgen(wasm_bindgen = crate, raw_module = "__wbindgen_placeholder__")]
+#[wasm_binding_macros::wasm_bindgen(wasm_bindgen = crate, raw_module = "__wbindgen_placeholder__")]
 extern "C" {
     fn __wbindgen_panic_error(msg: &JsValue) -> JsValue;
 }

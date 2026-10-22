@@ -2044,8 +2044,8 @@ dependencies = [
  "cfg-if",
  "once_cell",
  "rustversion",
- "wasm-bindgen-macro",
  "wasm-bindgen-shared",
+ "wasm-binding-macros",
 ]
 
 [[package]]
@@ -2073,15 +2073,14 @@ dependencies = [
 ]
 
 [[package]]
-name = "wasm-bindgen-macro"
+name = "wasm-bindgen-shared"
 version = "0.2.129"
 dependencies = [
- "quote",
- "wasm-bindgen-macro-support",
+ "unicode-ident",
 ]
 
 [[package]]
-name = "wasm-bindgen-macro-support"
+name = "wasm-binding-macros"
 version = "0.2.129"
 dependencies = [
  "bumpalo",
@@ -2089,13 +2088,6 @@ dependencies = [
  "quote",
  "rust-syntax",
  "wasm-bindgen-shared",
-]
-
-[[package]]
-name = "wasm-bindgen-shared"
-version = "0.2.129"
-dependencies = [
- "unicode-ident",
 ]
 
 [[package]]

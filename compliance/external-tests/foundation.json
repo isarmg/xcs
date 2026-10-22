@@ -23067,29 +23067,32 @@
       ]
     },
     {
-      "directory": "src/foundation/wasm-bindgen-macro-support",
-      "roots": [
-        "test/foundation/wasm-bindgen-macro-support"
-      ],
+      "directory": "src/foundation/wasm-binding-macros",
       "files": [
         {
+          "path": "test/foundation/wasm-binding-macros/unit/src/codegen/tests_5747.rs",
+          "sha256": "7f4c50310cfce2d908ffbdbed0a3d53ad3e324e03d6bd9eb205fa84f4c70a631",
           "source": "src/foundation/wasm-bindgen-macro-support/src/codegen.rs",
           "source_sha256_before": "1407bc9989776038c1b2ab57a17fe36cafb9ad2f943ae24bf1ad83ecd905191b",
-          "path": "test/foundation/wasm-bindgen-macro-support/unit/src/codegen/tests_5747.rs",
-          "sha256": "7f4c50310cfce2d908ffbdbed0a3d53ad3e324e03d6bd9eb205fa84f4c70a631"
+          "origin_directory": "vendor/rust/wasm-bindgen-macro-support-0.2.129"
         },
         {
+          "path": "test/foundation/wasm-binding-macros/unit/src/generics/tests_796.rs",
+          "sha256": "0554cc79cc95e1cbf4ecde648d9e8815fd9c8f588cbe9c4cbe5449997f82dbca",
           "source": "src/foundation/wasm-bindgen-macro-support/src/generics.rs",
           "source_sha256_before": "91be53d06ad9c62f8c618a53afe54422db10805a94f3fb4c2942736864cbc820",
-          "path": "test/foundation/wasm-bindgen-macro-support/unit/src/generics/tests_796.rs",
-          "sha256": "0554cc79cc95e1cbf4ecde648d9e8815fd9c8f588cbe9c4cbe5449997f82dbca"
+          "origin_directory": "vendor/rust/wasm-bindgen-macro-support-0.2.129"
         },
         {
+          "path": "test/foundation/wasm-binding-macros/unit/src/parser/tests_3446.rs",
+          "sha256": "79f7675c13495fb8b4f91e5b75d33aa3b26ea93890905fc1abedffba4ab59f84",
           "source": "src/foundation/wasm-bindgen-macro-support/src/parser.rs",
           "source_sha256_before": "f8471ec0a0159479500e661355b113fd0ff25281ae073ed5725d52d34faa3ac2",
-          "path": "test/foundation/wasm-bindgen-macro-support/unit/src/parser/tests_3446.rs",
-          "sha256": "79f7675c13495fb8b4f91e5b75d33aa3b26ea93890905fc1abedffba4ab59f84"
+          "origin_directory": "vendor/rust/wasm-bindgen-macro-support-0.2.129"
         }
+      ],
+      "roots": [
+        "test/foundation/wasm-binding-macros"
       ]
     },
     {
