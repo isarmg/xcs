@@ -31,6 +31,7 @@ pub(crate) async fn upload_status(
     http_routing::Extension(identity): http_routing::Extension<Identity>,
     ApiPath((workspace, item)): ApiPath<(String, String)>,
 ) -> Result<Json<Value>, ApiError> {
+    state.http_spool()?;
     let read_permit = state.read_slots.acquire(&identity.principal)?;
     let backend_permit = state
         .backend_slots
@@ -118,6 +119,7 @@ pub(crate) async fn upload(
     ApiQuery(query): ApiQuery<UploadQuery>,
     request: Request,
 ) -> Result<Json<Value>, ApiError> {
+    state.http_spool()?;
     let deadline = tokio::time::Instant::now() + state.config.http_transfer_limits.total_timeout;
     tokio::time::timeout_at(
         deadline,
@@ -274,7 +276,7 @@ async fn upload_inner(
     let path = spool.join(&data_file);
     let create_path = path.clone();
     let create_admission = admission.clone();
-    let budget = state.spool_budget.clone();
+    let budget = state.http_spool()?.clone();
     let principal = identity.principal.clone();
     let name = data_file.clone();
     let retry = retry.is_some();

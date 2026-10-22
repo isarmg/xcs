@@ -26,6 +26,23 @@ pub(crate) fn fallback(directory: PathBuf) -> Router {
         .layer(middleware::from_fn(reserve_api_namespace))
 }
 
+pub(crate) fn unavailable_fallback() -> Router {
+    Router::new()
+        .fallback(|| async {
+            let mut response = ApiError::new(
+                503,
+                "WEB_ASSETS_UNAVAILABLE",
+                "Web UI assets are unavailable; management HTTP APIs remain available",
+            )
+            .into_response();
+            response
+                .headers_mut()
+                .insert(header::CACHE_CONTROL, HeaderValue::from_static("no-store"));
+            response
+        })
+        .layer(middleware::from_fn(reserve_api_namespace))
+}
+
 async fn reserve_api_namespace(request: Request, next: Next) -> Response {
     if is_api_path(request.uri().path()) {
         return not_found().await.into_response();
@@ -68,12 +85,36 @@ pub(crate) fn static_etags(root: &Path) -> Result<BTreeMap<String, String>, ApiE
                 if relative == "index.html" {
                     result.insert("/".into(), etag);
                 }
+            } else {
+                return Err(ApiError::invalid(
+                    "web assets must contain only regular files and directories",
+                ));
             }
         }
         Ok(())
     }
+    // Check each normalized component, not a pathname ending in `/` or `/.`:
+    // lstat otherwise follows the final directory link. Root ancestors must not
+    // introduce links either. This is admission, not race-safe file opening.
+    let mut checked_root = PathBuf::new();
+    for component in root.components() {
+        checked_root.push(component);
+        if !checked_root
+            .symlink_metadata()
+            .map_err(ApiError::io)?
+            .is_dir()
+        {
+            return Err(ApiError::invalid(
+                "web asset root must contain only directory components, not links or files",
+            ));
+        }
+    }
+    let root = checked_root.as_path();
     let mut result = BTreeMap::new();
     walk(root, root, &mut result)?;
+    if !result.contains_key("/index.html") {
+        return Err(ApiError::invalid("web asset root must contain index.html"));
+    }
     Ok(result)
 }
 

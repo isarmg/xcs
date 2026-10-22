@@ -332,7 +332,22 @@ impl ServerConfig {
         }
     }
     fn prepare_spool(&self) -> Result<(), ApiError> {
-        std::fs::create_dir_all(&self.spool_dir).map_err(ApiError::io)?;
+        // Do not turn a rejected path into a usable spool or chmod its target.
+        // Strip trailing separators and `/.` before lstat: POSIX otherwise
+        // dereferences a final directory symlink despite symlink_metadata.
+        let spool_dir: PathBuf = self.spool_dir.components().collect();
+        match std::fs::symlink_metadata(&spool_dir) {
+            Ok(metadata) if !metadata.is_dir() => {
+                return Err(ApiError::invalid(
+                    "HTTP spool must be a directory, not a link or file",
+                ));
+            }
+            Ok(_) => (),
+            Err(error) if error.kind() == std::io::ErrorKind::NotFound => {
+                std::fs::create_dir_all(&self.spool_dir).map_err(ApiError::io)?;
+            }
+            Err(error) => return Err(ApiError::io(error)),
+        }
         #[cfg(unix)]
         {
             use std::os::unix::fs::PermissionsExt;
@@ -340,6 +355,19 @@ impl ServerConfig {
                 .map_err(ApiError::io)?;
         }
         Ok(())
+    }
+    fn open_http_spool(&self) -> Option<Arc<spool_budget::SpoolBudget>> {
+        // Configuration validation remains mandatory. Only optional filesystem
+        // preparation/inventory is isolated, and no unbudgeted fallback exists.
+        match self.prepare_spool().and_then(|()| {
+            spool_budget::SpoolBudget::recover(&self.spool_dir, self.http_spool_limits.clone())
+        }) {
+            Ok(budget) => Some(budget),
+            Err(error) => {
+                tracing::error!(%error, "HTTP upload spool unavailable; management HTTP remains available");
+                None
+            }
+        }
     }
     fn secure_cookie(&self) -> bool {
         self.normalized_external_origin()
@@ -417,9 +445,21 @@ struct AppState {
     upload_slots: Arc<transfer_limits::Admission>,
     read_slots: Arc<transfer_limits::Admission>,
     upload_claims: Arc<Mutex<std::collections::BTreeSet<String>>>,
-    spool_budget: Arc<spool_budget::SpoolBudget>,
+    spool_budget: Option<Arc<spool_budget::SpoolBudget>>,
     static_etags: Arc<BTreeMap<String, String>>,
+    web_assets_available: bool,
     telemetry: Arc<telemetry::Telemetry>,
+}
+impl AppState {
+    fn http_spool(&self) -> Result<&Arc<spool_budget::SpoolBudget>, ApiError> {
+        self.spool_budget.as_ref().ok_or_else(|| {
+            ApiError::new(
+                503,
+                "HTTP_UPLOADS_UNAVAILABLE",
+                "HTTP upload staging is unavailable; repair the local spool and restart",
+            )
+        })
+    }
 }
 fn lock<T>(value: &Mutex<T>) -> Result<std::sync::MutexGuard<'_, T>, ApiError> {
     value
@@ -433,7 +473,7 @@ pub fn router(
     config: ServerConfig,
 ) -> Result<Router, ApiError> {
     config.validate()?;
-    config.prepare_spool()?;
+    let spool_budget = config.open_http_spool();
     let telemetry = telemetry::Telemetry::start(
         backend.clone(),
         &config
@@ -448,24 +488,32 @@ pub fn router(
         backend,
         auth: auth.clone(),
     });
-    router_shared(backend, auth, config, telemetry)
+    router_shared(backend, auth, config, telemetry, spool_budget)
 }
 fn router_shared(
     backend: Arc<dyn Backend>,
     auth: Arc<Mutex<AuthStore>>,
     config: ServerConfig,
     telemetry: Arc<telemetry::Telemetry>,
+    spool_budget: Option<Arc<spool_budget::SpoolBudget>>,
 ) -> Result<Router, ApiError> {
     config.validate()?;
+    let static_etags = config.web_dir.as_ref().and_then(|root| {
+        match web_assets::static_etags(root) {
+            Ok(etags) => Some(etags),
+            Err(error) => {
+                tracing::error!(%error, "Web assets unavailable; management HTTP APIs remain available");
+                None
+            }
+        }
+    });
+    let web_assets_available = static_etags.is_some();
     let state = AppState {
         backend,
         auth,
         telemetry,
         config: config.clone(),
-        spool_budget: spool_budget::SpoolBudget::recover(
-            &config.spool_dir,
-            config.http_spool_limits.clone(),
-        )?,
+        spool_budget,
         attempts: Arc::new(Mutex::new(HashMap::new())),
         pending_logins: Arc::new(Mutex::new(std::collections::HashSet::new())),
         password_slots: Arc::new(tokio::sync::Semaphore::new(4)),
@@ -475,10 +523,8 @@ fn router_shared(
         upload_slots: transfer_limits::Admission::new(&config.http_transfer_limits),
         read_slots: transfer_limits::Admission::new(&config.http_transfer_limits),
         upload_claims: Arc::new(Mutex::new(Default::default())),
-        static_etags: Arc::new(match &config.web_dir {
-            Some(root) => web_assets::static_etags(root)?,
-            None => BTreeMap::new(),
-        }),
+        static_etags: Arc::new(static_etags.unwrap_or_default()),
+        web_assets_available,
     };
     let protected = Router::new();
     #[cfg(feature = "core")]
@@ -593,7 +639,11 @@ fn router_shared(
         .method_not_allowed_fallback(http_boundary::method_not_allowed)
         .fallback(http_boundary::not_found);
     if let Some(web_dir) = config.web_dir {
-        app = app.fallback_service(web_assets::fallback(web_dir));
+        app = app.fallback_service(if web_assets_available {
+            web_assets::fallback(web_dir)
+        } else {
+            web_assets::unavailable_fallback()
+        });
     }
     Ok(app
         .layer(DefaultBodyLimit::disable())
@@ -615,7 +665,7 @@ pub async fn serve(
     config: ServerConfig,
 ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     config.validate()?;
-    config.prepare_spool()?;
+    let spool_budget = config.open_http_spool();
     let listener = tokio::net::TcpListener::bind(config.listen).await?;
     let telemetry = telemetry::Telemetry::start(
         backend.clone(),
@@ -635,7 +685,7 @@ pub async fn serve(
     let smb = config.smb.clone();
     let smb_max_file_bytes = config.max_upload_bytes;
     let bridge_auth = auth.clone();
-    let app = router_shared(backend.clone(), auth, config, telemetry)?;
+    let app = router_shared(backend.clone(), auth, config, telemetry, spool_budget)?;
     let http = |stopped: tokio::sync::oneshot::Receiver<()>| async move {
         http_routing::serve(
             listener,
@@ -745,6 +795,12 @@ async fn security_headers(request: Request, next: Next) -> Response {
     let sensitive = http_boundary::is_api_path(request.uri().path())
         || matches!(request.uri().path(), "/healthz" | "/readyz");
     let mut response = next.run(request).await;
+    // Do not weaken an explicit unavailable-capability response's no-store.
+    let no_store = sensitive
+        || response
+            .headers()
+            .get(header::CACHE_CONTROL)
+            .is_some_and(|value| value == "no-store");
     let headers = response.headers_mut();
     headers.insert(
         "x-content-type-options",
@@ -754,7 +810,7 @@ async fn security_headers(request: Request, next: Next) -> Response {
     headers.insert("x-frame-options", HeaderValue::from_static("DENY"));
     headers.insert(
         header::CACHE_CONTROL,
-        HeaderValue::from_static(if sensitive { "no-store" } else { "no-cache" }),
+        HeaderValue::from_static(if no_store { "no-store" } else { "no-cache" }),
     );
     headers.insert("content-security-policy", HeaderValue::from_static("default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self'; font-src 'self'; img-src 'self' data: blob:; connect-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'self'"));
     response
@@ -1021,7 +1077,12 @@ async fn management_status(State(state): State<AppState>) -> Json<Value> {
     };
     Json(
         json!({"management":"alive", "authentication":authentication,
-        "storage":state.backend.management_status()}),
+        "storage":state.backend.management_status(),
+        "auxiliary": {
+            "http_uploads": if state.spool_budget.is_some() { "ready" } else { "unavailable" },
+            "web_assets": if state.config.web_dir.is_none() { "not_configured" }
+                else if state.web_assets_available { "ready" } else { "unavailable" }
+        }}),
     )
 }
 async fn storage_status(

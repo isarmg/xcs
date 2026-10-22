@@ -46,6 +46,9 @@ impl Backend for Probe {
     }
 }
 fn app() -> (tempfile::TempDir, Router, Arc<Probe>) {
+    app_with_auxiliary_failure(false)
+}
+fn app_with_auxiliary_failure(failed: bool) -> (tempfile::TempDir, Router, Arc<Probe>) {
     let temp = tempfile::tempdir().unwrap();
     let data = temp.path().join("system");
     let management = temp.path().join("management");
@@ -66,7 +69,12 @@ fn app() -> (tempfile::TempDir, Router, Arc<Probe>) {
     });
     let auth_root = temp.path().join("http-auth");
     let auth = AuthStore::initialize(&auth_root, "admin", "long-test-password").unwrap();
-    let router = crate::router(probe.clone(), auth, ServerConfig::loopback(&auth_root)).unwrap();
+    let mut config = ServerConfig::loopback(&auth_root);
+    if failed {
+        std::fs::write(&config.spool_dir, "keep this evidence").unwrap();
+        config.web_dir = Some(temp.path().join("missing-web"));
+    }
+    let router = crate::router(probe.clone(), auth, config).unwrap();
     (temp, router, probe)
 }
 fn request(method: &str, path: &str, body: &str) -> http_routing::http::request::Builder {
@@ -229,4 +237,49 @@ async fn setup_http_rate_limits_before_backend_work() {
         .unwrap();
     assert_eq!(limited.status(), StatusCode::TOO_MANY_REQUESTS);
     assert_eq!(probe.mutations.load(Ordering::SeqCst), 0);
+}
+
+#[tokio::test]
+async fn auxiliary_failure_preserves_bootstrap_authorization_and_setup_routes() {
+    let (_temp, app, probe) = app_with_auxiliary_failure(true);
+    for authorized in [false, true] {
+        let mut call = request("GET", "/api/setup/status", "");
+        if authorized {
+            call = call.header("x-zxs-bootstrap", TOKEN);
+        }
+        let response = app
+            .clone()
+            .oneshot(call.body(Body::empty()).unwrap())
+            .await
+            .unwrap();
+        assert_eq!(
+            response.status(),
+            if authorized {
+                StatusCode::OK
+            } else {
+                StatusCode::UNAUTHORIZED
+            }
+        );
+    }
+    for csrf_provided in [false, true] {
+        let mut call =
+            request("POST", "/api/setup/initialize", "{}").header("x-zxs-bootstrap", TOKEN);
+        if csrf_provided {
+            call = call.header("x-csrf-token", csrf(TOKEN));
+        }
+        let response = app
+            .clone()
+            .oneshot(call.body(Body::from("{}")).unwrap())
+            .await
+            .unwrap();
+        assert_eq!(
+            response.status(),
+            if csrf_provided {
+                StatusCode::OK
+            } else {
+                StatusCode::UNAUTHORIZED
+            }
+        );
+    }
+    assert_eq!(probe.mutations.load(Ordering::SeqCst), 1);
 }

@@ -60,3 +60,38 @@ evidence until it returns. Socket shutdown wakes idle RPC reads, but cannot canc
 a filesystem system call. HTTP drain and the Tokio runtime's blocking-worker join
 are therefore not bounded when kernel I/O cannot return; host-level intervention
 may still be required. No shutdown path force-exits the process to claim success.
+
+## Optional HTTP files at startup
+
+HTTP upload staging is optional to management startup. If its directory cannot
+be prepared, locked or safely inventoried, login, accounts, protected setup,
+storage recovery and host diagnostics remain available. Upload and upload-status
+requests return `503 HTTP_UPLOADS_UNAVAILABLE` after normal authentication and
+CSRF admission. There is no unbudgeted or in-memory upload fallback. Existing
+spool files are retained; repair the local cause and restart to recover inventory.
+Immutable content reads do not require the HTTP upload spool.
+
+A configured Web asset tree that is missing, unreadable, incomplete (no
+`index.html`), over admission limits, or contains rejected links/special files
+is not installed as a static file service. Non-API fallback requests instead
+return `503 WEB_ASSETS_UNAVAILABLE` with `no-store`; reserved unknown API paths
+remain JSON 404s. Management HTTP APIs still work, but the browser UI is not
+available without a valid asset bundle. Keep assets on an independently working
+system filesystem to preserve the normal Web interface during data-disk failure.
+
+Public management status includes coarse `auxiliary.http_uploads` and
+`auxiliary.web_assets` startup states (`ready`, `unavailable`; assets may also be
+`not_configured`), without filesystem paths or internal error details. These are
+startup admission results, not continuous probes or a claim of data readiness.
+Listener/origin/proxy/admission validation, credential authority, bootstrap
+capability checks, CSRF and path rules remain mandatory. Security errors outside
+these isolated optional capabilities are not globally ignored.
+
+This startup isolation does not solve the existing static-serving time-of-check /
+time-of-use boundary: the admitted asset tree must remain operator-controlled and
+unchanged while the daemon runs. The current static service reopens pathnames, so
+post-admission replacement (including symlink races) is not safe-open protection.
+The next hardening step is descriptor-relative, no-symlink file opening through
+response completion, including compressed representations and validators, with
+replacement/race tests. A blocked kernel I/O call during startup is also not
+bounded by this change; only completed initialization failures are isolated.

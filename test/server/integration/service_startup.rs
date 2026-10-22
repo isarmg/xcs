@@ -66,7 +66,7 @@ fn response(port: u16, path: &str) -> std::io::Result<String> {
 #[test]
 fn daemon_serves_web_and_liveness_with_missing_or_corrupt_pool() {
     use std::os::unix::fs::DirBuilderExt;
-    for corrupt in [false, true] {
+    for (corrupt, auxiliary_failure) in [(false, false), (true, false), (true, true)] {
         let directory = tempfile::tempdir().unwrap();
         let root = directory.path().join("pool");
         let management = directory.path().join("management");
@@ -79,7 +79,12 @@ fn daemon_serves_web_and_liveness_with_missing_or_corrupt_pool() {
             std::fs::write(root.join("config.json"), "not a valid pool configuration").unwrap();
             std::fs::write(&preset, "not a valid setup preset").unwrap();
         }
-        std::fs::write(web.join("index.html"), "<h1>management-available</h1>").unwrap();
+        if auxiliary_failure {
+            std::fs::write(management.join("api-spool"), "keep this evidence").unwrap();
+            // Empty assets must not advertise a working Web UI.
+        } else {
+            std::fs::write(web.join("index.html"), "<h1>management-available</h1>").unwrap();
+        }
         let reservation = std::net::TcpListener::bind(("127.0.0.1", 0)).unwrap();
         let port = reservation.local_addr().unwrap().port();
         drop(reservation);
@@ -118,8 +123,21 @@ fn daemon_serves_web_and_liveness_with_missing_or_corrupt_pool() {
             std::thread::sleep(std::time::Duration::from_millis(25));
         }
         let page = response(port, "/").unwrap();
-        assert!(page.starts_with("HTTP/1.1 200"), "{page}");
-        assert!(page.contains("management-available"));
+        if auxiliary_failure {
+            assert!(page.starts_with("HTTP/1.1 503"), "{page}");
+            assert!(page.contains("WEB_ASSETS_UNAVAILABLE"));
+            let status = response(port, "/api/management/status").unwrap();
+            assert!(status.starts_with("HTTP/1.1 200"), "{status}");
+            assert!(status.contains("\"http_uploads\":\"unavailable\""));
+            assert!(status.contains("\"web_assets\":\"unavailable\""));
+            assert_eq!(
+                std::fs::read(management.join("api-spool")).unwrap(),
+                b"keep this evidence"
+            );
+        } else {
+            assert!(page.starts_with("HTTP/1.1 200"), "{page}");
+            assert!(page.contains("management-available"));
+        }
         let readiness = response(port, "/readyz").unwrap();
         assert!(readiness.starts_with("HTTP/1.1 503"), "{readiness}");
         assert!(

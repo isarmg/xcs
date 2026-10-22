@@ -713,3 +713,6 @@ mod spool_budget_tests;
 
 #[path = "tests/http_boundary.rs"]
 mod http_boundary_tests;
+
+#[path = "tests/auxiliary_startup.rs"]
+mod auxiliary_startup_tests;
