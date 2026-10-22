@@ -38632,7 +38632,7 @@
     }
   },
   "external_test_mappings_sha256": {
-    "compliance/external-tests/foundation.json": "1da3283aee65be73a2bc5b90ba98747a8532726d5ceaf5bf0b719a2b01927692",
+    "compliance/external-tests/foundation.json": "4506bce6abfffd8f12efb9c22dcd355fdd91caff8e7d44c7f142f4e40c147836",
     "compliance/external-tests/integrated.json": "976578b7514d285c9214c408327f9b344f3c7649b4ae3b63839e8806b4677d96",
     "compliance/external-tests/ring.json": "3e5a834ea832ea11a0da5cdeab898e9c2e2d5229becc1988edc3462cfb51dab1"
   },
@@ -44126,29 +44126,6 @@
       "origin_directory": "vendor/rust/fastrand-2.5.0",
       "roots": [
         "test/foundation/fastrand"
-      ]
-    },
-    "src/foundation/find-msvc-tools": {
-      "bytes": 10214,
-      "directory": "src/foundation/find-msvc-tools",
-      "file_count": 2,
-      "files": [
-        {
-          "path": "test/foundation/find-msvc-tools/unit/src/find_tools/tests_1356.rs",
-          "sha256": "f7f0ca532994d232ccf5bdb25849ad66d0c2ea9db6e430e70495d28a1d0758d3",
-          "source": "src/foundation/find-msvc-tools/src/find_tools.rs",
-          "source_sha256_before": "62862c642802e52167a1d916538cfd165e088bda9bce851522da4405af3b2d4b"
-        },
-        {
-          "path": "test/foundation/find-msvc-tools/unit/src/vs_instances/tests__94.rs",
-          "sha256": "126bcfb09b0ceb90512485f9a08d59a8f42025c0ec92b90a305e31bf78102db8",
-          "source": "src/foundation/find-msvc-tools/src/vs_instances.rs",
-          "source_sha256_before": "4eb906d0ac2970afc03aa42c630ca20e4b9a10250b75677f8f4a59bcc0fb8c9a"
-        }
-      ],
-      "origin_directory": "vendor/rust/find-msvc-tools-0.1.14",
-      "roots": [
-        "test/foundation/find-msvc-tools"
       ]
     },
     "src/foundation/flag-set": {
@@ -65456,7 +65433,7 @@
   },
   "initial_test_relocation_sha256": "791ad728a408677dd54ef98e3feaffe825c5fc5670e888440615933d9498ecc3",
   "lockfiles_sha256": {
-    "Cargo.lock": "d5c94e2ad2e546d395d4e5bd120d04a8090617b1df6d136f4bd7c3a21a6735c3"
+    "Cargo.lock": "419a4299ea50f042af66c7565e9ba358bb2f2cbe7cfd8a018814812157e64523"
   },
   "manifests_sha256": {
     "Cargo.toml": "d4eb9ad428c26f50546105c8704f7ed0b4b75d50632a800c76a3256279001869",
@@ -65489,7 +65466,7 @@
     "src/foundation/bumpalo/Cargo.toml": "ba91475c6116fbee52fe8d5e94de01736a7f4a321c2a5c3a803454cf9c4a9eb7",
     "src/foundation/bytecount/Cargo.toml": "2f5c85dc6f296dcdba075bafc6a2cadb30292083fe0163e458e9ffe7bc07f8f4",
     "src/foundation/bytes/Cargo.toml": "dc580e9f36356c8c45c31b375ec888458c01554f523c928b9c5c6944a7a9f372",
-    "src/foundation/cc/Cargo.toml": "6c54abce29c8b6402d812e6db5e4b527febee4fd55c60cc8c7d4443b4cdc32a6",
+    "src/foundation/cc/Cargo.toml": "25381a2c9080199e8d8bf11a3aba92f97a0be47a35a8ad6028c05b83feccc3bc",
     "src/foundation/cexpr/Cargo.toml": "f1edf129aadabddb43a51c8c24803bded38e6a2948d2d3a9f5f8c1e68d0e6dc2",
     "src/foundation/cfg-if/Cargo.toml": "5e6e62b7a2f061788516151826275f98605b95936d388934ab3e89b3a2fa453e",
     "src/foundation/clang-sys/Cargo.toml": "0b65c0125b0ae44a48e790f7fb12cc9a8d0704573a37df2acfc5da76da9653b2",
@@ -65523,7 +65500,6 @@
     "src/foundation/fallible-iterator/Cargo.toml": "692f59bb96003626649210374e97a557b9a2816c02283e2c829de55da20963c0",
     "src/foundation/fancy-regex/Cargo.toml": "b3031887d58c372eff4f7113449a69dcc313079fc7c57f7a5e1eaed08a1e7496",
     "src/foundation/fastrand/Cargo.toml": "cae6792a5a7309564b7e258f32624287b687068520cede651733a4674c01284c",
-    "src/foundation/find-msvc-tools/Cargo.toml": "bca586d6655f4992269c223c6d39f52d50be7b0b0da526cae9c62e0eb7b0a672",
     "src/foundation/flag-set/Cargo.toml": "5ec9477b48c766e987d64300a2cc2c402402e796d3a4252939a9df52c3d7a5ee",
     "src/foundation/fluent-uri/Cargo.toml": "692c6bf23842b7d50b9c79a92611a1b02881d376508b5c41b369d37e25a0fed9",
     "src/foundation/flume/Cargo.toml": "824eb0ed39b8a1892ad8a71e19f683f9da9535bda5042f250abf3cfde3575fd7",
@@ -75152,13 +75128,13 @@
       "description": "A build-time dependency for Cargo build scripts to assist in invoking the native\nC compiler to compile native C code into a static archive to be linked into Rust\ncode.",
       "directory": "src/foundation/cc",
       "files_sha256": {
-        "Cargo.toml": "6c54abce29c8b6402d812e6db5e4b527febee4fd55c60cc8c7d4443b4cdc32a6",
+        "Cargo.toml": "25381a2c9080199e8d8bf11a3aba92f97a0be47a35a8ad6028c05b83feccc3bc",
         "src/build_env.rs": "364d69ec8fcba67bc107f34da77407079b287bf3f4f25fc390354624792d4897",
-        "src/command_helpers.rs": "d086d7bb62ccb5eb3c0b8af2a9d72c5ebe47b0c0129d9e0bd7bede0cd28822dc",
+        "src/command_helpers.rs": "f741261f760fdb8f86c58a72568ed862d127888dc95385ba9ee739b35b0429a7",
         "src/detect_compiler_family.c": "97ca4b021495611e828becea6187add37414186a16dfedd26c2947cbce6e8b2f",
         "src/detect_cpp_stdlib.cpp": "b2ef811b2eaec1bfa305241d3a2ba26ed4c9898dc3a5a076a4ec6fcab8410540",
         "src/flags.rs": "a729305585c9ce6ead41ece409b36dc0943598ec69053a6dc01511f9c15fcbcb",
-        "src/lib.rs": "026aa8caa8062255857e6a00857e8146445a6571e8a6d12a44324e42557aa7ae",
+        "src/lib.rs": "a006e74b6cece7cd2538aba2a29f997c927b52340158ea86daa67303d8f593dd",
         "src/logger.rs": "b0738f7610acf508b019e0baa91988f5e987b09483a10a47a1a34507b50c6a92",
         "src/parallel/async_executor.rs": "c9e67e2cead83878f4587e21fae5b8d5aa05a4651901e7b3b59636f947a5846f",
         "src/parallel/command_runner.rs": "c8ef0a0676a7a680caa7f9bdf7b6be0373a713631c16cf7678acec4a46187627",
@@ -75173,9 +75149,9 @@
         "src/target/generated.rs": "726791d94043132ad1a04a4eba3a2638db04e6eb52245a0ff6d1cc419b3d0a8b",
         "src/target/llvm.rs": "9e046c4aa14cd7734fd2d34dff6731dd1d4f9a283adc7ce8e76b391ce41e4fa7",
         "src/target/parser.rs": "1ab5d3668b8241813520cf09158b737605429fdf87d2c07252ba99c72f271b22",
-        "src/tempfile.rs": "77963fe55b63d3a30cccae46f763b8d61ed722247fe208e8485858770f6a67f7",
-        "src/tool.rs": "11c1b38baa6bf830b0c538416a409e022cf6d7f14d86b645c70afbcf00d13778",
-        "src/utilities.rs": "b0c8bd8ac0f3c1fabb13eb287038ba7dca1ac4f6a51f815b0f306d42dd34a1be"
+        "src/tempfile.rs": "9a19fd51ffc213d6c1e7fe980e201b3aff6f7d01e4f671aeee4b194c7bc1f84f",
+        "src/tool.rs": "8ccf904ced5f994dd825662a0ac46c5f8c297b110d4814a874cba807288556ab",
+        "src/utilities.rs": "06fc9cc3887e2ed1b382a1d96ad3697622ebec3b0b33eb7038fd668604f717d5"
       },
       "license": "MIT OR Apache-2.0",
       "license_materials": [
@@ -76787,48 +76763,6 @@
         "path_in_vcs": ""
       },
       "version": "2.5.0"
-    },
-    "src/foundation/find-msvc-tools": {
-      "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。",
-      "description": "Find windows-specific tools, read MSVC versions from the registry and from COM interfaces",
-      "directory": "src/foundation/find-msvc-tools",
-      "files_sha256": {
-        "Cargo.toml": "bca586d6655f4992269c223c6d39f52d50be7b0b0da526cae9c62e0eb7b0a672",
-        "src/com.rs": "6706eb2a4d8d1920b66759776a78ab054b493a81dca99a90f96f9e53c0cd1852",
-        "src/find_tools.rs": "66b2977dc7feb807703b4a35c54c0fc0190be415c6606be0004bb7359de2557e",
-        "src/lib.rs": "a2751cf88dc5a60d16a263594e41cdde2e40ae8179ec7dc311ee29fc88209a3b",
-        "src/registry.rs": "2c8f7ed919377df32ab5e55c1af438c542da8d1f6a4f7c9ebf337839d3fd96f5",
-        "src/setup_config.rs": "397bd3c353a22edc4dfa8651b97cdf20e36f70526fda78d9bbf5dced3048f6d1",
-        "src/tool.rs": "83e805a8354278837c474c0907b8dd80c496ae4812b2f777f2b2e4266ba68032",
-        "src/vs_instances.rs": "78422a2ea2d20d2dd9523afc6f84d043fe9f151dec9a3796a0b705e5ad168cb7",
-        "src/winapi.rs": "b2c1db5806205215536dc520a57934418fef6707b39e69996b3f3a9ced7dda7e",
-        "src/windows_link.rs": "5ee6191505a947239f3b50d53989c22d21ef2df86ffffa0ed2ebb2aa7214ae2b",
-        "src/windows_sys.rs": "795f0673c3b384580755f29fc36896e6d14b7ad69bba624a53b18b5852319ba9",
-        "src/windows_sys_bindings.rs": "e20d6365bc11da0cff814527bd9bbb485a7c7d3ed2f445bf177245c9b811bbc8"
-      },
-      "license": "MIT OR Apache-2.0",
-      "license_materials": [
-        "compliance/licenses/upstream/find-msvc-tools-0.1.14/LICENSE-APACHE",
-        "compliance/licenses/upstream/find-msvc-tools-0.1.14/LICENSE-MIT"
-      ],
-      "merged_into": "无；通过统一内部源码源接入",
-      "name": "find-msvc-tools",
-      "origin_directory": "vendor/rust/find-msvc-tools-0.1.14",
-      "repository": "https://github.com/rust-lang/cc-rs",
-      "status": "内部维护源码",
-      "upstream": {
-        "archive_sha256": "aedcfb3409746eddb02b9e19ebda1c3394f759a152e48ee875a0844d1b955484",
-        "archive_url": "https://static.crates.io/crates/find-msvc-tools/find-msvc-tools-0.1.14.crate",
-        "name": "find-msvc-tools",
-        "version": "0.1.14"
-      },
-      "vcs": {
-        "git": {
-          "sha1": "6b0d8e68bf09545a4de9a3cc10efcc0e4b6211bd"
-        },
-        "path_in_vcs": "find-msvc-tools"
-      },
-      "version": "0.1.14"
     },
     "src/foundation/flag-set": {
       "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 2026-10-20：移除不可达条件实现并修复稳定工具链编译诊断；当前逐文件摘要记录本地实现差异。 清理独立演示：移除 5 个独立示例程序及专属输入（6692 字节）；保留文档编译、真实测试及性能基准输入。",
@@ -98742,12 +98676,6 @@
             "runtime"
           ]
         },
-        "src/foundation/find-msvc-tools": {
-          "features": [],
-          "roles": [
-            "compile"
-          ]
-        },
         "src/foundation/flag-set": {
           "features": [
             "std"
@@ -99995,12 +99923,6 @@
             "compile"
           ]
         },
-        "src/foundation/find-msvc-tools": {
-          "features": [],
-          "roles": [
-            "compile"
-          ]
-        },
         "src/foundation/foldhash": {
           "features": [],
           "roles": [
@@ -100749,12 +100671,6 @@
           ]
         },
         "src/foundation/error-definition-macros": {
-          "features": [],
-          "roles": [
-            "compile"
-          ]
-        },
-        "src/foundation/find-msvc-tools": {
           "features": [],
           "roles": [
             "compile"
@@ -101850,12 +101766,6 @@
             "default",
             "std"
           ],
-          "roles": [
-            "compile"
-          ]
-        },
-        "src/foundation/find-msvc-tools": {
-          "features": [],
           "roles": [
             "compile"
           ]
@@ -103917,6 +103827,81 @@
         "path_in_vcs": ""
       },
       "version": "0.1.3"
+    },
+    "src/foundation/find-msvc-tools": {
+      "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。",
+      "description": "Find windows-specific tools, read MSVC versions from the registry and from COM interfaces",
+      "directory": "src/foundation/find-msvc-tools",
+      "files_sha256": {
+        "Cargo.toml": "bca586d6655f4992269c223c6d39f52d50be7b0b0da526cae9c62e0eb7b0a672",
+        "src/com.rs": "6706eb2a4d8d1920b66759776a78ab054b493a81dca99a90f96f9e53c0cd1852",
+        "src/find_tools.rs": "66b2977dc7feb807703b4a35c54c0fc0190be415c6606be0004bb7359de2557e",
+        "src/lib.rs": "a2751cf88dc5a60d16a263594e41cdde2e40ae8179ec7dc311ee29fc88209a3b",
+        "src/registry.rs": "2c8f7ed919377df32ab5e55c1af438c542da8d1f6a4f7c9ebf337839d3fd96f5",
+        "src/setup_config.rs": "397bd3c353a22edc4dfa8651b97cdf20e36f70526fda78d9bbf5dced3048f6d1",
+        "src/tool.rs": "83e805a8354278837c474c0907b8dd80c496ae4812b2f777f2b2e4266ba68032",
+        "src/vs_instances.rs": "78422a2ea2d20d2dd9523afc6f84d043fe9f151dec9a3796a0b705e5ad168cb7",
+        "src/winapi.rs": "b2c1db5806205215536dc520a57934418fef6707b39e69996b3f3a9ced7dda7e",
+        "src/windows_link.rs": "5ee6191505a947239f3b50d53989c22d21ef2df86ffffa0ed2ebb2aa7214ae2b",
+        "src/windows_sys.rs": "795f0673c3b384580755f29fc36896e6d14b7ad69bba624a53b18b5852319ba9",
+        "src/windows_sys_bindings.rs": "e20d6365bc11da0cff814527bd9bbb485a7c7d3ed2f445bf177245c9b811bbc8"
+      },
+      "license": "MIT OR Apache-2.0",
+      "license_materials": [
+        "compliance/licenses/upstream/find-msvc-tools-0.1.14/LICENSE-APACHE",
+        "compliance/licenses/upstream/find-msvc-tools-0.1.14/LICENSE-MIT"
+      ],
+      "merged_into": "无；通过统一内部源码源接入",
+      "name": "find-msvc-tools",
+      "origin_directory": "vendor/rust/find-msvc-tools-0.1.14",
+      "repository": "https://github.com/rust-lang/cc-rs",
+      "retirement": {
+        "bytes": 88579,
+        "category": "unsupported-platform-build-tool",
+        "external_tests": {
+          "bytes": 10214,
+          "directory": "src/foundation/find-msvc-tools",
+          "file_count": 2,
+          "files": [
+            {
+              "path": "test/foundation/find-msvc-tools/unit/src/find_tools/tests_1356.rs",
+              "sha256": "f7f0ca532994d232ccf5bdb25849ad66d0c2ea9db6e430e70495d28a1d0758d3",
+              "source": "src/foundation/find-msvc-tools/src/find_tools.rs",
+              "source_sha256_before": "62862c642802e52167a1d916538cfd165e088bda9bce851522da4405af3b2d4b"
+            },
+            {
+              "path": "test/foundation/find-msvc-tools/unit/src/vs_instances/tests__94.rs",
+              "sha256": "126bcfb09b0ceb90512485f9a08d59a8f42025c0ec92b90a305e31bf78102db8",
+              "source": "src/foundation/find-msvc-tools/src/vs_instances.rs",
+              "source_sha256_before": "4eb906d0ac2970afc03aa42c630ca20e4b9a10250b75677f8f4a59bcc0fb8c9a"
+            }
+          ],
+          "origin_directory": "vendor/rust/find-msvc-tools-0.1.14",
+          "roots": [
+            "test/foundation/find-msvc-tools"
+          ]
+        },
+        "file_count": 12,
+        "reason": "Linux amd64 build hosts and Linux amd64 / wasm32 browser targets never need Windows registry, COM, MSVC installation or Windows SDK discovery. The sole consumer cc now uses retained GNU/Clang discovery and rejects unsupported targets explicitly.",
+        "targets": [
+          "wasm32-unknown-unknown",
+          "x86_64-unknown-linux-gnu"
+        ]
+      },
+      "status": "内部维护源码",
+      "upstream": {
+        "archive_sha256": "aedcfb3409746eddb02b9e19ebda1c3394f759a152e48ee875a0844d1b955484",
+        "archive_url": "https://static.crates.io/crates/find-msvc-tools/find-msvc-tools-0.1.14.crate",
+        "name": "find-msvc-tools",
+        "version": "0.1.14"
+      },
+      "vcs": {
+        "git": {
+          "sha1": "6b0d8e68bf09545a4de9a3cc10efcc0e4b6211bd"
+        },
+        "path_in_vcs": "find-msvc-tools"
+      },
+      "version": "0.1.14"
     },
     "src/foundation/generic-array": {
       "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 2026-10-20：移除不可达条件实现并修复稳定工具链编译诊断；当前逐文件摘要记录本地实现差异。",
@@ -113932,6 +113917,7 @@
     "src/foundation/defmt-parser": "13fb36063c62bb805fbe9a25c5fa8f5867cd67c88399ade25dc43767a9a0b35a",
     "src/foundation/dotenvy": "cd5f14644b5a7aa236d7018bb77f9a1ad3c2fd719762e2320713321205c28e3f",
     "src/foundation/drain_filter_polyfill": "9bd00168d21cdc708296eb316c673e738cfa0a9665c99d49ae248a7331325e99",
+    "src/foundation/find-msvc-tools": "22f05b9809f4d51e48795ad6dbdc885f7ae4ecf86ccd756a5df4c99e1b1b1d4d",
     "src/foundation/generic-array": "3006cfbbf2c7c9706af46cae70553154c1d927d06b011e6866c9f3d4a64b8379",
     "src/foundation/getrandom-0.2.17": "bf48c35770ec28b7c256d25aaca90f7a9824b205547279d536553257dfe18e43",
     "src/foundation/getrandom-0.3.4": "134390924fc2ba79a7633d5166c36f4ff84f84111edcfe0bc576eef4b897c537",

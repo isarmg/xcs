@@ -145,27 +145,6 @@ pub struct Tool {
 }
 
 impl Tool {
-    pub(crate) fn from_find_msvc_tools(
-        tool: ::find_msvc_tools::Tool,
-        inherited_env: EnvSnapshot,
-    ) -> Self {
-        let mut cc_tool = Self::with_family(
-            tool.path().into(),
-            ToolFamily::Msvc {
-                clang_cl: tool.is_clang_cl(),
-            },
-            inherited_env,
-        );
-
-        cc_tool.env = tool
-            .env()
-            .into_iter()
-            .map(|(k, v)| (k.as_os_str().into(), v.as_os_str().into()))
-            .collect();
-
-        cc_tool
-    }
-
     pub(crate) fn new(
         path: PathBuf,
         env: &BuildEnv,
@@ -204,6 +183,7 @@ impl Tool {
     }
 
     /// Explicitly set the `ToolFamily`, skipping name-based detection.
+    #[cfg(test)]
     pub(crate) fn with_family(
         path: PathBuf,
         family: ToolFamily,
@@ -768,4 +748,7 @@ impl ToolFamily {
 }
 
 #[cfg(test)]
-include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/cc/unit/src/tool/tests_770.rs"));
+include!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/../../../test/foundation/cc/unit/src/tool/tests_770.rs"
+));

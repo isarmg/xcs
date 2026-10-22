@@ -56,6 +56,7 @@ def corrected_view(root, view=None):
 
 # Only these explicitly reviewed retired identities may supply historical bytes.
 RETIREMENT_ARCHIVES = {
+    'src/foundation/find-msvc-tools': ('compliance/find-msvc-tools-0.1.14-retirement.json.gz', 'dc48fc5081e57f6e783144ec2e47200367e5d5c907ecff8bde6204e27d1a292c'),
     'src/foundation/convert_case_extras': ('compliance/convert_case_extras-0.2.0-retirement.json.gz', 'aa4b0a2dd745da8f4d7a64627a08ccadcda54974de3e93a2c6187a29c0ba98fe'),
     'src/foundation/getrandom-0.2.17': ('compliance/getrandom-0.2.17-retirement.json.gz', 'f3d9f7987cbb0961c094e884a33938ab3684079d8c23a595c85eca906c36a304'),
     'src/foundation/getrandom-0.3.4': (

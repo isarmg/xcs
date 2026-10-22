@@ -29,27 +29,13 @@ categories = ["development-tools::build-utils"]
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/rust-lang/cc-rs"
 
-[features]
-jobserver = []
-parallel = ["dep:libc"]
-
 [lib]
 name = "cc"
 path = "src/lib.rs"
 
-[dependencies.find-msvc-tools]
-version = "0.1.14"
-path = "../find-msvc-tools"
-
 [dependencies.shell-tokenizer]
 version = "2.0.1"
 path = "../shell-tokenizer"
-
-[target."cfg(unix)".dependencies.libc]
-version = "0.2.168"
-optional = true
-default-features = false
-path = "../libc"
 
 [lints.clippy]
 borrow_as_ptr = "warn"

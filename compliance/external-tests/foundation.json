@@ -5388,26 +5388,6 @@
       ]
     },
     {
-      "directory": "src/foundation/find-msvc-tools",
-      "files": [
-        {
-          "path": "test/foundation/find-msvc-tools/unit/src/find_tools/tests_1356.rs",
-          "sha256": "f7f0ca532994d232ccf5bdb25849ad66d0c2ea9db6e430e70495d28a1d0758d3",
-          "source": "src/foundation/find-msvc-tools/src/find_tools.rs",
-          "source_sha256_before": "62862c642802e52167a1d916538cfd165e088bda9bce851522da4405af3b2d4b"
-        },
-        {
-          "path": "test/foundation/find-msvc-tools/unit/src/vs_instances/tests__94.rs",
-          "sha256": "126bcfb09b0ceb90512485f9a08d59a8f42025c0ec92b90a305e31bf78102db8",
-          "source": "src/foundation/find-msvc-tools/src/vs_instances.rs",
-          "source_sha256_before": "4eb906d0ac2970afc03aa42c630ca20e4b9a10250b75677f8f4a59bcc0fb8c9a"
-        }
-      ],
-      "roots": [
-        "test/foundation/find-msvc-tools"
-      ]
-    },
-    {
       "directory": "src/foundation/flag-set",
       "files": [
         {

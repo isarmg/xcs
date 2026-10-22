@@ -199,7 +199,6 @@ version = "1.12.1"
 name = "cc"
 version = "1.8.0"
 dependencies = [
- "find-msvc-tools",
  "shell-tokenizer",
 ]
 
@@ -436,10 +435,6 @@ dependencies = [
 [[package]]
 name = "fastrand"
 version = "2.5.0"
-
-[[package]]
-name = "find-msvc-tools"
-version = "0.1.14"
 
 [[package]]
 name = "flag-set"

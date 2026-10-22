@@ -10,6 +10,7 @@ case "${1:-}" in
     done
     ;;
   foundation-platform)
+    python3 .github/scripts/check-native-c-toolchain.py
     python3 .github/scripts/check-linux-uapi.py
     python3 tools/rust-sources/check_libc_abi.py
     python3 .github/scripts/check-linux-syscalls.py

@@ -167,10 +167,6 @@ impl CargoOutput {
 pub(crate) struct StderrForwarder {
     inner: Option<(ChildStderr, Vec<u8>)>,
     cargo_output: CargoOutput,
-    #[cfg(feature = "parallel")]
-    is_non_blocking: bool,
-    #[cfg(feature = "parallel")]
-    bytes_available_failed: bool,
     /// number of bytes buffered in inner
     bytes_buffered: usize,
 }
@@ -186,16 +182,7 @@ impl StderrForwarder {
                 .map(|stderr| (stderr, Vec::with_capacity(MIN_BUFFER_CAPACITY))),
             cargo_output: cargo_output.clone(),
             bytes_buffered: 0,
-            #[cfg(feature = "parallel")]
-            is_non_blocking: false,
-            #[cfg(feature = "parallel")]
-            bytes_available_failed: false,
         }
-    }
-
-    #[cfg(feature = "parallel")]
-    pub(crate) fn stderr(&self) -> Option<&ChildStderr> {
-        self.inner.as_ref().map(|inner| &inner.0)
     }
 
     /// Forward the stderr of `cmd` that is available.
@@ -205,48 +192,9 @@ impl StderrForwarder {
         };
 
         loop {
-            // For non-blocking we check to see if there is data available, so we should try to
-            // read at least that much. For blocking, always read at least the minimum amount.
-            #[cfg(not(feature = "parallel"))]
+            // Serial child processes use a blocking pipe. Always reserve room
+            // before reading, including when a long line is already buffered.
             let to_reserve = MIN_BUFFER_CAPACITY;
-            #[cfg(feature = "parallel")]
-            let to_reserve = if self.is_non_blocking && !self.bytes_available_failed {
-                match crate::parallel::stderr::bytes_available(stderr) {
-                    #[cfg(windows)]
-                    Ok(0) => break false,
-                    #[cfg(unix)]
-                    Ok(0) => {
-                        // On Unix, depending on the implementation, we may sometimes get 0 in a
-                        // loop (either there is data available or the pipe is broken), so
-                        // continue with the non-blocking read anyway.
-                        MIN_BUFFER_CAPACITY
-                    }
-                    #[cfg(windows)]
-                    Err(_) => {
-                        // On Windows, if we get an error then the pipe is broken, so flush
-                        // the buffer and bail.
-                        if self.bytes_buffered > 0 {
-                            self.cargo_output
-                                .forward_stderr_line(&buffer[..self.bytes_buffered], cmd);
-                        }
-                        self.inner = None;
-                        break true;
-                    }
-                    #[cfg(unix)]
-                    Err(_) => {
-                        // On Unix, depending on the implementation, we may get spurious
-                        // errors so make a note not to use bytes_available again and try
-                        // the non-blocking read anyway.
-                        self.bytes_available_failed = true;
-                        MIN_BUFFER_CAPACITY
-                    }
-                    #[cfg(target_family = "wasm")]
-                    Err(_) => panic!("bytes_available should always succeed on wasm"),
-                    Ok(bytes_available) => MIN_BUFFER_CAPACITY.max(bytes_available),
-                }
-            } else {
-                MIN_BUFFER_CAPACITY
-            };
             if self.bytes_buffered + to_reserve > buffer.len() {
                 buffer.resize(self.bytes_buffered + to_reserve, 0);
             }
@@ -294,25 +242,6 @@ impl StderrForwarder {
         }
     }
 
-    #[cfg(feature = "parallel")]
-    pub(crate) fn set_non_blocking(&mut self) -> Result<(), Error> {
-        assert!(!self.is_non_blocking);
-
-        #[cfg(unix)]
-        if let Some((stderr, _)) = self.inner.as_ref() {
-            crate::parallel::stderr::set_non_blocking(stderr)?;
-        }
-
-        self.is_non_blocking = true;
-        Ok(())
-    }
-
-    #[cfg(feature = "parallel")]
-    pub(crate) fn forward_all(&mut self, cmd: &Command) {
-        while !self.forward_available(cmd) {}
-    }
-
-    #[cfg(not(feature = "parallel"))]
     fn forward_all(&mut self, cmd: &Command) {
         let forward_result = self.forward_available(cmd);
         assert!(forward_result, "Should have consumed all data");
@@ -719,4 +648,7 @@ impl CommandExt for Command {
 }
 
 #[cfg(test)]
-include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/cc/unit/src/command_helpers/tests_721.rs"));
+include!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/../../../test/foundation/cc/unit/src/command_helpers/tests_721.rs"
+));

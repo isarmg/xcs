@@ -10,9 +10,6 @@ use std::{
     sync::Once,
 };
 
-#[cfg(feature = "parallel")]
-use std::cell::Cell;
-
 use crate::{Error, ErrorKind};
 
 pub(super) struct JoinOsStrs<'a, T> {
@@ -184,6 +181,7 @@ pub(crate) fn cargo_env_var(key: &str) -> Result<String, Error> {
 /// `eq_ignore_ascii_case`), since file names are case insensitive on Windows.
 pub(crate) trait IgnoreAsciiCase {
     fn contains_ignore_ascii_case(&self, needle: &str) -> bool;
+    #[cfg(test)]
     fn starts_with_ignore_ascii_case(&self, prefix: &str) -> bool;
     fn ends_with_ignore_ascii_case(&self, suffix: &str) -> bool;
 }
@@ -197,6 +195,7 @@ impl IgnoreAsciiCase for str {
                 .any(|window| window.eq_ignore_ascii_case(needle.as_bytes()))
     }
 
+    #[cfg(test)]
     fn starts_with_ignore_ascii_case(&self, prefix: &str) -> bool {
         self.as_bytes()
             .get(..prefix.len())
@@ -232,22 +231,8 @@ impl Hasher for HashRecorder {
     }
 }
 
-#[cfg(feature = "parallel")]
-pub(crate) fn cell_modify<T, F, R>(cell: &Cell<T>, f: F) -> R
-where
-    T: Default,
-    F: FnOnce(&mut T) -> R,
-{
-    let mut value = cell.take();
-    let r = f(&mut value);
-    cell.set(value);
-    r
-}
-
-#[cfg(feature = "parallel")]
-pub(crate) fn cell_push<T>(cell: &Cell<Vec<T>>, element: T) {
-    cell_modify(cell, |vec| vec.push(element));
-}
-
 #[cfg(test)]
-include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/cc/unit/src/utilities/tests_252.rs"));
+include!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/../../../test/foundation/cc/unit/src/utilities/tests_252.rs"
+));
