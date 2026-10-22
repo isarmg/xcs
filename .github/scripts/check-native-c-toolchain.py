@@ -45,6 +45,7 @@ def check():
     check_preservation()
     with tempfile.TemporaryDirectory(prefix="zxs-native-c-") as temporary:
         work = Path(temporary)
+        (work / "rust-toolchain.toml").write_bytes((ROOT / "rust-toolchain.toml").read_bytes())
         (work / "src").mkdir()
         (work / "Cargo.toml").write_text(f'''[package]
 name = "native-c-toolchain-regression"

@@ -77,7 +77,10 @@ def main():
     os.environ.setdefault('CARGO_PROFILE_TEST_DEBUG', '0')
     os.environ.setdefault('CARGO_TARGET_DIR', str(ROOT / 'target/async-notification-check'))
     with tempfile.TemporaryDirectory(prefix='async-notification-') as directory:
-        check(Path(directory))
+        work = Path(directory)
+        # Keep Cargo outside the checkout on the toolchain used to install WASM.
+        (work / 'rust-toolchain.toml').write_bytes((ROOT / 'rust-toolchain.toml').read_bytes())
+        check(work)
     print('Async notification capability and consumer contracts passed.')
 
 

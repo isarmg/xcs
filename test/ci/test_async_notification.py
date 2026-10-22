@@ -1,6 +1,7 @@
 """Keep asynchronous notification gates strict and capability scoped."""
 import importlib.util
 import json
+import os
 from pathlib import Path
 import subprocess
 import tomllib
@@ -14,6 +15,23 @@ SPEC.loader.exec_module(gate)
 
 
 class AsyncNotificationGateTests(unittest.TestCase):
+    def test_temporary_fixture_inherits_toolchain_before_first_cargo_command(self):
+        class FirstCargoCommand(Exception):
+            pass
+
+        def first_command(args, directory, **kwargs):
+            self.assertEqual(
+                (Path(directory) / 'rust-toolchain.toml').read_bytes(),
+                (ROOT / 'rust-toolchain.toml').read_bytes(),
+            )
+            self.assertEqual(args, ['generate-lockfile', '--offline'])
+            raise FirstCargoCommand
+
+        with patch.dict(os.environ), patch.object(gate, 'run', side_effect=first_command) as run:
+            with self.assertRaises(FirstCargoCommand):
+                gate.main()
+        run.assert_called_once()
+
     def test_registered_once(self):
         entry = {'tool': 'python3', 'args': ['.github/scripts/check-async-notification.py']}
         rows = json.loads((ROOT / 'test/ci/foundation-commands.json').read_text())
