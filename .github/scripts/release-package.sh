@@ -14,7 +14,7 @@ trap 'rm -rf "$work"' EXIT
 python3 .github/scripts/verify-web-dist.py --root "$PWD" --stage "$work/snapshot"
 material=(compliance README.md docs)
 tar -czf "$work/native.tar.gz" \
-  -C "$work/snapshot/native" zxs -C "$work/snapshot/material" "${material[@]}"
+  -C "$work/snapshot/native" zxs zxs-rescue -C "$work/snapshot/material" "${material[@]}"
 tar -czf "$work/web.tar.gz" \
   --exclude=./compliance -C "$work/snapshot/web" . -C "$work/snapshot/material" "${material[@]}"
 [[ ! -L release-assets ]]

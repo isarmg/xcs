@@ -4,8 +4,8 @@
 
 ## 部署前条件
 
-- 创建专用 `zxs` 服务账户；程序和 Web 发行件安装在其不可写的 `/opt/zxs` 下。`/var/lib/zxs`、受保护 socket 父目录及每个已登记盘根要求服务账户拥有的 `0700` 权限，文件默认 `0600`。初始化在服务停止时以 `zxs` 身份使用正式生产配置执行，不能把开发模式目录当作三块物理盘。
-- 各盘是独立物理设备上的独立 Btrfs，已经由管理员按 UUID 挂载。按真实配置调整 `RequiresMountsFor=` 与 `ReadWritePaths=`，所有已登记数据盘都要列入；不能把挂载失败后的普通空目录当作磁盘。核心另外核对设备、UUID、根目录身份和登记封口。
+- 创建专用 `zxs` 服务账户；程序和 Web 发行件安装在其不可写的 `/opt/zxs` 下。`/var/lib/zxs`、受保护 socket 父目录及每个已登记盘根要求服务账户拥有的 `0700` 权限，文件默认 `0600`。首次初始化通过运行中的受保护 Web 引导执行，由服务独占初始化门控；操作员预先批准盘位与引导授权。不能把开发模式目录当作三块物理盘。
+- 各盘是独立物理设备上的独立 Btrfs，已经由管理员按 UUID 挂载。不要用 `RequiresMountsFor=` 或数据配置文件的启动前检查阻止管理服务启动。按真实配置调整 `ReadWritePaths=`，数据盘路径加 `-` 前缀允许缺失挂载点；不能把挂载失败后的普通空目录当作磁盘。核心另外核对设备、UUID、根目录身份和登记封口。
 - 日常账户不能打开原始块设备或数据盘目录。部署者需要单独设置设备访问和自动挂载策略，关闭会把业务盘重新暴露给普通用户的桌面自动挂载流程。`PrivateMounts=yes` 不会自动撤销宿主机原有目录或设备权限。
 - SQLite 是可重建索引；不要只备份 SQLite。保护元数据、配置和凭据的恢复材料均按项目恢复流程处理。敏感内容不通过环境变量、命令行或 systemd 单元传入。
 
@@ -20,9 +20,21 @@
 ```ini
 [Service]
 ExecStart=
-ExecStart=/opt/zxs/bin/zxs --root /var/lib/zxs/state serve --listen 127.0.0.1:7400 --external-origin https://zxs.example.com --web-dir /opt/zxs/web --smb-socket /run/zxs/smb.sock --smb-peer-uid 0 --smb-user SambaAlice=alice
+ExecStart=/opt/zxs/bin/zxs --root /var/lib/zxs/state --management-root /var/lib/zxs/management --listen 127.0.0.1:7400 --external-origin https://zxs.example.com --web-dir /opt/zxs/web --smb-socket /run/zxs/smb.sock --smb-peer-uid 0 --smb-user SambaAlice=alice
 ```
 
 示例的 `0` 只适用于确认桥接在 Samba 可信 root 进程身份下连接的部署。该连接时机必须在目标 Samba 验证，不能放宽 socket 权限来适应未认证的进程。`/run/zxs` 及 socket 分别维持 `0700`、`0600`，映射用户仍需当前账户准入和仓库授权。共享仓库拆分、恢复后必须显式重新绑定，不能自动接入迁移后的历史域。
 
-服务使用 `SIGINT` 触发当前 CLI 的正常退出路径。停止时释放 socket 和文件句柄；未成功保存的完整工作文件及恢复记录保留。崩溃遗留的 socket 不自动删除，管理员确认路径身份和无存活服务后再清理。不要配置无条件删除 socket 或清空暂存目录的启动脚本。
+服务使用 `SIGINT` 触发守护进程的正常退出路径。停止时释放 socket 和文件句柄；未成功保存的完整工作文件及恢复记录保留。崩溃遗留的 socket 不自动删除，管理员确认路径身份和无存活服务后再清理。不要配置无条件删除 socket 或清空暂存目录的启动脚本。
+
+## 数据盘故障与管理面
+
+`zxs` 直接启动 HTTP/Web，不再需要 `serve` 子命令。管理目录、凭据、HTTP 暂存与监控位于系统盘的 `--management-root`；示例与池系统目录分开。数据引擎后台尝试打开，失败不能阻止静态 Web 和管理状态页。数据业务仍拒绝不安全请求，不会因 Web 可用而绕过元数据仲裁或自动重置池。系统盘本身不可用、监听端口错误、Web 静态目录无效等仍可阻止服务启动。
+
+生产启动前必须保持挂载目录身份和权限安全。`-` 路径选项只允许路径缺失，不代表空目录是一块有效磁盘；引擎仍验证登记身份。如果启动时目标缺失而被跳过，后来出现的挂载不能据此视为已经可见或可写；在宿主机恢复挂载后应重启服务，并在服务私有挂载命名空间中核对可见性、写权限和设备身份。此样例未做真实热插拔验收，也不自动挂载或格式化设备。
+
+## 受保护的首次 Web 初始化
+
+样例通过三个 `--setup-disk ID=PATH` 显式列出可用于初始化的磁盘，浏览器只能提交这些 ID，不能指定任意服务器路径。生产默认要求独立设备上的有效 Btrfs 挂载；不要在生产加 `--allow-development-setup`。初始化之前由部署者在管理目录私下配置 `bootstrap.key`：服务账户所有、普通单链接文件、0600、恰好 64 个十六进制字节且无换行；按 mtime 30 分钟有效。密钥不应放入命令行、日志或环境变量，Web 提交还需精确 Origin 和 CSRF 校验。数据盘失败或缺少密钥不会自动创建管理员或新池。
+
+高级初始拓扑可通过本机审查的私有配置文件预置：在服务参数中追加 `--setup-config layout=/etc/zxs/layout.json`，同时为配置内的每个磁盘声明 `--setup-disk`。配置文件由服务 UID 拥有、0400/0600、普通单链接文件；不得把凭据放进此配置。Web 只选择不透明方案 ID，不接受任意路径或 JSON。仅授权提交选定方案时读取文件，预置缺失/损坏不阻止 HTTP 启动。草稿生成与安全离线编辑见[救援配置子域](../../components/rescue.md)。

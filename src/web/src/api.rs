@@ -175,10 +175,20 @@ fn js_error(value: JsValue) -> Error {
 struct Fetched {
     response: Response,
     credential_generation: u64,
+    revoke_on_unauthorized: bool,
     _timeout: gloo_timers::callback::Timeout,
 }
 
 async fn fetch(method: &str, path: &str, body: Option<Value>) -> Result<Fetched, Error> {
+    fetch_authorized(method, path, body, None).await
+}
+
+async fn fetch_authorized(
+    method: &str,
+    path: &str,
+    body: Option<Value>,
+    bootstrap: Option<(&str, Option<&str>)>,
+) -> Result<Fetched, Error> {
     validate_path(path)?;
     let controller = web_sys::AbortController::new().map_err(js_error)?;
     let options = RequestInit::new();
@@ -199,14 +209,29 @@ async fn fetch(method: &str, path: &str, body: Option<Value>) -> Result<Fetched,
         .headers()
         .set("Content-Type", "application/json")
         .map_err(js_error)?;
+    if let Some((key, csrf)) = bootstrap {
+        request
+            .headers()
+            .set("X-ZXS-Bootstrap", key)
+            .map_err(js_error)?;
+        if let Some(csrf) = csrf {
+            request
+                .headers()
+                .set("X-CSRF-Token", csrf)
+                .map_err(js_error)?;
+        }
+    }
     let credentials = CREDENTIALS.with(|saved| saved.borrow().clone());
-    if let Some(token) = credentials.token.as_ref() {
+    if bootstrap.is_none()
+        && let Some(token) = credentials.token.as_ref()
+    {
         request
             .headers()
             .set("Authorization", &format!("Bearer {token}"))
             .map_err(js_error)?;
     }
-    if !matches!(method, "GET" | "HEAD")
+    if bootstrap.is_none()
+        && !matches!(method, "GET" | "HEAD")
         && let Some(token) = credentials.csrf.as_ref()
     {
         request
@@ -227,6 +252,7 @@ async fn fetch(method: &str, path: &str, body: Option<Value>) -> Result<Fetched,
     Ok(Fetched {
         response: result?.dyn_into().map_err(js_error)?,
         credential_generation: credentials.generation,
+        revoke_on_unauthorized: bootstrap.is_none(),
         _timeout: timer,
     })
 }
@@ -274,7 +300,7 @@ async fn read_body_inner(response: &Response, limit: usize) -> Result<Vec<u8>, E
 
 async fn decode(fetched: Fetched) -> Result<Value, Error> {
     let status = fetched.response.status();
-    if status == 401 {
+    if status == 401 && fetched.revoke_on_unauthorized {
         CREDENTIALS.with(|saved| saved.borrow_mut().revoke(fetched.credential_generation));
     }
     if fetched
@@ -310,6 +336,35 @@ async fn decode(fetched: Fetched) -> Result<Value, Error> {
 pub async fn request(method: &str, path: &str, body: Option<Value>) -> Result<Value, Error> {
     validate_path(path)?;
     decode(fetch(method, path, body).await?).await
+}
+
+/// A bootstrap secret is scoped to the explicit same-origin setup endpoints and never saved.
+pub(crate) async fn setup_request(
+    method: &str,
+    path: &str,
+    body: Option<Value>,
+    key: &str,
+    csrf: Option<&str>,
+) -> Result<Value, Error> {
+    if !matches!(
+        (method, path),
+        ("GET", "/api/setup/status")
+            | ("POST", "/api/setup/initialize")
+            | ("POST", "/api/setup/initialize-preset")
+            | ("POST", "/api/setup/complete-initialization")
+            | ("POST", "/api/setup/preset-preview")
+    ) || key.len() != 64
+        || !key.bytes().all(|byte| byte.is_ascii_hexdigit())
+    {
+        return Err(error(
+            "INVALID_SETUP_REQUEST",
+            t(
+                "请输入服务器本地提供的 64 位授权密钥。",
+                "Enter the 64-character authorization key provided locally on the server.",
+            ),
+        ));
+    }
+    decode(fetch_authorized(method, path, body, Some((key, csrf))).await?).await
 }
 
 pub async fn login(username: &str, password: &str) -> Result<Value, Error> {

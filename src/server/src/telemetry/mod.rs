@@ -59,6 +59,8 @@ pub(super) struct Snapshot {
     cpu: CpuStatus,
     memory: MemoryStatus,
     disks: Vec<DiskStatus>,
+    #[serialization(default)]
+    disk_sampling_unavailable: bool,
 }
 
 /// One object per service retains true interval baselines. First CPU usage and
@@ -179,11 +181,16 @@ impl Telemetry {
     }
 
     fn collect(&self) -> Result<Sample, ApiError> {
+        // Host diagnostics must remain useful when the storage pool cannot open.
         let disks = self
             .backend
-            .observe_disks(&crate::InternalDiskObservation(()))?;
-        let disks = json_codec::from_value::<Vec<DiskStatus>>(disks["disks"].clone())
-            .map_err(|_| unavailable("disk sampling is unavailable"))?;
+            .observe_disks(&crate::InternalDiskObservation(()))
+            .and_then(|value| {
+                json_codec::from_value::<Vec<DiskStatus>>(value["disks"].clone())
+                    .map_err(|_| unavailable("disk sampling is unavailable"))
+            });
+        let disk_sampling_unavailable = disks.is_err();
+        let disks = disks.unwrap_or_default();
         let (cpu, memory) = self
             .sampler
             .lock()
@@ -199,6 +206,7 @@ impl Telemetry {
                 cpu,
                 memory,
                 disks,
+                disk_sampling_unavailable,
             },
         })
     }
@@ -296,7 +304,7 @@ fn require_current_administrator(
     identity: &Identity,
 ) -> Result<(), ApiError> {
     crate::lock(auth)?
-        .identity_for_principal(&identity.principal)?
+        .revalidate_identity(identity)?
         .require_admin()
 }
 

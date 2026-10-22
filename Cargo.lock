@@ -180,6 +180,7 @@ dependencies = [
  "base64",
  "json-codec",
  "storage-engine",
+ "storage-server",
  "tempfile",
 ]
 
@@ -1412,23 +1413,6 @@ name = "stable_deref_trait"
 version = "1.2.1"
 
 [[package]]
-name = "storage-admin"
-version = "0.1.0"
-dependencies = [
- "authentication",
- "command-line",
- "data-serialization",
- "json-codec",
- "platform-io",
- "rustix",
- "storage-engine",
- "storage-server",
- "tempfile",
- "tokio",
- "tracing",
-]
-
-[[package]]
 name = "storage-client"
 version = "0.1.0"
 dependencies = [
@@ -1480,12 +1464,28 @@ dependencies = [
 ]
 
 [[package]]
+name = "storage-rescue"
+version = "0.1.0"
+dependencies = [
+ "authentication",
+ "command-line",
+ "data-serialization",
+ "json-codec",
+ "platform-io",
+ "rustix",
+ "storage-engine",
+ "storage-server",
+ "tempfile",
+]
+
+[[package]]
 name = "storage-server"
 version = "0.1.0"
 dependencies = [
  "authentication",
  "blake3",
  "bytes",
+ "command-line",
  "data-serialization",
  "date-time",
  "futures",

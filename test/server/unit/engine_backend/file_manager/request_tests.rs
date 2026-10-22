@@ -91,6 +91,7 @@ fn malformed_lazy_root_requests_do_not_publish_any_state() {
         ]);
         let mut engine = Engine::initialize(&root.path().join("system"), config).unwrap();
         let identity = Identity {
+            admission_session: None,
             principal: "owner".into(),
             admin: true,
             repositories: BTreeSet::new(),
@@ -122,6 +123,7 @@ fn missing_targets_and_cross_namespace_moves_do_not_create_a_disk_root() {
     )
     .unwrap();
     let identity = Identity {
+        admission_session: None,
         principal: "owner".into(),
         admin: true,
         repositories: BTreeSet::new(),
@@ -185,6 +187,7 @@ fn valid_creation_and_upload_still_create_the_lazy_root() {
         )
         .unwrap();
         let identity = Identity {
+            admission_session: None,
             principal: "owner".into(),
             admin: true,
             repositories: BTreeSet::new(),
@@ -226,6 +229,7 @@ fn baseline_name_and_used_operation_are_rejected_before_root_initialization() {
     )
     .unwrap();
     let identity = Identity {
+        admission_session: None,
         principal: "owner".into(),
         admin: true,
         repositories: BTreeSet::new(),

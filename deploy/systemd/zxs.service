@@ -1,8 +1,7 @@
 [Unit]
-Description=ZXS full-file storage API
+Description=ZXS Web management and storage daemon
 Documentation=file:/opt/zxs/README.md
 After=local-fs.target network.target
-RequiresMountsFor=/srv/zxs/disks/P01 /srv/zxs/disks/B01 /srv/zxs/disks/C01
 
 [Service]
 Type=simple
@@ -14,8 +13,7 @@ StateDirectoryMode=0700
 RuntimeDirectory=zxs
 RuntimeDirectoryMode=0700
 WorkingDirectory=/var/lib/zxs
-ExecStartPre=/usr/bin/test -f /var/lib/zxs/state/config.json
-ExecStart=/opt/zxs/bin/zxs --root /var/lib/zxs/state serve --listen 127.0.0.1:7400 --external-origin https://zxs.example.com --web-dir /opt/zxs/web
+ExecStart=/opt/zxs/bin/zxs --root /var/lib/zxs/state --management-root /var/lib/zxs/management --listen 127.0.0.1:7400 --external-origin https://zxs.example.com --web-dir /opt/zxs/web --setup-disk P01=/srv/zxs/disks/P01 --setup-disk B01=/srv/zxs/disks/B01 --setup-disk C01=/srv/zxs/disks/C01
 KillSignal=SIGINT
 TimeoutStopSec=60
 Restart=on-failure
@@ -27,7 +25,7 @@ PrivateMounts=yes
 PrivateTmp=yes
 ProtectSystem=strict
 ProtectHome=yes
-ReadWritePaths=/var/lib/zxs /run/zxs /srv/zxs/disks/P01 /srv/zxs/disks/B01 /srv/zxs/disks/C01
+ReadWritePaths=/var/lib/zxs /run/zxs -/srv/zxs/disks/P01 -/srv/zxs/disks/B01 -/srv/zxs/disks/C01
 DevicePolicy=closed
 ProtectKernelTunables=yes
 ProtectKernelModules=yes

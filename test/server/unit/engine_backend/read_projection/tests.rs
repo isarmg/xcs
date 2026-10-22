@@ -22,6 +22,7 @@ fn fixture() -> (
         .create_repository("Projection", "P01", 3, "owner", &new_id("op"))
         .unwrap();
     let identity = Identity {
+        admission_session: None,
         principal: "owner".into(),
         admin: false,
         repositories: BTreeSet::from([repo.repository_id.clone()]),

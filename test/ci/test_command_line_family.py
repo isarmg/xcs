@@ -24,8 +24,8 @@ class NamingGate(unittest.TestCase):
             (p / 'Cargo.toml').write_text(f'''[package]\nname="{new}"\n[lib]\nname="{new.replace('-', '_')}"\n''')
             (p / 'src/lib.rs').write_text('attributes(command, arg, group)' if new == 'command-derive' else 'mod lexer;')
             packages['src/foundation/' + new] = {'directory': 'src/foundation/' + new, 'origin_directory': old + '-4.6.7'}
-        for name in ('main.rs', 'args.rs'):
-            p = self.root / 'src/admin/src' / name
+        for component in ('server', 'rescue'):
+            p = self.root / 'src' / component / 'src/main.rs'
             p.parent.mkdir(parents=True, exist_ok=True)
             p.write_text('use command_line::Parser;')
         (self.root / 'compliance').mkdir()

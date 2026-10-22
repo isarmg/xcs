@@ -5,6 +5,10 @@ pub mod engine_backend;
 mod file_manager;
 mod http_auth;
 mod http_boundary;
+#[cfg(feature = "core")]
+pub mod management;
+#[cfg(feature = "core")]
+pub mod setup_recovery;
 pub use http_boundary::ApiError;
 pub mod smb_rpc;
 mod spool_budget;
@@ -125,6 +129,25 @@ fn verify_content_file(
 pub struct InternalDiskObservation(());
 
 pub trait Backend: Send + Sync {
+    fn setup_operation(
+        &self,
+        _action: &'static str,
+        _input: Value,
+        _bootstrap: Option<&str>,
+        _identity: Option<&Identity>,
+    ) -> Result<Value, ApiError> {
+        Err(ApiError::unsupported())
+    }
+
+    /// Called after system authentication has been placed in shared state.
+    fn start_management(&self, _auth: Arc<Mutex<AuthStore>>) {}
+    fn management_status(&self) -> Value {
+        json!({"state":"ready","retryable":false})
+    }
+    fn retry_storage(&self, _identity: &Identity) -> Result<Value, ApiError> {
+        Err(ApiError::unsupported())
+    }
+
     fn call(
         &self,
         action: crate::BackendAction,
@@ -181,10 +204,31 @@ struct AuthorizedBackend {
 }
 impl AuthorizedBackend {
     fn current(&self, identity: &Identity) -> Result<Identity, ApiError> {
-        lock(&self.auth)?.identity_for_principal(&identity.principal)
+        lock(&self.auth)?.revalidate_identity(identity)
     }
 }
 impl Backend for AuthorizedBackend {
+    fn setup_operation(
+        &self,
+        action: &'static str,
+        input: Value,
+        bootstrap: Option<&str>,
+        identity: Option<&Identity>,
+    ) -> Result<Value, ApiError> {
+        let current = identity
+            .map(|identity| self.current(identity))
+            .transpose()?;
+        self.backend
+            .setup_operation(action, input, bootstrap, current.as_ref())
+    }
+
+    fn management_status(&self) -> Value {
+        self.backend.management_status()
+    }
+    fn retry_storage(&self, identity: &Identity) -> Result<Value, ApiError> {
+        self.backend.retry_storage(&self.current(identity)?)
+    }
+
     fn call(
         &self,
         action: crate::BackendAction,
@@ -366,6 +410,7 @@ struct AppState {
     pending_logins: Arc<Mutex<std::collections::HashSet<String>>>,
     password_slots: Arc<tokio::sync::Semaphore>,
     backend_slots: Arc<tokio::sync::Semaphore>,
+    management_slots: Arc<tokio::sync::Semaphore>,
     upload_slots: Arc<transfer_limits::Admission>,
     read_slots: Arc<transfer_limits::Admission>,
     upload_claims: Arc<Mutex<std::collections::BTreeSet<String>>>,
@@ -395,6 +440,7 @@ pub fn router(
             .join("telemetry-cache"),
     )?;
     let auth = Arc::new(Mutex::new(auth));
+    backend.start_management(auth.clone());
     let backend = Arc::new(AuthorizedBackend {
         backend,
         auth: auth.clone(),
@@ -421,6 +467,7 @@ fn router_shared(
         pending_logins: Arc::new(Mutex::new(std::collections::HashSet::new())),
         password_slots: Arc::new(tokio::sync::Semaphore::new(4)),
         backend_slots: Arc::new(tokio::sync::Semaphore::new(HTTP_BACKEND_SLOTS)),
+        management_slots: Arc::new(tokio::sync::Semaphore::new(2)),
         upload_slots: transfer_limits::Admission::new(&config.http_transfer_limits),
         read_slots: transfer_limits::Admission::new(&config.http_transfer_limits),
         upload_claims: Arc::new(Mutex::new(Default::default())),
@@ -429,8 +476,13 @@ fn router_shared(
             None => BTreeMap::new(),
         }),
     };
-    let protected = Router::new()
+    let protected = Router::new();
+    #[cfg(feature = "core")]
+    let protected = protected.merge(setup_recovery::protected_routes());
+    let protected = protected
         .merge(file_manager::routes())
+        .route("/api/system/storage", get(storage_status))
+        .route("/api/system/storage/retry", post(storage_retry))
         .route("/api/system/status", get(telemetry::status))
         .route("/api/system/history", get(telemetry::history))
         .route("/api/auth/me", get(me))
@@ -521,13 +573,17 @@ fn router_shared(
         .route("/api/events", get(events))
         .route("/api/compare", post(compare))
         .route_layer(middleware::from_fn_with_state(state.clone(), authorize));
-    let mut app = Router::new()
+    let app = Router::new();
+    #[cfg(feature = "core")]
+    let app = app.merge(setup_recovery::public_routes());
+    let mut app = app
         .merge(protected)
         .route(
             "/healthz",
             get(|| async { Json(json!({"status":"alive"})) }),
         )
         .route("/readyz", get(ready))
+        .route("/api/management/status", get(management_status))
         .route("/api/capabilities", get(capabilities))
         .route("/api/auth/login", post(login))
         .method_not_allowed_fallback(http_boundary::method_not_allowed)
@@ -562,32 +618,14 @@ pub async fn serve(
             .join("telemetry-cache"),
     )?;
     let auth = Arc::new(Mutex::new(auth));
+    backend.start_management(auth.clone());
     let backend: Arc<dyn Backend> = Arc::new(AuthorizedBackend {
         backend,
         auth: auth.clone(),
     });
+    // Keep optional bridge setup isolated from management lifecycle failures.
     let smb = config.smb.clone();
-    let mut identities = BTreeMap::new();
-    if let Some(smb) = &smb {
-        for (alias, principal) in &smb.users {
-            identities.insert(
-                alias.clone(),
-                lock(&auth)?.identity_for_principal(principal)?,
-            );
-        }
-        let parent = smb
-            .socket
-            .parent()
-            .ok_or("SMB socket needs a parent directory")?;
-        if !parent.exists() {
-            std::fs::create_dir_all(parent)?;
-            #[cfg(unix)]
-            {
-                use std::os::unix::fs::PermissionsExt;
-                std::fs::set_permissions(parent, std::fs::Permissions::from_mode(0o700))?;
-            }
-        }
-    }
+    let bridge_auth = auth.clone();
     let app = router_shared(backend.clone(), auth, config, telemetry)?;
     let http = async move {
         http_routing::serve(
@@ -598,7 +636,46 @@ pub async fn serve(
         .await
     };
     if let Some(smb) = smb {
-        tokio::select! {result=http=>result?,result=smb_rpc::serve(&smb.socket,smb.allowed_uid,identities,backend)=>result?}
+        let bridge = tokio::spawn(async move {
+            let run = async move {
+                // Recovery may import credentials after HTTP is already online.
+                // Until then no SMB identity is admitted.
+                loop {
+                    if lock(&bridge_auth)?.is_available() {
+                        break;
+                    }
+                    tokio::time::sleep(std::time::Duration::from_secs(1)).await;
+                }
+                let mut identities = BTreeMap::new();
+                for (alias, principal) in &smb.users {
+                    identities.insert(
+                        alias.clone(),
+                        lock(&bridge_auth)?.identity_for_principal(principal)?,
+                    );
+                }
+                let parent = smb
+                    .socket
+                    .parent()
+                    .ok_or_else(|| ApiError::invalid("SMB socket needs a parent directory"))?;
+                if !parent.exists() {
+                    std::fs::create_dir_all(parent).map_err(ApiError::io)?;
+                    #[cfg(unix)]
+                    {
+                        use std::os::unix::fs::PermissionsExt;
+                        std::fs::set_permissions(parent, std::fs::Permissions::from_mode(0o700))
+                            .map_err(ApiError::io)?;
+                    }
+                }
+                smb_rpc::serve(&smb.socket, smb.allowed_uid, identities, backend)
+                    .await
+                    .map_err(|_| ApiError::new(503, "SMB_UNAVAILABLE", "SMB bridge stopped"))
+            };
+            if let Err(error) = run.await {
+                tracing::error!(%error, "SMB bridge stopped; management HTTP remains available");
+            }
+        });
+        http.await?;
+        bridge.abort();
     } else {
         http.await?;
     }
@@ -655,6 +732,25 @@ async fn call(
     tokio::task::spawn_blocking(move || {
         // The job, including time queued in Tokio, owns admission. Dropping the
         // HTTP future must not release capacity while blocking work continues.
+        let _permit = permit;
+        state.backend.call(action, &identity, input)
+    })
+    .await
+    .map_err(ApiError::join)?
+    .map(Json)
+}
+async fn management_call(
+    state: AppState,
+    identity: Identity,
+    action: crate::BackendAction,
+    input: Value,
+) -> Result<Json<Value>, ApiError> {
+    let permit = state
+        .management_slots
+        .clone()
+        .try_acquire_owned()
+        .map_err(|_| ApiError::limit("management capacity reached"))?;
+    tokio::task::spawn_blocking(move || {
         let _permit = permit;
         state.backend.call(action, &identity, input)
     })
@@ -873,22 +969,46 @@ id_post_handler!(
 id_post_handler!(plan_commit, crate::BackendAction::PlanCommit, "plan_id");
 id_post_handler!(plan_cancel, crate::BackendAction::PlanCancel, "plan_id");
 
+async fn management_status(State(state): State<AppState>) -> Json<Value> {
+    let available = lock(&state.auth).is_ok_and(|auth| auth.is_available());
+    Json(
+        json!({"management":"alive", "authentication":if available {"ready"} else {"recovery_required"},
+        "storage":state.backend.management_status()}),
+    )
+}
+async fn storage_status(
+    State(state): State<AppState>,
+    http_routing::Extension(identity): http_routing::Extension<Identity>,
+) -> Result<Json<Value>, ApiError> {
+    identity.require_admin()?;
+    Ok(Json(state.backend.management_status()))
+}
+async fn storage_retry(
+    State(state): State<AppState>,
+    http_routing::Extension(identity): http_routing::Extension<Identity>,
+) -> Result<Json<Value>, ApiError> {
+    identity.require_admin()?;
+    state.backend.retry_storage(&identity).map(Json)
+}
+
 async fn ready(State(state): State<AppState>) -> Result<Json<Value>, ApiError> {
     let identity = Identity {
+        admission_session: None,
         principal: "health".into(),
         admin: false,
         repositories: Default::default(),
     };
-    call(state, identity, crate::BackendAction::Ready, json!({})).await
+    management_call(state, identity, crate::BackendAction::Ready, json!({})).await
 }
 async fn capabilities(State(state): State<AppState>) -> Result<Json<Value>, ApiError> {
     let identity = Identity {
+        admission_session: None,
         principal: "anonymous".into(),
         admin: false,
         repositories: Default::default(),
     };
     let limit = state.config.max_upload_bytes;
-    let Json(mut value) = call(
+    let Json(mut value) = management_call(
         state,
         identity,
         crate::BackendAction::Capabilities,

@@ -1,9 +1,12 @@
+mod admin;
 mod api;
 mod files;
 mod format;
 mod history;
 mod icons;
+mod management;
 mod monitor;
+mod setup;
 mod ui;
 
 use wasm_bindgen::prelude::*;

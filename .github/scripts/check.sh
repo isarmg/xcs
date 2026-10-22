@@ -77,7 +77,7 @@ case "${1:-}" in
     python3 .github/scripts/check-csr-scope.py
     ;;
   browser-smoke)
-    cargo build --locked --offline -p storage-admin
+    cargo build --locked --offline -p storage-server -p storage-rescue
     cargo test --locked --offline -p browser-smoke
     screenshot_args=()
     if [[ -n "${ZXS_SMOKE_SCREENSHOT:-}" ]]; then

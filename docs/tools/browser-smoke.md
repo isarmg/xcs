@@ -9,7 +9,7 @@
 先按 [Web 界面构建说明](../components/web.md#web-build)构建真实 `build/web`，并构建 CLI：
 
 ```sh
-cargo build --locked --offline -p storage-admin
+cargo build --locked --offline -p storage-server -p storage-rescue
 export CHROME_BIN="$(command -v google-chrome)"
 export CHROMEDRIVER="$(command -v chromedriver)"
 cargo run --locked --offline -p browser-smoke -- \
@@ -27,7 +27,7 @@ CI 通过 `ZXS_SMOKE_SCREENSHOT` 传递路径，浏览器验收成功后将图�
 ## 验收范围
 
 1. 用随机临时密码创建独立三目录开发池，启动真实 ZXS 服务；浏览器登录后必须看到三个磁盘目录。
-2. 启动服务前，由 browser-smoke 内部直接调用真实存储引擎，在 P01 的 `browser-fixtures` 命名空间写入同一 UTF-8 文件的两个真实版本。浏览器进入该目录，验证文件行、勾选、搜索、DOM 与焦点保持，不通过已移除的上传入口或 CLI put/get 造数据。夹具只接受工具自己持有的临时目录，拒绝已有仓库；关闭再重新打开引擎后核对两个版本和当前字节。产品 CLI 仅用于初始化及启动服务，测试工具不随产品归档发布。
+2. 启动服务前，由 browser-smoke 内部直接调用真实存储引擎，在 P01 的 `browser-fixtures` 命名空间写入同一 UTF-8 文件的两个真实版本。浏览器进入该目录，验证文件行、勾选、搜索、DOM 与焦点保持，不通过已移除的上传入口或 CLI put/get 造数据。夹具只接受工具自己持有的临时目录，拒绝已有仓库；关闭再重新打开引擎后核对两个版本和当前字节。初始化由测试夹具直接调用引擎和认证库；产品 `zxs` 仅作为直接守护进程启动，不调用 `init` 或 `serve` 子命令，测试工具不随产品归档发布。
 3. 打开文件详情与版本树，确认两个真实版本；通过原位输入提交文件备注，再离开并重新打开，验证服务器持久化后的备注与版本树。
 4. 在操作历史中确认该文件出现。文件页及详情页均断言没有上传、下载、预览、“写入当前分支”、文件输入或传输任务页；网络日志拒绝任何文件正文及写会话请求。元数据 API 与 SMB 协议未改变；普通 CLI 文件传输不是测试前提。
 5. 注销并刷新，仍然必须呈现匿名登录页；检查未捕获异常、JavaScript 严重错误、意外 HTTP 错误以及登录、磁盘、历史、注销和 WASM 的成功网络响应。

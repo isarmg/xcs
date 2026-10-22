@@ -98,3 +98,33 @@ fn wrong_password_does_not_discard_pending_file_saves() {
         Some("req_test")
     );
 }
+
+#[test]
+fn failed_session_restore_keeps_login_available_during_storage_recovery() {
+    let mut state = State {
+        session_failure: Some("Authentication service unavailable".into()),
+        ..Default::default()
+    };
+    state.management.storage = crate::management::Storage::RecoveryRequired;
+    assert_eq!(session_view(&state).phase, SessionPhase::Anonymous);
+    assert_eq!(begin_login(&mut state), Some(1));
+    assert!(!state.management.storage.writable());
+}
+
+#[test]
+fn logout_clears_management_and_administration_state() {
+    Owner::new().with(|| {
+        let state = RwSignal::new(State {
+            authenticated: true,
+            session_epoch: 9,
+            ..Default::default()
+        });
+        state.update(|s| s.management.storage = crate::management::Storage::Ready);
+        end_session(state, String::new());
+        state.with_untracked(|s| {
+            assert_eq!(s.session_epoch, 10);
+            assert!(!s.authenticated);
+            assert_eq!(s.management.storage, crate::management::Storage::Unknown);
+        });
+    });
+}

@@ -107,7 +107,7 @@ def check(root):
             r'is_ident\("(?:clap|structopt|command_line)"\)', attributes.read_text()
         ), "legacy helper parser branch"
 
-    for relative in ("src/admin/src/main.rs", "src/admin/src/args.rs"):
+    for relative in ("src/server/src/main.rs", "src/rescue/src/main.rs"):
         source = root / relative
         assert "command_line::" in source.read_text(), f"unmigrated consumer: {source}"
     catalog = json.loads((root / "compliance/rust-sources.json").read_text())
@@ -290,7 +290,7 @@ fn debug_error_contains_real_backtrace() {
 
 def check_consumers(root):
     subprocess.run(
-        cargo_command("build", "-p", "storage-admin", "-p", "web-build"),
+        cargo_command("build", "-p", "storage-server", "-p", "storage-rescue", "-p", "web-build"),
         cwd=root,
         check=True,
     )
@@ -316,11 +316,12 @@ def check_consumers(root):
             env=environment,
             capture_output=True,
             text=True,
+            timeout=10,  # A mistaken daemon-start case must fail, never hang CI.
         )
         expected = (case["code"], case["stdout"], case["stderr"])
         actual = (result.returncode, result.stdout, result.stderr)
         assert actual == expected, f'CLI contract drift: {case["binary"]} {case["args"]}'
-    print("actual storage-admin/web-build CLI outputs and exit statuses match fixed baseline")
+    print("actual daemon/rescue/web-build CLI outputs and exit statuses match fixed baseline")
 
 
 def main():

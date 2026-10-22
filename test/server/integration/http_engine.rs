@@ -16,6 +16,8 @@ use storage_server::{
 };
 #[path = "http_engine/backup_namespace.rs"]
 mod backup_namespace;
+#[path = "http_engine/daily_management.rs"]
+mod daily_management;
 #[path = "http_engine/file_metadata_operations.rs"]
 mod file_metadata_operations;
 
@@ -2142,6 +2144,7 @@ fn capture_wire(name: &str, wire: &Value) {
 
 fn operation_identity() -> Identity {
     Identity {
+        admission_session: None,
         principal: "admin".into(),
         admin: true,
         repositories: Default::default(),
@@ -3563,6 +3566,7 @@ async fn engine_upload_generation_conflicts_reach_http_as_conflicts() {
     backend
         .upload_generation(
             &Identity {
+                admission_session: None,
                 principal: "admin".into(),
                 admin: true,
                 repositories: Default::default(),

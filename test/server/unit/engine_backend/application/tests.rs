@@ -21,6 +21,7 @@ fn fixture() -> (
         .create_repository("Application", "P01", 3, "owner", &new_id("op"))
         .unwrap();
     let identity = Identity {
+        admission_session: None,
         principal: "owner".into(),
         admin: false,
         repositories: BTreeSet::from([repo.repository_id.clone()]),
@@ -144,6 +145,7 @@ fn protection_commands_preserve_core_replay_and_transport_contract() {
         extra["unexpected"] = json!(true);
         assert_eq!(backend.call(action, &owner, extra).unwrap_err().status, 400);
         let stranger = Identity {
+            admission_session: None,
             principal: "stranger".into(),
             admin: false,
             repositories: owner.repositories.clone(),
@@ -191,6 +193,7 @@ fn protection_commands_preserve_core_replay_and_transport_contract() {
                     "primary_slot_id":"P01","expected_generation":"1","operation_id":new_id("op")})
         };
         let unadmitted_owner = Identity {
+            admission_session: None,
             principal: owner.principal.clone(),
             admin: false,
             repositories: BTreeSet::new(),
@@ -259,6 +262,7 @@ fn workspace_ownership_and_account_admission_apply_to_typed_and_wire_paths() {
         .create_workspace(&repo.main_branch_id, &owner.principal)
         .unwrap();
     let intruder = Identity {
+        admission_session: None,
         principal: "intruder".into(),
         ..owner.clone()
     };
@@ -272,6 +276,7 @@ fn workspace_ownership_and_account_admission_apply_to_typed_and_wire_paths() {
     });
     assert_eq!(result.unwrap_err().code, "FORBIDDEN");
     let unadmitted_owner = Identity {
+        admission_session: None,
         repositories: BTreeSet::new(),
         ..owner.clone()
     };

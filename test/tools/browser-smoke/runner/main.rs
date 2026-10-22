@@ -27,6 +27,7 @@ mod fixture;
 use fixture::seed_files;
 mod fonts;
 mod lifecycle;
+mod management;
 mod metadata;
 mod session_delivery;
 use metadata::{assert_metadata_only, metadata_edit, open_fixture_directory};
@@ -424,16 +425,9 @@ fn run() -> Result<()> {
         .tempdir()?;
     let root = temp.path();
     let pool = root.join("pool");
-    let password_file = root.join("password");
     let mut entropy = [0u8; 24];
     File::open("/dev/urandom")?.read_exact(&mut entropy)?;
     let password: String = entropy.iter().map(|b| format!("{b:02x}")).collect();
-    OpenOptions::new()
-        .write(true)
-        .create_new(true)
-        .mode(0o600)
-        .open(&password_file)?
-        .write_all(password.as_bytes())?;
     let disks: Vec<_> = ["P01", "B01", "C01"]
         .iter()
         .map(|name| root.join(name))
@@ -441,22 +435,18 @@ fn run() -> Result<()> {
     for disk in &disks {
         fs::DirBuilder::new().mode(0o700).create(disk)?;
     }
-    let init = Command::new(&cli_binary)
-        .arg("--root")
-        .arg(&pool)
-        .args(["init", "--username", "smoke-admin", "--password-file"])
-        .arg(&password_file)
-        .arg("--development-disks")
-        .args(&disks)
-        .output()?;
-    if !init.status.success() {
-        return Err(format!(
-            "development pool init failed: {}",
-            String::from_utf8_lossy(&init.stderr)
-        )
-        .into());
-    }
-    fs::remove_file(password_file)?;
+    // Test-only initialization: no product setup or transfer command dispatcher.
+    let engine = storage_engine::Engine::initialize(
+        &pool,
+        storage_engine::Config::development(disks.try_into().unwrap()),
+    )?;
+    let backend = std::sync::Arc::new(storage_server::engine_backend::EngineBackend::new(engine));
+    backend.protect_auth(storage_server::auth::AuthStore::initialize(
+        &pool,
+        "smoke-admin",
+        &password,
+    )?)?;
+    drop(backend);
     seed_files(&temp)?;
     let server_port = port()?;
     let driver_port = port()?;
@@ -464,16 +454,11 @@ fn run() -> Result<()> {
     let server_log = root.join("server.log");
     let driver_log = root.join("driver.log");
     let _server = spawn(
-        Command::new(cli_binary)
+        Command::new(&cli_binary)
             .arg("--root")
-            .arg(pool)
-            .args([
-                "serve",
-                "--listen",
-                &format!("127.0.0.1:{server_port}"),
-                "--web-dir",
-            ])
-            .arg(web),
+            .arg(&pool)
+            .args(["--listen", &format!("127.0.0.1:{server_port}"), "--web-dir"])
+            .arg(&web),
         &server_log,
     )?;
     let result = (|| -> Result<()> {
@@ -529,7 +514,9 @@ fn run() -> Result<()> {
                 .ok_or("missing WebDriver session")?
                 .to_owned(),
         };
-        let result = exercise(&browser, &origin, &password, screenshot.as_deref());
+        let result = exercise(&browser, &origin, &password, screenshot.as_deref())
+            .and_then(|()| management::run(&browser, &cli_binary, &web, &pool, root, &password))
+            .and_then(|()| management::setup(&browser, &cli_binary, &web, root, &password));
         if result.is_err() {
             let diagnostics_dir = PathBuf::from("artifacts/browser-smoke/diagnostics");
             diagnostics::failure(&browser, &diagnostics_dir, &password);

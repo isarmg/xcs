@@ -1,0 +1,27 @@
+[package]
+name = "storage-rescue"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+
+[[bin]]
+name = "zxs-rescue"
+path = "src/main.rs"
+
+[dependencies]
+authentication.workspace = true
+platform-io.workspace = true
+rustix.workspace = true
+command-line.workspace = true
+data-serialization.workspace = true
+json-codec.workspace = true
+storage-engine.workspace = true
+
+[dev-dependencies]
+storage-server.workspace = true
+tempfile.workspace = true
+
+[[test]]
+name = "rescue_startup"
+path = "../../test/rescue/startup.rs"

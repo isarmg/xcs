@@ -1,0 +1,164 @@
+use std::process::{Command, Output};
+fn daemon(args: &[&str]) -> Output {
+    Command::new(env!("CARGO_BIN_EXE_zxs"))
+        .args(args)
+        .env("TOKIO_WORKER_THREADS", "0")
+        .env_remove("RUST_LOG")
+        .output()
+        .unwrap()
+}
+#[test]
+fn direct_daemon_help_and_version_do_not_start_workers() {
+    for args in [&["--help"][..], &["--version"]] {
+        let output = daemon(args);
+        assert!(output.status.success(), "{output:?}");
+        assert!(output.stderr.is_empty(), "{output:?}");
+    }
+    let help = String::from_utf8(daemon(&["--help"]).stdout).unwrap();
+    assert!(help.contains("ZXS storage and Web management daemon"));
+    assert!(!help.contains("Commands:"));
+    assert!(help.contains("--management-root"));
+}
+#[test]
+fn daemon_does_not_dispatch_management_or_rescue_subcommands() {
+    for name in [
+        "serve",
+        "init",
+        "account",
+        "restore-system",
+        "offline-export",
+        "put",
+        "get",
+    ] {
+        let output = daemon(&[name]);
+        assert_eq!(output.status.code(), Some(2), "{output:?}");
+        assert!(!String::from_utf8_lossy(&output.stderr).contains("TOKIO_WORKER_THREADS"));
+    }
+}
+#[test]
+fn no_subcommand_is_required_to_start_daemon_runtime() {
+    let output = daemon(&[]);
+    assert!(
+        String::from_utf8_lossy(&output.stderr).contains("TOKIO_WORKER_THREADS"),
+        "{output:?}"
+    );
+}
+
+struct ChildGuard(std::process::Child);
+impl Drop for ChildGuard {
+    fn drop(&mut self) {
+        let _ = self.0.kill();
+        let _ = self.0.wait();
+    }
+}
+fn response(port: u16, path: &str) -> std::io::Result<String> {
+    use std::io::{Read, Write};
+    let mut stream = std::net::TcpStream::connect(("127.0.0.1", port))?;
+    stream.set_read_timeout(Some(std::time::Duration::from_secs(2)))?;
+    write!(
+        stream,
+        "GET {path} HTTP/1.1\r\nHost: 127.0.0.1:{port}\r\nConnection: close\r\n\r\n"
+    )?;
+    let mut value = String::new();
+    stream.read_to_string(&mut value)?;
+    Ok(value)
+}
+#[test]
+fn daemon_serves_web_and_liveness_with_missing_or_corrupt_pool() {
+    use std::os::unix::fs::DirBuilderExt;
+    for corrupt in [false, true] {
+        let directory = tempfile::tempdir().unwrap();
+        let root = directory.path().join("pool");
+        let management = directory.path().join("management");
+        let web = directory.path().join("web");
+        for path in [&root, &management, &web] {
+            std::fs::DirBuilder::new().mode(0o700).create(path).unwrap();
+        }
+        let preset = directory.path().join("preset.json");
+        if corrupt {
+            std::fs::write(root.join("config.json"), "not a valid pool configuration").unwrap();
+            std::fs::write(&preset, "not a valid setup preset").unwrap();
+        }
+        std::fs::write(web.join("index.html"), "<h1>management-available</h1>").unwrap();
+        let reservation = std::net::TcpListener::bind(("127.0.0.1", 0)).unwrap();
+        let port = reservation.local_addr().unwrap().port();
+        drop(reservation);
+        let child = Command::new(env!("CARGO_BIN_EXE_zxs"))
+            .arg("--root")
+            .arg(&root)
+            .arg("--management-root")
+            .arg(&management)
+            .arg("--web-dir")
+            .arg(&web)
+            .args(["--setup-config", &format!("broken={}", preset.display())])
+            .args([
+                "--setup-disk",
+                &format!(
+                    "missing={}",
+                    directory.path().join("missing-disk").display()
+                ),
+            ])
+            .args(["--listen", &format!("127.0.0.1:{port}")])
+            .env("TOKIO_WORKER_THREADS", "1")
+            .stdout(std::process::Stdio::null())
+            .stderr(std::process::Stdio::null())
+            .spawn()
+            .unwrap();
+        let mut child = ChildGuard(child);
+        let deadline = std::time::Instant::now() + std::time::Duration::from_secs(10);
+        loop {
+            assert!(
+                child.0.try_wait().unwrap().is_none(),
+                "daemon exited on unavailable storage"
+            );
+            if response(port, "/healthz").is_ok_and(|reply| reply.starts_with("HTTP/1.1 200")) {
+                break;
+            }
+            assert!(std::time::Instant::now() < deadline, "HTTP did not start");
+            std::thread::sleep(std::time::Duration::from_millis(25));
+        }
+        let page = response(port, "/").unwrap();
+        assert!(page.starts_with("HTTP/1.1 200"), "{page}");
+        assert!(page.contains("management-available"));
+        let readiness = response(port, "/readyz").unwrap();
+        assert!(readiness.starts_with("HTTP/1.1 503"), "{readiness}");
+        assert!(
+            !root.join("auth.json").exists(),
+            "must not initialize on storage failure"
+        );
+    }
+}
+
+#[test]
+fn default_state_directory_remains_private_for_later_web_setup() {
+    use std::os::unix::fs::PermissionsExt;
+    let directory = tempfile::tempdir().unwrap();
+    let reservation = std::net::TcpListener::bind(("127.0.0.1", 0)).unwrap();
+    let port = reservation.local_addr().unwrap().port();
+    drop(reservation);
+    let child = Command::new(env!("CARGO_BIN_EXE_zxs"))
+        .current_dir(directory.path())
+        .args(["--listen", &format!("127.0.0.1:{port}")])
+        .env("TOKIO_WORKER_THREADS", "1")
+        .stdout(std::process::Stdio::null())
+        .stderr(std::process::Stdio::null())
+        .spawn()
+        .unwrap();
+    let mut child = ChildGuard(child);
+    let deadline = std::time::Instant::now() + std::time::Duration::from_secs(10);
+    loop {
+        assert!(child.0.try_wait().unwrap().is_none());
+        if response(port, "/healthz").is_ok_and(|reply| reply.starts_with("HTTP/1.1 200")) {
+            break;
+        }
+        assert!(std::time::Instant::now() < deadline);
+        std::thread::sleep(std::time::Duration::from_millis(25));
+    }
+    for path in ["zxs-data", "zxs-data/management"] {
+        let permissions = std::fs::metadata(directory.path().join(path))
+            .unwrap()
+            .permissions();
+        assert_eq!(permissions.mode() & 0o777, 0o700, "{path}");
+    }
+    assert!(!directory.path().join("zxs-data/config.json").exists());
+}

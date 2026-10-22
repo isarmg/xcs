@@ -1,11 +1,21 @@
 [
   {
+    "binary": "web-build",
+    "args": [
+      "check",
+      "--invalid"
+    ],
+    "code": 1,
+    "stdout": "",
+    "stderr": "Error: unknown option --invalid\n"
+  },
+  {
     "binary": "zxs",
     "args": [
       "--help"
     ],
     "code": 0,
-    "stdout": "Local storage service, setup, administration and offline rescue\n\nUsage: zxs [OPTIONS] <COMMAND>\n\nCommands:\n  config-template          Produce a configuration draft without accessing or initializing any device\n  init                     Explicitly initialize a new pool. Development disks simulate independent devices\n  init-auth                Initialize credentials for an existing local pool that has no credential store\n  register-disk            Add a disk to an uninitialized JSON configuration draft. Does not migrate a live pool\n  serve                    \n  restore-system           \n  recovery-preview         Inspect an already decided, unpublished operation using all original members\n  recovery-commit          Publish only the previously reviewed recovery plan after explicit loss acknowledgement\n  offline-check            \n  offline-export           \n  export-history           Export a complete independently verifiable history package. Destination must not exist; its parent must be owned by this user and mode 0700\n  check-history-package    \n  restore-history-package  \n  account                  Add or revoke an account locally; changing grants revokes all of its existing sessions\n  create-repo              \n  smb-binding              \n  policy                   \n  rule                     \n  repositories             \n  disks                    \n  topology                 \n  list                     \n  history                  \n  graph                    \n  branch                   \n  link                     \n  namespace                \n  purge                    \n  split                    \n  historical-save          \n  plan-commit              \n  plan-cancel              \n  operation                \n  check                    \n  help                     Print this message or the help of the given subcommand(s)\n\nOptions:\n      --root <ROOT>            [default: ./zxs-data]\n      --principal <PRINCIPAL>  [default: admin]\n  -h, --help                   Print help\n  -V, --version                Print version\n\nService/setup: config-template, init, init-auth, register-disk, serve.\nOffline rescue: restore-system, recovery-preview, recovery-commit, offline-check, offline-export, export-history, check-history-package, restore-history-package.\nOther commands are local administration; stop the service before opening its pool.\nNo remote client or ordinary file transfer commands. Use SMB for file contents.\n",
+    "stdout": "ZXS storage and Web management daemon\n\nUsage: zxs [OPTIONS]\n\nOptions:\n      --root <ROOT>\n          [default: ./zxs-data]\n      --management-root <MANAGEMENT_ROOT>\n          System-disk management state; defaults to ROOT/management, never a data member\n      --setup-disk <SETUP_DISKS>\n          Locally approved existing disk root, repeated as opaque ID=/absolute/path\n      --setup-config <SETUP_CONFIGS>\n          Locally reviewed private configuration preset, repeated as ID=/absolute/file\n      --allow-development-setup\n          Test-only: allow directory-backed development pool setup, never physical disk validation\n      --listen <LISTEN>\n          [default: 127.0.0.1:7400]\n      --external-origin <EXTERNAL_ORIGIN>\n          \n      --trusted-proxy-ip <TRUSTED_PROXY_IPS>\n          Trust this exact loopback proxy peer; it must overwrite X-Forwarded-For with one IP\n      --web-dir <WEB_DIR>\n          \n      --max-upload-bytes <MAX_UPLOAD_BYTES>\n          [default: 1073741824]\n      --http-spool-bytes-per-account <HTTP_SPOOL_BYTES_PER_ACCOUNT>\n          HTTP spool quota only, including retained generations and metadata allowance [default: 107374182400]\n      --http-spool-bytes-total <HTTP_SPOOL_BYTES_TOTAL>\n          [default: 536870912000]\n      --http-spool-recovery-reserve-bytes <HTTP_SPOOL_RECOVERY_RESERVE_BYTES>\n          Keep this filesystem headroom outside new upload reservations [default: 1073741824]\n      --http-transfer-slots-total <HTTP_TRANSFER_SLOTS_TOTAL>\n          Independent capacity for each HTTP upload/read pool [default: 8]\n      --http-transfer-slots-per-account <HTTP_TRANSFER_SLOTS_PER_ACCOUNT>\n          [default: 2]\n      --http-transfer-idle-seconds <HTTP_TRANSFER_IDLE_SECONDS>\n          [default: 60]\n      --http-transfer-total-seconds <HTTP_TRANSFER_TOTAL_SECONDS>\n          [default: 3600]\n      --smb-socket <SMB_SOCKET>\n          \n      --smb-peer-uid <SMB_PEER_UID>\n          \n      --smb-user <SMB_USER>\n          \n  -h, --help\n          Print help\n  -V, --version\n          Print version\n",
     "stderr": ""
   },
   {
@@ -19,60 +29,148 @@
   },
   {
     "binary": "zxs",
-    "args": [],
-    "code": 2,
-    "stdout": "",
-    "stderr": "Local storage service, setup, administration and offline rescue\n\nUsage: zxs [OPTIONS] <COMMAND>\n\nCommands:\n  config-template          Produce a configuration draft without accessing or initializing any device\n  init                     Explicitly initialize a new pool. Development disks simulate independent devices\n  init-auth                Initialize credentials for an existing local pool that has no credential store\n  register-disk            Add a disk to an uninitialized JSON configuration draft. Does not migrate a live pool\n  serve                    \n  restore-system           \n  recovery-preview         Inspect an already decided, unpublished operation using all original members\n  recovery-commit          Publish only the previously reviewed recovery plan after explicit loss acknowledgement\n  offline-check            \n  offline-export           \n  export-history           Export a complete independently verifiable history package. Destination must not exist; its parent must be owned by this user and mode 0700\n  check-history-package    \n  restore-history-package  \n  account                  Add or revoke an account locally; changing grants revokes all of its existing sessions\n  create-repo              \n  smb-binding              \n  policy                   \n  rule                     \n  repositories             \n  disks                    \n  topology                 \n  list                     \n  history                  \n  graph                    \n  branch                   \n  link                     \n  namespace                \n  purge                    \n  split                    \n  historical-save          \n  plan-commit              \n  plan-cancel              \n  operation                \n  check                    \n  help                     Print this message or the help of the given subcommand(s)\n\nOptions:\n      --root <ROOT>            [default: ./zxs-data]\n      --principal <PRINCIPAL>  [default: admin]\n  -h, --help                   Print help\n  -V, --version                Print version\n\nService/setup: config-template, init, init-auth, register-disk, serve.\nOffline rescue: restore-system, recovery-preview, recovery-commit, offline-check, offline-export, export-history, check-history-package, restore-history-package.\nOther commands are local administration; stop the service before opening its pool.\nNo remote client or ordinary file transfer commands. Use SMB for file contents.\n"
-  },
-  {
-    "binary": "zxs",
     "args": [
       "--unknown"
     ],
     "code": 2,
     "stdout": "",
-    "stderr": "error: unexpected argument '--unknown' found\n\nUsage: zxs [OPTIONS] <COMMAND>\n\nFor more information, try '--help'.\n"
+    "stderr": "error: unexpected argument '--unknown' found\n\nUsage: zxs [OPTIONS]\n\nFor more information, try '--help'.\n"
   },
   {
     "binary": "zxs",
     "args": [
-      "serve",
+      "serve"
+    ],
+    "code": 2,
+    "stdout": "",
+    "stderr": "error: unexpected argument 'serve' found\n\nUsage: zxs [OPTIONS]\n\nFor more information, try '--help'.\n"
+  },
+  {
+    "binary": "zxs",
+    "args": [
+      "init"
+    ],
+    "code": 2,
+    "stdout": "",
+    "stderr": "error: unexpected argument 'init' found\n\nUsage: zxs [OPTIONS]\n\nFor more information, try '--help'.\n"
+  },
+  {
+    "binary": "zxs",
+    "args": [
+      "--trusted-proxy-ip",
+      "127.0.0.1"
+    ],
+    "code": 2,
+    "stdout": "",
+    "stderr": "error: the following required arguments were not provided:\n  --external-origin <EXTERNAL_ORIGIN>\n\nUsage: zxs --external-origin <EXTERNAL_ORIGIN> --trusted-proxy-ip <TRUSTED_PROXY_IPS>\n\nFor more information, try '--help'.\n"
+  },
+  {
+    "binary": "zxs-rescue",
+    "args": [
       "--help"
     ],
     "code": 0,
-    "stdout": "Usage: zxs serve [OPTIONS]\n\nOptions:\n      --listen <LISTEN>\n          [default: 127.0.0.1:7400]\n      --root <ROOT>\n          [default: ./zxs-data]\n      --external-origin <EXTERNAL_ORIGIN>\n          \n      --principal <PRINCIPAL>\n          [default: admin]\n      --trusted-proxy-ip <TRUSTED_PROXY_IPS>\n          Trust this exact loopback proxy peer; it must overwrite X-Forwarded-For with one IP\n      --web-dir <WEB_DIR>\n          \n      --max-upload-bytes <MAX_UPLOAD_BYTES>\n          [default: 1073741824]\n      --http-spool-bytes-per-account <HTTP_SPOOL_BYTES_PER_ACCOUNT>\n          HTTP spool quota only, including retained generations and metadata allowance [default: 107374182400]\n      --http-spool-bytes-total <HTTP_SPOOL_BYTES_TOTAL>\n          [default: 536870912000]\n      --http-spool-recovery-reserve-bytes <HTTP_SPOOL_RECOVERY_RESERVE_BYTES>\n          Keep this filesystem headroom outside new upload reservations [default: 1073741824]\n      --http-transfer-slots-total <HTTP_TRANSFER_SLOTS_TOTAL>\n          Independent capacity for each HTTP upload/read pool [default: 8]\n      --http-transfer-slots-per-account <HTTP_TRANSFER_SLOTS_PER_ACCOUNT>\n          [default: 2]\n      --http-transfer-idle-seconds <HTTP_TRANSFER_IDLE_SECONDS>\n          [default: 60]\n      --http-transfer-total-seconds <HTTP_TRANSFER_TOTAL_SECONDS>\n          [default: 3600]\n      --smb-socket <SMB_SOCKET>\n          \n      --smb-peer-uid <SMB_PEER_UID>\n          \n      --smb-user <SMB_USER>\n          \n  -h, --help\n          Print help\n",
+    "stdout": "Offline verified recovery; stop ZXS before use\n\nUsage: zxs-rescue [OPTIONS] <COMMAND>\n\nCommands:\n  configuration     Prepare or safely edit uninitialized topology drafts; never mutates a live pool\n  restore-system    \n  recovery-preview  \n  recovery-commit   \n  package           Export, verify or restore a complete independently validated history package\n  offline-check     \n  offline-export    \n  help              Print this message or the help of the given subcommand(s)\n\nOptions:\n      --root <ROOT>            [default: ./zxs-data]\n      --principal <PRINCIPAL>  [default: admin]\n  -h, --help                   Print help\n  -V, --version                Print version\n\nrestore-system requires at least two trusted original metadata members.\nRecovery preview/commit only accepts decided, unpublished operations with all original disks accessible. It requires a reviewed digest and explicit permanent-loss acknowledgement; it is not a reset or missing-disk replacement.\nOffline export validates one published version, not the entire pool or current permissions.\n",
     "stderr": ""
   },
   {
-    "binary": "zxs",
+    "binary": "zxs-rescue",
     "args": [
-      "init",
-      "--username"
+      "--version"
+    ],
+    "code": 0,
+    "stdout": "zxs-rescue 0.1.0\n",
+    "stderr": ""
+  },
+  {
+    "binary": "zxs-rescue",
+    "args": [],
+    "code": 2,
+    "stdout": "",
+    "stderr": "Offline verified recovery; stop ZXS before use\n\nUsage: zxs-rescue [OPTIONS] <COMMAND>\n\nCommands:\n  configuration     Prepare or safely edit uninitialized topology drafts; never mutates a live pool\n  restore-system    \n  recovery-preview  \n  recovery-commit   \n  package           Export, verify or restore a complete independently validated history package\n  offline-check     \n  offline-export    \n  help              Print this message or the help of the given subcommand(s)\n\nOptions:\n      --root <ROOT>            [default: ./zxs-data]\n      --principal <PRINCIPAL>  [default: admin]\n  -h, --help                   Print help\n  -V, --version                Print version\n\nrestore-system requires at least two trusted original metadata members.\nRecovery preview/commit only accepts decided, unpublished operations with all original disks accessible. It requires a reviewed digest and explicit permanent-loss acknowledgement; it is not a reset or missing-disk replacement.\nOffline export validates one published version, not the entire pool or current permissions.\n"
+  },
+  {
+    "binary": "zxs-rescue",
+    "args": [
+      "--unknown"
     ],
     "code": 2,
     "stdout": "",
-    "stderr": "error: a value is required for '--username <USERNAME>' but none was supplied\n\nFor more information, try '--help'.\n"
+    "stderr": "error: unexpected argument '--unknown' found\n\nUsage: zxs-rescue [OPTIONS] <COMMAND>\n\nFor more information, try '--help'.\n"
   },
   {
-    "binary": "zxs",
+    "binary": "zxs-rescue",
     "args": [
-      "config-template",
+      "package",
+      "--help"
+    ],
+    "code": 0,
+    "stdout": "Export, verify or restore a complete independently validated history package\n\nUsage: zxs-rescue package [OPTIONS] <COMMAND>\n\nCommands:\n  export   Destination must not exist; parent must be owned by this user and mode 0700\n  check    \n  restore  \n  help     Print this message or the help of the given subcommand(s)\n\nOptions:\n      --root <ROOT>            [default: ./zxs-data]\n      --principal <PRINCIPAL>  [default: admin]\n  -h, --help                   Print help\n",
+    "stderr": ""
+  },
+  {
+    "binary": "zxs-rescue",
+    "args": [
+      "package",
+      "restore"
+    ],
+    "code": 2,
+    "stdout": "",
+    "stderr": "error: the following required arguments were not provided:\n  --primary-slot <PRIMARY_SLOT>\n  <PACKAGE>\n\nUsage: zxs-rescue package restore --primary-slot <PRIMARY_SLOT> <PACKAGE>\n\nFor more information, try '--help'.\n"
+  },
+  {
+    "binary": "zxs-rescue",
+    "args": [
+      "restore-system",
       "--disks",
-      "a",
-      "b"
+      "/only-one"
     ],
     "code": 2,
     "stdout": "",
-    "stderr": "error: 3 values required for '--disks <DISKS> <DISKS> <DISKS>' but 2 were provided\n\nUsage: zxs config-template [OPTIONS] --disks <DISKS> <DISKS> <DISKS>\n\nFor more information, try '--help'.\n"
+    "stderr": "error: 2 values required by '--disks <DISKS> <DISKS>...'; only 1 was provided\n\nUsage: zxs-rescue restore-system [OPTIONS] --disks <DISKS> <DISKS>...\n\nFor more information, try '--help'.\n"
   },
   {
-    "binary": "web-build",
+    "binary": "zxs-rescue",
     "args": [
-      "check",
-      "--invalid"
+      "configuration",
+      "--help"
     ],
-    "code": 1,
+    "code": 0,
+    "stdout": "Prepare or safely edit uninitialized topology drafts; never mutates a live pool\n\nUsage: zxs-rescue configuration [OPTIONS] <COMMAND>\n\nCommands:\n  template       Produce an uninitialized draft; does not access or initialize devices\n  register-disk  Edit only an uninitialized draft, with an exact private backup. Not live replacement\n  help           Print this message or the help of the given subcommand(s)\n\nOptions:\n      --root <ROOT>            [default: ./zxs-data]\n      --principal <PRINCIPAL>  [default: admin]\n  -h, --help                   Print help\n",
+    "stderr": ""
+  },
+  {
+    "binary": "zxs-rescue",
+    "args": [
+      "configuration",
+      "template",
+      "--disks",
+      "/one",
+      "/two"
+    ],
+    "code": 2,
     "stdout": "",
-    "stderr": "Error: unknown option --invalid\n"
+    "stderr": "error: 3 values required for '--disks <DISKS> <DISKS> <DISKS>' but 2 were provided\n\nUsage: zxs-rescue configuration template [OPTIONS] --disks <DISKS> <DISKS> <DISKS>\n\nFor more information, try '--help'.\n"
+  },
+  {
+    "binary": "zxs-rescue",
+    "args": [
+      "configuration",
+      "register-disk",
+      "--config",
+      "/unopened-draft"
+    ],
+    "code": 2,
+    "stdout": "",
+    "stderr": "error: the following required arguments were not provided:\n  --slot <SLOT>\n  --disk-id <DISK_ID>\n  --path <PATH>\n  --level <LEVEL>\n\nUsage: zxs-rescue configuration register-disk --config <CONFIG> --slot <SLOT> --disk-id <DISK_ID> --path <PATH> --level <LEVEL>\n\nFor more information, try '--help'.\n"
+  },
+  {
+    "binary": "zxs",
+    "args": [
+      "--setup-config"
+    ],
+    "code": 2,
+    "stdout": "",
+    "stderr": "error: a value is required for '--setup-config <SETUP_CONFIGS>' but none was supplied\n\nFor more information, try '--help'.\n"
   }
 ]

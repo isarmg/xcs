@@ -35,6 +35,49 @@ impl EngineBackend {
             operation_health_hook: Mutex::new(None),
         }
     }
+    #[cfg(test)]
+    pub(crate) fn test_with_engine_locked(&self, f: impl FnOnce()) {
+        let _guard = self.engine.lock().unwrap();
+        f();
+    }
+    /// Managed dispatch linearizes admission after acquiring the engine mutex.
+    /// An operation already admitted may finish; queued requests see revocation.
+    pub(crate) fn set_management_auth(
+        &self,
+        auth: std::sync::Weak<std::sync::Mutex<crate::auth::AuthStore>>,
+    ) -> Result<(), ApiError> {
+        self.engine
+            .lock()
+            .map_err(|_| ApiError::new(500, "INTERNAL_ERROR", "storage engine requires restart"))?
+            .set_management_auth(auth);
+        Ok(())
+    }
+    pub(crate) fn auth_snapshot(&self) -> Result<Option<Value>, ApiError> {
+        Ok(self
+            .engine
+            .lock()
+            .map_err(|_| ApiError::new(500, "INTERNAL_ERROR", "storage engine requires restart"))?
+            .auth_state())
+    }
+    pub(crate) fn replicate_auth(&self, snapshot: Value) -> Result<(), ApiError> {
+        let mut engine = self
+            .engine
+            .lock()
+            .map_err(|_| ApiError::new(500, "INTERNAL_ERROR", "storage engine requires restart"))?;
+        if engine.auth_state_ref() == Some(&snapshot) {
+            return Ok(());
+        }
+        engine
+            .persist_auth_state(snapshot, "system_auth", &storage_engine::new_id("op"))
+            .map_err(error)
+    }
+    pub(crate) fn read_only(&self) -> Result<bool, ApiError> {
+        Ok(self
+            .engine
+            .lock()
+            .map_err(|_| ApiError::new(500, "INTERNAL_ERROR", "storage engine requires restart"))?
+            .is_read_only())
+    }
     pub fn protect_auth(
         self: &std::sync::Arc<Self>,
         mut auth: crate::auth::AuthStore,
@@ -159,7 +202,9 @@ fn workspace_authorize(
 
 /// Refresh account admission while holding the engine lock, before capturing a
 /// read plan or publishing a mutation, and again after unlocked preparation.
-/// Account publication takes auth -> engine; never acquire auth in this path.
+/// Managed admission linearizes here: engine -> short primary-auth read.
+/// Managed auth publication never holds its mutex across engine work. An
+/// operation admitted before a revocation may finish; queued work revalidates.
 fn current_protected_identity(
     engine: &AdmissionEngine,
     identity: &Identity,

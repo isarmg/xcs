@@ -37,7 +37,7 @@ fn validate(root: &Path, tag: &str) -> Result<semver::Version> {
         "engine",
         "server",
         "client",
-        "admin",
+        "rescue",
         "web",
         "interface",
         "smb",

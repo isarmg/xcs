@@ -5,11 +5,17 @@ edition.workspace = true
 license.workspace = true
 rust-version.workspace = true
 
+[[bin]]
+name = "zxs"
+path = "src/main.rs"
+required-features = ["core"]
+
 [features]
 default = ["core"]
 core = ["dep:storage-engine"]
 
 [dependencies]
+command-line.workspace = true
 authentication.workspace = true
 http-routing = { version = "0.8.9", features = ["macros"], path = "../foundation/http-routing"}
 blake3.workspace = true
@@ -21,7 +27,7 @@ json-codec.workspace = true
 sysinfo = { version = "=0.39.6", default-features = false, features = ["system"], path = "../foundation/sysinfo"}
 tokio.workspace = true
 tower-http = { version = "0.6", features = ["trace", "limit", "fs"], path = "../foundation/tower-http"}
-tracing = {version = "0.1", path = "../foundation/tracing"}
+tracing = {version = "0.1", features = ["collector-default", "env-filter"], path = "../foundation/tracing"}
 date-time = { version = "0.3.55", features = ["formatting"], path = "../foundation/date-time"}
 url-encoding = { path = "../foundation/url-encoding", default-features = false, features = ["std", "parser"] }
 storage-engine = { path = "../engine", optional = true }
@@ -45,3 +51,8 @@ path = "../../test/server/integration/login_admission.rs"
 [[test]]
 name = "telemetry_status"
 path = "../../test/server/integration/telemetry_status.rs"
+
+[[test]]
+name = "service_startup"
+path = "../../test/server/integration/service_startup.rs"
+required-features = ["core"]

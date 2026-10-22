@@ -1,4 +1,4 @@
-use crate::{api, files, history, icons::FileIcon, monitor};
+use crate::{admin, api, files, history, icons::FileIcon, management, monitor};
 use json_codec::{Value, json};
 use web_interface::components::{
     AccountPage, AppShell, ErrorState, Feedback, HeaderActions, HeaderNavigation, LoginCredentials,
@@ -26,6 +26,8 @@ pub(crate) struct State {
     pub notice: String,
     pub files: files::Model,
     pub monitor: monitor::Model,
+    pub management: management::Model,
+    pub admin_console: admin::Model,
     pub activity: history::Model,
 }
 
@@ -89,6 +91,9 @@ pub fn app() -> impl IntoView {
     let poller = send_wrapper::SendWrapper::new(poller);
     on_cleanup(move || drop(poller));
     let telemetry = gloo_timers::callback::Interval::new(5_000, move || {
+        if state.with_untracked(|s| !s.logout_pending && !s.restoring) {
+            management::load(state);
+        }
         if state.with_untracked(|s| s.authenticated && s.page == "status") {
             monitor::load(state);
         }
@@ -124,7 +129,7 @@ pub fn app() -> impl IntoView {
                             ..Default::default()
                         };
                     });
-                    files::load_disks(state);
+                    management::load(state);
                 }
                 Err(error) => state.update(|s| s.login_failure = Some(feedback(&error))),
             }
@@ -132,7 +137,7 @@ pub fn app() -> impl IntoView {
         });
     });
     let login: ChildrenFn = ToChildren::to_children(
-        move || view! { <LoginPage pending=login_pending.into() remote_failure=login_failure.into() on_submit=on_login/> },
+        move || view! { {management::summary(state)} {move ||state.with(|s|s.session_failure.clone()).map(|failure|view!{<ErrorState message=failure.message request_id=failure.request_id/>})} <LoginPage pending=login_pending.into() remote_failure=login_failure.into() on_submit=on_login/> {crate::setup::view()} },
     );
     view! {
         <AppShell product="zxs" session=session.into() pending_logout=logout_pending.into() on_logout=Callback::new(move |_|logout(state)) on_account=Callback::new(move |_|navigate(state,"account")) on_restore=Callback::new(move |_|restore_session(state)) login=login>
@@ -149,6 +154,8 @@ pub(crate) fn navigate(state: RwSignal<State>, page: &str) {
         s.page = page.into();
     });
     match page {
+        "health" => management::load(state),
+        "admin" => admin::load(state),
         "status" => monitor::load(state),
         "history" => history::load(state),
         _ => {}
@@ -158,9 +165,10 @@ fn workspace(state: RwSignal<State>) -> impl IntoView {
     let page = Memo::new(move |_| state.with(|s| s.page.clone()));
     view! {
         <HeaderNavigation label=t("主导航","Main navigation")>
-            {[ ("files",t("文件","Files")), ("details",t("详情","Details")), ("status",t("状态","Status")), ("history",t("历史记录","History")) ].into_iter().map(move |(page,title)|view! {
+            {[ ("health",t("管理健康","Management health")), ("files",t("文件","Files")), ("details",t("详情","Details")), ("status",t("状态","Status")), ("history",t("历史记录","History")) ].into_iter().map(move |(page,title)|view! {
                 <button class="zxs-button" aria-current=move ||(state.with(|s|s.page==page)).then_some("page") on:click=move |_|navigate(state,page)>{title}</button>
             }).collect_view()}
+            <Show when=move ||state.with(|s|s.admin)><button class="zxs-button" aria-current=move ||state.with(|s|(s.page=="admin").then_some("page")) on:click=move |_|navigate(state,"admin")>{t("系统管理","Administration")}</button></Show>
         </HeaderNavigation>
         <HeaderActions><div class="zxs-header-tools zxs-flow">
             <Show when=move ||state.with(|s|matches!(s.page.as_str(),"files"|"details"|"status"|"history"))>
@@ -168,7 +176,8 @@ fn workspace(state: RwSignal<State>) -> impl IntoView {
             </Show>
             <span class="zxs-session-identity">{move ||state.with(|s|s.principal.clone())}</span>
         </div></HeaderActions>
-        {move ||match page.get().as_str() { "details"=>files::details(state).into_any(),"status"=>monitor::view(state).into_any(),"history"=>history::view(state).into_any(),"account"=>account(state).into_any(),_=>files::view(state).into_any() }}
+        <Show when=move ||state.with(|s|s.page!="health"&&!s.management.storage.writable())>{management::summary(state)}</Show>
+        {move ||match page.get().as_str() { "health"=>management::view(state).into_any(),"admin"=>admin::view(state).into_any(),"details"=>files::details(state).into_any(),"status"=>monitor::view(state).into_any(),"history"=>history::view(state).into_any(),"account"=>account(state).into_any(),_=>files::view(state).into_any() }}
     }
 }
 fn session_view(state: &State) -> SessionView {
@@ -179,8 +188,6 @@ fn session_view(state: &State) -> SessionView {
             SessionPhase::Authenticated
         } else if state.logout_unconfirmed {
             SessionPhase::LogoutUnconfirmed
-        } else if state.session_failure.is_some() {
-            SessionPhase::Error
         } else {
             SessionPhase::Anonymous
         },
@@ -212,6 +219,7 @@ fn begin_login(state: &mut State) -> Option<u64> {
     state.busy = 1;
     state.session_epoch += 1;
     state.login_failure = None;
+    state.management.loading = false;
     Some(state.session_epoch)
 }
 fn begin_restore(state: &mut State) -> Option<u64> {
@@ -227,6 +235,8 @@ fn restore_session(state: RwSignal<State>) {
     let Some(epoch) = state.try_update(begin_restore).flatten() else {
         return;
     };
+    state.update(|s| s.management.loading = false);
+    management::load(state);
     spawn_local(async move {
         let result = api::restore().await;
         if !state.with_untracked(|s| s.session_epoch == epoch && !s.logout_pending) {
@@ -239,7 +249,6 @@ fn restore_session(state: RwSignal<State>) {
                     s.principal = text(&value, &["principal", "username"]);
                     s.admin = value["admin"].as_bool().unwrap_or(false);
                 });
-                files::load_disks(state);
             }
             Err(error) => state.update(|s| {
                 s.authenticated = false;
@@ -249,6 +258,7 @@ fn restore_session(state: RwSignal<State>) {
             }),
         }
         state.update(|s| s.restoring = false);
+        management::load(state);
     });
 }
 pub(crate) fn begin_logout(state: &mut State) -> Option<u64> {

@@ -17,7 +17,7 @@
 
 ## 21.1 配置示例
 
-以下 TOML 定义完整目标配置，不是现有进程直接读取的配置或可直接部署的 smb.conf。当前服务读取严格 JSON `Config`，可用 `zxs config-template --production --disks <三个绝对路径> --output <file>` 生成带随机池/盘 ID 的模板，再审查后传给 `zxs --root <state> init --config <file> --username <name>`；模板命令不访问、挂载或初始化设备。实际已接受字段、CLI 和限制见[服务端说明](components/server.md)与[实现报告](reports/implementation.md)。
+以下 TOML 定义完整目标配置，不是现有进程直接读取的配置或可直接部署的 smb.conf。当前引擎读取严格 JSON `Config`；产品首次初始化通过 Web 受保护引导，操作员先在守护进程 `--setup-disk ID=/absolute/path` 白名单中配置本机可信盘位。此流程不挂载、分区或格式化设备。下述目标配置字段不表示 Web 已提供任意 Config 编辑器。实际已接受字段和限制见[服务端说明](components/server.md)与[实现报告](reports/implementation.md)。
 
 Samba 配置由经版本验收的部署模板另行生成。设备清单通过登记工具产生，不在示例中填写真实设备路径。
 
@@ -312,7 +312,7 @@ queue_warning_seconds = 30
 
 `member_slot_ids`是用户另外指定的三个控制元数据成员，不等于每个业务版本都保存三份。盘位配置、业务路由和控制成员发生变更时分别校验并按需要组合迁移，普通启动不重新随机选成员。
 
-`verification_mode` 是默认服务端校验模式，内部管理 CLI 可协商完整段独立验证；SMB 客户端不需要实现本系统校验协议，由服务端在返回字节前校验。段参数仅对新版本生效；读取旧版本时以其描述为准。容量阈值与校验段默认值都是待实测的初始配置，不能宣称为适合所有设备的最优参数。
+`verification_mode` 是默认服务端校验模式，保留的受控 HTTP 客户端库支持完整性验证，产品 CLI 不提供正文传输或验证协商入口；SMB 客户端不需要实现本系统校验协议，由服务端在返回字节前校验。段参数仅对新版本生效；读取旧版本时以其描述为准。容量阈值与校验段默认值都是待实测的初始配置，不能宣称为适合所有设备的最优参数。
 
 项目未正式发布，只实现当前唯一存储格式，不提供可配置的旧格式读取列表或兼容分支。格式修改必须同步更新写入、恢复、校验和测试向量，不自动迁移真实数据。resource_limits 与 observability 的数值、计费口径和超限动作见[第 19.9 节](19-capacity-and-performance.md#s19-09)及[第 19.10 节](19-capacity-and-performance.md#s19-10)。告警秒数不是提交取消期限。
 
@@ -346,7 +346,7 @@ queue_warning_seconds = 30
 
 ### HTTP 暂存的可执行配置入口
 
-当前 `zxs serve` 接受下列独立参数（十进制字节数）：
+当前直接运行的 `zxs` 接受下列独立参数（十进制字节数）：
 
 - `--http-spool-bytes-per-account`：默认 `107374182400`，即 100 GiB。
 - `--http-spool-bytes-total`：默认 `536870912000`，即 500 GiB。
@@ -362,3 +362,7 @@ HTTP 传输准入及期限参数（上传/读取各自独立一池）：
 - `--http-transfer-total-seconds`：默认 `3600`，必须不低于 idle，且最多 `604800`（7 天）。
 
 映射到 `ServerConfig.http_transfer_limits`。额度耗尽立即 429；响应头前超时为 408 `TRANSFER_TIMEOUT`，已开始的正文以流错误终止。超时不删除留存数据，也不提前归还仍被阻塞 I/O 使用的许可/租约。详见[HTTP 并发公平性与传输期限](components/server.md#http-transfer-limits)。
+
+## 当前配置应用入口
+
+`zxs-rescue configuration` 只生成或编辑未初始化草稿，不直接应用配置或在线登记磁盘。部署者可将受保护的本机 Config 通过 `zxs --setup-config ID=PATH` 登记为预置方案，并为每个盘登记 `--setup-disk`。Web 只提交方案 ID，授权预览后按配置摘要确认初始化；提交时重读并核对摘要，文件变化不能静默替换已审查方案。缺失或损坏的预置文件不阻止 HTTP 启动，不能通过浏览器上传任意 Config 或服务器路径。详见[受保护初始化](management/setup-recovery.md)。

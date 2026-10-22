@@ -21,40 +21,6 @@ fn owned_draft_reads_are_bounded_and_reject_links_without_requiring_secret_mode(
 }
 
 #[test]
-fn private_reads_validate_the_opened_file_and_bound_its_bytes() {
-    let directory = tempfile::tempdir().unwrap();
-    let path = directory.path().join("credential");
-    write_new(&path, b"fixture-private-value").unwrap();
-    assert_eq!(read_private(&path, 21).unwrap(), "fixture-private-value");
-    assert!(read_private(&path, 20).is_err());
-    for mode in [0o644, 0o640, 0o700, 0o2600] {
-        fs::set_permissions(&path, fs::Permissions::from_mode(mode)).unwrap();
-        assert!(read_private(&path, 1024).is_err(), "{mode:o}");
-    }
-    fs::set_permissions(&path, fs::Permissions::from_mode(0o400)).unwrap();
-    assert!(read_private(&path, 1024).is_ok());
-    symlink(&path, directory.path().join("alias")).unwrap();
-    assert!(read_private(&directory.path().join("alias"), 1024).is_err());
-    fs::hard_link(&path, directory.path().join("hard")).unwrap();
-    assert!(read_private(&path, 1024).is_err());
-    assert!(read_private(directory.path(), 1024).is_err());
-}
-
-#[test]
-fn held_parent_is_not_reopened_after_directory_rebinding() {
-    let temporary = tempfile::tempdir().unwrap();
-    let parent = temporary.path().join("parent");
-    fs::create_dir(&parent).unwrap();
-    write_new(&parent.join("credential"), b"original").unwrap();
-    let held = AnchoredPath::open(&parent.join("credential")).unwrap();
-    let moved = temporary.path().join("moved");
-    fs::rename(&parent, &moved).unwrap();
-    fs::create_dir(&parent).unwrap();
-    write_new(&parent.join("credential"), b"replacement").unwrap();
-    assert_eq!(held.read_private(1024).unwrap(), "original");
-}
-
-#[test]
 fn atomic_create_is_private_no_clobber_and_cleans_failed_staging() {
     let directory = tempfile::tempdir().unwrap();
     let path = directory.path().join("published");
@@ -136,8 +102,23 @@ fn replacement_updates_only_owned_regular_files_without_following_links() {
     assert_eq!(fs::read(&original).unwrap(), b"after");
     assert_eq!(fs::read_dir(directory.path()).unwrap().count(), 2);
 }
+
 #[test]
-fn administrator_cannot_accidentally_read_another_owners_secret() {
+fn held_parent_is_not_reopened_after_directory_rebinding() {
+    let temporary = tempfile::tempdir().unwrap();
+    let parent = temporary.path().join("parent");
+    fs::create_dir(&parent).unwrap();
+    write_new(&parent.join("draft"), b"original").unwrap();
+    let held = AnchoredPath::open(&parent.join("draft")).unwrap();
+    let moved = temporary.path().join("moved");
+    fs::rename(&parent, &moved).unwrap();
+    fs::create_dir(&parent).unwrap();
+    write_new(&parent.join("draft"), b"replacement").unwrap();
+    assert_eq!(held.read_owned_bytes(1024).unwrap(), b"original");
+}
+
+#[test]
+fn administrator_cannot_accidentally_read_another_owners_draft() {
     if rustix::process::geteuid().as_raw() != 0 {
         return;
     }
@@ -146,5 +127,5 @@ fn administrator_cannot_accidentally_read_another_owners_secret() {
     write_new(&path, b"fixture-value").unwrap();
     let file = File::open(&path).unwrap();
     rustix::fs::fchown(&file, Some(rustix::process::Uid::from_raw(65534)), None).unwrap();
-    assert!(read_private(&path, 1024).is_err());
+    assert!(read_owned_bytes(&path, 1024).is_err());
 }

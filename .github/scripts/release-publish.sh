@@ -17,7 +17,7 @@ ZXS $RELEASE_TAG
 
 Portable tests, source/security checks, contract checks and production WASM/browser smoke passed for $sha.
 
-- Linux x86_64 server/CLI: one zxs binary; the server is the zxs serve subcommand.
+- Linux x86_64: direct zxs daemon and minimal zxs-rescue offline utility; normal setup and administration use Web.
 - Production Web static assets, including the build manifest.
 - SMB uses the separately built Samba VFS module and the pinned native Samba SDK.
 

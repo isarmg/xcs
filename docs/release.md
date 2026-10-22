@@ -1,6 +1,6 @@
 # ZXS Web 与 SMB 发布
 
-当前业务入口为 Web 和 SMB。服务端使用 `zxs serve` 提供业务 API、Web 静态资源和本地 Samba 桥接；Samba VFS 模块单独按固定 SDK 构建。
+当前业务入口为 Web 和 SMB。服务端使用 `zxs` 提供业务 API、Web 静态资源和本地 Samba 桥接；Samba VFS 模块单独按固定 SDK 构建。
 
 ## 触发与验证
 
@@ -12,7 +12,7 @@
 
 ## 发布文件
 
-- `zxs-VERSION-x86_64-unknown-linux-gnu.tar.gz`：Linux x86_64 的服务端及管理 CLI，入口为同一个 `zxs` 可执行文件。
+- `zxs-VERSION-x86_64-unknown-linux-gnu.tar.gz`：Linux x86_64 的直接守护进程 `zxs` 和最小离线救援工具 `zxs-rescue`。迁移分支中的旧管理入口不进入发布包；发布前须通过 Web 初始化和日常管理替代验收。
 - `web-interface-VERSION.tar.gz`：正式 Web 静态目录，包括 WASM、绑定文件及 `build-manifest.json`。
 - `INSTALL.md`、`BUILD.txt`、`SHA256SUMS`：安装与重建说明、源码提交及构建工具记录、全部其他资产的摘要。
 
@@ -29,10 +29,10 @@ VERSION=0.1.0
 sha256sum --check --ignore-missing SHA256SUMS
 tar -xzf "zxs-$VERSION-x86_64-unknown-linux-gnu.tar.gz"
 ./zxs --help
-./zxs serve --help
+./zxs-rescue --help
 ```
 
-服务端在 Ubuntu 24.04 构建，要求兼容的 GNU libc 及系统运行库。根据 `serve --help` 和运维文档准备数据目录、设备与认证配置。将 Web 归档解压到独立静态目录，按服务选项关联该目录；不要覆盖解压到已有业务数据目录。
+服务端在 Ubuntu 24.04 构建，要求兼容的 GNU libc 及系统运行库。根据 `zxs --help` 和运维文档准备数据目录、设备与认证配置。将 Web 归档解压到独立静态目录，按服务选项关联该目录；不要覆盖解压到已有业务数据目录。
 
 ## 离线重建 Rust 源码
 
@@ -45,7 +45,7 @@ python3 tools/rust-sources/manage.py verify --metadata
 cargo run --locked --offline -p release-tools -- v0.1.0
 bash .github/scripts/check.sh web-production
 python3 .github/scripts/check-rust-diagnostics.py -- \
-  cargo build --locked --offline --release --package storage-admin --message-format=json
+  cargo build --locked --offline --release --package storage-server --package storage-rescue --message-format=json
 ```
 
 正式 Web 绑定工具来自 [绑定生成工具](tools/web-bindings.md)：从 wasm-bindgen-cli 0.2.129 提取 Web 命令，删除测试运行器、其他目标命令及网络/TLS 依赖。其版本字符串保持 `wasm-bindgen 0.2.129`，与 Web schema 匹配；原始来源、许可证及修改记录纳入[统一源码清单](THIRD_PARTY_RUST_SOURCES.md)。

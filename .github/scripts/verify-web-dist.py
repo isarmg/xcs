@@ -146,9 +146,11 @@ def verify(root, stage=None):
     materials = ["README.md", *tree_paths(root, "compliance"), *tree_paths(root, "docs")]
     for relative in materials:
         input_path(root, relative)
-    binary = input_path(root, "target/native/release/zxs")
-    if not binary.stat().st_size or not binary.stat().st_mode & 0o111:
-        raise ValueError("release zxs binary must be nonempty and executable")
+    native_binaries = ("zxs", "zxs-rescue")
+    for name in native_binaries:
+        binary = input_path(root, f"target/native/release/{name}")
+        if not binary.stat().st_size or not binary.stat().st_mode & 0o111:
+            raise ValueError(f"release {name} binary must be nonempty and executable")
     if stage is not None:
         stage = Path(stage)
         # The caller supplies a fresh private directory. Never follow a
@@ -164,7 +166,8 @@ def verify(root, stage=None):
         (stage / "web" / MANIFEST).write_bytes(manifest_bytes)
         for relative in materials:
             write_snapshot(root, relative, stage / "material" / relative, inputs.get(relative))
-        write_snapshot(root, "target/native/release/zxs", stage / "native/zxs")
+        for name in native_binaries:
+            write_snapshot(root, f"target/native/release/{name}", stage / "native" / name)
         if source_inventory(root) != current_inputs:
             raise ValueError("Web source inputs changed while staging")
     return len(outputs), len(inputs)

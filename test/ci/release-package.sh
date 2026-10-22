@@ -9,10 +9,13 @@ mkdir -p "$fixture/.github/scripts" "$fixture/target/native/release" \
   "$fixture/compliance/provenance" "$fixture/docs/components" "$fixture/docs/templates"
 cp .github/scripts/release-package.sh .github/scripts/release-assemble.sh "$fixture/.github/scripts/"
 cp rust-toolchain.toml "$fixture/"
-printf '#!/bin/sh\nexit 0\n' > "$fixture/target/native/release/zxs"
-chmod +x "$fixture/target/native/release/zxs"
+for name in zxs zxs-rescue; do
+  printf '#!/bin/sh\nexit 0\n' > "$fixture/target/native/release/$name"
+  chmod +x "$fixture/target/native/release/$name"
+done
 # Validation tools must never leak into either product archive.
 printf 'test-only engine fixture\n' > "$fixture/target/native/release/browser-smoke"
+printf 'unshipped tool\n' > "$fixture/target/native/release/zxs-unpublished-tool"
 printf '<html>fixture</html>\n' > "$fixture/build/web/index.html"
 printf '{"runtime":"web-interface"}\n' > "$fixture/build/web/build-manifest.json"
 printf 'wasm fixture\n' > "$fixture/build/web/pkg/zxs_bg.wasm"
@@ -31,6 +34,7 @@ for archive in "$fixture"/release-assets/*.tar.gz; do
   output=$(mktemp -d "$fixture/extract.XXXXXX")
   tar -xzf "$archive" -C "$output"
   test -z "$(find "$output" -name browser-smoke -print -quit)"
+  test -z "$(find "$output" -name zxs-unpublished-tool -print -quit)"
   test ! -d "$output/test"
   test ! -d "$output/tools"
   for path in compliance/NOTICE.md compliance/licenses/upstream/sample/LICENSE \
@@ -50,7 +54,9 @@ for document in (root / "docs/release.md", root / "docs/components/smb.md"):
         assert target.is_relative_to(root.resolve()) and target.is_file(), target
 PY
   if [[ "$archive" == *-unknown-linux-gnu.tar.gz ]]; then
-    cmp "$fixture/target/native/release/zxs" "$output/zxs"
+    for name in zxs zxs-rescue; do
+      cmp "$fixture/target/native/release/$name" "$output/$name"
+    done
   else
     cmp "$fixture/build/web/pkg/zxs_bg.wasm" "$output/pkg/zxs_bg.wasm"
   fi

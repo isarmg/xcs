@@ -12,7 +12,7 @@
 | [引擎](engine.md) | 存储、版本、分支、备份与恢复 |
 | [服务端](server.md) | HTTP API、会话与本机桥接 |
 | [客户端](client.md) | 运维客户端的 HTTP 与完整性校验 |
-| [运维入口](admin.md) | 服务与管理 CLI |
+| [离线救援](rescue.md) | 明确隔离的核验、恢复和历史包命令行工具 |
 | [Web 产品界面](web.md) | 浏览器用户操作与 WASM 构建 |
 | [浏览器基础层](interface.md) | CSR 原语、共享组件、主题、生命周期 |
 | [SMB 桥接](smb.md) | Samba 协议桥接、VFS 与 SDK 边界 |

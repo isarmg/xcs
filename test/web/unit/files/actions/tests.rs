@@ -7,6 +7,8 @@ fn write_admission_combines_session_location_and_publication_state() {
         ..Default::default()
     };
     state.files.writable = true;
+    assert!(!write_allowed(&state), "unknown health fails closed");
+    state.management.storage = crate::management::Storage::Ready;
     assert!(write_allowed(&state));
     state.restoring = true;
     assert!(!write_allowed(&state));

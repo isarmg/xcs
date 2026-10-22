@@ -32,50 +32,32 @@ impl AnchoredPath {
             name,
         })
     }
-    fn read_private(&self, maximum: usize) -> Result<String> {
-        let file = self.directory.open_file(&self.name.as_relative(), false)?;
-        let metadata = file.metadata()?;
-        if metadata.uid() != rustix::process::geteuid().as_raw()
-            || !matches!(metadata.mode() & 0o7777, 0o400 | 0o600)
-        {
-            return Err("secret file must belong to this user and have mode 0400 or 0600".into());
-        }
-        let mut bytes = Vec::new();
-        file.take((maximum as u64).saturating_add(1))
-            .read_to_end(&mut bytes)?;
-        if bytes.len() > maximum {
-            return Err("secret input exceeds its byte limit".into());
-        }
-        Ok(String::from_utf8(bytes)?)
-    }
-}
-
-pub(crate) fn read_private(path: &Path, maximum: usize) -> Result<String> {
-    AnchoredPath::open(path)?.read_private(maximum)
 }
 
 /// Read an explicitly selected owned draft without following links. Drafts
 /// need not have secret-file permissions, but still use the regular-file and
 /// single-link checks of the descriptor-anchored I/O layer.
+impl AnchoredPath {
+    fn read_owned_bytes(&self, maximum: usize) -> Result<Vec<u8>> {
+        let file = self.directory.open_file(&self.name.as_relative(), false)?;
+        let metadata = file.metadata()?;
+        if metadata.uid() != rustix::process::geteuid().as_raw() {
+            return Err("configuration draft must belong to this user".into());
+        }
+        if metadata.len() > maximum as u64 {
+            return Err("configuration draft exceeds its byte limit".into());
+        }
+        let mut bytes = Vec::new();
+        file.take((maximum as u64).saturating_add(1))
+            .read_to_end(&mut bytes)?;
+        if bytes.len() > maximum {
+            return Err("configuration draft exceeds its byte limit".into());
+        }
+        Ok(bytes)
+    }
+}
 pub(crate) fn read_owned_bytes(path: &Path, maximum: usize) -> Result<Vec<u8>> {
-    let target = AnchoredPath::open(path)?;
-    let file = target
-        .directory
-        .open_file(&target.name.as_relative(), false)?;
-    let metadata = file.metadata()?;
-    if metadata.uid() != rustix::process::geteuid().as_raw() {
-        return Err("configuration draft must belong to this user".into());
-    }
-    if metadata.len() > maximum as u64 {
-        return Err("configuration draft exceeds its byte limit".into());
-    }
-    let mut bytes = Vec::new();
-    file.take((maximum as u64).saturating_add(1))
-        .read_to_end(&mut bytes)?;
-    if bytes.len() > maximum {
-        return Err("configuration draft exceeds its byte limit".into());
-    }
-    Ok(bytes)
+    AnchoredPath::open(path)?.read_owned_bytes(maximum)
 }
 
 struct StagingCleanup<'a> {
@@ -113,7 +95,7 @@ fn write_atomic(path: &Path, bytes: &[u8], replace: bool) -> Result<()> {
             return Err("configuration draft must belong to this user".into());
         }
     }
-    let name = format!(".storage-admin-{}.tmp", authentication::random_token()?);
+    let name = format!(".zxs-rescue-{}.tmp", authentication::random_token()?);
     let mut file = File::from(openat(
         directory,
         name.as_str(),
@@ -155,5 +137,5 @@ fn write_atomic(path: &Path, bytes: &[u8], replace: bool) -> Result<()> {
 }
 
 #[cfg(test)]
-#[path = "../../../test/admin/unit/private_io/tests.rs"]
+#[path = "../../../test/rescue/unit/private_io/tests.rs"]
 mod tests;

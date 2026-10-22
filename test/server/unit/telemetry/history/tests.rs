@@ -7,6 +7,7 @@ fn sample(at: i64, value: Option<f64>) -> Sample {
         observations: 1,
         statistics: None,
         status: Snapshot {
+            disk_sampling_unavailable: false,
             collected_at: super::super::timestamp(at).unwrap(),
             cpu: CpuStatus {
                 usage_percent: value.map(|value| value.min(100.0) as f32),

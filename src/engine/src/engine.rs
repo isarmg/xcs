@@ -120,7 +120,7 @@ impl Engine {
         for d in &config.disks {
             let seal = identity(&config, d)?;
             write_json(&d.root.join("disk.json"), &seal, false)?;
-            write_atomic(&d.root.join("README.txt"),b"ZXS disk format 2. Ordinary full files are stored below histories/. Use zxs offline-check/offline-export before recovery. Development disks are not physical redundancy evidence.\n",false)?;
+            write_atomic(&d.root.join("README.txt"),b"ZXS disk format 2. Ordinary full files are stored below histories/. Use zxs-rescue offline-check/offline-export before recovery. Development disks are not physical redundancy evidence.\n",false)?;
             for p in [
                 "histories",
                 "metadata/application-log",

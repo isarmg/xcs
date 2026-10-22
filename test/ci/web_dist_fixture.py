@@ -31,14 +31,15 @@ def prepare(root):
     for directory in spec["directories"]:
         (root / directory).mkdir(parents=True, exist_ok=True)
     for relative in [*spec["files"], "README.md", "compliance/NOTICE.md", "docs/README.md",
-                     "target/native/release/zxs", "build/web/index.html", "build/web/boot.js",
+                     "target/native/release/zxs", "target/native/release/zxs-rescue", "build/web/index.html", "build/web/boot.js",
                      "build/web/zxs.css", "build/web/styles/startup.css", "build/web/pkg/zxs.js",
                      "build/web/pkg/zxs_bg.wasm", "build/web/pkg/zxs_bg.wasm.gz"]:
         path = root / relative
         path.parent.mkdir(parents=True, exist_ok=True)
         if not path.exists():
             path.write_text(f"fixture {relative}\n")
-    (root / "target/native/release/zxs").chmod(0o755)
+    for name in ("zxs", "zxs-rescue"):
+        (root / "target/native/release" / name).chmod(0o755)
     for relative in (SPEC, ".github/scripts/release-package.sh", ".github/scripts/verify-web-dist.py"):
         shutil.copy2(ROOT / relative, root / relative)
     return record(root)

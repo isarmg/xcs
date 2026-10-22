@@ -52,6 +52,9 @@ struct Database {
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Identity {
+    /// Internal session hash, never part of the wire identity.
+    #[serialization(skip)]
+    pub admission_session: Option<String>,
     pub principal: String,
     pub admin: bool,
     pub repositories: BTreeSet<String>,
@@ -76,6 +79,7 @@ impl AdmissionSnapshot {
                 (
                     name,
                     Identity {
+                        admission_session: None,
                         principal: account.username,
                         admin: account.admin,
                         repositories: account.repositories,
@@ -123,7 +127,8 @@ pub struct AuthStore {
     path: PathBuf,
     db: Database,
     dummy_hash: String,
-    _lock: fs::File,
+    _lock: Option<fs::File>,
+    local_authority: bool,
     backup: Option<BackupHook>,
     blocked: AtomicBool,
 }
@@ -159,6 +164,32 @@ impl AuthStore {
         self.require_available()?;
         Self::database_identity(&self.db, username)
     }
+    /// Revalidate queued HTTP sessions and obtain current privileges. Protocol
+    /// mappings carry no session and are revalidated by principal instead.
+    pub fn revalidate_identity(&self, caller: &Identity) -> Result<Identity, ApiError> {
+        self.require_available()?;
+        if let Some(key) = &caller.admission_session {
+            let session = self
+                .db
+                .sessions
+                .get(key)
+                .filter(|session| {
+                    session.expires_at > now() && session.username == caller.principal
+                })
+                .ok_or_else(ApiError::unauthorized)?;
+            let account = self
+                .db
+                .accounts
+                .get(&caller.principal)
+                .filter(|account| !account.disabled && account.generation == session.generation)
+                .ok_or_else(ApiError::unauthorized)?;
+            let mut identity = Self::database_identity(&self.db, &account.username)?;
+            identity.admission_session = Some(key.clone());
+            Ok(identity)
+        } else {
+            Self::database_identity(&self.db, &caller.principal)
+        }
+    }
     fn database_identity(database: &Database, username: &str) -> Result<Identity, ApiError> {
         let account = database
             .accounts
@@ -166,6 +197,7 @@ impl AuthStore {
             .filter(|account| !account.disabled)
             .ok_or_else(ApiError::unauthorized)?;
         Ok(Identity {
+            admission_session: None,
             principal: account.username.clone(),
             admin: account.admin,
             repositories: account.repositories.clone(),
@@ -185,7 +217,27 @@ impl AuthStore {
     }
     /// Create only through the explicit administrative setup command.
     pub fn initialize(root: &Path, username: &str, password: &str) -> Result<Self, ApiError> {
-        let path = root.join("auth.json");
+        Self::initialize_at(root, username, password, false)
+    }
+    #[cfg(feature = "core")]
+    pub(crate) fn initialize_management(
+        root: &Path,
+        username: &str,
+        password: &str,
+    ) -> Result<Self, ApiError> {
+        Self::initialize_at(root, username, password, true)
+    }
+    fn initialize_at(
+        root: &Path,
+        username: &str,
+        password: &str,
+        management: bool,
+    ) -> Result<Self, ApiError> {
+        let path = root.join(if management {
+            "management-auth.json"
+        } else {
+            "auth.json"
+        });
         if path.symlink_metadata().is_ok() {
             return Err(ApiError::conflict(
                 "AUTH_ALREADY_INITIALIZED",
@@ -211,7 +263,8 @@ impl AuthStore {
             path,
             db,
             dummy_hash: hash,
-            _lock: auth_lock,
+            _lock: Some(auth_lock),
+            local_authority: management,
             backup: None,
             blocked: AtomicBool::new(false),
         };
@@ -228,8 +281,30 @@ impl AuthStore {
         root: &Path,
         authoritative: Option<json_codec::Value>,
     ) -> Result<Self, ApiError> {
+        Self::open_at(root, authoritative, false)
+    }
+    #[cfg(feature = "core")]
+    pub(crate) fn open_management(root: &Path) -> Result<Self, ApiError> {
+        Self::open_at(root, None, true)
+    }
+    #[cfg(feature = "core")]
+    pub(crate) fn migrate_management(
+        root: &Path,
+        snapshot: json_codec::Value,
+    ) -> Result<Self, ApiError> {
+        Self::open_at(root, Some(snapshot), true)
+    }
+    fn open_at(
+        root: &Path,
+        authoritative: Option<json_codec::Value>,
+        management: bool,
+    ) -> Result<Self, ApiError> {
         let auth_lock = Self::acquire_lock(root)?;
-        let path = root.join("auth.json");
+        let path = root.join(if management {
+            "management-auth.json"
+        } else {
+            "auth.json"
+        });
         let local = match fs::symlink_metadata(&path) {
             Ok(metadata) => {
                 if !metadata.is_file() || metadata.file_type().is_symlink() {
@@ -300,7 +375,8 @@ impl AuthStore {
             path,
             db,
             dummy_hash,
-            _lock: auth_lock,
+            _lock: Some(auth_lock),
+            local_authority: management,
             backup: None,
             blocked: AtomicBool::new(false),
         };
@@ -335,7 +411,8 @@ impl AuthStore {
         let result = (|| {
             file.write_all(&bytes).map_err(ApiError::io)?;
             file.sync_all().map_err(ApiError::io)?;
-            if let Some(backup) = &self.backup
+            if !self.local_authority
+                && let Some(backup) = &self.backup
                 && let Err(error) = backup(self.snapshot()?)
             {
                 // Admission rejected before any decision or auth publication.
@@ -362,17 +439,46 @@ impl AuthStore {
             Ok(())
         })();
         if result.is_err() {
-            if self.backup.is_some()
-                && result
-                    .as_ref()
-                    .err()
-                    .is_none_or(|error| error.code != "COMMIT_PREPARATION_BUSY")
+            if self.local_authority
+                || self.backup.is_some()
+                    && result
+                        .as_ref()
+                        .err()
+                        .is_none_or(|error| error.code != "COMMIT_PREPARATION_BUSY")
             {
                 self.blocked.store(true, Ordering::SeqCst);
             }
             let _ = fs::remove_file(temporary);
         }
+        if result.is_ok() && self.local_authority {
+            // The durable system store is primary. Replica failure must never
+            // roll back a password change or resurrect revoked sessions.
+            if let Some(backup) = &self.backup {
+                let _ = backup(self.snapshot()?);
+            }
+        }
         result
+    }
+
+    pub fn is_available(&self) -> bool {
+        !self.blocked.load(Ordering::SeqCst)
+    }
+    #[cfg(feature = "core")]
+    pub(crate) fn unavailable(root: &Path) -> Self {
+        Self {
+            path: root.join("management-auth.json"),
+            db: Database::default(),
+            dummy_hash: String::new(),
+            _lock: None,
+            local_authority: true,
+            backup: None,
+            blocked: AtomicBool::new(true),
+        }
+    }
+    /// The callback maintains a disaster-recovery copy, not admission authority.
+    #[cfg(feature = "core")]
+    pub(crate) fn attach_replica(&mut self, replica: BackupHook) {
+        self.backup = Some(replica);
     }
 
     pub fn login(&mut self, username: &str, password: &str) -> Result<LoginResult, ApiError> {
@@ -446,6 +552,7 @@ impl AuthStore {
             .filter(|a| !a.disabled && a.generation == session.generation)
             .ok_or_else(ApiError::unauthorized)?;
         Ok(Identity {
+            admission_session: Some(primitives::token_hash_hex(token)),
             principal: account.username.clone(),
             admin: account.admin,
             repositories: account.repositories.clone(),

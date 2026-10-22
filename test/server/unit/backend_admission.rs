@@ -32,7 +32,10 @@ struct BackendProbe {
     outcome: u8,
 }
 impl Backend for BackendProbe {
-    fn call(&self, _: BackendAction, _: &Identity, _: Value) -> Result<Value, ApiError> {
+    fn call(&self, action: BackendAction, _: &Identity, _: Value) -> Result<Value, ApiError> {
+        if matches!(action, BackendAction::Capabilities | BackendAction::Ready) {
+            return Ok(json!({}));
+        }
         self.gate.calls.fetch_add(1, Ordering::SeqCst);
         self.gate.started.add_permits(1);
         let open = self.gate.open.lock().unwrap();
@@ -59,7 +62,8 @@ fn fixture(root: &Path, outcome: u8, open: bool) -> (Router, Arc<Gate>, Release)
         calls: AtomicUsize::new(0),
         finished: tokio::sync::Semaphore::new(0),
     });
-    let auth = AuthStore::initialize(root, "admin", "a-long-test-password").unwrap();
+    let mut auth = AuthStore::initialize(root, "admin", "a-long-test-password").unwrap();
+    let token = auth.login("admin", "a-long-test-password").unwrap().token;
     let app = router(
         Arc::new(BackendProbe {
             gate: gate.clone(),
@@ -68,7 +72,18 @@ fn fixture(root: &Path, outcome: u8, open: bool) -> (Router, Arc<Gate>, Release)
         auth,
         ServerConfig::loopback(root),
     )
-    .unwrap();
+    .unwrap()
+    .layer(http_routing::middleware::from_fn(
+        move |mut request: Request, next: http_routing::middleware::Next| {
+            let token = token.clone();
+            async move {
+                request
+                    .headers_mut()
+                    .insert("authorization", format!("Bearer {token}").parse().unwrap());
+                next.run(request).await
+            }
+        },
+    ));
     (app, gate.clone(), Release(gate))
 }
 async fn request(app: Router, path: &str) -> Response {
@@ -97,7 +112,7 @@ async fn backend_admission_saturates_without_waiters_and_survives_http_cancellat
     for _ in 0..HTTP_BACKEND_SLOTS {
         let app = app.clone();
         jobs.push(tokio::spawn(async move {
-            request(app, "/api/capabilities").await
+            request(app, "/api/repositories").await
         }));
     }
     tokio::time::timeout(
@@ -108,8 +123,16 @@ async fn backend_admission_saturates_without_waiters_and_survives_http_cancellat
     .unwrap()
     .unwrap()
     .forget();
-    overloaded(app.clone(), "/api/capabilities").await;
-    overloaded(app.clone(), "/readyz").await;
+    overloaded(app.clone(), "/api/repositories").await;
+    overloaded(app.clone(), "/api/repositories").await;
+    assert_eq!(
+        request(app.clone(), "/readyz").await.status(),
+        StatusCode::OK
+    );
+    assert_eq!(
+        request(app.clone(), "/api/capabilities").await.status(),
+        StatusCode::OK
+    );
     assert_eq!(
         request(app.clone(), "/healthz").await.status(),
         StatusCode::OK
@@ -118,7 +141,7 @@ async fn backend_admission_saturates_without_waiters_and_survives_http_cancellat
     let cancelled = jobs.pop().unwrap();
     cancelled.abort();
     assert!(cancelled.await.unwrap_err().is_cancelled());
-    overloaded(app.clone(), "/api/capabilities").await;
+    overloaded(app.clone(), "/api/repositories").await;
     assert_eq!(gate.calls.load(Ordering::SeqCst), HTTP_BACKEND_SLOTS);
     gate.release();
     for job in jobs {
@@ -137,7 +160,7 @@ async fn backend_admission_saturates_without_waiters_and_survives_http_cancellat
         let app = app.clone();
         jobs.push(tokio::spawn(async move {
             loop {
-                let response = request(app.clone(), "/api/capabilities").await;
+                let response = request(app.clone(), "/api/repositories").await;
                 if response.status() != StatusCode::TOO_MANY_REQUESTS {
                     return response;
                 }
@@ -153,7 +176,7 @@ async fn backend_admission_saturates_without_waiters_and_survives_http_cancellat
     .unwrap()
     .unwrap()
     .forget();
-    overloaded(app, "/readyz").await;
+    overloaded(app, "/api/repositories").await;
     gate.release();
     for job in jobs {
         assert_eq!(job.await.unwrap().status(), StatusCode::OK);
@@ -172,7 +195,7 @@ async fn backend_admission_releases_after_success_error_and_panic() {
         let (app, gate, _release) = fixture(root.path(), outcome, true);
         for _ in 0..HTTP_BACKEND_SLOTS * 2 {
             assert_eq!(
-                request(app.clone(), "/api/capabilities").await.status(),
+                request(app.clone(), "/api/repositories").await.status(),
                 status
             );
         }

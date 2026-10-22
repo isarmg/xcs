@@ -102,8 +102,9 @@ jobs:
       - name: Build Linux service and local maintenance entrypoint
         run: |
           python3 .github/scripts/check-rust-diagnostics.py -- \
-            cargo build --locked --offline --release --package storage-admin --message-format=json
+            cargo build --locked --offline --release --package storage-server --package storage-rescue --message-format=json
           target/native/release/zxs --help
+          target/native/release/zxs-rescue --help
           bash .github/scripts/release-package.sh
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:

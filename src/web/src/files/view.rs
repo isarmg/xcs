@@ -120,7 +120,7 @@ fn directory(state: RwSignal<State>) -> impl IntoView {
 }
 fn file_table(state: RwSignal<State>) -> impl IntoView {
     let rows = visible_rows(state);
-    let disabled = Memo::new(move |_| state.with(|s| !s.files.writable || actions::pending(s)));
+    let disabled = Memo::new(move |_| state.with(|s| !actions::write_allowed(s)));
     let selected = Memo::new(move |_| {
         state.with(|s| {
             s.files

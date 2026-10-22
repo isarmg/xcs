@@ -36,13 +36,12 @@ flowchart TB
         SBRIDGE --> SAUTH
     end
 
-    subgraph MANAGEMENT[内部管理与运维]
-        CLI[内部远程管理 CLI]
-        LCLI[内部本机管理 CLI]
-        IPC[受保护本机请求入口]
-        LCLI --> IPC
+    subgraph MANAGEMENT[系统盘管理面]
+        PRIMARY[本机账户 / 授权 / 会话主存储]
+        HOST[主机诊断 / 受保护初始化与恢复]
     end
-    CLI --> API
+    API --> PRIMARY
+    API --> HOST
 
     subgraph C[统一安全与业务边界]
         AUTH[认证 / 授权 / 配额 / 审计]
@@ -51,7 +50,7 @@ flowchart TB
     end
     AAUTH --> AUTH
     SAUTH --> AUTH
-    IPC --> AUTH
+    PRIMARY --> AUTH
     AUTH --> NAME --> SESS
     subgraph DCORE[Storage Core 唯一业务持盘服务]
         NS[主分支及各分支目录快照]
@@ -94,7 +93,7 @@ flowchart TB
     IO --> B2
     IO --> B3
     LOG --> DISKS
-    HELPER[最小特权挂载辅助进程] -.-> DISKS
+    HELPER[部署者提供的受控挂载流程 / 非内置服务] -.-> DISKS
     MAINT[巡检 / 容量 / 迁移 / 修复] --> REP
     MAINT --> GC
 ```
@@ -107,11 +106,15 @@ Web 经 HTTPS 业务 API 接入，SMB 经 Samba 和服务端桥接接入；两�
 
 采用 Samba 承担 SMB 协议服务，通过受控业务桥接将基础文件操作送入 Storage Core。桥接采用 Samba VFS 扩展和受保护本机接口；目标 SDK 与已验证路径见[SMB 桥接说明](components/smb.md)。其他版本及完整应用操作矩阵仍需单独验证。这里需要实现业务对接，但不重写 SMB 协议、不开发客户端虚拟盘，客户端无需本系统自研挂载。[S03][S04]
 
-SMB 共享绑定 `(repository_id, history_tree_id, main_branch_id, share_generation)`，只展示该主分支当前文件。分支、历史图、清除、拆分、备份和磁盘管理通过 Web 或内部管理 CLI 访问；不得借可写隐藏目录或特殊文件名触发。
+SMB 共享绑定 `(repository_id, history_tree_id, main_branch_id, share_generation)`，只展示该主分支当前文件。已实现的分支、历史图、清除、拆分、备份和磁盘管理通过获授权 Web/API 访问；不得借可写隐藏目录或特殊文件名触发。
 
 SMB 服务及 API 网关不直接共享版本对象目录。Storage Daemon 仍是业务持盘和授权的最终边界；桥接只能提交受限请求，不能绕过命名、保护份数或历史保存。Samba 本身不能替本系统提供版本事务或跨盘保护保证。
 
-Web 在浏览器中执行界面、认证交互、文件传输及任务状态展示，统一调用业务 API。SMB 入口由 Samba 和服务端业务桥接独立提供。内部管理 CLI 可走本机受保护接口或远程 HTTPS。服务器本机同样使用 Web、SMB 或受限管理入口。管理员内部维护接口不能成为普通应用绕过业务规则的入口。
+Web 在浏览器中提供认证、文件元数据、历史与管理状态界面，不提供文件上传、下载、正文预览或传输任务页。SMB 入口由 Samba 和服务端业务桥接独立提供；受控 HTTP 内容接口和客户端库仍保留，但不是产品 CLI。`zxs` 直接启动守护进程；`zxs-rescue` 只提供明确的离线恢复、历史包与未初始化配置草稿工具，不提供日常管理命令或远程客户端。
+
+管理 HTTP、登录和主机诊断不等待数据引擎打开。`management-auth.json` 是账户、授权和会话的系统盘主存储；数据盘只接收不含会话的凭据灾备快照，不是离线授权回退。缺失已有主存储时保持恢复要求，不因数据盘可读而自动回滚凭据。详见[管理面边界](management/control-plane.md)。
+
+系统盘不是“仅可丢弃索引”：除独立管理主存储外，池系统目录还保存配置、工作区记录与请求证据；`stage_bytes` 和范围写入会在该目录创建真实正文临时文件，HTTP 暂存也有独立预算与保留规则。不能按“都是缓存”清空系统目录，也不宣称已经将所有正文暂存搬到数据盘。
 
 “三盘元数据”表示用户指定的三个不同物理数据盘兼任控制日志成员，并非另外增加三块硬盘。数据盘仍各自独立，不组成跨盘条带。
 

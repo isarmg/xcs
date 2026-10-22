@@ -105,6 +105,7 @@ fn fixture() -> (tempfile::TempDir, Arc<Shared>, Arc<LostCommitReply>, String) {
         })
         .unwrap();
     let identity = Identity {
+        admission_session: None,
         principal: "alice".into(),
         admin: false,
         repositories: BTreeSet::from([repo.repository_id.clone()]),

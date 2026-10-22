@@ -39,6 +39,17 @@ class ReleaseIntegrity(unittest.TestCase):
             self.assertEqual(result.returncode, 0, result.stderr)
         self.assertEqual(len(list((self.root / "release-assets").glob("*.tar.gz"))), 2)
 
+    def test_missing_rescue_binary_rejects_partial_native_release(self):
+        for name in ("zxs-rescue",):
+            path = self.root / "target/native/release" / name
+            saved = path.read_bytes()
+            path.unlink()
+            result = self.package()
+            self.assertNotEqual(result.returncode, 0)
+            self.assertFalse((self.root / "release-assets").exists())
+            path.write_bytes(saved)
+            path.chmod(0o755)
+
     def test_modified_output_is_rejected_before_creating_assets(self):
         (self.dist / "pkg/zxs_bg.wasm").write_bytes(b"damaged WASM")
         result = self.package()

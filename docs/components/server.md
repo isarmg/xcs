@@ -21,10 +21,10 @@ Axum HTTP 服务、持久会话认证及受保护的 Samba 本机桥接。业务
 
 ## 启动
 
-从项目根目录构建 `CARGO_TARGET_DIR=target/native cargo build --locked --offline -p storage-admin`，先按照 [CLI 文档](admin.md) 初始化存储池，然后运行：
+从项目根目录构建 `CARGO_TARGET_DIR=target/native cargo build --locked --offline -p storage-server -p storage-rescue`，直接启动服务，再按[受保护 Web 引导](../getting-started.md)完成首次初始化：
 
 ```sh
-target/native/debug/zxs --root /srv/zxs/system serve \
+target/native/debug/zxs --root /srv/zxs/system \
   --listen 127.0.0.1:7400 --web-dir /srv/zxs/web/dist
 ```
 
@@ -38,19 +38,19 @@ HTTP 监听地址必须是回环地址。对外部署由同机反向代理终止
 
 Bearer 请求使用 `Authorization: Bearer ...`。Cookie 写请求必须同时提供精确匹配的 `Origin` 和 `X-CSRF-Token`；若 Bearer 请求显式提供跨源 Origin，也会拒绝。内容 API 可使用同源 Cookie，不需要把 token 放进 URL；这是服务端认证协议能力，当前 Web 产品不提供文件下载或预览入口。没有开放跨源 CORS。
 
-`POST /api/auth/password` 允许当前账号提交 `current_password`、`new_password` 自助改密；新密码沿用至少 12 字节的准入要求。不接受用户名、角色或仓库范围变更。旧密码不正确返回 `403 CURRENT_PASSWORD_INVALID` 并保留会话；成功后通过账号代际撤销该账号所有会话、清除浏览器 Cookie，要求重新登录。每个来源 IP 和账号分别限制每分钟 10 次改密尝试，与登录共享密码计算并发上限。改密使用相同的三成员认证备份事务。
+`POST /api/auth/password` 允许当前账号提交 `current_password`、`new_password` 自助改密；新密码沿用至少 12 字节的准入要求。不接受用户名、角色或仓库范围变更。旧密码不正确返回 `403 CURRENT_PASSWORD_INVALID` 并保留会话；成功后通过账号代际撤销该账号所有会话、清除浏览器 Cookie，要求重新登录。每个来源 IP 和账号分别限制每分钟 10 次改密尝试，与登录共享密码计算并发上限。改密先耐久发布到独立系统盘认证主库并撤销旧会话；账号及授权的灾备副本异步同步到数据池，不以数据盘可用作为登录或改密的前提。
 
 账号可限制允许进入的仓库，仓库还独立验证 read/write/manage 授权。直接访问版本、校验表、历史图、工作区和操作结果同样验证对象权限。拆分仓库允许自身 ID 的账号准入，也可沿用来源仓库的准入范围，最后始终验证新仓库独立的 ACL。修改或禁用账号会撤销该账号所有已有会话；不能禁用最后一个有效管理员。Samba 的每次业务调用也重新检查账号状态。
 
-账号状态检查与存储准入使用同一个引擎锁：HTTP 或 Samba 先取得的身份不能绕过随后已发布的禁用、管理员降权或仓库范围撤销。普通元数据写入、目录/历史查询、正文/校验表读取计划与上传准备均在锁内读取引擎的受保护认证快照；上传和提交的锁外准备结束后再次检查。账号发布保持 `auth → engine` 锁序，业务路径不反向获取认证锁。已获得的读取计划不会因后来撤权而回收正在传输的字节；后续请求按当前权限重新准入。已发布操作的成功事实不因撤权改写，但查询仍要求当前权限。
+正常 daemon 的认证权威是系统盘上的 `management-auth.json`，不是引擎中的认证快照。HTTP、排队中的管理写入与存储准入都按当前主库重新核验会话、账号状态和权限，不能凭此前取得的身份绕过已发布的禁用、降权、范围撤销或会话注销。登录、账号管理和主机诊断不等待引擎恢复或数据盘复制；存储业务则在引擎不可用时明确拒绝。已获得的读取计划不会回收正在传输的字节，后续请求必须重新准入。
 
-引擎锁内的准入投影完整解析一次权威账户与会话快照，随后仅保留启用账户的公开身份和仓库范围；密码摘要及会话记录不留在投影中。同一只读阶段的后续请求借用投影查找账号，不再反复克隆和解析整份 JSON。服务器私有引擎持有者在发出任何 `&mut Engine` 引用前清空投影，包括发布失败和恢复路径；下次准入必须从当前权威快照重新校验，畸形的无关账号或会话同样导致失败，不回退到调用者旧权限。此投影不是独立权限来源，也不会跨引擎实例或重启保存。该失效策略有意对所有可变引擎操作生效，而不是依赖容易遗漏的单个账号修改钩子。 文件浏览、文件历史、下载上下文、审计历史与备份配置查询通过独立的 `&Engine` 只读分发入口执行，失败或无权读取也不会获取可变引用；命名空间写入、分支操作及惰性磁盘根创建仍走 `&mut Engine` 写入口并失效投影。
+引擎侧受保护认证快照仅是账号与授权的灾备副本，不复制会话。在仍用于可信嵌入式测试的引擎认证模式中，准入投影随可变引擎操作失效并重新解析快照；它不是 daemon 管理主库的替代来源。正常托管模式直接使用当前主库的准入能力，不依靠旧引擎投影恢复权限。
 
 `capabilities` 与 `readyz` 是不依赖账号的公开探针。仅供可信嵌入式调用的 `EngineBackend` 在未挂接受保护认证库时使用调用者明确传入的身份；这不是网络服务的默认认证模式，也不会把独立、未挂接的账号库当作引擎权限来源。
 
 后台主机采样使用服务内部持有的只读观测能力，在引擎锁内捕获 `DiskObservationPlan`、锁外查询磁盘，不伪造管理员账号，也不发布业务状态。此能力不能从 HTTP/SMB 请求构造；公开 `MonitorDisks` 仍要求当前管理员身份，系统状态与历史接口在返回前再次检查当前账号权限。
 
-`auth.json`、会话撤销和账号状态通过正常三成员事务备份到存储池。正常启动会以恢复出的权威快照重建丢失或过期的系统盘认证文件，不会自动创建新管理员。认证备份结果不确定时停止接受认证，重启后恢复。系统目录和认证文件只允许服务账号访问，认证文件有排他锁。拥有这些本机目录访问权的系统账号属于管理员信任边界。
+系统盘的 `management-auth.json` 保存当前账号、授权与会话状态，数据池只接收剥离会话的灾备快照。`management-authority.json` 是权威交接围栏：交接完成后，即使主库丢失或损坏，也不能自动用旧 `auth.json` 或数据池快照恢复访问权。此时静态 Web 和公开诊断仍可访问，认证保持关闭，必须走受保护且明确的恢复流程。恢复不自动创建新管理员，也不复活旧会话。系统目录和认证文件只允许服务账号访问，认证文件有排他锁；拥有这些本机目录访问权的系统账号属于管理员信任边界。
 
 ## 已实现的路由
 
@@ -131,7 +131,7 @@ CARGO_TARGET_DIR=target/native CARGO_INCREMENTAL=0 \
   cargo test --locked --offline -p storage-server -p storage-client
 ```
 
-Unix socket 测试需要运行环境允许本机 socket。[集成回归](../../test/server/integration/http_engine.rs) 覆盖 HTTP 准入、封存、三盘发布、幂等、Range、ACL、历史计划和策略 CAS，也覆盖文件/目录分支、真实版本祖先、备注与重命名下载、上传池限额，以及改密的 CSRF、同源、字段和 JSON 长度边界。永久丢失后的降级发布与发布后损坏均保留原保护证据；本地认证文件丢失后从三成员权威状态恢复新密码。两种保存结果 wire 均通过原 SaveOperation schema 验证，详见 [API 验收证据](../validation/evidence/api.md)。
+Unix socket 测试需要运行环境允许本机 socket。[集成回归](../../test/server/integration/http_engine.rs) 覆盖 HTTP 准入、封存、三盘发布、幂等、Range、ACL、历史计划和策略 CAS，也覆盖文件/目录分支、真实版本祖先、备注与重命名下载、上传池限额，以及改密的 CSRF、同源、字段和 JSON 长度边界。永久丢失后的降级发布与发布后损坏均保留原保护证据；可信嵌入式认证快照恢复测试仍保留，但不代表 daemon 在权威交接后允许自动恢复丢失的认证主库。管理运行时回归另外验证主库丢失时围栏拒绝旧快照、数据引擎阻塞时仍可登录，以及排队请求在撤权后被拒绝。两种保存结果 wire 均通过原 SaveOperation schema 验证，详见 [API 验收证据](../validation/evidence/api.md)。
 
 模块回归还验证上传断开后的占用生命周期、Range/HEAD 及读租约、静态/API 命名空间、规范化账号限流、损坏上传状态和持久化失败清理。平台与共享认证回归使用 `cargo test --locked --offline -p authentication -p platform-io -p storage-server` 一并运行。
 
@@ -169,7 +169,7 @@ Unix socket 测试需要运行环境允许本机 socket。[集成回归](../../t
 
 目前没有自动删除未决材料或按 TTL 回收历史的功能；达到预算会拒绝新增上传。已结算 API 副本的安全回收/显式放弃入口仍需单独设计，不能手动删除活动记录来规避账本。操作系统的其他写入者可能消耗同一文件系统空间，余量检查并不构成内核级独占预留。
 
-运维入口：`zxs serve --http-spool-bytes-per-account ... --http-spool-bytes-total ... --http-spool-recovery-reserve-bytes ...`。单文件的 `--max-upload-bytes` 与上述累计限制独立；预算参数必须为正、总额不低于账户额、账户额至少容纳元数据额度。
+运维入口：`zxs --http-spool-bytes-per-account ... --http-spool-bytes-total ... --http-spool-recovery-reserve-bytes ...`。单文件的 `--max-upload-bytes` 与上述累计限制独立；预算参数必须为正、总额不低于账户额、账户额至少容纳元数据额度。
 
 <a id="http-transfer-limits"></a>
 

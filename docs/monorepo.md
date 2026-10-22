@@ -2,7 +2,7 @@
 
 [文档目录](README.md) · [工程约定](20-engineering.md) · [统一许可证与溯源](../compliance/README.md)
 
-ZXS 采用一个 Git 仓库、一个根 Cargo 工作区和一个活动锁文件。产品用户入口为 Web 与 SMB；服务启动、配置和恢复继续由运维 CLI 提供。自有应用和工具属于根工作区；基础实现通过本地路径接入同一依赖图，共同使用根锁文件、依赖解析和验证流程。
+ZXS 采用一个 Git 仓库、一个根 Cargo 工作区和一个活动锁文件。产品用户入口为 Web 与 SMB；`zxs` 直接启动守护进程，初始化与日常管理由受保护 Web/API 提供，独立 `zxs-rescue` 保留离线救援与配置草稿操作。自有应用和工具属于根工作区；基础实现通过本地路径接入同一依赖图，共同使用根锁文件、依赖解析和验证流程。
 
 ## 目录职责
 
@@ -55,7 +55,7 @@ Unicode 规范化实现合入 `src/naming`，与项目的固定映射、命名�
 | `src/engine` | `storage-engine` |
 | `src/server` | `storage-server` |
 | `src/client` | `storage-client` |
-| `src/admin` | `storage-admin`，产品命令为 `zxs` |
+| `src/rescue` | `storage-rescue`，离线救援命令为 `zxs-rescue`；正常守护进程 `zxs` 由 `src/server` 生成 |
 | `src/web` | `web-app` |
 | `src/interface` | `web-interface` |
 | `src/macros` | `view-macros` |

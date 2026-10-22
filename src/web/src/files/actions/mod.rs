@@ -20,7 +20,11 @@ fn disk_path(slot: &str) -> String {
 /// Shared by write actions and their controls. Check before generating IDs,
 /// creating drafts, or scheduling any browser/network work.
 pub(crate) fn write_allowed(state: &State) -> bool {
-    state.session_active() && state.files.writable && !state.files.loading && !pending(state)
+    state.session_active()
+        && state.management.storage.writable()
+        && state.files.writable
+        && !state.files.loading
+        && !pending(state)
 }
 
 pub(crate) fn pending(state: &State) -> bool {

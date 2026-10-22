@@ -65433,11 +65433,10 @@
   },
   "initial_test_relocation_sha256": "791ad728a408677dd54ef98e3feaffe825c5fc5670e888440615933d9498ecc3",
   "lockfiles_sha256": {
-    "Cargo.lock": "419a4299ea50f042af66c7565e9ba358bb2f2cbe7cfd8a018814812157e64523"
+    "Cargo.lock": "9be40b6f0419c2146bf324343ea584afc629c16378e104021a53ebe0c7116a57"
   },
   "manifests_sha256": {
-    "Cargo.toml": "d4eb9ad428c26f50546105c8704f7ed0b4b75d50632a800c76a3256279001869",
-    "src/admin/Cargo.toml": "5cd9a0db61ae1213549ac77cfc35fb9ebedf8f479bf1ff0afe6936424473b15a",
+    "Cargo.toml": "4fa15cfe7d2baf5436dbc9b9c42bd6acb37fa93bd5d03823f8d09715fe4e6e6e",
     "src/auth/Cargo.toml": "801e02ea2837c09f3066fd66ac6d3768d3e912b33cb5b9b54b7ea66f1a486470",
     "src/client/Cargo.toml": "0f05b1df018bb55bf68bb6b970d6db9cbe80b7a299af6713bef02a48a4a2efb3",
     "src/contract/Cargo.toml": "3cdb429c2617fb934312c73d89045b838d1329b4db8e317701fa4daa04c95d8f",
@@ -65691,11 +65690,12 @@
     "src/macros/Cargo.toml": "34ae205cb1da53da61bfa0e625f47e99dc524011aa56d26452234c48cbd9f5c7",
     "src/naming/Cargo.toml": "6599ac90d88b7a74eeb47444aa4fdad2002161798ae72cfe4b18e3d42eae1a9a",
     "src/platform/Cargo.toml": "d485ed3e1fb2989a7576a2ec74d9e6bcaafe01813867c9f55949b380b726a4d7",
-    "src/server/Cargo.toml": "aa88c8bf79899c0597cb728a2fc9860d471cf3671bd7e2824abb18c1ebd9cc3d",
+    "src/rescue/Cargo.toml": "8d5bd0f02eff46f12595c50064d4f801718b022f1bc37fc9e09f47dae31760d1",
+    "src/server/Cargo.toml": "f731d0326c6120887c050b5727cc44eefce4d854d91a95ab8ffb3cfe6dae2096",
     "src/smb-vfs/Cargo.toml": "51a70ac5f679a92b4b781fdd3d92f4827eae29cf6548591f92749a7fcac26c7b",
     "src/smb/Cargo.toml": "0230542f6e28f238d877f417d3931941df428d65086cfe8d0005c15ebefcdb82",
     "src/web/Cargo.toml": "9b95bebf076be95b6e4d3e04c7de7dd2a4079906695446b525b4f1cfe13cf5f8",
-    "tools/browser-smoke/Cargo.toml": "4b3da8ab7679c9824833b29ff6e9dd5a5e3c3ccfa238a7efd409f9cd9f1681f7",
+    "tools/browser-smoke/Cargo.toml": "1fb2aa0063e3ea53e9db74334e3b2d7812ea4e2dc1d3e389e22573e85d8269ee",
     "tools/contract-check/Cargo.toml": "50939ec6d4d02fc11279f6df6d0e0a6fc63d58e4e1b666c32be0003d161d1469",
     "tools/perf-check/Cargo.toml": "1d43415d20414747a8ca1c5bb74a940ac0ff773226778906f4d6a5325a945e02",
     "tools/release-tools/Cargo.toml": "389ade4140b92ee59d358dc15f3b929f743de4d1987313fd1453e6508400676e",
@@ -87995,7 +87995,7 @@
       "version": "0.2.129"
     }
   },
-  "policy_sha256": "1068f87354319b7cc37085969d24cd40bb3e2384355aab284ae7a9919d015a58",
+  "policy_sha256": "154891c0f71b6a59ac4969525ed65c5424ca3e60ef75090462c4782faa816178",
   "post_consolidation_benchmark_relocation": "8a08cc5b47c335b9e6aa2b7361ab7259fdc394c8dad16c29efb3e90d330ffbbc",
   "proof_routing_receipts": [
     "42cbfc30f0e5db58801c1806abba6926e34a3279dd0697bc1b4cdf2c98fbcce0",
@@ -98537,7 +98537,6 @@
             "color",
             "default",
             "derive",
-            "env",
             "error-context",
             "help",
             "std",
@@ -100968,7 +100967,6 @@
             "color",
             "default",
             "derive",
-            "env",
             "error-context",
             "help",
             "std",
@@ -101500,6 +101498,18 @@
             "compile"
           ]
         },
+        "src/foundation/argon2": {
+          "features": [
+            "alloc",
+            "default",
+            "password-hash",
+            "rand",
+            "std"
+          ],
+          "roles": [
+            "compile"
+          ]
+        },
         "src/foundation/arrayvec": {
           "features": [],
           "roles": [
@@ -101525,8 +101535,22 @@
             "compile"
           ]
         },
+        "src/foundation/atomic-waker": {
+          "features": [],
+          "roles": [
+            "compile"
+          ]
+        },
         "src/foundation/autocfg": {
           "features": [],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/axum-macros": {
+          "features": [
+            "default"
+          ],
           "roles": [
             "compile"
           ]
@@ -101536,6 +101560,15 @@
             "alloc",
             "default",
             "simd-unsafe",
+            "std"
+          ],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/base64ct": {
+          "features": [
+            "alloc",
             "std"
           ],
           "roles": [
@@ -101554,6 +101587,12 @@
           "features": [
             "std"
           ],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/blake2": {
+          "features": [],
           "roles": [
             "compile"
           ]
@@ -101606,6 +101645,29 @@
         },
         "src/foundation/cmov": {
           "features": [],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/command-derive": {
+          "features": [
+            "default"
+          ],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/command-line": {
+          "features": [
+            "color",
+            "default",
+            "derive",
+            "error-context",
+            "help",
+            "std",
+            "suggestions",
+            "usage"
+          ],
           "roles": [
             "compile"
           ]
@@ -101804,6 +101866,12 @@
             "compile"
           ]
         },
+        "src/foundation/form-codec": {
+          "features": [],
+          "roles": [
+            "compile"
+          ]
+        },
         "src/foundation/fraction": {
           "features": [
             "with-bigint"
@@ -101871,6 +101939,87 @@
             "compile"
           ]
         },
+        "src/foundation/hmac": {
+          "features": [],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/http": {
+          "features": [
+            "default",
+            "std"
+          ],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/http-body": {
+          "features": [
+            "default",
+            "utilities"
+          ],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/http-range-header": {
+          "features": [],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/http-routing": {
+          "features": [
+            "default",
+            "form",
+            "http1",
+            "json",
+            "macros",
+            "matched-path",
+            "original-uri",
+            "query",
+            "tokio",
+            "tower-log",
+            "tracing"
+          ],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/http-transport": {
+          "features": [
+            "adapter-client",
+            "adapter-server",
+            "adapters",
+            "client",
+            "client-legacy",
+            "client-proxy",
+            "http1",
+            "server",
+            "service-adapter",
+            "tokio",
+            "url-encoding"
+          ],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/httparse": {
+          "features": [
+            "default",
+            "std"
+          ],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/httpdate": {
+          "features": [],
+          "roles": [
+            "compile"
+          ]
+        },
         "src/foundation/hybrid-array": {
           "features": [],
           "roles": [
@@ -101903,6 +102052,15 @@
           "features": [
             "default",
             "serialization",
+            "std"
+          ],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/ipnet": {
+          "features": [
+            "default",
             "std"
           ],
           "roles": [
@@ -101983,6 +102141,14 @@
             "compile"
           ]
         },
+        "src/foundation/matchit": {
+          "features": [
+            "default"
+          ],
+          "roles": [
+            "compile"
+          ]
+        },
         "src/foundation/memchr": {
           "features": [
             "alloc",
@@ -101997,6 +102163,18 @@
           "features": [
             "default"
           ],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/mime": {
+          "features": [],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/mime_guess": {
+          "features": [],
           "roles": [
             "compile"
           ]
@@ -102064,6 +102242,17 @@
             "compile"
           ]
         },
+        "src/foundation/password-hash": {
+          "features": [
+            "alloc",
+            "default",
+            "random-generator-core",
+            "std"
+          ],
+          "roles": [
+            "compile"
+          ]
+        },
         "src/foundation/pin-project-lite": {
           "features": [],
           "roles": [
@@ -102098,6 +102287,16 @@
           "features": [
             "default",
             "proc-macro"
+          ],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/random-generator-core": {
+          "features": [
+            "alloc",
+            "std",
+            "system-entropy"
           ],
           "roles": [
             "compile"
@@ -102188,6 +102387,12 @@
             "compile"
           ]
         },
+        "src/foundation/ryu": {
+          "features": [],
+          "roles": [
+            "compile"
+          ]
+        },
         "src/foundation/same-file": {
           "features": [],
           "roles": [
@@ -102215,6 +102420,22 @@
         "src/foundation/serialization-derive": {
           "features": [
             "default"
+          ],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/service-stack": {
+          "features": [
+            "log",
+            "make",
+            "pin-project-lite",
+            "retry",
+            "sync_wrapper",
+            "timeout",
+            "tokio",
+            "tracing",
+            "util"
           ],
           "roles": [
             "compile"
@@ -102308,6 +102529,12 @@
             "compile"
           ]
         },
+        "src/foundation/strsim": {
+          "features": [],
+          "roles": [
+            "compile"
+          ]
+        },
         "src/foundation/strum": {
           "features": [
             "default",
@@ -102321,6 +102548,24 @@
         },
         "src/foundation/strum_macros": {
           "features": [],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/subtle": {
+          "features": [
+            "default",
+            "i128",
+            "std"
+          ],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/sync_wrapper": {
+          "features": [
+            "futures"
+          ],
           "roles": [
             "compile"
           ]
@@ -102345,6 +102590,14 @@
             "compile"
           ]
         },
+        "src/foundation/sysinfo": {
+          "features": [
+            "system"
+          ],
+          "roles": [
+            "compile"
+          ]
+        },
         "src/foundation/system-entropy": {
           "features": [
             "std",
@@ -102358,6 +102611,17 @@
           "features": [
             "default",
             "system-entropy"
+          ],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/terminal-style": {
+          "features": [
+            "output",
+            "parser",
+            "parser-utf8",
+            "std"
           ],
           "roles": [
             "compile"
@@ -102415,6 +102679,15 @@
             "compile"
           ]
         },
+        "src/foundation/tokio-util": {
+          "features": [
+            "default",
+            "io"
+          ],
+          "roles": [
+            "compile"
+          ]
+        },
         "src/foundation/toml": {
           "features": [
             "alloc",
@@ -102425,6 +102698,25 @@
             "serialization",
             "std",
             "write"
+          ],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/tower-http": {
+          "features": [
+            "default",
+            "follow-redirect",
+            "fs",
+            "httpdate",
+            "limit",
+            "mime",
+            "mime_guess",
+            "set-status",
+            "tokio-util",
+            "trace",
+            "tracing",
+            "url-encoding"
           ],
           "roles": [
             "compile"
@@ -102459,10 +102751,22 @@
             "compile"
           ]
         },
+        "src/foundation/try-lock": {
+          "features": [],
+          "roles": [
+            "compile"
+          ]
+        },
         "src/foundation/typenum": {
           "features": [
             "const-generics"
           ],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/unicase": {
+          "features": [],
           "roles": [
             "compile"
           ]
@@ -102516,6 +102820,14 @@
             "compile"
           ]
         },
+        "src/foundation/utf8parse": {
+          "features": [
+            "default"
+          ],
+          "roles": [
+            "compile"
+          ]
+        },
         "src/foundation/uuid": {
           "features": [
             "default",
@@ -102549,6 +102861,12 @@
           ]
         },
         "src/foundation/walkdir": {
+          "features": [],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/want": {
           "features": [],
           "roles": [
             "compile"

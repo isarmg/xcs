@@ -16,6 +16,7 @@ fn fixture() -> (tempfile::TempDir, AdmissionEngine) {
 
 fn caller() -> Identity {
     Identity {
+        admission_session: None,
         principal: "owner".into(),
         admin: true,
         repositories: BTreeSet::new(),

@@ -73,7 +73,7 @@ zxs/
 
 文档链接检查区分活动规范与原始上游归档。活动规范、schema、固定样例和检查脚本的链接必须存在，路径越界和符号链接越界也必须拒绝。文档允许引用按规则忽略的本地生成验证结果：存在时核对目标，缺失时单独统计，不把源码副本中缺失的生成证据误记为业务验收通过。`docs/upstream/` 保持原始说明字节，由来源映射的哈希校验，不把其中历史链接当作当前手册链接。
 
-认证算法在独立可移植 `authentication` 中只有一个实现；服务端与 CLI 直接依赖 `authentication`，服务端与平台均不保留旧认证路径兼容导出，业务会话持久化仍属于服务端。
+认证算法在独立可移植 `authentication` 中只有一个实现；服务端与救援工具直接依赖 `authentication`，服务端与平台均不保留旧认证路径兼容导出，业务会话持久化仍属于服务端。
 
 核心按责任拆分：business/repository 管仓库与共享绑定，workspace 管完整上传和提交，history 管文件历史和关系，namespace 管路径，file 管共享文件分支与备注，directory 管稳定目录分支、不可变子树、选择及默认视图。container_storage 管普通正文唯一路径、真实容器改名、继承缓存与旧 stub 清理；边界见其[README](components/engine/src/container_storage.md)。engine/{publication,recovery,reads,index,workspace_storage} 管发布、恢复、读取、索引和工作区；journal 管状态分页及证明，metadata_budget 管决定前限额，maintenance 管计划/清理/兼容拆分，history_package 管完整恢复闭包，repair/degraded_recovery 区分可修复与永久损失。入口复用核心规则，不直接操作业务盘。
 
@@ -83,7 +83,7 @@ zxs/
 
 `engine_backend/file_manager/backup_namespace.rs` 单独投影备份盘的用户逻辑路径，先过滤历史域授权，再检查路径冲突并固定该槽可用版本。它不伪造主路径上下文或提供备份写入入口；磁盘可见性按实际版本所属历史与路由判断，不能只按仓库默认一级盘推断。
 
-Web 的 `files/{model,view,detail,inline,branch,version_tree}.rs` 分别维护浏览状态、列表、详情、原位输入及版本树；`files/actions/{browse,mutation,operation,transfer}` 分开处理读取、事务、回执和传输。公共 `geometry.css` 的 stack/flow/row/frame/input 角色统一尺寸、内缩、边框和 G4；stack/flow 默认不增加外部间距，仅在相邻可见表面直接接触时用 surface 边界角色补距，已有文字或标签行隔开时不重复添加。业务样式只定义领域布局。详情通过顶栏菜单访问，返回文件列表时保留目录、搜索条件与选择；列表和详情共用原位备注输入与只读预览弹窗。分支名称在原按钮位置输入，Enter 提交，空白、失焦或 Escape 取消，不再使用分支弹窗；前后端复用 `name-policy` 验证名称。上传动作内部完成上传、封存和提交，公开界面不要求用户操作工作区或手动提交。公共 `Select` 管理键盘、焦点及原设计弹层；公共与业务文案均通过统一语言接口选择，CSS、令牌和图标仍为声明式资源。
+Web 的 `files/{model,view,detail,inline,branch,version_tree}.rs` 分别维护浏览状态、列表、详情、原位输入及版本树；`files/actions/{browse,mutation,operation}` 分开处理读取、事务和回执。公共 `geometry.css` 的 stack/flow/row/frame/input 角色统一尺寸、内缩、边框和 G4；stack/flow 默认不增加外部间距，仅在相邻可见表面直接接触时用 surface 边界角色补距，已有文字或标签行隔开时不重复添加。业务样式只定义领域布局。详情通过顶栏菜单访问，返回文件列表时保留目录、搜索条件与选择；列表和详情共用原位备注输入，不提供正文预览。分支名称在原按钮位置输入，Enter 提交，空白、失焦或 Escape 取消，不再使用分支弹窗；前后端复用 `name-policy` 验证名称。Web 不含上传动作或正文传输任务页；保留的 HTTP 内容接口与客户端库不构成 Web 功能。公共 `Select` 管理键盘、焦点及原设计弹层；公共与业务文案均通过统一语言接口选择，CSS、令牌和图标仍为声明式资源。
 
 <a id="s20-02"></a>
 

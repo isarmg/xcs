@@ -6,24 +6,20 @@ fn draft(root: &Path) -> Config {
     Config::development([root.join("p"), root.join("b"), root.join("c")])
 }
 
-fn registration(root: &Path, config: PathBuf) -> Args {
-    Args {
-        root: root.join("unrelated-system"),
-        principal: "admin".into(),
-        command: Command::RegisterDisk {
-            config,
-            slot: "P02".into(),
-            disk_id: storage_engine::new_id("disk"),
-            path: root.join("additional"),
-            level: 1,
-            upstream: None,
-            metadata_member: false,
-        },
+fn registration(root: &Path, config: PathBuf) -> Command {
+    Command::RegisterDisk {
+        config,
+        slot: "P02".into(),
+        disk_id: storage_engine::new_id("disk"),
+        path: root.join("additional"),
+        level: 1,
+        upstream: None,
+        metadata_member: false,
     }
 }
 
-#[tokio::test]
-async fn unrelated_root_cannot_edit_a_live_configuration_or_its_aliases() {
+#[test]
+fn unrelated_root_cannot_edit_a_live_configuration_or_its_aliases() {
     use std::os::unix::fs::symlink;
 
     for kind in ["direct", "parent_alias", "file_alias", "hard_link", "copy"] {
@@ -58,9 +54,7 @@ async fn unrelated_root_cannot_edit_a_live_configuration_or_its_aliases() {
             _ => live.clone(),
         };
         assert!(
-            run(registration(root.path(), selected.clone()))
-                .await
-                .is_err(),
+            run(registration(root.path(), selected.clone())).is_err(),
             "{kind} must not modify an initialized pool through an unrelated --root"
         );
         assert_eq!(fs::read(&live).unwrap(), original, "{kind}");
@@ -70,8 +64,8 @@ async fn unrelated_root_cannot_edit_a_live_configuration_or_its_aliases() {
     }
 }
 
-#[tokio::test]
-async fn invalid_registration_candidates_preserve_the_draft_and_backup_namespace() {
+#[test]
+fn invalid_registration_candidates_preserve_the_draft_and_backup_namespace() {
     for kind in [
         "slot",
         "slot_case",
@@ -95,7 +89,7 @@ async fn invalid_registration_candidates_preserve_the_draft_and_backup_namespace
             upstream,
             metadata_member,
             ..
-        } = &mut args.command
+        } = &mut args
         else {
             unreachable!()
         };
@@ -117,7 +111,7 @@ async fn invalid_registration_candidates_preserve_the_draft_and_backup_namespace
         let original = json_codec::to_vec(&config).unwrap();
         private_io::write_new(&path, &original).unwrap();
         assert!(
-            run(args).await.is_err(),
+            run(args).is_err(),
             "{kind} must be rejected before any write"
         );
         assert_eq!(fs::read(&path).unwrap(), original, "{kind}");
@@ -126,8 +120,8 @@ async fn invalid_registration_candidates_preserve_the_draft_and_backup_namespace
     }
 }
 
-#[tokio::test]
-async fn newly_added_disk_cannot_already_belong_to_another_pool() {
+#[test]
+fn newly_added_disk_cannot_already_belong_to_another_pool() {
     let root = tempfile::tempdir().unwrap();
     let other = root.path().join("other-pool");
     fs::create_dir(&other).unwrap();
@@ -137,16 +131,16 @@ async fn newly_added_disk_cannot_already_belong_to_another_pool() {
     let original = json_codec::to_vec(&config).unwrap();
     private_io::write_new(&path, &original).unwrap();
     let mut args = registration(root.path(), path.clone());
-    if let Command::RegisterDisk { path, .. } = &mut args.command {
+    if let Command::RegisterDisk { path, .. } = &mut args {
         *path = engine.config().disks[0].root.clone();
     }
-    assert!(run(args).await.is_err());
+    assert!(run(args).is_err());
     assert_eq!(fs::read(&path).unwrap(), original);
     assert!(!registration_backup(&path).unwrap().exists());
 }
 
-#[tokio::test]
-async fn aliases_overlapping_roots_and_existing_markers_preserve_a_previous_backup() {
+#[test]
+fn aliases_overlapping_roots_and_existing_markers_preserve_a_previous_backup() {
     use std::os::unix::fs::symlink;
 
     for kind in [
@@ -168,7 +162,7 @@ async fn aliases_overlapping_roots_and_existing_markers_preserve_a_previous_back
         let backup = registration_backup(&path).unwrap();
         private_io::write_new(&backup, b"earlier recovery draft").unwrap();
         let mut args = registration(root.path(), path.clone());
-        let Command::RegisterDisk { path: new_disk, .. } = &mut args.command else {
+        let Command::RegisterDisk { path: new_disk, .. } = &mut args else {
             unreachable!()
         };
         match kind {
@@ -200,7 +194,7 @@ async fn aliases_overlapping_roots_and_existing_markers_preserve_a_previous_back
             "file_root" => fs::write(&*new_disk, b"not a directory").unwrap(),
             _ => unreachable!(),
         }
-        assert!(run(args).await.is_err(), "{kind}");
+        assert!(run(args).is_err(), "{kind}");
         assert_eq!(fs::read(&path).unwrap(), original, "{kind}");
         assert_eq!(
             fs::read(&backup).unwrap(),
@@ -210,8 +204,8 @@ async fn aliases_overlapping_roots_and_existing_markers_preserve_a_previous_back
     }
 }
 
-#[tokio::test]
-async fn ordinary_draft_permissions_remain_supported_without_initializing_disks() {
+#[test]
+fn ordinary_draft_permissions_remain_supported_without_initializing_disks() {
     use std::os::unix::fs::PermissionsExt;
 
     let root = tempfile::tempdir().unwrap();
@@ -219,7 +213,7 @@ async fn ordinary_draft_permissions_remain_supported_without_initializing_disks(
     let original = json_codec::to_vec(&draft(root.path())).unwrap();
     fs::write(&path, &original).unwrap();
     fs::set_permissions(&path, fs::Permissions::from_mode(0o644)).unwrap();
-    run(registration(root.path(), path.clone())).await.unwrap();
+    run(registration(root.path(), path.clone())).unwrap();
     let saved: Config = storage_engine::decode_strict(&fs::read(&path).unwrap()).unwrap();
     Engine::validate_configuration(&saved).unwrap();
     assert!(saved.disks.iter().all(|disk| !disk.root.exists()));
@@ -228,4 +222,23 @@ async fn ordinary_draft_permissions_remain_supported_without_initializing_disks(
         original
     );
     assert_eq!(fs::read_dir(root.path()).unwrap().count(), 2);
+}
+
+#[test]
+fn management_authority_markers_prevent_reclassifying_system_state_as_a_draft() {
+    for marker in [
+        "management-authority.json",
+        "management-auth.json",
+        "setup-intent.json",
+        "setup-ready.json",
+    ] {
+        let root = tempfile::tempdir().unwrap();
+        let path = root.path().join("draft.json");
+        let original = json_codec::to_vec(&draft(root.path())).unwrap();
+        private_io::write_new(&path, &original).unwrap();
+        fs::write(root.path().join(marker), b"{}").unwrap();
+        assert!(run(registration(root.path(), path.clone())).is_err());
+        assert_eq!(fs::read(&path).unwrap(), original);
+        assert!(!registration_backup(&path).unwrap().exists());
+    }
 }

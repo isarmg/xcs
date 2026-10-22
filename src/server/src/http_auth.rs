@@ -195,7 +195,11 @@ fn client_ip(request: &Request, config: &ServerConfig) -> Result<IpAddr, ApiErro
     })
 }
 
-fn same_origin(headers: &HeaderMap, config: &ServerConfig, required: bool) -> Result<(), ApiError> {
+pub(crate) fn same_origin(
+    headers: &HeaderMap,
+    config: &ServerConfig,
+    required: bool,
+) -> Result<(), ApiError> {
     let Some(origin) = headers.get(header::ORIGIN) else {
         return if required {
             Err(ApiError::forbidden())
@@ -434,8 +438,7 @@ pub(crate) async fn accounts(
     let auth = state.auth.clone();
     let accounts = tokio::task::spawn_blocking(move || {
         let auth = lock(&auth)?;
-        auth.identity_for_principal(&identity.principal)?
-            .require_admin()?;
+        auth.revalidate_identity(&identity)?.require_admin()?;
         Ok::<_, ApiError>(auth.list_accounts())
     })
     .await
@@ -472,8 +475,7 @@ pub(crate) async fn account_upsert(
     tokio::task::spawn_blocking(move || {
         let _permit = permit;
         let mut auth = lock(&auth)?;
-        auth.identity_for_principal(&identity.principal)?
-            .require_admin()?;
+        auth.revalidate_identity(&identity)?.require_admin()?;
         auth.upsert_account(
             &body.username,
             body.password.as_deref(),
@@ -490,3 +492,15 @@ pub(crate) async fn account_upsert(
 #[cfg(test)]
 #[path = "../../../test/server/unit/http_auth/tests.rs"]
 mod tests;
+
+/// Shared bounded peer admission for locally authorized bootstrap endpoints.
+#[cfg(feature = "core")]
+pub(crate) fn setup_admission(state: &AppState, request: &Request) -> Result<(), ApiError> {
+    let ip = client_ip(request, &state.config)?;
+    admit_attempts(
+        &state.attempts,
+        [format!("setup:ip:{ip}"), "setup:global".into()],
+        "setup admission capacity reached",
+        "too many setup attempts; retry after 60 seconds",
+    )
+}
