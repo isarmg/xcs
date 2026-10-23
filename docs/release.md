@@ -10,6 +10,8 @@
 
 发布流程执行源码、格式、严格 Clippy 与安全检查、业务测试、契约检查、正式 WASM 构建、真实浏览器冒烟和同提交的 Samba 4.23.0 SDK/FFI 检查。CI 与 Release 调用同一 SDK 工作流，发布组装等待其成功。质量门禁直接属于发布的 `verify` 依赖，失败会阻止公开版本。全部成功后校验产物集合，创建草稿、上传、下载核对 SHA-256，再公开。失败保留草稿；重试仅续传同一源码的本流程草稿，拒绝覆盖已公开版本。发布前后均核对标签提交。只有发布任务持有 `contents: write`。
 
+普通 CI 的 `browser-smoke` 也在归档验收与模板浏览器检查成功后组装安装材料，上传保留 7 天的 `installation-candidate-linux-web` artifact，包含两个归档以及 `INSTALL.md`、`BUILD.txt`、`SHA256SUMS`。这是安装演练候选，不创建标签或公开 Release；该 artifact 的存在不代表其他并行 CI 门禁通过，也不等同于上面的完整 Release `workflow_dispatch` 演练。候选使用同次 CI 的检出提交和产物，部署前仍须核对 `BUILD.txt`、校验摘要并审阅整次 CI 结果。
+
 预发布标签标为 prerelease 且不更新 Latest；正式版由 GitHub 默认规则决定 Latest。
 
 ## 发布文件

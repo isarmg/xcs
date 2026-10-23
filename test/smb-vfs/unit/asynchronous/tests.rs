@@ -143,3 +143,135 @@ fn cancelling_request_before_worker_finishes_does_not_touch_released_host_state(
         assert_eq!(destination, [0; 4]);
     }
 }
+
+#[test]
+fn sync_and_async_reads_bound_immutable_extents_but_allow_workspace_growth() {
+    use super::super as vfs;
+    use smb_protocol::protocol::{
+        FrameStream, OpenResult, PROTOCOL, Request, Response, WRITE_RESERVATION_CAPABILITY,
+    };
+    use std::{
+        fs::File,
+        os::{
+            fd::IntoRawFd,
+            unix::{fs::FileExt, net::UnixListener},
+        },
+        time::{SystemTime, UNIX_EPOCH},
+    };
+    let socket = std::env::temp_dir().join(format!(
+        "zxs-read-bound-{}-{}.sock",
+        std::process::id(),
+        SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .unwrap()
+            .as_nanos()
+    ));
+    let listener = UnixListener::bind(&socket).unwrap();
+    let worker = std::thread::spawn(move || {
+        let mut stream = FrameStream::new(listener.accept().unwrap().0).unwrap();
+        while let Ok((request, _)) = stream.receive::<Request>() {
+            let result = match request {
+                Request::Hello { .. } => {
+                    json_codec::json!({"protocol": PROTOCOL, "capabilities": [WRITE_RESERVATION_CAPABILITY]})
+                }
+                Request::AuthorizeRead { handle: 7 } => json_codec::json!({"authorized":true}),
+                _ => panic!("unexpected request"),
+            };
+            stream.send(&Response::Ok { result }, None).unwrap();
+        }
+    });
+    let client = smb_protocol::client::Client::connect(&socket, "alice", "repository").unwrap();
+    // SAFETY: static NUL-terminated name; the fresh descriptor is checked before adoption.
+    let raw = unsafe { libc::memfd_create(c"zxs-vfs-read-bound".as_ptr(), libc::MFD_CLOEXEC) };
+    assert!(raw >= 0);
+    // SAFETY: memfd_create returned a fresh descriptor adopted exactly once.
+    let file = unsafe { File::from_raw_fd(raw) };
+    file.write_all_at(b"good", 0).unwrap();
+    let opened = vfs::Open {
+        info: OpenResult {
+            entry_id: "entry".into(),
+            kind: "file".into(),
+            path: "file".into(),
+            handle: 7,
+            size: 4,
+            max_file_bytes: 1024,
+            version_id: Some("version".into()),
+            workspace_id: None,
+        },
+        fd: file.try_clone().unwrap().into_raw_fd(),
+        writable: false,
+        io: Arc::new(Mutex::new(())),
+    };
+    let context = Box::new(vfs::Context {
+        client,
+        files: [(0, opened)].into_iter().collect(),
+    });
+    let mut handle = sdk::vfs_handle_struct {
+        data: Box::into_raw(context).cast(),
+        ..Default::default()
+    };
+    // Extend the same inode after OpenResult captured its verified logical size.
+    file.write_all_at(b"SECRET", 4).unwrap();
+    // SAFETY: All host objects and output buffers are live local storage; fsp is
+    // only an opaque map key. The real SDK event/request allocations are freed
+    // on this thread after completion. free_context owns and closes its FD.
+    unsafe {
+        let event = event_context();
+        assert!(!event.is_null());
+        for writable in [false, true] {
+            vfs::context(&mut handle)
+                .unwrap()
+                .files
+                .get_mut(&0)
+                .unwrap()
+                .writable = writable;
+            for offset in [0, 2, 4, 5] {
+                let expected: &[u8] = if writable {
+                    &b"goodSECRET"[offset..]
+                } else {
+                    &b"good"[offset.min(4)..]
+                };
+                let mut bytes = [0xa5u8; 16];
+                assert_eq!(
+                    vfs::pread(
+                        &mut handle,
+                        std::ptr::null_mut(),
+                        bytes.as_mut_ptr().cast(),
+                        bytes.len(),
+                        offset as _
+                    ),
+                    expected.len() as isize
+                );
+                assert_eq!(&bytes[..expected.len()], expected);
+                assert!(bytes[expected.len()..].iter().all(|byte| *byte == 0xa5));
+                bytes.fill(0xa5);
+                let request = vfs::pread_send(
+                    &mut handle,
+                    std::ptr::null_mut(),
+                    event,
+                    std::ptr::null_mut(),
+                    bytes.as_mut_ptr().cast(),
+                    bytes.len(),
+                    offset as _,
+                );
+                assert!(!request.is_null());
+                while sdk::tevent_req_is_in_progress(request) {
+                    assert_eq!(sdk::_tevent_loop_once(event, c"zxs read bound".as_ptr()), 0);
+                }
+                let mut aio: sdk::vfs_aio_state = Default::default();
+                assert_eq!(vfs::io_recv(request, &mut aio), expected.len() as isize);
+                assert_eq!(aio.error, 0);
+                assert_eq!(&bytes[..expected.len()], expected);
+                assert!(bytes[expected.len()..].iter().all(|byte| *byte == 0xa5));
+                sdk::_talloc_free(request.cast(), c"zxs read bound".as_ptr());
+            }
+            let mut stat: sdk::SMB_STRUCT_STAT = Default::default();
+            assert_eq!(vfs::fstat(&mut handle, std::ptr::null_mut(), &mut stat), 0);
+            assert_eq!(stat.st_ex_size, if writable { 10 } else { 4 });
+        }
+        sdk::_talloc_free(event.cast(), c"zxs read bound".as_ptr());
+        vfs::free_context(&mut handle.data);
+    }
+    worker.join().unwrap();
+    std::fs::remove_file(socket).unwrap();
+}

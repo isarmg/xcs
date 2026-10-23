@@ -1,7 +1,7 @@
 use super::*;
 use std::{
     fs::File,
-    io::{Seek, Write},
+    io::{Read, Seek, Write},
     os::fd::AsFd,
 };
 
@@ -254,4 +254,118 @@ fn blocked_send_is_cancelled_by_socket_shutdown() {
     let started = Instant::now();
     assert!(sender.join().unwrap().is_err());
     assert!(started.elapsed() < Duration::from_secs(2));
+}
+
+#[test]
+fn misplaced_extra_and_truncated_rights_are_rejected_without_leaking() {
+    for (on_payload, descriptor_count) in [(true, 1), (false, 2), (false, 80)] {
+        let (mut one, two) = UnixStream::pair().unwrap();
+        let (descriptor, mut peer) = UnixStream::pair().unwrap();
+        peer.set_read_timeout(Some(Duration::from_secs(2))).unwrap();
+        let payload = json_codec::to_vec(&Response::Ok {
+            result: json_codec::json!({}),
+        })
+        .unwrap();
+        let header = (payload.len() as u32).to_be_bytes();
+        if on_payload {
+            one.write_all(&header).unwrap();
+        }
+        let bytes = if on_payload {
+            payload.as_slice()
+        } else {
+            &header
+        };
+        let mut vector = libc::iovec {
+            iov_base: bytes.as_ptr().cast_mut().cast(),
+            iov_len: bytes.len(),
+        };
+        let mut control = [0usize; 64];
+        // SAFETY: zero is a valid empty msghdr, populated with live buffers below.
+        let mut message: libc::msghdr = unsafe { mem::zeroed() };
+        message.msg_iov = &mut vector;
+        message.msg_iovlen = 1;
+        message.msg_control = control.as_mut_ptr().cast();
+        // SAFETY: 80 ints plus its cmsghdr fit the aligned 512-byte buffer.
+        unsafe {
+            message.msg_controllen =
+                libc::CMSG_SPACE((descriptor_count * mem::size_of::<i32>()) as u32) as usize;
+            let cmsg = libc::CMSG_FIRSTHDR(&message);
+            (*cmsg).cmsg_level = libc::SOL_SOCKET;
+            (*cmsg).cmsg_type = libc::SCM_RIGHTS;
+            (*cmsg).cmsg_len =
+                libc::CMSG_LEN((descriptor_count * mem::size_of::<i32>()) as u32) as usize;
+            for index in 0..descriptor_count {
+                std::ptr::write_unaligned(
+                    libc::CMSG_DATA(cmsg).cast::<i32>().add(index),
+                    descriptor.as_raw_fd(),
+                );
+            }
+            assert_eq!(
+                libc::sendmsg(one.as_raw_fd(), &message, libc::MSG_NOSIGNAL),
+                bytes.len() as isize
+            );
+        }
+        if !on_payload {
+            one.write_all(&payload).unwrap();
+        }
+        drop(descriptor);
+        let error = FrameStream::new(two)
+            .unwrap()
+            .receive::<Response>()
+            .unwrap_err();
+        assert_eq!(error.kind(), io::ErrorKind::InvalidData);
+        assert_eq!(
+            peer.read(&mut [0u8; 1]).unwrap(),
+            0,
+            "rejected rights leaked"
+        );
+    }
+}
+
+#[test]
+fn immutable_reads_hide_appended_bytes_while_workspace_reads_follow_live_length() {
+    use std::os::unix::fs::FileExt;
+    // SAFETY: the static name is NUL-terminated; memfd_create returns a fresh
+    // descriptor or -1, checked before adoption. This test touches no disk files.
+    let raw = unsafe { libc::memfd_create(c"zxs-read-extent-test".as_ptr(), libc::MFD_CLOEXEC) };
+    assert!(raw >= 0);
+    // SAFETY: successful memfd_create transfers this fresh descriptor exactly once.
+    let file = unsafe { File::from_raw_fd(raw) };
+    file.write_all_at(b"good", 0).unwrap();
+    let info = OpenResult {
+        entry_id: "entry".into(),
+        kind: "file".into(),
+        path: "file".into(),
+        handle: 1,
+        size: 4,
+        max_file_bytes: 1024,
+        version_id: Some("version".into()),
+        workspace_id: None,
+    };
+    // Model alteration of the same inode after the server verified/opened it.
+    file.write_all_at(b"SECRET", 4).unwrap();
+    for (offset, requested, expected) in [
+        (0, 16, b"good".as_slice()),
+        (2, 16, b"od".as_slice()),
+        (4, 16, b"".as_slice()),
+        (5, 16, b"".as_slice()),
+        (0, 2, b"go".as_slice()),
+        (0, 0, b"".as_slice()),
+    ] {
+        let mut bytes = [0xa5; 16];
+        let count = info.read_count(false, offset, requested);
+        let received = file.read_at(&mut bytes[..count], offset).unwrap();
+        assert_eq!(&bytes[..received], expected);
+        assert!(bytes[received..].iter().all(|byte| *byte == 0xa5));
+    }
+    assert_eq!(info.read_count(false, u64::MAX, usize::MAX), 0);
+    assert_eq!(info.read_count(true, 4, 16), 16);
+    let mut bytes = [0; 16];
+    let count = info.read_count(true, 4, bytes.len());
+    let received = file.read_at(&mut bytes[..count], 4).unwrap();
+    assert_eq!(&bytes[..received], b"SECRET");
+    file.set_len(2).unwrap();
+    let count = info.read_count(true, 0, bytes.len());
+    let received = file.read_at(&mut bytes[..count], 0).unwrap();
+    assert_eq!(&bytes[..received], b"go");
 }

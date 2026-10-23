@@ -500,3 +500,65 @@ fn rejected_response_descriptors_are_closed_before_returning() {
         );
     }
 }
+
+#[test]
+fn malformed_open_result_closes_descriptor_and_disconnects_every_clone() {
+    use std::{io::Read, os::fd::AsFd, time::Duration};
+    for result in [
+        json_codec::json!({}),
+        json_codec::json!({
+            "entry_id": "entry", "kind": "file", "path": "file",
+            "handle": 1, "size": "0", "max_file_bytes": "1024",
+            "version_id": null, "workspace_id": null
+        }),
+        json_codec::json!({
+            "entry_id": "entry", "kind": "file", "path": "file",
+            "handle": "1", "size": "0", "max_file_bytes": "1024",
+            "version_id": null, "workspace_id": null, "unknown": true
+        }),
+    ] {
+        let (one, two) = UnixStream::pair().unwrap();
+        let (descriptor, mut peer) = UnixStream::pair().unwrap();
+        peer.set_read_timeout(Some(Duration::from_secs(2))).unwrap();
+        let server = std::thread::spawn(move || {
+            let mut stream = FrameStream::with_timeout(two, Duration::from_secs(2)).unwrap();
+            stream.receive::<Request>().unwrap();
+            stream
+                .send(&Response::Ok { result }, Some(descriptor.as_fd()))
+                .unwrap();
+            drop(descriptor);
+            assert_eq!(
+                stream.receive::<Request>().unwrap_err().kind(),
+                io::ErrorKind::UnexpectedEof
+            );
+        });
+        let client = Client(Arc::new(Mutex::new(Some(FrameStream::new(one).unwrap()))));
+        let clone = client.clone();
+        let error = client
+            .open(Request::Open {
+                path: "file".into(),
+                writable: false,
+                create: false,
+                truncate: false,
+                exclusive: false,
+                write_through: false,
+            })
+            .unwrap_err();
+        assert_eq!(error.kind(), io::ErrorKind::InvalidData);
+        assert_eq!(
+            clone
+                .call(Request::Stat {
+                    path: "next".into()
+                })
+                .unwrap_err()
+                .kind(),
+            io::ErrorKind::NotConnected
+        );
+        server.join().unwrap();
+        assert_eq!(
+            peer.read(&mut [0u8; 1]).unwrap(),
+            0,
+            "malformed open leaked its descriptor"
+        );
+    }
+}

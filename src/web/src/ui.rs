@@ -19,6 +19,9 @@ pub(crate) struct State {
     pub logout_pending: bool,
     pub logout_unconfirmed: bool,
     pub password_pending: bool,
+    // A lost response may follow a committed change and revoked sessions.
+    // Only a settled sign-out/new session clears this non-idempotent fence.
+    pub password_unknown: bool,
     pub password_failure: Option<Feedback>,
     pub page: String,
     pub busy: usize,
@@ -39,10 +42,15 @@ impl State {
             || self.logout_pending
             || self.logout_unconfirmed
             || self.password_pending
+            || self.password_unknown
             || self.management.retrying
             || self.management.retry_unknown
             || self.admin_console.reload_blocked()
             || files::pending(self)
+    }
+
+    fn password_change_blocked(&self) -> bool {
+        !self.session_active() || self.password_pending || self.password_unknown
     }
 
     /// Business work belongs only to a settled, authenticated session. Logout
@@ -336,10 +344,10 @@ fn end_session(state: RwSignal<State>, notice: String) {
 }
 fn account(state: RwSignal<State>) -> impl IntoView {
     let username = Memo::new(move |_| state.with(|s| s.principal.clone()));
-    let pending = Memo::new(move |_| state.with(|s| !s.session_active() || s.password_pending));
+    let pending = Memo::new(move |_| state.with(State::password_change_blocked));
     let failure = Memo::new(move |_| state.with(|s| s.password_failure.clone()));
     let change = Callback::new(move |credentials: PasswordChange| {
-        if state.with_untracked(|s| !s.session_active() || s.password_pending) {
+        if state.with_untracked(State::password_change_blocked) {
             return;
         }
         state.update(|s| {
@@ -372,25 +380,28 @@ fn account(state: RwSignal<State>) -> impl IntoView {
                         ),
                     );
                 }
-                Ok(_) => state.update(|s| {
-                    s.password_pending = false;
-                    s.password_failure = Some(
-                        t(
-                            "未收到有效的改密确认，请核对会话状态。",
-                            "The password change was not confirmed. Check your session.",
-                        )
-                        .as_str()
-                        .into(),
-                    );
-                }),
+                Ok(_) => state.update(reject_unconfirmed_password_change),
                 Err(error) => state.update(|s| reject_password_change(s, &error)),
             }
         });
     });
-    view! { <section class="zxs-content-stack zxs-stack"><p class="zxs-row">{t("修改密码后，该账号的全部会话将失效。","Changing the password signs this account out on all devices.")}</p><AccountPage username_value=username.into() pending=pending.into() remote_failure=failure.into() on_submit=change/></section> }
+    view! { <section class="zxs-content-stack zxs-stack"><p class="zxs-row">{t("修改密码后，该账号的全部会话将失效。","Changing the password signs this account out on all devices.")}</p><Show when=move ||state.with(|s|s.password_unknown)><p class="zxs-row" role="alert">{t("改密结果未知，已禁用重复提交。请先退出登录，再核实可用的密码；不会自动重试改密。","The password change outcome is unknown; repeat submission is disabled. Sign out, then verify which password works. The change will not be retried automatically.")}</p></Show><AccountPage username_value=username.into() pending=pending.into() remote_failure=failure.into() on_submit=change/></section> }
+}
+fn reject_unconfirmed_password_change(state: &mut State) {
+    state.password_pending = false;
+    state.password_unknown = true;
+    state.password_failure = Some(
+        t(
+            "未收到有效的改密确认，请核对会话状态。",
+            "The password change was not confirmed. Check your session.",
+        )
+        .as_str()
+        .into(),
+    );
 }
 fn reject_password_change(state: &mut State, error: &api::Error) {
     state.password_pending = false;
+    state.password_unknown |= error.mutation_outcome_unknown();
     state.password_failure = Some(feedback(error));
 }
 

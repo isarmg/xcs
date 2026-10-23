@@ -177,6 +177,17 @@ impl Client {
                         "RPC response descriptor does not match the request",
                     ));
                 }
+                if expects_fd {
+                    let Response::Ok { result } = &response else {
+                        unreachable!();
+                    };
+                    // The remote handle already exists. If its metadata cannot
+                    // be decoded, no caller can close it by identity. Terminate
+                    // the session while holding the shared lock so the server
+                    // releases it and no clone continues a partially adopted open.
+                    json_codec::from_value::<OpenResult>(result.clone())
+                        .map_err(|error| io::Error::new(io::ErrorKind::InvalidData, error))?;
+                }
                 Ok((response, fd))
             });
         let (response, fd) = match exchange {

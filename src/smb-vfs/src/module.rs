@@ -281,6 +281,9 @@ unsafe extern "C" fn pread(
             context.client.call(Request::AuthorizeRead {
                 handle: opened.info.handle,
             })?;
+            let count = opened
+                .info
+                .read_count(opened.writable, offset as u64, count);
             // SAFETY: The host guarantees data is writable for count bytes for this synchronous
             // call; the descriptor remains owned and the I/O lock is held.
             let result = unsafe { libc::pread(opened.fd, data, count, offset) };
@@ -443,6 +446,9 @@ unsafe extern "C" fn pread_send(
         // SAFETY: The host handle is live on its owning event loop; snapshot duplicates the FD and
         // returns no host pointers to workers.
         let opened = unsafe { snapshot(handle, fsp) }?;
+        let count = opened
+            .info
+            .read_count(opened.writable, offset as u64, count);
         let mut bytes = Vec::new();
         bytes
             .try_reserve_exact(count)
@@ -465,7 +471,7 @@ unsafe extern "C" fn pread_send(
             let result = libc::pread(
                 opened.fd.as_raw_fd(),
                 bytes.as_mut_ptr().cast(),
-                count,
+                bytes.len(),
                 offset,
             );
             if result < 0 {
@@ -681,11 +687,18 @@ unsafe extern "C" fn fstat(
         if unsafe { libc::fstat(opened.fd, &mut metadata) } < 0 {
             return Err(std::io::Error::last_os_error());
         }
+        let size = if opened.info.kind == "directory" {
+            "0".into()
+        } else if opened.writable {
+            metadata.st_size.to_string()
+        } else {
+            opened.info.size.to_string()
+        };
         // SAFETY: The host provides exclusive writable stat output for this callback, as required
         // by fill_stat.
         unsafe {
             fill_stat(
-                &json_codec::json!({"kind":opened.info.kind,"entry_id":opened.info.entry_id,"size":if opened.info.kind=="directory"{"0".into()}else{metadata.st_size.to_string()}}),
+                &json_codec::json!({"kind":opened.info.kind,"entry_id":opened.info.entry_id,"size":size}),
                 stat,
             )
         }?;

@@ -1,8 +1,7 @@
 use data_serialization::{Deserialize, Serialize, de::DeserializeOwned};
 use json_codec::Value;
 use std::{
-    io::{self, Read},
-    mem,
+    io, mem,
     os::{
         fd::{AsRawFd, BorrowedFd, FromRawFd, OwnedFd},
         unix::net::UnixStream,
@@ -155,6 +154,19 @@ pub struct OpenResult {
     pub max_file_bytes: u64,
     pub version_id: Option<String>,
     pub workspace_id: Option<String>,
+}
+
+impl OpenResult {
+    /// Immutable handles expose only the verified logical extent, even if the
+    /// underlying inode is later extended. Writable workspace descriptors must
+    /// instead observe their current length, not the size captured at open.
+    pub fn read_count(&self, writable: bool, offset: u64, requested: usize) -> usize {
+        if writable {
+            requested
+        } else {
+            requested.min(self.size.saturating_sub(offset).min(usize::MAX as u64) as usize)
+        }
+    }
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -412,12 +424,39 @@ impl FrameStream {
         let mut received = 0;
         while received < payload.len() {
             self.set_remaining_timeout(deadline)?;
-            match self.0.read(&mut payload[received..]) {
-                Ok(0) => return Err(io::ErrorKind::UnexpectedEof.into()),
-                Ok(count) => received += count,
-                Err(error) if error.kind() == io::ErrorKind::Interrupted => continue,
-                Err(error) => return Err(error),
+            let mut vector = libc::iovec {
+                iov_base: payload[received..].as_mut_ptr().cast(),
+                iov_len: payload.len() - received,
+            };
+            // SAFETY: zero initializes an empty message. The payload slice is
+            // live writable storage until recvmsg returns. No control buffer is
+            // supplied: Linux closes any received rights that do not fit and
+            // reports MSG_CTRUNC, allowing us to reject misplaced descriptors
+            // rather than silently accepting them through read().
+            let mut message: libc::msghdr = unsafe { mem::zeroed() };
+            message.msg_iov = &mut vector;
+            message.msg_iovlen = 1;
+            // SAFETY: message points to the initialized bounded payload buffer;
+            // the socket is live and ancillary data cannot escape into raw FDs.
+            let count =
+                unsafe { libc::recvmsg(self.0.as_raw_fd(), &mut message, libc::MSG_CMSG_CLOEXEC) };
+            if count < 0 {
+                let error = io::Error::last_os_error();
+                if error.kind() == io::ErrorKind::Interrupted {
+                    continue;
+                }
+                return Err(error);
             }
+            if count == 0 {
+                return Err(io::ErrorKind::UnexpectedEof.into());
+            }
+            if message.msg_flags & libc::MSG_CTRUNC != 0 {
+                return Err(io::Error::new(
+                    io::ErrorKind::InvalidData,
+                    "RPC descriptors must accompany the frame header",
+                ));
+            }
+            received += count as usize;
         }
         let value = storage_contract::decode_strict(&payload).map_err(io::Error::other)?;
         Ok((value, descriptor))

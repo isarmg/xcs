@@ -163,6 +163,14 @@ jobs:
           bash .github/scripts/release-package.sh
           bash .github/scripts/release-acceptance.sh
           python3 .github/scripts/check-csr-browser.py
+          bash .github/scripts/release-assemble.sh
+      - name: Retain verified installation candidate (not a published release)
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: installation-candidate-linux-web
+          path: release-assets/*
+          if-no-files-found: error
+          retention-days: 7
       - name: Retain template browser result and exact input identity
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:

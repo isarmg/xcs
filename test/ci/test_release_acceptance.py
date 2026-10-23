@@ -27,6 +27,22 @@ class ReleaseAcceptance(unittest.TestCase):
         self.assertNotIn('check.sh browser-smoke', browser)
         self.assertIn('ZXS_SMOKE_SCREENSHOT:', browser)
 
+    def test_main_ci_retains_complete_candidate_only_after_archive_acceptance(self):
+        workflow = (ROOT / '.github/workflows/ci.yml').read_text()
+        browser = workflow.split('  browser-smoke:\n', 1)[1].split('  smb-sdk:', 1)[0]
+        self.assertLess(browser.index('release-acceptance.sh'), browser.index('release-assemble.sh'))
+        self.assertLess(browser.index('check-csr-browser.py'), browser.index('release-assemble.sh'))
+        self.assertLess(browser.index('release-assemble.sh'), browser.index('installation-candidate-linux-web'))
+        candidate = browser.split('      - name: Retain verified installation candidate', 1)[1].split('      - name:', 1)[0]
+        self.assertIn('path: release-assets/*', candidate)
+        self.assertIn('if-no-files-found: error', candidate)
+        self.assertIn('retention-days: 7', candidate)
+        self.assertNotIn('if:', candidate)
+        self.assertNotIn('release-publish.sh', workflow)
+        self.assertNotIn('contents: write', workflow)
+        for path in ('docs/ci.md', 'docs/release.md'):
+            self.assertIn('installation-candidate-linux-web', (ROOT / path).read_text())
+
     def test_release_rebuilds_both_native_products_before_packaging(self):
         workflow = (ROOT / '.github/workflows/release.yml').read_text()
         build = 'cargo build --locked --offline --release --package storage-server --package storage-rescue'

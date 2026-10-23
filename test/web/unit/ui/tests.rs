@@ -231,3 +231,79 @@ fn business_reads_do_not_start_outside_a_settled_session() {
         }
     });
 }
+
+#[test]
+fn uncertain_password_change_blocks_resubmission_and_reload_without_discarding_work() {
+    for status in [0, 200, 500, 503] {
+        let mut state = State {
+            authenticated: true,
+            password_pending: true,
+            ..Default::default()
+        };
+        state.files.slot = "P01".into();
+        reject_password_change(
+            &mut state,
+            &api::Error {
+                status,
+                code: "UNCONFIRMED".into(),
+                message: "Outcome unknown".into(),
+                retryable: true,
+                request_id: Some("req_password".into()),
+            },
+        );
+        assert!(state.password_unknown);
+        assert!(!state.password_pending);
+        assert!(state.password_change_blocked());
+        assert!(state.reload_blocked());
+        assert!(state.authenticated);
+        assert_eq!(state.files.slot, "P01");
+        assert_eq!(
+            state.password_failure.unwrap().request_id.as_deref(),
+            Some("req_password")
+        );
+    }
+}
+
+#[test]
+fn malformed_password_success_requires_signout_before_another_change() {
+    Owner::new().with(|| {
+        let state = RwSignal::new(State {
+            authenticated: true,
+            password_pending: true,
+            ..Default::default()
+        });
+        state.update(reject_unconfirmed_password_change);
+        state.with_untracked(|s| {
+            assert!(s.password_unknown);
+            assert!(s.password_change_blocked());
+            assert!(s.reload_blocked());
+        });
+        end_session(state, String::new());
+        state.with_untracked(|s| {
+            assert!(!s.password_unknown);
+            assert!(!s.reload_blocked());
+        });
+    });
+}
+
+#[test]
+fn known_password_rejection_allows_correction_but_never_erases_an_existing_fence() {
+    let mut state = State {
+        authenticated: true,
+        password_pending: true,
+        ..Default::default()
+    };
+    let error = api::Error {
+        status: 403,
+        code: "CURRENT_PASSWORD_INVALID".into(),
+        message: "Incorrect password".into(),
+        retryable: false,
+        request_id: None,
+    };
+    reject_password_change(&mut state, &error);
+    assert!(!state.password_unknown);
+    assert!(!state.password_change_blocked());
+    state.password_unknown = true;
+    reject_password_change(&mut state, &error);
+    assert!(state.password_change_blocked());
+}
