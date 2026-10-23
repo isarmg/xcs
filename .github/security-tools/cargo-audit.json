@@ -2,10 +2,13 @@
   "archive_url": "https://static.crates.io/crates/cargo-audit/cargo-audit-0.22.2.crate",
   "archive_sha256": "700c2b240f7fd330c24b675fe429f73a5b676531fcc6300400b2b67f155ba12a",
   "original_lock_sha256": "1762e201cbd2cd6992bb9250f45dda4ebbdde2f79d6393f37ee89bda4e0d9fd6",
-  "patched_lock_sha256": "fa524359a62e5f45daa2ed955c3a33dd669d85150e908dfefef357c66d880ba4",
+  "patched_lock_sha256": "35dcbcfdd25dc48e5c18abed63253531862b88376defb0b9a77e3958e9bf8562",
   "webpki_archive_url": "https://static.crates.io/crates/rustls-webpki/rustls-webpki-0.103.16.crate",
   "webpki_archive_sha256": "4443b1b6d39d7c663139942cc4558262562d2c84123bb6282ef177009ca8b281",
   "advisory": "https://rustsec.org/advisories/RUSTSEC-2026-0382.html",
+  "tokio_archive_url": "https://static.crates.io/crates/tokio/tokio-1.53.3.crate",
+  "tokio_archive_sha256": "ce3335fa71841cda333a58d7615b03901380ecf09d59b3296d21f8bbac0dde4e",
+  "tokio_advisory": "https://rustsec.org/advisories/RUSTSEC-2026-0386.html",
   "lock_changes": [
     {
       "before": {
@@ -1199,6 +1202,36 @@
           "proc-macro2",
           "quote",
           "syn 2.0.117"
+        ]
+      }
+    },
+    {
+      "before": {
+        "name": "tokio",
+        "version": "1.52.3",
+        "source": "registry+https://github.com/rust-lang/crates.io-index",
+        "checksum": "8fc7f01b389ac15039e4dc9531aa973a135d7a4135281b12d7c1bc79fd57fffe",
+        "dependencies": [
+          "bytes",
+          "libc",
+          "mio",
+          "pin-project-lite",
+          "socket2",
+          "windows-sys 0.61.2"
+        ]
+      },
+      "after": {
+        "name": "tokio",
+        "version": "1.53.3",
+        "source": "registry+https://github.com/rust-lang/crates.io-index",
+        "checksum": "ce3335fa71841cda333a58d7615b03901380ecf09d59b3296d21f8bbac0dde4e",
+        "dependencies": [
+          "bytes",
+          "libc",
+          "mio",
+          "pin-project-lite",
+          "socket2",
+          "windows-sys 0.61.2"
         ]
       }
     },

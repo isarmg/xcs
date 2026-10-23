@@ -29,6 +29,35 @@ version = "0.17.14"
 PATCHED = ORIGINAL.replace(b'0.103.13', b'0.103.16').replace(b'"old"', b'"fixed"')
 
 
+class ReviewedRecipeTests(unittest.TestCase):
+    def test_checked_in_snapshot_matches_recipe_and_update_provenance(self):
+        recipe = json.loads((INSTALL.CONFIG / "cargo-audit.json").read_text())
+        snapshot = (INSTALL.CONFIG / "cargo-audit-0.22.2.lock").read_bytes()
+        INSTALL.verify(snapshot, recipe["patched_lock_sha256"], "reviewed tool lock")
+        packages = tomllib.loads(snapshot.decode())["package"]
+        for change in recipe["lock_changes"]:
+            with self.subTest(change=change):
+                self.assertNotEqual(change["before"], change["after"])
+                if change["after"] is not None:
+                    self.assertEqual(packages.count(change["after"]), 1)
+                if change["before"] is not None:
+                    self.assertNotIn(change["before"], packages)
+        # The security fixes' recorded archive identities must describe the
+        # actual installed packages, not only an unrelated documentation hash.
+        for prefix, name in [("webpki", "rustls-webpki"), ("tokio", "tokio")]:
+            with self.subTest(package=name):
+                matches = [package for package in packages if package["name"] == name]
+                self.assertEqual(len(matches), 1)
+                package = matches[0]
+                self.assertEqual(package["source"], INSTALL.REGISTRY)
+                self.assertEqual(package["checksum"], recipe[f"{prefix}_archive_sha256"])
+                self.assertEqual(recipe[f"{prefix}_archive_url"],
+                                 f"https://static.crates.io/crates/{name}/"
+                                 f"{name}-{package['version']}.crate")
+                self.assertEqual(sum(change["after"] == package
+                                     for change in recipe["lock_changes"]), 1)
+
+
 class InstallTests(unittest.TestCase):
     def setUp(self):
         self.temporary = tempfile.TemporaryDirectory()

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build the pinned scanner with its reviewed, independently locked TLS fix."""
+"""Build the pinned scanner with reviewed, independently locked dependency fixes."""
 import hashlib
 import json
 import os
