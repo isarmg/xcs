@@ -16,6 +16,44 @@ fn setup_maps_validate_syntax_without_accessing_missing_files() {
         assert!(parse_setup_map(values, "--setup-config").is_err());
     }
 }
+
+#[test]
+fn setup_maps_share_the_runtime_identifier_policy_for_both_flags() {
+    for flag in ["--setup-disk", "--setup-config"] {
+        for id in [
+            "A",
+            "1",
+            "_",
+            "-",
+            "1_Primary",
+            "_preset",
+            "-local",
+            &"a".repeat(64),
+        ] {
+            let paths =
+                parse_setup_map(vec![format!("{id}=/definitely/missing/path")], flag).unwrap();
+            assert!(paths.contains_key(id));
+        }
+        for id in [
+            "",
+            "layout.prod",
+            "磁盘",
+            "a/b",
+            "a b",
+            "a\n",
+            &"a".repeat(65),
+        ] {
+            let error = parse_setup_map(vec![format!("{id}=/absolute/path")], flag)
+                .unwrap_err()
+                .to_string();
+            assert_eq!(
+                error,
+                format!("{flag} ID must contain 1–64 ASCII letters, digits, '_' or '-'")
+            );
+        }
+    }
+}
+
 #[test]
 fn trusted_proxy_requires_origin_and_exact_ip() {
     assert!(Args::try_parse_from(["zxs", "--trusted-proxy-ip", "127.0.0.1"]).is_err());

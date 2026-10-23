@@ -74,7 +74,7 @@ enum PackageCommand {
         package: PathBuf,
         #[arg(long)]
         primary_slot: String,
-        #[arg(long, default_value_t = 1)]
+        #[arg(long, default_value_t = 1, value_parser = command_line::value_parser!(u32).range(1..))]
         copies: u32,
         #[arg(long)]
         operation_id: Option<String>,

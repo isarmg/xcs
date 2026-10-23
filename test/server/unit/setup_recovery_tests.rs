@@ -764,6 +764,33 @@ fn preset_builder_never_exposes_path_shaped_identifiers() {
 }
 
 #[test]
+fn local_setup_identifiers_keep_the_existing_ascii_language() {
+    for id in [
+        "A",
+        "1",
+        "_",
+        "-",
+        "1_Primary",
+        "_preset",
+        "-local",
+        &"a".repeat(64),
+    ] {
+        assert!(valid_local_setup_id(id), "{id:?}");
+    }
+    for id in [
+        "",
+        "layout.prod",
+        "磁盘",
+        "a/b",
+        "a b",
+        "a\n",
+        &"a".repeat(65),
+    ] {
+        assert!(!valid_local_setup_id(id), "{id:?}");
+    }
+}
+
+#[test]
 fn single_disk_setup_is_empty_and_creates_exactly_one_member() {
     let f = fixture_with_disks(&["one"]);
     assert_eq!(f.service.status().state, InstallationState::Empty);

@@ -194,8 +194,13 @@ fn parse_setup_map(
         let (id, path) = mapping
             .split_once('=')
             .ok_or_else(|| format!("{flag} must be ID=/absolute/path"))?;
+        if !storage_server::setup_recovery::valid_local_setup_id(id) {
+            return Err(
+                format!("{flag} ID must contain 1–64 ASCII letters, digits, '_' or '-'").into(),
+            );
+        }
         let path = PathBuf::from(path);
-        if id.is_empty() || !path.is_absolute() || paths.insert(id.to_owned(), path).is_some() {
+        if !path.is_absolute() || paths.insert(id.to_owned(), path).is_some() {
             return Err(
                 format!("{flag} IDs must be nonempty and unique, with absolute paths").into(),
             );

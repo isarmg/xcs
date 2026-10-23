@@ -18,6 +18,16 @@ pub(crate) use http::{protected_routes, public_routes};
 pub const MAX_SETUP_BODY_BYTES: usize = 16 * 1024;
 const MAX_LOCAL_CONFIG_BYTES: usize = 64 * 1024 * 1024;
 
+/// Opaque local disk/preset IDs, not display labels or filesystem paths.
+/// Shared with the daemon's CLI so accepted setup options remain selectable.
+pub fn valid_local_setup_id(id: &str) -> bool {
+    !id.is_empty()
+        && id.len() <= 64
+        && id
+            .bytes()
+            .all(|b| b.is_ascii_alphanumeric() || b == b'-' || b == b'_')
+}
+
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq)]
 #[serialization(rename_all = "snake_case")]
 pub enum InstallationState {
@@ -150,12 +160,7 @@ impl SetupRecovery {
         let mut identities = BTreeMap::new();
         let mut unique = BTreeSet::new();
         for (id, path) in disks {
-            if id.is_empty()
-                || id.len() > 64
-                || !id
-                    .bytes()
-                    .all(|b| b.is_ascii_alphanumeric() || b == b'-' || b == b'_')
-            {
+            if !valid_local_setup_id(&id) {
                 return Err(ApiError::invalid("invalid local disk identifier"));
             }
             if !path.is_absolute()
@@ -208,13 +213,7 @@ impl SetupRecovery {
     pub fn with_presets(mut self, presets: BTreeMap<String, PathBuf>) -> Self {
         self.presets = presets
             .into_iter()
-            .filter(|(id, _)| {
-                !id.is_empty()
-                    && id.len() <= 64
-                    && id
-                        .bytes()
-                        .all(|b| b.is_ascii_alphanumeric() || b == b'-' || b == b'_')
-            })
+            .filter(|(id, _)| valid_local_setup_id(id))
             .collect();
         self
     }

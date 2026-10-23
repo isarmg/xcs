@@ -49,6 +49,30 @@ fn recovery_requires_explicit_loss_acknowledgement_before_opening_pool() {
 }
 
 #[test]
+fn package_restore_rejects_zero_copies_before_opening_pool_or_package() {
+    let directory = tempfile::tempdir().unwrap();
+    let output = Command::new(env!("CARGO_BIN_EXE_zxs-rescue"))
+        .current_dir(directory.path())
+        .args([
+            "package",
+            "restore",
+            "missing-package",
+            "--primary-slot",
+            "P01",
+            "--copies",
+            "0",
+        ])
+        .output()
+        .unwrap();
+    assert_eq!(output.status.code(), Some(2));
+    assert!(output.stdout.is_empty());
+    let error = String::from_utf8_lossy(&output.stderr);
+    assert!(error.contains("--copies"), "{error}");
+    assert!(!error.contains("IO_ERROR"), "{error}");
+    assert_eq!(std::fs::read_dir(directory.path()).unwrap().count(), 0);
+}
+
+#[test]
 fn rescue_restores_from_two_old_members_without_management_commands() {
     use storage_server::{auth::AuthStore, engine_backend::EngineBackend};
     let directory = tempfile::tempdir().unwrap();

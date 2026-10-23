@@ -44,6 +44,34 @@ fn no_subcommand_is_required_to_start_daemon_runtime() {
     );
 }
 
+#[test]
+fn malformed_setup_identifiers_fail_before_creating_state() {
+    for (flag, id) in [("--setup-disk", "P.01"), ("--setup-config", "layout.prod")] {
+        let directory = tempfile::tempdir().unwrap();
+        let root = directory.path().join("pool");
+        let management = directory.path().join("management");
+        let output = Command::new(env!("CARGO_BIN_EXE_zxs"))
+            .arg("--root")
+            .arg(&root)
+            .arg("--management-root")
+            .arg(&management)
+            .args([
+                flag,
+                &format!("{id}={}", directory.path().join("missing").display()),
+            ])
+            .env("TOKIO_WORKER_THREADS", "1")
+            .env_remove("RUST_LOG")
+            .output()
+            .unwrap();
+        assert_eq!(output.status.code(), Some(1), "{output:?}");
+        assert!(String::from_utf8_lossy(&output.stderr).contains(&format!(
+            "{flag} ID must contain 1–64 ASCII letters, digits, '_' or '-'"
+        )));
+        assert!(!root.exists());
+        assert!(!management.exists());
+    }
+}
+
 struct ChildGuard(std::process::Child);
 impl Drop for ChildGuard {
     fn drop(&mut self) {
