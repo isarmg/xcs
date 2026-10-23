@@ -52060,8 +52060,8 @@
     }
   },
   "external_test_mappings_sha256": {
-    "compliance/external-tests/foundation.json": "780402c6c31b006e222631b322c3f44c19bbe34a71d41338dc7228f3c6051c08",
-    "compliance/external-tests/integrated.json": "029fd33a9d77c8ba8c7fa0d73f9febf9682235914bec93b64c05cc7c65565395",
+    "compliance/external-tests/foundation.json": "6a264b4e03b0302c2952db335028c7bd9db97fd625743da89003d751a58b4b2d",
+    "compliance/external-tests/integrated.json": "c6aaba81aa6d0e5e2004cf185de321a4301ddf7a7bc74ddc462cae92db59c4d6",
     "compliance/external-tests/ring.json": "3e5a834ea832ea11a0da5cdeab898e9c2e2d5229becc1988edc3462cfb51dab1"
   },
   "external_tests": {
@@ -65450,7 +65450,7 @@
       ]
     },
     "src/foundation/reactive-state": {
-      "bytes": 51651,
+      "bytes": 51441,
       "directory": "src/foundation/reactive-state",
       "file_count": 10,
       "files": [
@@ -65504,13 +65504,13 @@
         },
         {
           "path": "test/foundation/reactive-state/unit/src/into_reactive_value/tests_21.rs",
-          "sha256": "29810518beb67eb0923a75dfbbc3f3c2a1da1e7a7da20a2cc83506810253a136",
+          "sha256": "5f9f420cd4a744e7d2faef4336a01c1a3177c7884fc0be45ec47facf58b29d08",
           "source": "src/foundation/reactive_graph/src/into_reactive_value.rs",
           "source_sha256_before": "fe18a84a56d0183c204951980388b635235142b806ada1fcf12ab10d76ded171"
         },
         {
           "path": "test/foundation/reactive-state/unit/src/owner/tests_594.rs",
-          "sha256": "6b4c64da4bd36075b8e6d0a76719b25cc5b0d65633c227b7c479148a015a271c",
+          "sha256": "57842dee3c6aaeddba1086838ca9e22a056cc0c9b5d71a4f7ae071ce990c718a",
           "source": "src/foundation/reactive_graph/src/owner.rs",
           "source_sha256_before": "50236f8bdf6764ff2587ccd78c3b2fd37902411f65ed4b422495003474667c48"
         }
@@ -67698,23 +67698,6 @@
       "origin_directory": "vendor/rust/rustc-hash-2.1.3",
       "roots": [
         "test/foundation/rustc-hash"
-      ]
-    },
-    "src/foundation/rustc_version": {
-      "bytes": 11805,
-      "directory": "src/foundation/rustc_version",
-      "file_count": 1,
-      "files": [
-        {
-          "path": "test/foundation/rustc_version/tests/all.rs",
-          "sha256": "7b2969022feab85a948fafd331d9bb30d80357d01afaf7e0f723908e75f39e89",
-          "source": "src/foundation/rustc_version/tests/all.rs",
-          "source_sha256_before": "7b2969022feab85a948fafd331d9bb30d80357d01afaf7e0f723908e75f39e89"
-        }
-      ],
-      "origin_directory": "vendor/rust/rustc_version-0.4.1",
-      "roots": [
-        "test/foundation/rustc_version"
       ]
     },
     "src/foundation/rustix": {
@@ -78432,7 +78415,7 @@
       ]
     },
     "src/interface": {
-      "bytes": 44640,
+      "bytes": 45082,
       "directory": "src/interface",
       "file_count": 15,
       "files": [
@@ -78450,7 +78433,7 @@
         },
         {
           "path": "test/interface/integration/reactive_state.rs",
-          "sha256": "0e62e3fc9d568ca2e902b8a01a1add3440c7800963f35a9146cf4a5ba5413663",
+          "sha256": "ae124c27d0f24337426365ae95b40292c38ec8a87fa797e2c400bc36314a3404",
           "source": "src/interface/tests/reactive_state.rs",
           "source_sha256_before": "0e62e3fc9d568ca2e902b8a01a1add3440c7800963f35a9146cf4a5ba5413663"
         },
@@ -78676,7 +78659,7 @@
   },
   "initial_test_relocation_sha256": "791ad728a408677dd54ef98e3feaffe825c5fc5670e888440615933d9498ecc3",
   "lockfiles_sha256": {
-    "Cargo.lock": "598a8fea4eb871c123a6a155b8458f4bce52143f8fb67030db1e35ea6c8c839b"
+    "Cargo.lock": "d3f66c35d36fc1ebf63098e6c700ded09f227e35fd5e77e8e39cac756ca67ef0"
   },
   "manifests_sha256": {
     "Cargo.toml": "4fa15cfe7d2baf5436dbc9b9c42bd6acb37fa93bd5d03823f8d09715fe4e6e6e",
@@ -78729,7 +78712,7 @@
     "src/foundation/date-time/Cargo.toml": "d2e24c443b8f224f50f30e1e4d651da9f88967655a96182d458558a80a798f00",
     "src/foundation/derive-where/Cargo.toml": "97788d9913c416fdaabb1be5f0ffa2349fa76b1d87971ae2320f6f4cd9abd8bd",
     "src/foundation/displaydoc/Cargo.toml": "0e403ffd4128dcb4fb73a680c709f6e554b3276b24f18c00af85acbadd9771e6",
-    "src/foundation/dom-helpers/Cargo.toml": "0faa4e2e9280b28bf0fcad93cd120e86a64787b170c5a77997f68fbdf926b3d9",
+    "src/foundation/dom-helpers/Cargo.toml": "43a94b2ce151a2232e41e2c33c99ea31c6dd34d9691c25f9a154365a112721cb",
     "src/foundation/either/Cargo.toml": "2ba22fccbda9c75dbb61faa588046507eb28c7d71daa0302b7c3a142b59ce9bc",
     "src/foundation/email_address/Cargo.toml": "5bf588a3c1e7b9d1c50d4f73f4aa5eaed8fb320d5724fc63676c2806a5700765",
     "src/foundation/equivalent/Cargo.toml": "aa0ce4f3911f935d92dc95ec1e0ff23ddde7bc2079f4bdbec220053fbd66cd94",
@@ -78818,7 +78801,7 @@
     "src/foundation/random-generator-core/Cargo.toml": "7eec94598ffd4e8672d36cc2051e0f60248ce2e17afacd4838589087b4ab21c1",
     "src/foundation/rayon-core/Cargo.toml": "ec99da3c7e92b7454834e615d0a0e2407bb7b1fd1877607c00c8f1e3bc98985f",
     "src/foundation/rayon/Cargo.toml": "fbdb1891ba970b009e5d85e78d8f8ead0e716f2b376fb30bcb04023c1bbba919",
-    "src/foundation/reactive-state/Cargo.toml": "ae90208c04c121caffbc7b99f8d77ba1fbdb12e08e06fb208e200ac6dc55ecf4",
+    "src/foundation/reactive-state/Cargo.toml": "22310134d6adc523541da0d6a8a1df9b5b48835adefb138acc00ba394069e39a",
     "src/foundation/ref-cast-impl/Cargo.toml": "15ba9d3c503960ea47843072982d4e1c9095fb6a2b67063cd0ccdb94268f992a",
     "src/foundation/ref-cast/Cargo.toml": "1291fdd6c5162dc8a1dd02103dd516846fdeb82f4b6d8b1f114c32e644a4701f",
     "src/foundation/regex/Cargo.toml": "7243083d5898fd6ee10adb616bf724f1fe0b9877befcb5b6a76b164b2aa1ae74",
@@ -78829,7 +78812,6 @@
     "src/foundation/rust-syntax/Cargo.toml": "56613dfaf8d7481213641c0fdc28878de46a909beef15081f8383ada66fe2b6f",
     "src/foundation/rustc-demangle/Cargo.toml": "628851822302b25cc16284cf2b532034d07418b5a15d7294dd943dd4e393a43c",
     "src/foundation/rustc-hash/Cargo.toml": "3edce0f39b0d22cff55e782c8c608813a74508a2811085067a029cf8f8db7075",
-    "src/foundation/rustc_version/Cargo.toml": "bda6f086fdbff4dca48102e6f9f6c597b66a243b00c8681427acc615a43fdf91",
     "src/foundation/rustix/Cargo.toml": "ae0322f056c1b5f6db9aef2c367c5fd8ec751717fff94482b29febe196432fcf",
     "src/foundation/rustls-pki-types/Cargo.toml": "15d861929cbf74b6d62d3b96393838fa05d97cc092e7e4ebe2e6c089624fcdb1",
     "src/foundation/rustls-webpki/Cargo.toml": "c458316c514704512744182403f378af437e697453b3108acda2e217a4652f93",
@@ -78861,7 +78843,7 @@
     "src/foundation/synstructure/Cargo.toml": "035e480439f3ce5e9840bcfa08ae1c917ab4322317b89cc2ec5d31c1c805a542",
     "src/foundation/sysinfo/Cargo.toml": "fd035afc120bbd2ae0f1d85a645ed94898c704b040ac0a436163afc1850674b7",
     "src/foundation/system-entropy/Cargo.toml": "6f80d8b67297956fe84dded22c94656eec80a824c9aadf1a7e86975e659d2221",
-    "src/foundation/task-dispatch/Cargo.toml": "f40539c80ab3d96544e05708d2a8494638f6abe9a25d2a6e496c4b36ad011d02",
+    "src/foundation/task-dispatch/Cargo.toml": "e652ba4cdff77ca172d8fc9fc99b22402761942cf9ff6cb24ae59656c2eb0eee",
     "src/foundation/tempfile/Cargo.toml": "fa30af4edb4e6ea33aa4812a0fd00c3bce99a818372538976dc43fd3aa14b1cb",
     "src/foundation/terminal-style/Cargo.toml": "8bca683bead1a0d03cc30ff5d29c623e728a799918d430528e12a6d2f13a2fc7",
     "src/foundation/thread_local/Cargo.toml": "7efef2ab12c7f2b364ab0d12a9bbf10144b943eee6d23629fdc88a69937e033c",
@@ -78890,7 +78872,7 @@
     "src/foundation/uuid/Cargo.toml": "129632951beb2377a53756c9d4b76a470481cccda4a213c867c2958b96cf13f9",
     "src/foundation/version_check/Cargo.toml": "7687d1f1999db3568ef5049ae658291b1c519931f819d1cd47707f9a87d6990e",
     "src/foundation/view-alternatives/Cargo.toml": "6e5019fd2c08432eb4b5082d751114f98f1700b39b389a8343c024e4a91c87e0",
-    "src/foundation/view-renderer/Cargo.toml": "e1a0774563898f664a99446d36d54f76f8027a4737b9e222d40bda208b7ebafe",
+    "src/foundation/view-renderer/Cargo.toml": "72ff2dd5fce0d40bd91126fe7b74ce456365ad35d3cb5035ca62ccf32ded5d09",
     "src/foundation/walrus-macro/Cargo.toml": "2f1cb1a5bafa0fefaaefc6190efbd2ce8db66ee1b13732287126a7fd76a9242d",
     "src/foundation/walrus/Cargo.toml": "000bec3ce31caa7077b94965a98356edc2a3808ed2b3da2a0c667a0002643895",
     "src/foundation/wasm-bindgen-cli-support/Cargo.toml": "ba84120c4b38b78580d989dcd34ea2f569424c20113f698b2b476a412beee686",
@@ -78913,7 +78895,7 @@
     "src/foundation/zerovec-derive/Cargo.toml": "70021b640066523d26b51d533c6cd9f9f591e4177dbe2b1427d63b1968049101",
     "src/foundation/zerovec/Cargo.toml": "dd088e3746a936ee712ff6f9aacc6b5d40b68a1ec14a0c57f58a7eb0e1aedcf6",
     "src/foundation/zmij/Cargo.toml": "9230831f8b50f7ac0b50a32d458f95f0e758ef847a81b15cbae9b84a6dd44df4",
-    "src/interface/Cargo.toml": "4285805516dd931ac504c09dee0819647816e4bb8dc82e79581ff3ca02de0285",
+    "src/interface/Cargo.toml": "9de3202f864ec8fbb9594b60bfd9774aa38decf08976294a74e2ff7e371e8ce9",
     "src/macros/Cargo.toml": "34ae205cb1da53da61bfa0e625f47e99dc524011aa56d26452234c48cbd9f5c7",
     "src/naming/Cargo.toml": "6599ac90d88b7a74eeb47444aa4fdad2002161798ae72cfe4b18e3d42eae1a9a",
     "src/platform/Cargo.toml": "6315b1efba0b551f24bf231da2c7a83d13ac64b5a2d0d13c99d281eb85eae1f0",
@@ -78921,9 +78903,9 @@
     "src/server/Cargo.toml": "5e2e03b350de8e67f63c8fe629354396ee6963c11656ba67463ec748af7ad558",
     "src/smb-vfs/Cargo.toml": "51a70ac5f679a92b4b781fdd3d92f4827eae29cf6548591f92749a7fcac26c7b",
     "src/smb/Cargo.toml": "0230542f6e28f238d877f417d3931941df428d65086cfe8d0005c15ebefcdb82",
-    "src/web/Cargo.toml": "72540b25ed28ac3b9814fdde17baf447c7805351541fb47034c99a2b806cb2ed",
+    "src/web/Cargo.toml": "8277fca0be3fe5b17e42dfb94e61ba8fe5984e164ed2c3a7b1e850023108b412",
     "tools/browser-smoke/Cargo.toml": "1fb2aa0063e3ea53e9db74334e3b2d7812ea4e2dc1d3e389e22573e85d8269ee",
-    "tools/contract-check/Cargo.toml": "0e96a9fcd06731392db429a5a5b548fc7981ca5cc5942f49a5f5c00389f3d70e",
+    "tools/contract-check/Cargo.toml": "8505f3d145e70c41808d6ba75e27929d3031e5df70ae6f81a1e3d9d36a23dc24",
     "tools/perf-check/Cargo.toml": "1d43415d20414747a8ca1c5bb74a940ac0ff773226778906f4d6a5325a945e02",
     "tools/release-tools/Cargo.toml": "389ade4140b92ee59d358dc15f3b929f743de4d1987313fd1453e6508400676e",
     "tools/unicode-build/Cargo.toml": "dab9e4bdbf7d4ab482690fcfc6c1f2c5792d17b44d56235c52807d4f19cfb955",
@@ -78989,7 +78971,7 @@
       "description": "Project-specific browser CSR runtime",
       "directory": "src/interface",
       "files_sha256": {
-        "Cargo.toml": "4285805516dd931ac504c09dee0819647816e4bb8dc82e79581ff3ca02de0285",
+        "Cargo.toml": "9de3202f864ec8fbb9594b60bfd9774aa38decf08976294a74e2ff7e371e8ce9",
         "src/animated_show.rs": "cd95f8823c423be1c48e4c2054872c6ab63b2efad10d091a49786f033afdf59a",
         "src/attribute_interceptor.rs": "7b148fc2ba4b4a07a078ce2c9e063f8e8a9a02d0cac75dc2d1b78220747a1954",
         "src/children.rs": "774081a72328ff254cd3f087335688fe63c0925fe8b46e4407c4ffb7cdbd96ff",
@@ -90696,8 +90678,8 @@
       "description": "DOM operations for the Leptos web framework.",
       "directory": "src/foundation/dom-helpers",
       "files_sha256": {
-        "Cargo.toml": "0faa4e2e9280b28bf0fcad93cd120e86a64787b170c5a77997f68fbdf926b3d9",
-        "src/helpers.rs": "0ca12c9851e4d804857a5737f09dad5643d15889ffdfaeac6c0939924487304b",
+        "Cargo.toml": "43a94b2ce151a2232e41e2c33c99ea31c6dd34d9691c25f9a154365a112721cb",
+        "src/helpers.rs": "9dcdef8f3d60d6ef24b783a42254bfb0819dd97f16be0152f7345c87b0ba5a42",
         "src/lib.rs": "1caf029d0146e26afad7694d1a4399675fdd26ac7a79ba2fbeeca5e7dda478ac",
         "src/logging.rs": "c1b3d1f116f3412af1993cdd1c22274ad283b7c665788fc42f19cee310ffab8e",
         "src/macro_helpers/mod.rs": "89e5b363f18276c7bd1f98bd578c2bd70d6c165269aa280311aba3dd6ac905c7",
@@ -95139,22 +95121,21 @@
       "description": "A fine-grained reactive graph for building user interfaces.",
       "directory": "src/foundation/reactive-state",
       "files_sha256": {
-        "Cargo.toml": "ae90208c04c121caffbc7b99f8d77ba1fbdb12e08e06fb208e200ac6dc55ecf4",
-        "build.rs": "11ccc42a6266f3bb42677ff796dd8f456a72460f0a20a83cce22bb29dfec534e",
+        "Cargo.toml": "22310134d6adc523541da0d6a8a1df9b5b48835adefb138acc00ba394069e39a",
         "src/actions/action.rs": "db4ecb4ee33b75b83f60eda0926b8942fdf1964e11c10d18d39267f76ea39b4e",
         "src/actions/mod.rs": "d17fbc1f77c4a2ff4f28a73de5979525509be75f96e8e38738c3fd3979d0717d",
         "src/actions/multi_action.rs": "d8fb6db4f542c3cef79bd182c29fead40d1c04a66f7895f4233d1ad0b299f97a",
         "src/callback.rs": "d6b13b33eeb75bb0ba50d5c1de73ca8294458cdfc64d5c84516743aee208959c",
         "src/channel.rs": "70c7d2de63ad0a74faeb89510ad900c0596c05a30c7d0a6b091c18fef7d70dbd",
         "src/computed.rs": "162e4c76b373bae25995afbeec069a6324d6687db7a567f5294df991a1bc0336",
-        "src/computed/arc_memo.rs": "ad37c5c24d8058c52a2a9f063f00a588af9b4acb0747f8e3cacb57d1b9336976",
+        "src/computed/arc_memo.rs": "2c050912d13920b90616fd8e7c8c3c35455f1cdd010fc7cbedeb40af907380fd",
         "src/computed/async_derived/arc_async_derived.rs": "23b1653dedc4cd6518435e0d795da3f4b62080fb2a847245f03f5cdcd5b2f21e",
         "src/computed/async_derived/async_derived.rs": "d948b091e66188adc004e52a90272fd3a5beb69f9e1738a2c2833e52efeadd70",
         "src/computed/async_derived/future_impls.rs": "79fbabee4050578ee54688f898ecc479db6d1d88c1e052cc91c2862eedb39c52",
         "src/computed/async_derived/inner.rs": "cb2d5dabad3866f37d63d70e62a00a995a4aaabcbd752a53a7601e0bfb197173",
         "src/computed/async_derived/mod.rs": "97e561a5f564291424312b5d04c3105873914a4cbea154ddb5756df38a893229",
         "src/computed/inner.rs": "43ec7d1f7c1ee1ffca70c6cd2d8a2faacf9bc283b953ce70352e9d1fe25cc028",
-        "src/computed/memo.rs": "34d7d6e6dfbde7a3a5a1cf9817d24e17602589c04622f947d32fe70472987533",
+        "src/computed/memo.rs": "d4de30a57522b49fa11e9a09339ea5db085eeb6cb5657ee4a97c926a37b62271",
         "src/computed/selector.rs": "44a2f4b3526b95460496769d2bf71648f294501c66cc569b3346a98cf6aa4e17",
         "src/data_serialization.rs": "d9ea115272a0f05485313a7298c31901fc14ff6e6e31fe62ab81a590a5ed37f4",
         "src/diagnostics.rs": "a082399955de0fadeec80cb856d5c1503f58ec47b90477b6645d0c467b421aa6",
@@ -95163,16 +95144,15 @@
         "src/effect/effect_function.rs": "301207462962dad1e241e8e45e3bbd1064654aaa348e311f922f18eddd9a8346",
         "src/effect/immediate.rs": "4f7d85e3e5539b16a8d8a62b2d43e432bd0ce74473fd0fa3590e81a9a3297f02",
         "src/effect/inner.rs": "22afaca570d46734180ae86301844df61746404d271bfec5dd68be6a7c9eaa6a",
-        "src/effect/render_effect.rs": "ae3db2685b992add12aab290f1d15886eb61e76063340c3a4d002a658f202961",
+        "src/effect/render_effect.rs": "fdcffbba53f5b0c8c9d4978ee2b85b6a65c7450e895f16ccc6b7f3990c361eb7",
         "src/graph.rs": "7aa98d6f91b532db8669851cc43a2253ff0f6b34a30e49c7b924b4d39782ee5b",
         "src/graph/node.rs": "a9de4be297d6fcbc2f9b5c3344132b1f85f01d9870ef5adb7ce7ca1ebe46cc6e",
         "src/graph/sets.rs": "b8c466fef5e198f5dea967276f0bc0de916b802d228cd76effdfc5ecf2dfcc16",
         "src/graph/source.rs": "1bdf56f425c2b15885a9dc3ff19fa07beae7f7fafe204b41cbd8b358164b4f8b",
         "src/graph/subscriber.rs": "479fb6bfeda874dd8a8c51b3dbe385e955f06845f05310751e696ce236a21306",
         "src/into_reactive_value.rs": "5a961fc94e93b4f22bae93b40c41fa6009abec5683bc6a2c6555e62becbed669",
-        "src/lib.rs": "7921e5dce1f0b44050feee3112061ba95a86c5228cb72525f2f28ff2ab96a1e2",
-        "src/nightly.rs": "dd5364a38f1c7119bd89ae0a297a7895332e7a21e6c59b158591119f817fc8dd",
-        "src/owner.rs": "614f93d48a527544d6a2340a857146c37c18996da769ea13b19f30f0c3d64c27",
+        "src/lib.rs": "7f909de4a9a9e022d1d2cbabb5637b7eb341242c124b3e549f6dc61f32fd1342",
+        "src/owner.rs": "fa061303b98d330dd446a12b2dd9502b13a0c4f8546b421cb76ea865e4c058df",
         "src/owner/arc_stored_value.rs": "62f716a8976c7572cf2b4abc4c613215615e511bdcf9f2d9a3dfb3ddb42b10d4",
         "src/owner/arena.rs": "cf95724fb376d9a6df8717d4176af94887f7db2d7be55250c5499a627f480200",
         "src/owner/arena_item.rs": "905677a8df70ae1db6fd7ad69d27efe04e1a0db354ae41e51f6bba29368ef26a",
@@ -95180,22 +95160,22 @@
         "src/owner/storage.rs": "99c232d05a44e4c985bb56f298f3038f833f45d1cc002736fd5ccb8119794e17",
         "src/owner/stored_value.rs": "95c72612307a3612012740310f2c8a76a65936d36c47f97245dbc99dccbbfd9c",
         "src/send_wrapper_ext.rs": "2d7bf0fde79a02cbe0a51a15a8d1668eff6ac5742ec54259b97cfc268994e057",
-        "src/signal.rs": "16d13cf4341ba1c418788abae38f79ead083d98f11b44c7d36dde7260bf69351",
+        "src/signal.rs": "cec22e946d76fe864aba36948e6ace1f8b48278bbdc71316888699b387f521da",
         "src/signal/arc_read.rs": "f01bf2f42943d7950cecda0a53f94c5d7eb7997da9f626ae6a78d8ac1bbaa2cc",
-        "src/signal/arc_rw.rs": "76042cb47ea05cac7336a386128f9fbacf1efaf826138c715bc4d25f6ba23a1c",
+        "src/signal/arc_rw.rs": "df2091f54765de6130ce51863e2ac38c90906f03456dbe36a16ff464b1341498",
         "src/signal/arc_trigger.rs": "7ce46c660f3324397ec9caa11ca7c094c977128083dd1946ddffbd2c232f3fce",
-        "src/signal/arc_write.rs": "34e819d726d2bb845544d29ee922f8c03c25853dadfcd25472a5acc784cb2126",
+        "src/signal/arc_write.rs": "c203960a8fca6ac59b3d9709d7a781331e5cb2c512e02a80d68d2425f73b630c",
         "src/signal/guards.rs": "d98d9cebd97de00419d1df07c12942994c9bec0d491bf6abf34314337ef222fa",
         "src/signal/mapped.rs": "f685825cf2de5e019b2be365ac30a7265dcbb2616780ea7ad2e24232b9968f53",
         "src/signal/read.rs": "1876e8217af5a410e83fba877e1fcd80c85011c4be31803e664952f6fcaba32a",
-        "src/signal/rw.rs": "796ee89c4500accf7db8c9ad9c67d6de45d862df3114037243be948f69bdcf74",
+        "src/signal/rw.rs": "9a7def08d209363de7d329175ae43f22b3717da34fd7e340e3a9d575bdbf1d6b",
         "src/signal/subscriber_traits.rs": "69f9aedb17168b3095e0d8433b12ea928ab4478bbdd242deb844ae1243828107",
         "src/signal/trigger.rs": "b457ac0c0be3e897f4053ea57bcff80b5a729b7d19eedcae3f139fa83fe77422",
-        "src/signal/write.rs": "20a65523be96082d3421a14847727e9a82fa28ba75b8986f6234fad2f6678ee6",
+        "src/signal/write.rs": "4c6c35f224181873132626b4e341c7676cecc8ee142ef0524237e3c035cd0358",
         "src/trait_options.rs": "001fd4f145f312d50752abf6789396a56092741a323fda57c432614c08c078b8",
         "src/traits.rs": "229452fe30d6d102d9ef33a904d27117f9ae79dbd204190eb8de6ab559cd0860",
         "src/transition.rs": "00bddd1d6f60ace08cdc3ac54c7c58eadd58ef42f5cf69ae1c14c7a7201eb9b2",
-        "src/wrappers.rs": "a9411ae4c90f8b375acd1f979c82b23bf4cf3ef7935669a16ff9255daa5fa431"
+        "src/wrappers.rs": "4338abf0c8daf455ee997e0b78e2f14194a6d6c3b54fa0a8da355f35448a1387"
       },
       "license": "MIT",
       "license_materials": [
@@ -96059,38 +96039,6 @@
         "path_in_vcs": ""
       },
       "version": "2.1.3"
-    },
-    "src/foundation/rustc_version": {
-      "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。",
-      "description": "A library for querying the version of a installed rustc compiler",
-      "directory": "src/foundation/rustc_version",
-      "files_sha256": {
-        "Cargo.toml": "bda6f086fdbff4dca48102e6f9f6c597b66a243b00c8681427acc615a43fdf91",
-        "src/lib.rs": "6d0dbf7bd12ba7121e6767841a0cee23b8282cc4d7c4b778a1e33129abdd7d72"
-      },
-      "license": "MIT OR Apache-2.0",
-      "license_materials": [
-        "compliance/licenses/upstream/rustc_version-0.4.1/LICENSE-APACHE",
-        "compliance/licenses/upstream/rustc_version-0.4.1/LICENSE-MIT"
-      ],
-      "merged_into": "无；通过统一内部源码源接入",
-      "name": "rustc_version",
-      "origin_directory": "vendor/rust/rustc_version-0.4.1",
-      "repository": "https://github.com/djc/rustc-version-rs",
-      "status": "内部维护源码",
-      "upstream": {
-        "archive_sha256": "cfcb3a22ef46e85b45de6ee7e79d063319ebb6594faafcf1c225ea92ab6e9b92",
-        "archive_url": "https://static.crates.io/crates/rustc_version/rustc_version-0.4.1.crate",
-        "name": "rustc_version",
-        "version": "0.4.1"
-      },
-      "vcs": {
-        "git": {
-          "sha1": "eeca449cca83e24150e46739e797aa82e9142809"
-        },
-        "path_in_vcs": ""
-      },
-      "version": "0.4.1"
     },
     "src/foundation/rustix": {
       "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 2026-10-20：裁剪不支持平台与缺失后端的依赖/feature边；移除不可达条件实现并修复稳定工具链编译诊断；当前逐文件摘要记录本地实现差异。 2026-10-20 第二批：原生范围收敛为 Linux amd64 LP64，移除 12 个非 amd64 汇编源码并同步 build.rs 与目标依赖分派；保留 x86_64 汇编原始字节、全部 API 与 use-libc/Miri 后端。GNU 双后端选中源码与展开代码等价；其他 Linux amd64 ABI 共享代码保留但未作运行验收。",
@@ -98132,8 +98080,8 @@
       "description": "Spawn asynchronous tasks in an executor-independent way.",
       "directory": "src/foundation/task-dispatch",
       "files_sha256": {
-        "Cargo.toml": "f40539c80ab3d96544e05708d2a8494638f6abe9a25d2a6e496c4b36ad011d02",
-        "src/lib.rs": "1a5294a79d7f181d795ec480438f461b6f2a8b6a641ad792aca4185fb4a75346"
+        "Cargo.toml": "e652ba4cdff77ca172d8fc9fc99b22402761942cf9ff6cb24ae59656c2eb0eee",
+        "src/lib.rs": "b44007d6c48462a5b46ed9355ddc829c3958bfa4af9d3987456bb7c552190ae5"
       },
       "license": "MIT",
       "license_materials": [
@@ -100098,7 +100046,7 @@
       "description": "Tools for building reactivity-agnostic, renderer-generic, statically-typed view trees for user interface libraries.",
       "directory": "src/foundation/view-renderer",
       "files_sha256": {
-        "Cargo.toml": "e1a0774563898f664a99446d36d54f76f8027a4737b9e222d40bda208b7ebafe",
+        "Cargo.toml": "72ff2dd5fce0d40bd91126fe7b74ce456365ad35d3cb5035ca62ccf32ded5d09",
         "src/dom.rs": "581b3fc173e231c53b7d34ac47598aae0b821d05c339438b3479f5e76ff65c7b",
         "src/erased.rs": "89974a6b9d6711534ff5fec3ac1e12045b7353678927c659091f45dcc93827d6",
         "src/html/attribute/any_attribute.rs": "6eca4018445b6a4213bd1670a6ab426826c50d89982fb499a969155167e9d628",
@@ -101786,7 +101734,7 @@
       "version": "0.2.129"
     }
   },
-  "policy_sha256": "c64dd9d6ab1ec7c4eec625468301a82640899ce82ae5b6c51d503085994b35cf",
+  "policy_sha256": "94cb9759026fe2d83c6bfac2c039f8d43036995edd0d0bca374a159e640dae5f",
   "post_consolidation_benchmark_relocation": "8a08cc5b47c335b9e6aa2b7361ab7259fdc394c8dad16c29efb3e90d330ffbbc",
   "proof_routing_receipts": [
     "42cbfc30f0e5db58801c1806abba6926e34a3279dd0697bc1b4cdf2c98fbcce0",
@@ -113503,12 +113451,6 @@
             "runtime"
           ]
         },
-        "src/foundation/async-trait": {
-          "features": [],
-          "roles": [
-            "compile"
-          ]
-        },
         "src/foundation/attribute-derive": {
           "features": [
             "syntax-full"
@@ -113680,8 +113622,7 @@
         },
         "src/foundation/gloo-timers": {
           "features": [
-            "default",
-            "futures"
+            "default"
           ],
           "roles": [
             "runtime"
@@ -113937,23 +113878,8 @@
             "runtime"
           ]
         },
-        "src/foundation/rustc_version": {
-          "features": [],
-          "roles": [
-            "compile"
-          ]
-        },
         "src/foundation/rustversion": {
           "features": [],
-          "roles": [
-            "compile"
-          ]
-        },
-        "src/foundation/semver": {
-          "features": [
-            "default",
-            "std"
-          ],
           "roles": [
             "compile"
           ]
@@ -117438,6 +117364,755 @@
       "profile": "sqlite-pool-validation",
       "requested_features": [
         "platform-io/sqlite-pool"
+      ],
+      "target": "x86_64-unknown-linux-gnu"
+    },
+    {
+      "manifest": "Cargo.toml",
+      "packages": {
+        "src/foundation/ahash": {
+          "features": [
+            "default",
+            "runtime-rng",
+            "serialization",
+            "std",
+            "system-entropy"
+          ],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/allocator-api2": {
+          "features": [
+            "alloc"
+          ],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/arrayvec": {
+          "features": [],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/async-trait": {
+          "features": [],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/autocfg": {
+          "features": [],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/bit-set": {
+          "features": [
+            "std"
+          ],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/bit-vec": {
+          "features": [
+            "std"
+          ],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/blake3": {
+          "features": [
+            "default",
+            "std"
+          ],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/borrow-or-share": {
+          "features": [
+            "alloc"
+          ],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/bytecount": {
+          "features": [
+            "runtime-dispatch-simd"
+          ],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/cc": {
+          "features": [],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/cfg-if": {
+          "features": [],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/constant_time_eq": {
+          "features": [
+            "std"
+          ],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/cpu-feature-detect": {
+          "features": [],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/data-encoding": {
+          "features": [
+            "alloc",
+            "default",
+            "std"
+          ],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/data-serialization": {
+          "features": [
+            "alloc",
+            "default",
+            "derive",
+            "error-path",
+            "std"
+          ],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/displaydoc": {
+          "features": [],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/email_address": {
+          "features": [
+            "default",
+            "serialization",
+            "serialization_support"
+          ],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/equivalent": {
+          "features": [],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/error-definition": {
+          "features": [
+            "default",
+            "std"
+          ],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/error-definition-macros": {
+          "features": [],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/fancy-regex": {
+          "features": [
+            "default",
+            "perf",
+            "std",
+            "unicode",
+            "variable-lookbehinds"
+          ],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/fluent-uri": {
+          "features": [
+            "alloc",
+            "default",
+            "impl-error",
+            "serialization",
+            "std"
+          ],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/foldhash": {
+          "features": [],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/fraction": {
+          "features": [
+            "with-bigint"
+          ],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/futures": {
+          "features": [
+            "alloc",
+            "async-await",
+            "async-await-macro",
+            "channel",
+            "executor",
+            "io",
+            "shared-state",
+            "sink",
+            "std",
+            "utilities"
+          ],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/futures-macro": {
+          "features": [],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/hash-table": {
+          "features": [
+            "allocator-api2",
+            "default",
+            "default-hasher",
+            "equivalent",
+            "inline-more",
+            "raw-entry",
+            "serialization"
+          ],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/heck": {
+          "features": [],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/icu_collections": {
+          "features": [],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/icu_locale_core": {
+          "features": [
+            "zerovec"
+          ],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/icu_provider": {
+          "features": [
+            "baked"
+          ],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/indexmap": {
+          "features": [
+            "default",
+            "serialization",
+            "std"
+          ],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/itoa": {
+          "features": [],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/json-codec": {
+          "features": [
+            "default",
+            "float_roundtrip",
+            "raw_value",
+            "std"
+          ],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/libc": {
+          "features": [
+            "default",
+            "std"
+          ],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/litemap": {
+          "features": [],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/memchr": {
+          "features": [
+            "alloc",
+            "default",
+            "std"
+          ],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/micromap": {
+          "features": [
+            "default"
+          ],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/num-cmp": {
+          "features": [],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/numeric": {
+          "features": [
+            "alloc",
+            "bigint",
+            "collection",
+            "complex",
+            "integer",
+            "iter",
+            "rational",
+            "std"
+          ],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/once_cell": {
+          "features": [
+            "alloc",
+            "default",
+            "race",
+            "std"
+          ],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/pin-project-lite": {
+          "features": [],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/potential_utf": {
+          "features": [
+            "zerovec"
+          ],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/proc-macro2": {
+          "features": [
+            "default",
+            "proc-macro",
+            "span-locations"
+          ],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/quote": {
+          "features": [
+            "default",
+            "proc-macro"
+          ],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/ref-cast": {
+          "features": [],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/ref-cast-impl": {
+          "features": [],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/regex": {
+          "features": [
+            "alloc",
+            "automata",
+            "default",
+            "dfa-build",
+            "dfa-onepass",
+            "dfa-search",
+            "engine-perf",
+            "hybrid",
+            "literal",
+            "literal-perf",
+            "matcher",
+            "meta",
+            "nfa",
+            "nfa-backtrack",
+            "nfa-pikevm",
+            "nfa-thompson",
+            "perf",
+            "perf-backtrack",
+            "perf-dfa",
+            "perf-inline",
+            "perf-literal",
+            "perf-literal-multisubstring",
+            "perf-literal-substring",
+            "perf-onepass",
+            "std",
+            "syntax",
+            "unicode",
+            "unicode-age",
+            "unicode-bool",
+            "unicode-case",
+            "unicode-gencat",
+            "unicode-perl",
+            "unicode-script",
+            "unicode-segment",
+            "unicode-word-boundary"
+          ],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/rust-syntax": {
+          "features": [
+            "clone-impls",
+            "default",
+            "derive",
+            "extra-traits",
+            "fold",
+            "full",
+            "parsing",
+            "printing",
+            "proc-macro",
+            "visit",
+            "visit-mut"
+          ],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/schema-validation": {
+          "features": [
+            "json-codec",
+            "pattern",
+            "reference",
+            "resolve-async",
+            "validator",
+            "value"
+          ],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/scopeguard": {
+          "features": [],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/serialization-derive": {
+          "features": [
+            "default"
+          ],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/shell-tokenizer": {
+          "features": [
+            "default",
+            "std"
+          ],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/slab": {
+          "features": [
+            "std"
+          ],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/smallvec": {
+          "features": [
+            "const_generics",
+            "const_new"
+          ],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/stable_deref_trait": {
+          "features": [
+            "alloc",
+            "std"
+          ],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/strum": {
+          "features": [
+            "default",
+            "derive",
+            "std",
+            "strum_macros"
+          ],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/strum_macros": {
+          "features": [],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/synchronization": {
+          "features": [
+            "atomic_usize",
+            "locks",
+            "parking",
+            "std"
+          ],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/synstructure": {
+          "features": [
+            "default",
+            "proc-macro"
+          ],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/system-entropy": {
+          "features": [
+            "std",
+            "wasm_js"
+          ],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/tinystr": {
+          "features": [
+            "zerovec"
+          ],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/toml": {
+          "features": [
+            "alloc",
+            "default",
+            "display",
+            "edit",
+            "parse",
+            "serialization",
+            "std",
+            "write"
+          ],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/unicode-general-category": {
+          "features": [],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/unicode-ident": {
+          "features": [],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/unicode-normalizer": {
+          "features": [
+            "compiled_data"
+          ],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/unicode-properties": {
+          "features": [
+            "compiled_data"
+          ],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/url-encoding": {
+          "features": [
+            "alloc",
+            "default",
+            "domain",
+            "form",
+            "parser",
+            "std",
+            "unicode-normalizer",
+            "unicode-properties"
+          ],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/utf8_iter": {
+          "features": [],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/uuid": {
+          "features": [
+            "default",
+            "js",
+            "rng",
+            "std",
+            "v4"
+          ],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/winnow": {
+          "features": [
+            "alloc",
+            "default",
+            "std"
+          ],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/writeable": {
+          "features": [],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/yoke": {
+          "features": [
+            "derive",
+            "zerofrom"
+          ],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/yoke-derive": {
+          "features": [],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/zerocopy": {
+          "features": [
+            "simd"
+          ],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/zerofrom": {
+          "features": [
+            "derive"
+          ],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/zerofrom-derive": {
+          "features": [],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/zerotrie": {
+          "features": [
+            "yoke",
+            "zerofrom"
+          ],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/zerovec": {
+          "features": [
+            "derive",
+            "yoke"
+          ],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/zerovec-derive": {
+          "features": [],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/zmij": {
+          "features": [],
+          "roles": [
+            "compile"
+          ]
+        }
+      },
+      "profile": "schema-async-validation",
+      "requested_features": [
+        "contract-check/schema-async"
       ],
       "target": "x86_64-unknown-linux-gnu"
     }
@@ -121289,6 +121964,65 @@
         "path_in_vcs": ""
       },
       "version": "0.5.18"
+    },
+    "src/foundation/rustc_version": {
+      "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。",
+      "description": "A library for querying the version of a installed rustc compiler",
+      "directory": "src/foundation/rustc_version",
+      "files_sha256": {
+        "Cargo.toml": "bda6f086fdbff4dca48102e6f9f6c597b66a243b00c8681427acc615a43fdf91",
+        "src/lib.rs": "6d0dbf7bd12ba7121e6767841a0cee23b8282cc4d7c4b778a1e33129abdd7d72"
+      },
+      "license": "MIT OR Apache-2.0",
+      "license_materials": [
+        "compliance/licenses/upstream/rustc_version-0.4.1/LICENSE-APACHE",
+        "compliance/licenses/upstream/rustc_version-0.4.1/LICENSE-MIT"
+      ],
+      "merged_into": "无；通过统一内部源码源接入",
+      "name": "rustc_version",
+      "origin_directory": "vendor/rust/rustc_version-0.4.1",
+      "repository": "https://github.com/djc/rustc-version-rs",
+      "retirement": {
+        "bytes": 14370,
+        "category": "unsupported-compiler-capability",
+        "external_tests": {
+          "bytes": 11805,
+          "directory": "src/foundation/rustc_version",
+          "file_count": 1,
+          "files": [
+            {
+              "path": "test/foundation/rustc_version/tests/all.rs",
+              "sha256": "7b2969022feab85a948fafd331d9bb30d80357d01afaf7e0f723908e75f39e89",
+              "source": "src/foundation/rustc_version/tests/all.rs",
+              "source_sha256_before": "7b2969022feab85a948fafd331d9bb30d80357d01afaf7e0f723908e75f39e89"
+            }
+          ],
+          "origin_directory": "vendor/rust/rustc_version-0.4.1",
+          "roots": [
+            "test/foundation/rustc_version"
+          ]
+        },
+        "file_count": 2,
+        "reason": "The pinned stable browser reactive runtime no longer offers unsupported nightly Fn shorthand; its sole compiler-channel probe consumer was removed. Source and upstream test receipts remain archived; original licenses and provenance remain immutable.",
+        "targets": [
+          "wasm32-unknown-unknown",
+          "x86_64-unknown-linux-gnu"
+        ]
+      },
+      "status": "内部维护源码",
+      "upstream": {
+        "archive_sha256": "cfcb3a22ef46e85b45de6ee7e79d063319ebb6594faafcf1c225ea92ab6e9b92",
+        "archive_url": "https://static.crates.io/crates/rustc_version/rustc_version-0.4.1.crate",
+        "name": "rustc_version",
+        "version": "0.4.1"
+      },
+      "vcs": {
+        "git": {
+          "sha1": "eeca449cca83e24150e46739e797aa82e9142809"
+        },
+        "path_in_vcs": ""
+      },
+      "version": "0.4.1"
     },
     "src/foundation/ryu": {
       "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 2026-10-20：移除不可达条件实现并修复稳定工具链编译诊断；当前逐文件摘要记录本地实现差异。",
@@ -129700,6 +130434,7 @@
     "src/foundation/rand_core-0.10.1": "7fb72e3ec9865643f07151b78ccdaac7ce2b5492f6aacf3a82d0ff171889fd19",
     "src/foundation/rand_pcg": "e1ed8f5e2931a5975e4f3984f42420069cf32a758d02398a0d8364397bfbb7de",
     "src/foundation/redox_syscall": "704f75661ff61ace178b7f5c4e26b52ed723934c8e07ccb9957b79936dca095c",
+    "src/foundation/rustc_version": "f76c2253cdd69ed23adf89e19b880808e73f45ade3934c303f3a222585ea0d65",
     "src/foundation/ryu": "db84904d40032645153d736166ab5a9c8bc63cd884ce42de68d708673aa9317d",
     "src/foundation/same-file": "1a08c36bd3c6cf09c5f57776cd777df98f4280206b1d932341ba6b4b2390ffca",
     "src/foundation/sha2-0.10.9": "1ead106fffdba3ac43380ddc28538c803d85219acbaafdb59d77bdad3036f120",
@@ -139149,6 +139884,113 @@
         "version": "0.11.8"
       },
       "reason": "Replace upstream-branded serialization module and test filenames with functional names"
+    }
+  },
+  "source_trim_records_sha256": {
+    "70f77319b7bc5e360b48c9de6d82dd1ab095724b3c7a7ecbe551e189b08b662a": "70f77319b7bc5e360b48c9de6d82dd1ab095724b3c7a7ecbe551e189b08b662a"
+  },
+  "source_trims": {
+    "70f77319b7bc5e360b48c9de6d82dd1ab095724b3c7a7ecbe551e189b08b662a": {
+      "directory": "src/foundation/reactive-state",
+      "files": [
+        {
+          "path": "build.rs",
+          "reason": "Remove the only compiler-channel probe after retiring unsupported nightly mode; stable Rust 1.99 CSR behavior is verified by native and WASM consumers.",
+          "sha256_before": "11ccc42a6266f3bb42677ff796dd8f456a72460f0a20a83cce22bb29dfec534e"
+        },
+        {
+          "path": "src/nightly.rs",
+          "reason": "Remove unsupported nightly Fn shorthand implementations; supported stable conversions and actual CSR/template behavior remain verified.",
+          "sha256_before": "dd5364a38f1c7119bd89ae0a297a7895332e7a21e6c59b158591119f817fc8dd"
+        }
+      ],
+      "package": {
+        "changes": "Leptos 族内部 path 依赖、本地 workspace 边界；部分包以 pastey 替代停止维护的 paste；逐文件差异见 compliance/provenance/shared/vendor/web/dependencies/patches.json；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 2026-10-20：移除不可达条件实现并修复稳定工具链编译诊断；当前逐文件摘要记录本地实现差异。",
+        "description": "A fine-grained reactive graph for building user interfaces.",
+        "directory": "src/foundation/reactive-state",
+        "files_sha256": {
+          "Cargo.toml": "ae90208c04c121caffbc7b99f8d77ba1fbdb12e08e06fb208e200ac6dc55ecf4",
+          "build.rs": "11ccc42a6266f3bb42677ff796dd8f456a72460f0a20a83cce22bb29dfec534e",
+          "src/actions/action.rs": "db4ecb4ee33b75b83f60eda0926b8942fdf1964e11c10d18d39267f76ea39b4e",
+          "src/actions/mod.rs": "d17fbc1f77c4a2ff4f28a73de5979525509be75f96e8e38738c3fd3979d0717d",
+          "src/actions/multi_action.rs": "d8fb6db4f542c3cef79bd182c29fead40d1c04a66f7895f4233d1ad0b299f97a",
+          "src/callback.rs": "d6b13b33eeb75bb0ba50d5c1de73ca8294458cdfc64d5c84516743aee208959c",
+          "src/channel.rs": "70c7d2de63ad0a74faeb89510ad900c0596c05a30c7d0a6b091c18fef7d70dbd",
+          "src/computed.rs": "162e4c76b373bae25995afbeec069a6324d6687db7a567f5294df991a1bc0336",
+          "src/computed/arc_memo.rs": "ad37c5c24d8058c52a2a9f063f00a588af9b4acb0747f8e3cacb57d1b9336976",
+          "src/computed/async_derived/arc_async_derived.rs": "23b1653dedc4cd6518435e0d795da3f4b62080fb2a847245f03f5cdcd5b2f21e",
+          "src/computed/async_derived/async_derived.rs": "d948b091e66188adc004e52a90272fd3a5beb69f9e1738a2c2833e52efeadd70",
+          "src/computed/async_derived/future_impls.rs": "79fbabee4050578ee54688f898ecc479db6d1d88c1e052cc91c2862eedb39c52",
+          "src/computed/async_derived/inner.rs": "cb2d5dabad3866f37d63d70e62a00a995a4aaabcbd752a53a7601e0bfb197173",
+          "src/computed/async_derived/mod.rs": "97e561a5f564291424312b5d04c3105873914a4cbea154ddb5756df38a893229",
+          "src/computed/inner.rs": "43ec7d1f7c1ee1ffca70c6cd2d8a2faacf9bc283b953ce70352e9d1fe25cc028",
+          "src/computed/memo.rs": "34d7d6e6dfbde7a3a5a1cf9817d24e17602589c04622f947d32fe70472987533",
+          "src/computed/selector.rs": "44a2f4b3526b95460496769d2bf71648f294501c66cc569b3346a98cf6aa4e17",
+          "src/data_serialization.rs": "d9ea115272a0f05485313a7298c31901fc14ff6e6e31fe62ab81a590a5ed37f4",
+          "src/diagnostics.rs": "a082399955de0fadeec80cb856d5c1503f58ec47b90477b6645d0c467b421aa6",
+          "src/effect.rs": "79695c0054cc31c15c93d6ec591ff052cdcc91315c54a0d3b69bac1e414e2c4f",
+          "src/effect/effect.rs": "4a042155545bc656ca73900704b864adeb2f7309e5cd0e2d5cd00b9799f66b3c",
+          "src/effect/effect_function.rs": "301207462962dad1e241e8e45e3bbd1064654aaa348e311f922f18eddd9a8346",
+          "src/effect/immediate.rs": "4f7d85e3e5539b16a8d8a62b2d43e432bd0ce74473fd0fa3590e81a9a3297f02",
+          "src/effect/inner.rs": "22afaca570d46734180ae86301844df61746404d271bfec5dd68be6a7c9eaa6a",
+          "src/effect/render_effect.rs": "ae3db2685b992add12aab290f1d15886eb61e76063340c3a4d002a658f202961",
+          "src/graph.rs": "7aa98d6f91b532db8669851cc43a2253ff0f6b34a30e49c7b924b4d39782ee5b",
+          "src/graph/node.rs": "a9de4be297d6fcbc2f9b5c3344132b1f85f01d9870ef5adb7ce7ca1ebe46cc6e",
+          "src/graph/sets.rs": "b8c466fef5e198f5dea967276f0bc0de916b802d228cd76effdfc5ecf2dfcc16",
+          "src/graph/source.rs": "1bdf56f425c2b15885a9dc3ff19fa07beae7f7fafe204b41cbd8b358164b4f8b",
+          "src/graph/subscriber.rs": "479fb6bfeda874dd8a8c51b3dbe385e955f06845f05310751e696ce236a21306",
+          "src/into_reactive_value.rs": "5a961fc94e93b4f22bae93b40c41fa6009abec5683bc6a2c6555e62becbed669",
+          "src/lib.rs": "7921e5dce1f0b44050feee3112061ba95a86c5228cb72525f2f28ff2ab96a1e2",
+          "src/nightly.rs": "dd5364a38f1c7119bd89ae0a297a7895332e7a21e6c59b158591119f817fc8dd",
+          "src/owner.rs": "614f93d48a527544d6a2340a857146c37c18996da769ea13b19f30f0c3d64c27",
+          "src/owner/arc_stored_value.rs": "62f716a8976c7572cf2b4abc4c613215615e511bdcf9f2d9a3dfb3ddb42b10d4",
+          "src/owner/arena.rs": "cf95724fb376d9a6df8717d4176af94887f7db2d7be55250c5499a627f480200",
+          "src/owner/arena_item.rs": "905677a8df70ae1db6fd7ad69d27efe04e1a0db354ae41e51f6bba29368ef26a",
+          "src/owner/context.rs": "191f8f1e69e810758a22c53e188932723937a9f6e8b4070d891bb5b51a1ab910",
+          "src/owner/storage.rs": "99c232d05a44e4c985bb56f298f3038f833f45d1cc002736fd5ccb8119794e17",
+          "src/owner/stored_value.rs": "95c72612307a3612012740310f2c8a76a65936d36c47f97245dbc99dccbbfd9c",
+          "src/send_wrapper_ext.rs": "2d7bf0fde79a02cbe0a51a15a8d1668eff6ac5742ec54259b97cfc268994e057",
+          "src/signal.rs": "16d13cf4341ba1c418788abae38f79ead083d98f11b44c7d36dde7260bf69351",
+          "src/signal/arc_read.rs": "f01bf2f42943d7950cecda0a53f94c5d7eb7997da9f626ae6a78d8ac1bbaa2cc",
+          "src/signal/arc_rw.rs": "76042cb47ea05cac7336a386128f9fbacf1efaf826138c715bc4d25f6ba23a1c",
+          "src/signal/arc_trigger.rs": "7ce46c660f3324397ec9caa11ca7c094c977128083dd1946ddffbd2c232f3fce",
+          "src/signal/arc_write.rs": "34e819d726d2bb845544d29ee922f8c03c25853dadfcd25472a5acc784cb2126",
+          "src/signal/guards.rs": "d98d9cebd97de00419d1df07c12942994c9bec0d491bf6abf34314337ef222fa",
+          "src/signal/mapped.rs": "f685825cf2de5e019b2be365ac30a7265dcbb2616780ea7ad2e24232b9968f53",
+          "src/signal/read.rs": "1876e8217af5a410e83fba877e1fcd80c85011c4be31803e664952f6fcaba32a",
+          "src/signal/rw.rs": "796ee89c4500accf7db8c9ad9c67d6de45d862df3114037243be948f69bdcf74",
+          "src/signal/subscriber_traits.rs": "69f9aedb17168b3095e0d8433b12ea928ab4478bbdd242deb844ae1243828107",
+          "src/signal/trigger.rs": "b457ac0c0be3e897f4053ea57bcff80b5a729b7d19eedcae3f139fa83fe77422",
+          "src/signal/write.rs": "20a65523be96082d3421a14847727e9a82fa28ba75b8986f6234fad2f6678ee6",
+          "src/trait_options.rs": "001fd4f145f312d50752abf6789396a56092741a323fda57c432614c08c078b8",
+          "src/traits.rs": "229452fe30d6d102d9ef33a904d27117f9ae79dbd204190eb8de6ab559cd0860",
+          "src/transition.rs": "00bddd1d6f60ace08cdc3ac54c7c58eadd58ef42f5cf69ae1c14c7a7201eb9b2",
+          "src/wrappers.rs": "a9411ae4c90f8b375acd1f979c82b23bf4cf3ef7935669a16ff9255daa5fa431"
+        },
+        "license": "MIT",
+        "license_materials": [
+          "compliance/licenses/shared/vendor/web/dependencies/LICENSE-MIT"
+        ],
+        "merged_into": "src/interface + src/macros",
+        "name": "reactive-state",
+        "origin_directory": "vendor/web/dependencies/reactive_graph-0.2.16",
+        "repository": "https://github.com/leptos-rs/leptos",
+        "status": "内部维护源码",
+        "upstream": {
+          "archive_sha256": "3bcec36a2d1b9a53a4129b3270b19e3df6f6b88c2e7c97ed9404dc9307f137d7",
+          "archive_url": "https://static.crates.io/crates/reactive_graph/reactive_graph-0.2.16.crate",
+          "name": "reactive_graph",
+          "version": "0.2.16"
+        },
+        "vcs": {
+          "git": {
+            "dirty": true,
+            "sha1": "fa7f7bd30bf3b835c00bf4878339d8672a94490a"
+          },
+          "path_in_vcs": "reactive_graph"
+        },
+        "version": "0.2.16"
+      }
     }
   },
   "superseded": {

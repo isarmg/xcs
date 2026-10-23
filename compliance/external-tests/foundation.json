@@ -13086,13 +13086,13 @@
         },
         {
           "path": "test/foundation/reactive-state/unit/src/into_reactive_value/tests_21.rs",
-          "sha256": "29810518beb67eb0923a75dfbbc3f3c2a1da1e7a7da20a2cc83506810253a136",
+          "sha256": "5f9f420cd4a744e7d2faef4336a01c1a3177c7884fc0be45ec47facf58b29d08",
           "source": "src/foundation/reactive_graph/src/into_reactive_value.rs",
           "source_sha256_before": "fe18a84a56d0183c204951980388b635235142b806ada1fcf12ab10d76ded171"
         },
         {
           "path": "test/foundation/reactive-state/unit/src/owner/tests_594.rs",
-          "sha256": "6b4c64da4bd36075b8e6d0a76719b25cc5b0d65633c227b7c479148a015a271c",
+          "sha256": "57842dee3c6aaeddba1086838ca9e22a056cc0c9b5d71a4f7ae071ce990c718a",
           "source": "src/foundation/reactive_graph/src/owner.rs",
           "source_sha256_before": "50236f8bdf6764ff2587ccd78c3b2fd37902411f65ed4b422495003474667c48"
         }
@@ -14464,20 +14464,6 @@
       ],
       "roots": [
         "test/foundation/rustc-hash"
-      ]
-    },
-    {
-      "directory": "src/foundation/rustc_version",
-      "files": [
-        {
-          "path": "test/foundation/rustc_version/tests/all.rs",
-          "sha256": "7b2969022feab85a948fafd331d9bb30d80357d01afaf7e0f723908e75f39e89",
-          "source": "src/foundation/rustc_version/tests/all.rs",
-          "source_sha256_before": "7b2969022feab85a948fafd331d9bb30d80357d01afaf7e0f723908e75f39e89"
-        }
-      ],
-      "roots": [
-        "test/foundation/rustc_version"
       ]
     },
     {

@@ -10,6 +10,14 @@ SPEC.loader.exec_module(architecture)
 
 
 class ConsumerEdges(unittest.TestCase):
+    def test_generated_product_roles_use_the_current_rescue_entrypoint(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / 'Cargo.toml').write_text('[workspace]\nmembers = []\n', encoding='utf-8')
+            document = architecture.document(root, {'packages': {}}, {'profiles': []})
+            self.assertIn('engine / server / client / rescue]', document)
+            self.assertNotIn('client / admin]', document)
+
     def test_inherited_alias_target_optional_and_dev_edges_remain_visible(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)

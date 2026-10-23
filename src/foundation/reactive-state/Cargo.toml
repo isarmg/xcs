@@ -6,7 +6,6 @@ rust-version = "1.88"
 name = "reactive-state"
 version = "0.2.16"
 authors = ["Greg Johnston"]
-build = "build.rs"
 autolib = false
 autobins = false
 autoexamples = false
@@ -19,11 +18,8 @@ repository = "https://github.com/leptos-rs/leptos"
 
 [features]
 effects = []
-hydration = []
-nightly = []
 sandboxed-arenas = []
 serialization = ["dep:data-serialization"]
-subsecond = []
 tracing = ["dep:tracing"]
 
 [lib]
@@ -104,23 +100,21 @@ optional = true
 default-features = true
 path = "../tracing"
 
-[build-dependencies.rustc_version]
-version = "0.4"
-default-features = true
-path = "../rustc_version"
-
 [target.'cfg(all(target_arch = "wasm32", target_os = "unknown"))'.dependencies.web-sys]
 version = "0.3"
 features = ["console"]
 default-features = false
 path = "../web-sys"
 
+[dev-dependencies.typed-builder]
+version = "0.23"
+path = "../typed-builder"
+
 [lints.rust.unexpected_cfgs]
 level = "warn"
 priority = 0
 check-cfg = [
     "cfg(interface_debuginfo)",
-    "cfg(rustc_nightly)",
 ]
 
 # Maintained independently of the enclosing application workspace.

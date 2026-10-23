@@ -10,10 +10,12 @@ try {
         throw new Error('async class method and retained state');
     }
     counter.free();
+    await api.task_dispatch_contract();
     document.body.textContent = JSON.stringify({status: 'passed', checks: [
         'generated async export', 'generated async import', 'JsFuture and Promise IntoFuture',
         'future_to_promise resolution and rejection', 'spawn_local next microtask',
-        'empty Unicode and large strings', 'async class method and retained state'
+        'empty Unicode and large strings', 'async class method and retained state',
+        'task dispatch Send and local futures', 'task dispatch initialization and tick'
     ]});
 } catch (error) {
     document.body.textContent = JSON.stringify({status: 'failed', error: String(error)});

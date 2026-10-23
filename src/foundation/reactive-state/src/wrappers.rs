@@ -1118,17 +1118,15 @@ pub mod read {
         }
     }
 
-    #[cfg(not(all(feature = "nightly", rustc_nightly)))]
     #[doc(hidden)]
     pub struct __IntoReactiveValueMarkerSignalFromReactiveClosure;
-    #[cfg(not(all(feature = "nightly", rustc_nightly)))]
+
     #[doc(hidden)]
     pub struct __IntoReactiveValueMarkerSignalStrOutputToString;
-    #[cfg(not(all(feature = "nightly", rustc_nightly)))]
+
     #[doc(hidden)]
     pub struct __IntoReactiveValueMarkerOptionalSignalFromReactiveClosureAlways;
 
-    #[cfg(not(all(feature = "nightly", rustc_nightly)))]
     impl<T, F>
         crate::IntoReactiveValue<
             Signal<T, SyncStorage>,
@@ -1143,7 +1141,6 @@ pub mod read {
         }
     }
 
-    #[cfg(not(all(feature = "nightly", rustc_nightly)))]
     impl<T, F>
         crate::IntoReactiveValue<
             ArcSignal<T, SyncStorage>,
@@ -1158,7 +1155,6 @@ pub mod read {
         }
     }
 
-    #[cfg(not(all(feature = "nightly", rustc_nightly)))]
     impl<T, F>
         crate::IntoReactiveValue<
             Signal<T, LocalStorage>,
@@ -1173,7 +1169,6 @@ pub mod read {
         }
     }
 
-    #[cfg(not(all(feature = "nightly", rustc_nightly)))]
     impl<T, F>
         crate::IntoReactiveValue<
             ArcSignal<T, LocalStorage>,
@@ -1188,7 +1183,6 @@ pub mod read {
         }
     }
 
-    #[cfg(not(all(feature = "nightly", rustc_nightly)))]
     impl<F>
         crate::IntoReactiveValue<
             Signal<String, SyncStorage>,
@@ -1202,7 +1196,6 @@ pub mod read {
         }
     }
 
-    #[cfg(not(all(feature = "nightly", rustc_nightly)))]
     impl<F>
         crate::IntoReactiveValue<
             ArcSignal<String, SyncStorage>,
@@ -1216,7 +1209,6 @@ pub mod read {
         }
     }
 
-    #[cfg(not(all(feature = "nightly", rustc_nightly)))]
     impl<F>
         crate::IntoReactiveValue<
             Signal<String, LocalStorage>,
@@ -1230,7 +1222,6 @@ pub mod read {
         }
     }
 
-    #[cfg(not(all(feature = "nightly", rustc_nightly)))]
     impl<F>
         crate::IntoReactiveValue<
             ArcSignal<String, LocalStorage>,
@@ -1244,7 +1235,6 @@ pub mod read {
         }
     }
 
-    #[cfg(not(all(feature = "nightly", rustc_nightly)))]
     impl<T, F>
         crate::IntoReactiveValue<
             Signal<Option<T>, SyncStorage>,
@@ -1259,7 +1249,6 @@ pub mod read {
         }
     }
 
-    #[cfg(not(all(feature = "nightly", rustc_nightly)))]
     impl<T, F>
         crate::IntoReactiveValue<
             ArcSignal<Option<T>, SyncStorage>,
@@ -1274,7 +1263,6 @@ pub mod read {
         }
     }
 
-    #[cfg(not(all(feature = "nightly", rustc_nightly)))]
     impl<T, F>
         crate::IntoReactiveValue<
             Signal<Option<T>, LocalStorage>,
@@ -1289,7 +1277,6 @@ pub mod read {
         }
     }
 
-    #[cfg(not(all(feature = "nightly", rustc_nightly)))]
     impl<T, F>
         crate::IntoReactiveValue<
             ArcSignal<Option<T>, LocalStorage>,
@@ -2169,7 +2156,6 @@ pub mod write {
     /// // this function takes any kind of signal setter
     /// fn set_to_4(setter: &SignalSetter<i32>) {
     ///     // ✅ calling the signal sets the value
-    ///     //    can be `setter(4)` on nightly
     ///     setter.set(4);
     /// }
     ///

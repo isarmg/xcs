@@ -96,14 +96,15 @@ def load(root, packages, renames=None, transfers=None):
     return owners, receipts
 
 
-def check_removed(previous, current, owners, renames=None):
+def check_removed(previous, current, owners, renames=None, trim_grants=None):
     for directory, package in previous.items():
         if directory not in current or package.get('origin_directory') != current[directory].get('origin_directory'):
             continue
         removed = set(package.get('files_sha256', {})) - set(current[directory]['files_sha256'])
         from source_naming import source_prefixes
         prefixes = source_prefixes(renames or {}, directory, package.get('origin_directory'))
-        attributed = set()
+        attributed = {path for path, value in (trim_grants or {}).get(directory, {}).items()
+                      if package.get("files_sha256", {}).get(path) == value}
         for entry in owners.get(directory, {}).get('files', []):
             for prefix in prefixes:
                 if entry['source'].startswith(prefix):

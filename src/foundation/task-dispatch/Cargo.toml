@@ -23,7 +23,7 @@ path = "src/lib.rs"
 version = "0.3.34"
 path = "../futures"
 default-features = false
-features = ["async-await-macro", "channel", "executor", "io", "shared-state", "sink", "std", "utilities"]
+features = ["channel", "std"]
 
 [dependencies.error-definition]
 version = "2.0.12"
@@ -36,11 +36,6 @@ optional = true
 default-features = false
 path = "../tokio"
 
-[dependencies.tracing]
-version = "0.1.41"
-optional = true
-path = "../tracing"
-
 [dependencies.js-sys]
 version = "=0.3.106"
 optional = true
@@ -49,11 +44,8 @@ features = ["std"]
 path = "../js-sys"
 
 [features]
-async-executor = []
-futures-executor = ["futures/async-await-macro", "futures/channel", "futures/executor", "futures/io", "futures/shared-state", "futures/sink", "futures/std", "futures/thread-pool", "futures/utilities"]
-glib = []
+futures-executor = ["futures/thread-pool"]
 tokio = ["dep:tokio"]
-tracing = ["dep:tracing"]
 wasm-bindgen = ["dep:js-sys"]
 
 # Maintained independently of the enclosing application workspace.

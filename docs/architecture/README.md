@@ -7,6 +7,8 @@
 - [源码命名迁移与来源架构](source-naming.md)：活动身份、原始来源与互操作边界；配套[职责命名规范](../NAMING.md)。
 - [Foundation 按职能整合方案](foundation-package-consolidation.md)：包数口径、分批合并候选、技术边界与验收标准。
 - [Foundation CI 分组](foundation-ci.md)：职责分组、单次覆盖、平台准备和 Release 验证屏障。
+- [稳定浏览器响应式边界](reactive-browser-runtime.md)：保留实际 CSR 与客户端模板路径，拒绝无实现的功能开关。
+- [任务执行器契约](task-dispatch.md)：支持的后端、全局初始化、线程局部任务及失败语义。
 - [HTTP 请求体整合](../components/http-body.md)：单包请求体接口、可选工具与通道边界。
 - [并发集合整合](concurrent-collections.md)：队列、工作窃取、内存回收与特性边界。
 - [SQLite 访问层整合](sqlite-access.md)：查询引擎、驱动与 facade 合并边界、可选能力及原始来源。

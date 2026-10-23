@@ -1,10 +1,9 @@
 #[cfg(test)]
 mod tests {
-    use super::*;
     use crate::{
         owner::{on_cleanup, Owner, StoredValue},
         signal::signal,
-        traits::{Dispose, GetValue, Set},
+        traits::{GetValue, Set},
     };
     use std::{sync::mpsc, thread, time::Duration};
 

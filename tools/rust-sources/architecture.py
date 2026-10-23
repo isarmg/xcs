@@ -62,11 +62,11 @@ def document(root, catalog, policy):
         '功能列表来自整个工作区统一特性后的保守闭包，直接 dev 边虽不遍历，dev 激活的功能仍可能扩大闭包。'
         'runtime/compile 是维护角色，不证明最终链接或单消费者实际编译输入。', '',
         '```mermaid', 'flowchart TD',
-        '  native[Linux amd64 产品] --> storage[auth / contract / platform / engine / server / client / admin]',
+        '  native[Linux amd64 产品] --> storage[auth / contract / platform / engine / server / client / rescue]',
         '  smb[Samba SDK 与协议] --> storage',
         '  browser[浏览器 WASM] --> web[web / interface]',
         '  web --> macros[macros 宿主过程宏]',
-        '  storage --> foundation[foundation 上游实现]',
+        '  storage --> foundation[foundation 定制基础实现]',
         '  web --> foundation', '  macros --> foundation',
         '  tools[Web 构建 / Unicode / 契约 / 浏览器校验工具] --> foundation',
         '  ring[ring 显式回归成员] --> foundation', '```', '',

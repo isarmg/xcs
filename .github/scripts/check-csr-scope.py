@@ -5,6 +5,7 @@ import os
 import hashlib
 import json
 import shutil
+import re
 import subprocess
 import tempfile
 import tomllib
@@ -18,7 +19,33 @@ def cargo(*args, capture=False):
                           capture_output=capture, text=capture)
 
 
+def check_reactive_units():
+    """Compile the retained unit fixtures with their own test dependencies."""
+    with tempfile.TemporaryDirectory(prefix='reactive-unit-') as temporary:
+        snapshot = Path(temporary)
+        shutil.copyfile(ROOT / 'rust-toolchain.toml', snapshot / 'rust-toolchain.toml')
+        for relative in ('src/foundation/reactive-state', 'test/foundation/reactive-state/unit'):
+            shutil.copytree(ROOT / relative, snapshot / relative,
+                            ignore=shutil.ignore_patterns('Cargo.lock', 'target'))
+        manifest = snapshot / 'src/foundation/reactive-state/Cargo.toml'
+        source_package = ROOT / 'src/foundation/reactive-state'
+        text = re.sub(r'(?m)^path = "(\.\./[^"\n]+)"$',
+                      lambda match: 'path = ' + json.dumps(str((source_package / match[1]).resolve())),
+                      manifest.read_text())
+        manifest.write_text(text + '\n[workspace]\n')
+        cargo('generate-lockfile', '--offline', '--manifest-path', str(manifest))
+        for features in ([], ['--features', 'effects']):
+            result = cargo('test', '--locked', '--offline', '--lib', '--manifest-path', str(manifest),
+                           '--target-dir', str(TARGET), *features, capture=True)
+            output = result.stdout + result.stderr
+            print(output, end='', flush=True)
+            passed = sum(map(int, re.findall(r'test result: ok\. (\d+) passed', output)))
+            if result.returncode or 'warning:' in output or passed < 14:
+                raise AssertionError('retained reactive unit tests did not pass cleanly')
+
+
 def check():
+    check_reactive_units()
     TARGET.mkdir(parents=True, exist_ok=True)
     with tempfile.TemporaryDirectory(prefix='csr-scope-', dir=ROOT / 'target') as temporary:
         work = Path(temporary)
@@ -62,6 +89,10 @@ catch(error) { document.body.textContent=JSON.stringify({status:'failed',message
               '--target-dir', str(TARGET), '--features', 'dom-helpers/trace-component-props')
         cargo(*command, '--target', 'wasm32-unknown-unknown', '--features', 'dom-helpers/trace-component-props')
         retired = {
+            'owner_shared_context': 'pub fn old() { reactive_state::owner::Owner::current_shared_context(); }',
+            'owner_hydration': 'pub fn old() { reactive_state::owner::Owner::with_hydration(|| ()); }',
+            'owner_no_hydration': 'pub fn old() { reactive_state::owner::Owner::with_no_hydration(|| ()); }',
+            'hydration_marker': 'use reactive_state::owner::IsHydrating;',
             'server_module': 'use view_renderer::ssr;',
             'nightly_static_views': 'use view_renderer::view::static_types;',
             'nightly_static_attributes': 'use view_renderer::html::attribute::StaticAttr;',
@@ -94,14 +125,19 @@ catch(error) { document.body.textContent=JSON.stringify({status:'failed',message
             if not result.returncode or not any(code in result.stderr for code in ['error[E0432]', 'error[E0425]', 'error[E0599]', 'error[E0107]']):
                 raise AssertionError(f'{name} accepted or failed for another reason: {result.stderr}')
         source.write_text('')
-        for feature in ['ssr', 'hydrate', 'islands', 'mark_branches', 'testing', 'sledgehammer', 'reactive_stores', 'error-hook', 'nightly']:
-            result = cargo(*command, '--features', 'view-renderer/' + feature, capture=True)
-            if not result.returncode or 'does not have that feature' not in result.stderr:
-                raise AssertionError(f'{feature} accepted or failed for another reason: {result.stderr}')
-        for feature in ['AudioContext', 'WebGlRenderingContext', 'Gamepad', 'XrSession']:
-            result = cargo(*command, '--features', 'web-sys/' + feature, capture=True)
-            if not result.returncode or 'does not have that feature' not in result.stderr:
-                raise AssertionError(f'{feature} accepted or failed for another reason: {result.stderr}')
+        retired_features = {
+            'view-renderer': ['ssr', 'hydrate', 'islands', 'mark_branches', 'testing', 'sledgehammer', 'reactive_stores', 'error-hook', 'nightly'],
+            'reactive-state': ['hydration', 'subsecond', 'nightly'],
+            'dom-helpers': ['hydration'],
+            'web-sys': ['AudioContext', 'WebGlRenderingContext', 'Gamepad', 'XrSession'],
+        }
+        feature_checks = sum(map(len, retired_features.values()))
+        for package, features in retired_features.items():
+            for feature in features:
+                qualified = package + '/' + feature
+                result = cargo(*command, '--features', qualified, capture=True)
+                if not result.returncode or 'does not have that feature' not in result.stderr:
+                    raise AssertionError(f'{qualified} accepted or failed for another reason: {result.stderr}')
         policy = json.loads((ROOT / 'tools/rust-sources/web-scope.json').read_text())
         declared = tomllib.loads((ROOT / 'src/foundation/web-sys/Cargo.toml').read_text())['features']
         if set(declared) != set(policy['web_sys_features']):
@@ -118,14 +154,14 @@ catch(error) { document.body.textContent=JSON.stringify({status:'failed',message
             'tracing_macro_checks': ['native-check', 'native-test', 'wasm-check'],
             'tracing_macro_fixture_sha256': hashlib.sha256((ROOT / 'test/ci/fixtures/tracing-props.rs').read_bytes()).hexdigest(),
             'retired_api_checks': len(retired),
-            'retired_feature_checks': 13,
+            'retired_feature_checks': feature_checks,
             'cargo_lock_sha256': hashlib.sha256((ROOT / 'Cargo.lock').read_bytes()).hexdigest(),
             'fixture_source_sha256': hashlib.sha256((ROOT / 'test/tools/web-bindings/fixtures/csr-template.rs').read_bytes()).hexdigest(),
             'outputs_sha256': {name: hashlib.sha256((output / name).read_bytes()).hexdigest()
                                for name in ['fixture.js', 'fixture_bg.wasm']},
         }
         (output / 'validation.json').write_text(json.dumps(record, indent=2) + '\n')
-        print(f'CSR contract: browser template compiled; {len(retired)} retired API and 13 feature checks passed')
+        print(f'CSR contract: browser template compiled; {len(retired)} retired API and {feature_checks} feature checks passed')
 
 
 if __name__ == '__main__':

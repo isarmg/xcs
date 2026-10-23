@@ -22,6 +22,7 @@ import external_transfers
 import source_relocation
 import benchmark_relocation
 import dependency_edges
+import source_trimming
 
 ROOT = Path(__file__).resolve().parents[2]
 CATALOG = "compliance/rust-sources.json"
@@ -696,14 +697,15 @@ def upgrade_plan(root, previous, plan, records):
     return packages, superseded
 
 
-def refresh(root, retire_plan=None, upgrade_plan_data=None, rename_plan_data=None, move_plan_data=None, consolidate_plan_data=None, relocate_benchmarks=False):
+def refresh(root, retire_plan=None, upgrade_plan_data=None, rename_plan_data=None, move_plan_data=None, consolidate_plan_data=None, relocate_benchmarks=False, trim_plan_data=None):
     policy = read_json(root / POLICY)
     structure(root, policy)
     previous = read_json(root / CATALOG)
     if previous.get("initial_test_relocation_sha256") not in (None, source_relocation.RECEIPT_SHA256):
         raise ValueError("initial test relocation history identity drift")
-    if relocate_benchmarks and any(p is not None for p in (retire_plan, upgrade_plan_data, rename_plan_data, move_plan_data, consolidate_plan_data)):
+    if relocate_benchmarks and any(p is not None for p in (retire_plan, upgrade_plan_data, rename_plan_data, move_plan_data, consolidate_plan_data, trim_plan_data)):
         raise ValueError('benchmark relocation requires a separate reviewed transition')
+    trim_records, trim_grants = source_trimming.prepare(root, previous, trim_plan_data)
     benchmark_receipt, benchmark_grants = benchmark_relocation.prepare(root, previous, relocate_benchmarks, files)
     records = origins(root)
     hashes = origin_hashes(records)
@@ -722,6 +724,14 @@ def refresh(root, retire_plan=None, upgrade_plan_data=None, rename_plan_data=Non
         if not isinstance(plan, dict) or not isinstance(plan.get("packages"), list):
             return set()
         return {item.get("directory") for item in plan["packages"] if isinstance(item, dict)}
+    trim_paths = plan_paths(trim_plan_data)
+    lifecycle_paths = set().union(*(plan_paths(p) for p in (retire_plan, upgrade_plan_data, rename_plan_data, move_plan_data)))
+    lifecycle_paths |= {row.get('destination_directory') for row in (rename_plan_data or {}).get('packages', [])}
+    for row in (consolidate_plan_data or {}).get('packages', []):
+        lifecycle_paths.update([row.get('primary_directory'), row.get('destination_directory')])
+        lifecycle_paths.update(item.get('package', {}).get('directory') for item in row.get('inputs', []))
+    if (trim_paths | source_trimming.owners(previous)) & lifecycle_paths:
+        raise ValueError('trimmed owner lifecycle requires a separate chain-aware adapter')
     upgrade_paths = plan_paths(upgrade_plan_data)
     retirement_paths = plan_paths(retire_plan)
     move_paths = plan_paths(move_plan_data)
@@ -813,7 +823,7 @@ def refresh(root, retire_plan=None, upgrade_plan_data=None, rename_plan_data=Non
         retained_external, external, root,
         source_owners(packages, merges),
         source_moves.remap_previous(source_naming.remap_previous(source_consolidation.remap_previous_packages(previous_owners, consolidated_now), renames), moved_now))
-    catalog = dict(external_tests=external, external_test_mappings_sha256=external_receipts, schema=max(previous.get("schema", 6), 8 if consolidation_history else 7), proof_routing_receipts=list(proof_routing.RECEIPTS), consolidations=consolidation_history, consolidation_records_sha256=source_consolidation.hashes(consolidation_history), source_moves=move_history, renames=renames, rename_records_sha256=source_naming.hashes(renames), policy_sha256=digest((root / POLICY).read_bytes()),
+    catalog = dict(source_trims=trim_records, source_trim_records_sha256=source_trimming.hashes(trim_records), external_tests=external, external_test_mappings_sha256=external_receipts, schema=max(previous.get("schema", 6), 8 if consolidation_history else 7), proof_routing_receipts=list(proof_routing.RECEIPTS), consolidations=consolidation_history, consolidation_records_sha256=source_consolidation.hashes(consolidation_history), source_moves=move_history, renames=renames, rename_records_sha256=source_naming.hashes(renames), policy_sha256=digest((root / POLICY).read_bytes()),
                    config_sha256=digest((root / ".cargo/config.toml").read_bytes()),
                    manifests_sha256={path: digest(safe_path(root, path).read_bytes()) for path in sorted(project_manifests(root))},
                    lockfiles_sha256={"Cargo.lock": digest((root / "Cargo.lock").read_bytes())},
@@ -826,6 +836,8 @@ def refresh(root, retire_plan=None, upgrade_plan_data=None, rename_plan_data=Non
         catalog["initial_test_relocation_sha256"] = source_relocation.RECEIPT_SHA256
     if benchmark_receipt is not None:
         catalog[benchmark_relocation.KEY] = benchmark_relocation.RECEIPT
+    source_trimming.check_append_only(previous, catalog)
+    source_trimming.validate(root, catalog)
     benchmark_relocation.validate(root, catalog, files)
     proof_routing.validate_refresh(root, previous, catalog)
     source_consolidation.validate_origins(source_consolidation.validate_history(root, catalog, validate_external=external_transfers.validate), records)
@@ -834,7 +846,7 @@ def refresh(root, retire_plan=None, upgrade_plan_data=None, rename_plan_data=Non
     retired_sources(root, catalog, records)
     superseded_sources(root, catalog, records)
     verify_origin_coverage(catalog, records)
-    external_tests.check_removed(source_moves.remap_previous(source_naming.remap_previous(source_consolidation.remap_previous_packages(previous_owners, consolidated_now), renames), moved_now), source_owners(packages, merges), external, renames)
+    external_tests.check_removed(source_moves.remap_previous(source_naming.remap_previous(source_consolidation.remap_previous_packages(previous_owners, consolidated_now), renames), moved_now), source_owners(packages, merges), external, renames, trim_grants)
     verify_retained_closure(catalog, policy)
     (root / CATALOG).write_text(json.dumps(catalog, ensure_ascii=False, indent=2, sort_keys=True) + "\n", encoding="utf-8", newline="\n")
     (root / DOC).write_text(document(catalog, policy), encoding="utf-8", newline="\n")
@@ -966,6 +978,7 @@ def verify(root, metadata=False):
     if catalog.get("initial_test_relocation_sha256") not in (None, source_relocation.RECEIPT_SHA256):
         raise ValueError("initial test relocation history identity drift")
     structure(root, policy)
+    source_trimming.validate(root, catalog)
     proof_routing.load(root, catalog)
     renames = source_naming.validate_history(root, catalog)
     for key, relative in (("policy_sha256", POLICY), ("config_sha256", ".cargo/config.toml"), ("origins_sha256", ORIGINS)):
@@ -1033,6 +1046,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("command", choices=("refresh", "verify"))
     parser.add_argument("--metadata", action="store_true")
+    parser.add_argument("--trim-plan", type=Path, help="explicit reviewed per-file production source removal; refresh only")
     parser.add_argument("--retire-plan", type=Path, help="explicit reviewed removal plan; refresh only")
     parser.add_argument("--upgrade-plan", type=Path, help="explicit reviewed upstream replacement plan; refresh only")
     parser.add_argument("--rename-plan", type=Path, help="explicit reviewed lossless source naming plan; refresh only")
@@ -1041,13 +1055,14 @@ def main():
     parser.add_argument("--relocate-benchmarks", action="store_true", help="install the pinned 32-file post-consolidation benchmark relocation; refresh only")
     arguments = parser.parse_args()
     try:
-        if (arguments.retire_plan or arguments.upgrade_plan or arguments.rename_plan or arguments.move_plan or arguments.consolidate_plan or arguments.relocate_benchmarks) and arguments.command != "refresh":
-            raise ValueError("--retire-plan, --upgrade-plan, --rename-plan, --move-plan, --consolidate-plan and --relocate-benchmarks are only accepted by refresh")
+        if (arguments.trim_plan or arguments.retire_plan or arguments.upgrade_plan or arguments.rename_plan or arguments.move_plan or arguments.consolidate_plan or arguments.relocate_benchmarks) and arguments.command != "refresh":
+            raise ValueError("--trim-plan, --retire-plan, --upgrade-plan, --rename-plan, --move-plan, --consolidate-plan and --relocate-benchmarks are only accepted by refresh")
         (refresh(ROOT, read_json(arguments.retire_plan) if arguments.retire_plan else None,
                  read_json(arguments.upgrade_plan) if arguments.upgrade_plan else None,
                  read_json(arguments.rename_plan) if arguments.rename_plan else None,
                  read_json(arguments.move_plan) if arguments.move_plan else None,
                  read_json(arguments.consolidate_plan) if arguments.consolidate_plan else None,
+                 trim_plan_data=read_json(arguments.trim_plan) if arguments.trim_plan else None,
                  **({'relocate_benchmarks': True} if arguments.relocate_benchmarks else {}))
          if arguments.command == "refresh" else verify(ROOT, arguments.metadata))
     except (ValueError, OSError, KeyError, TypeError) as error:

@@ -20,7 +20,6 @@ repository = "https://github.com/leptos-rs/leptos"
 [features]
 serialization = ["dep:data-serialization"]
 default = []
-hydration = ["reactive-state/hydration"]
 trace-component-props = ["dep:data-serialization", "dep:json-codec", "dep:tracing"]
 tracing = ["dep:tracing"]
 

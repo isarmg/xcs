@@ -1,235 +1,235 @@
 {
-  "schema_version": 1,
   "owners": [
     {
       "directory": "src/interface",
-      "roots": [
-        "test/interface"
-      ],
       "files": [
         {
-          "source": "src/interface/tests/component_props.rs",
           "path": "test/interface/integration/component_props.rs",
           "sha256": "6838d7550cfed01cf29e1d1cf8f0e40f48648ef9039810aa9527a1ff33cb685c",
+          "source": "src/interface/tests/component_props.rs",
           "source_sha256_before": "b0680d33bc7a9c61bdb77acd995caee1e1b4b3b691c0f5a58d7de4aaa37b890c"
         },
         {
-          "source": "src/interface/tests/fixtures/included_view.rsx",
           "path": "test/interface/integration/fixtures/included_view.rsx",
           "sha256": "37cb738a14eff27b77321ce96ea5c842a128238cd64ec3295b4d7621ee56416b",
+          "source": "src/interface/tests/fixtures/included_view.rsx",
           "source_sha256_before": "37cb738a14eff27b77321ce96ea5c842a128238cd64ec3295b4d7621ee56416b"
         },
         {
-          "source": "src/interface/tests/reactive_state.rs",
           "path": "test/interface/integration/reactive_state.rs",
-          "sha256": "0e62e3fc9d568ca2e902b8a01a1add3440c7800963f35a9146cf4a5ba5413663",
+          "sha256": "ae124c27d0f24337426365ae95b40292c38ec8a87fa797e2c400bc36314a3404",
+          "source": "src/interface/tests/reactive_state.rs",
           "source_sha256_before": "0e62e3fc9d568ca2e902b8a01a1add3440c7800963f35a9146cf4a5ba5413663"
         },
         {
-          "source": "src/interface/tests/style_contracts.rs",
           "path": "test/interface/integration/style_contracts.rs",
           "sha256": "5b6bda2e8729e6e7becd7103e301c16a53dccd6555168cb74f920082f0cea0c1",
+          "source": "src/interface/tests/style_contracts.rs",
           "source_sha256_before": "82c878873c25b7f1a59261e4a577dd68c5cc0dd48eb986cb32b221f33f2826b8"
         },
         {
-          "source": "src/interface/src/children.rs",
           "path": "test/interface/unit/children/tests.rs",
           "sha256": "3cd54dc8ba12823b8b4117af06bf9efaa725be28564b92b7dd697e4ca35c1a81",
+          "source": "src/interface/src/children.rs",
           "source_sha256_before": "301c9ca94229120bf20268e91e6e722547e7180481eae83013859c0f3edbb3ad"
         },
         {
-          "source": "src/interface/src/components/notification.rs",
           "path": "test/interface/unit/components/notification/tests.rs",
           "sha256": "5c7feed50866cb5741321fa078a5ecc3b40a51df2f9b611893627a0247b693d8",
+          "source": "src/interface/src/components/notification.rs",
           "source_sha256_before": "755a948303774a91acaab8ba6f80737ced90ff769ff310dcec3739b18c128259"
         },
         {
-          "source": "src/interface/src/components/select.rs",
           "path": "test/interface/unit/components/select/tests.rs",
           "sha256": "e3f123a18203545b677769326bdad5232091370ee5952ac654ec8abc3162d57e",
+          "source": "src/interface/src/components/select.rs",
           "source_sha256_before": "ce98cea42803fc3a36960d1743f30e6b675825d8b1ed11e03acd239e98da4e4f"
         },
         {
-          "source": "src/interface/src/contours/geometry.rs",
           "path": "test/interface/unit/contours/geometry/tests.rs",
           "sha256": "49d8a77fbdac00f7a13ef0c143bf8064eba4ef9c94e219a3702627c71f601b0e",
+          "source": "src/interface/src/contours/geometry.rs",
           "source_sha256_before": "b8dd508ef652ea2ae7c8c0d7303dbff9917727956bc604ab48bd14e8dbb7bcf1"
         },
         {
-          "source": "src/interface/src/contours/paint.rs",
           "path": "test/interface/unit/contours/paint/tests.rs",
           "sha256": "2bfa6f109cb40cd871c53b04550ce6562ee8d41741f9b19a8b9ec766744e8067",
+          "source": "src/interface/src/contours/paint.rs",
           "source_sha256_before": "03e9f77873942b9902a76460378cb4f3135ff56d7a3c23a269efb3fe55d23a7a"
         },
         {
-          "source": "src/interface/src/for_snapshot.rs",
           "path": "test/interface/unit/for_snapshot/tests.rs",
           "sha256": "4cfbccbc4ddf8aa48feb4f8201d9689ebf72bac918f014980c5a90474de9206d",
+          "source": "src/interface/src/for_snapshot.rs",
           "source_sha256_before": "7eda788d3b08388fb3bc652400f6b506b69eb2d84881485a6a0f3bc4a8a8fa16"
         },
         {
-          "source": "src/interface/src/i18n.rs",
           "path": "test/interface/unit/i18n/tests.rs",
           "sha256": "dd139d5630d38c89a43fcda6ae1e403995ec17c22dce826b772dd5c837ae21bb",
+          "source": "src/interface/src/i18n.rs",
           "source_sha256_before": "743c8f64a2aa16f1bf1100a2df1ff530e84e48a7f7c86fba61dafebcc46b11f1"
         },
         {
-          "source": "src/interface/src/lifecycle.rs",
           "path": "test/interface/unit/lifecycle/tests.rs",
           "sha256": "6d259eab1c9d673b048318f62e090e18595ec4da7ba780fd6b33f8e715c276a9",
+          "source": "src/interface/src/lifecycle.rs",
           "source_sha256_before": "a7760596d0560ba68423744356a285ac85ec39de741174f9a5c78e68b214b2b3"
         },
         {
-          "source": "src/interface/src/mount.rs",
           "path": "test/interface/unit/mount/tests.rs",
           "sha256": "e5033089a1a391b074a8d34ade8030adaaa8ea07d2c79ac974b9d1c642761d38",
+          "source": "src/interface/src/mount.rs",
           "source_sha256_before": "fa2cab92e5463e62cad6b02ed28b58189912c27586b2538b578c662f35d0bf22"
         },
         {
-          "source": "src/interface/src/startup.rs",
           "path": "test/interface/unit/startup/tests.rs",
           "sha256": "7dae8cde007b6f9e62c1663c7f43a6a493f0325517b9f5422335730dc4d056c2",
+          "source": "src/interface/src/startup.rs",
           "source_sha256_before": "c4e249d10bb385548acc917a8b0c19edabc7b627fd9c9a0457660dd66ada10bb"
         },
         {
-          "source": "src/interface/src/tasks.rs",
           "path": "test/interface/unit/tasks/tests.rs",
           "sha256": "260776ffeabc2d30aac649954c9188f0da9e27e3f3f7b8bfe8a20a6e0f4cefbc",
+          "source": "src/interface/src/tasks.rs",
           "source_sha256_before": "48482d0c3c425e09e4175fd301f22fe89d12e1227ad5bdc83ecea9efbf3f2af8"
         }
+      ],
+      "roots": [
+        "test/interface"
       ]
     },
     {
       "directory": "src/naming",
-      "roots": [
-        "test/naming"
-      ],
       "files": [
         {
-          "source": "src/naming/src/key_tests.rs",
           "path": "test/naming/unit/key_tests.rs",
           "sha256": "b7769845ea159b121934cd4e721d445177731fe90df5fd6ba8ae20c9093dd75d",
+          "source": "src/naming/src/key_tests.rs",
           "source_sha256_before": "b7769845ea159b121934cd4e721d445177731fe90df5fd6ba8ae20c9093dd75d"
         },
         {
-          "source": "src/naming/src/lib.rs",
           "path": "test/naming/unit/lib/tests.rs",
           "sha256": "e6c8777f82d2400dd6516a20095c9d1090bd679b87efe6d8487946d6987f1b6c",
+          "source": "src/naming/src/lib.rs",
           "source_sha256_before": "619a98004dc108746a51157455bbf031c0f2c7112946e04b535b7391f87d20ad"
         },
         {
-          "source": "src/naming/src/unicode/__test_api.rs",
           "path": "test/naming/unit/unicode/__test_api.rs",
           "sha256": "7358862ceccdc9949a140480b3eaef52117ef2b224cb743ea0ced4b64f96ebd9",
+          "source": "src/naming/src/unicode/__test_api.rs",
           "source_sha256_before": "7358862ceccdc9949a140480b3eaef52117ef2b224cb743ea0ced4b64f96ebd9"
         },
         {
-          "source": "src/naming/src/unicode/normalize.rs",
           "path": "test/naming/unit/unicode/normalize/tests.rs",
           "sha256": "f5ad66cef1eecdcc76949c1af2d67ff0775558e606fbf224a861c0d719dfa06d",
+          "source": "src/naming/src/unicode/normalize.rs",
           "source_sha256_before": "9010d6b38973f80ac3bccbbc10c4583e4f0ffdd32ea208a81a5c8b35855b8406"
         },
         {
-          "source": "src/naming/src/unicode/quick_check.rs",
           "path": "test/naming/unit/unicode/quick_check/tests.rs",
           "sha256": "d1e2a69640b7b5f11d4fe433913e1243ce9ed38247e11f4d53f8952704ef1791",
+          "source": "src/naming/src/unicode/quick_check.rs",
           "source_sha256_before": "f3c84c146d005c446771386a33cd2ee7e2d812e28c2f054bdc8175e3b87e8056"
         },
         {
-          "source": "src/naming/src/unicode/stream_safe.rs",
           "path": "test/naming/unit/unicode/stream_safe/tests.rs",
           "sha256": "f5a52e94e94a1d60ed83a9bdd0c18b91ff6c798d4057a55e450874cba0656881",
+          "source": "src/naming/src/unicode/stream_safe.rs",
           "source_sha256_before": "86a30db2119c259f72fa1172725df9d39521f73e042fa569aa84b278cf39e6e6"
         },
         {
-          "source": "src/naming/src/unicode/test.rs",
           "path": "test/naming/unit/unicode/test.rs",
           "sha256": "52d8ab65bcecf464b50fa3106e91e35bf7608eaf6d8aaff09171d9e46113d24b",
+          "source": "src/naming/src/unicode/test.rs",
           "source_sha256_before": "52d8ab65bcecf464b50fa3106e91e35bf7608eaf6d8aaff09171d9e46113d24b"
         }
+      ],
+      "roots": [
+        "test/naming"
       ]
     },
     {
       "directory": "src/macros",
-      "roots": [
-        "test/macros"
-      ],
       "files": [
         {
-          "source": "src/macros/src/component.rs",
           "path": "test/macros/unit/component/case_normalization_tests.rs",
           "sha256": "26c5b668504d508b532b4bcf9cf2b0170991ea61b1e862b3b5781ab01336530c",
+          "source": "src/macros/src/component.rs",
           "source_sha256_before": "6ef126dd2fd3001ddcfbfbc60778d33e1a5bdf5237ac93429921a6e1a319fbc1"
         },
         {
-          "source": "src/macros/src/lib.rs",
           "path": "test/macros/unit/lib/documentation_diagnostics.rs",
           "sha256": "92437fbf2224cf0065a3e59d12eaa3c49349e6bce61cb948ea15d3da5bc64511",
+          "source": "src/macros/src/lib.rs",
           "source_sha256_before": "beb1d3eb2526c4e63f832f2888452fc97b862b4d8649bf69ca8abeaa27b38caa"
         },
         {
-          "source": "src/macros/src/view/mod.rs",
           "path": "test/macros/unit/view/attribute_order_tests.rs",
           "sha256": "c8a169bc32283759ed6885c30d4ec5516a0afa814ad65330d5f6ab1d154d591e",
+          "source": "src/macros/src/view/mod.rs",
           "source_sha256_before": "8089ceb3b8b1b78cc7872f987792e0bafea8b395364ee674beca880df955d7fd"
         },
         {
-          "source": "src/macros/src/view/mod.rs",
           "path": "test/macros/unit/view/case_normalization_tests.rs",
           "sha256": "8a2a5295160e554e3d072350f9dc56d6b299e0199ec8b0a11cbc330bdbc75818",
+          "source": "src/macros/src/view/mod.rs",
           "source_sha256_before": "c6b3860f30fe11885aa99dcc8c2c58482001cb121ea7a5b71196b63fc64f4b7d"
         },
         {
-          "source": "src/macros/src/view/component_builder.rs",
           "path": "test/macros/unit/view/component_builder/tests.rs",
           "sha256": "5f587d4248077dcc01dfe2d75df13d649f3286d98ec290446ade823cd7ff972b",
+          "source": "src/macros/src/view/component_builder.rs",
           "source_sha256_before": "ef68d1ecf60cbd7dd60ea2f33e93d3137e8a53bafb191dad2f223e3960f67de2"
         },
         {
-          "source": "src/macros/src/view/mod.rs",
           "path": "test/macros/unit/view/event_modifier_tests.rs",
           "sha256": "1a1e85ec9efdcf676844f9ef55f5d0026594816b82584edd201d422a5e0dff40",
+          "source": "src/macros/src/view/mod.rs",
           "source_sha256_before": "8089ceb3b8b1b78cc7872f987792e0bafea8b395364ee674beca880df955d7fd"
         },
         {
-          "source": "src/macros/src/view_source.rs",
           "path": "test/macros/unit/view_source/tests.rs",
           "sha256": "ab627d08b5ace5f6f934f19277d820501e69ce4413be30d74e263ce07821e3a0",
+          "source": "src/macros/src/view_source.rs",
           "source_sha256_before": "2b591d8f856bff3271bafe3aac28f0e116e8b11396857800b4ef336e71f28068"
         }
+      ],
+      "roots": [
+        "test/macros"
       ]
     },
     {
       "directory": "tools/web-bindings",
-      "roots": [
-        "test/tools/web-bindings"
-      ],
       "files": [
         {
-          "source": "tools/web-bindings/tests/fixtures/contract.rs",
           "path": "test/tools/web-bindings/fixtures/contract.rs",
           "sha256": "ed0f5d4086663cadeef70ae76153aa4d8e086d2e94f99aa0aa2299eefe63fc2f",
+          "source": "tools/web-bindings/tests/fixtures/contract.rs",
           "source_sha256_before": "ed0f5d4086663cadeef70ae76153aa4d8e086d2e94f99aa0aa2299eefe63fc2f"
         },
         {
-          "source": "tools/web-bindings/tests/fixtures/csr-template.rs",
           "path": "test/tools/web-bindings/fixtures/csr-template.rs",
           "sha256": "6bcd4d63ef20fd46d8fdbd9a7f7048f7ff60035a2f177f3c8a14b788370b230d",
+          "source": "tools/web-bindings/tests/fixtures/csr-template.rs",
           "source_sha256_before": "422436b26afc21cfbb9fc30b3544ea18f965f8680555131a1c38808c5e6bb281"
         },
         {
-          "source": "tools/web-bindings/src/logging_tests.rs",
           "path": "test/tools/web-bindings/unit/logging_tests.rs",
           "sha256": "2342adb15913193512aaacc267c3d1d7cda1f4ef416a21889dd17f0cbb70c8e2",
+          "source": "tools/web-bindings/src/logging_tests.rs",
           "source_sha256_before": "209f50042ad6f0b9f05421ab635e2902ca97c1c9fc9be304dfdaeb039b2b5dd9"
         },
         {
-          "source": "tools/web-bindings/src/main.rs",
           "path": "test/tools/web-bindings/unit/main_tests.rs",
           "sha256": "88116580bfce93c0496753a1b1fa6705104cd657347337f35fb33053df8035fe",
+          "source": "tools/web-bindings/src/main.rs",
           "source_sha256_before": "841654e8e75c3e3585e5a8f103f2b94a5bdce8ac15ff5284db71c68bc6909df8"
         }
+      ],
+      "roots": [
+        "test/tools/web-bindings"
       ]
     }
-  ]
+  ],
+  "schema_version": 1
 }

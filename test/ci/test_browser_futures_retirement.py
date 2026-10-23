@@ -134,12 +134,27 @@ class BrowserFuturesRetirement(unittest.TestCase):
                 mock.patch.object(module.shutil, 'which', return_value='/browser'), \
                 mock.patch.object(module.subprocess, 'run') as run:
             output = Path(directory)
-            run.return_value = subprocess.CompletedProcess([], 0, '<body>{"status":"passed","checks":["async"]}</body>', '')
-            self.assertEqual(module.browser_check(output), '1 actual Chromium async runtime checks passed')
+            checks = [
+                'generated async export', 'generated async import', 'JsFuture and Promise IntoFuture',
+                'future_to_promise resolution and rejection', 'spawn_local next microtask',
+                'empty Unicode and large strings', 'async class method and retained state',
+                'task dispatch Send and local futures', 'task dispatch initialization and tick',
+            ]
+            def successful(checks):
+                return subprocess.CompletedProcess([], 0, '<body>' + json.dumps(
+                    {'status': 'passed', 'checks': checks}, separators=(',', ':')) + '</body>', '')
+            run.return_value = successful(checks)
+            self.assertEqual(module.browser_check(output), '9 actual Chromium async runtime checks passed')
             self.assertEqual((output / 'index.html').read_text(),
                              (ROOT / 'test/wasm-binding-macros/browser-runtime.html').read_text())
             self.assertEqual(run.call_args.args[0][0], '/browser')
             self.assertIn('--dump-dom', run.call_args.args[0])
+            run.return_value = successful(checks[:7])
+            with self.assertRaises(AssertionError):
+                module.browser_check(output)
+            run.return_value = successful(checks + [checks[-1]])
+            with self.assertRaises(AssertionError):
+                module.browser_check(output)
             run.return_value = subprocess.CompletedProcess([], 0, '<body>{"status":"failed"}</body>', '')
             with self.assertRaises(AssertionError):
                 module.browser_check(output)

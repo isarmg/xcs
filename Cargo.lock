@@ -517,7 +517,6 @@ dependencies = [
 name = "gloo-timers"
 version = "0.3.0"
 dependencies = [
- "futures",
  "js-sys",
  "wasm-bindgen",
 ]
@@ -1033,7 +1032,6 @@ dependencies = [
  "pastey",
  "pin-project-lite",
  "rustc-hash",
- "rustc_version",
  "send_wrapper",
  "slotmap",
  "task-dispatch",
@@ -1147,13 +1145,6 @@ name = "rustc-hash"
 version = "2.1.3"
 
 [[package]]
-name = "rustc_version"
-version = "0.4.1"
-dependencies = [
- "semver",
-]
-
-[[package]]
 name = "rustix"
 version = "1.1.5"
 dependencies = [
@@ -1200,6 +1191,7 @@ name = "schema-validation"
 version = "0.58.6"
 dependencies = [
  "ahash",
+ "async-trait",
  "bytecount",
  "data-encoding",
  "data-serialization",
@@ -1207,6 +1199,7 @@ dependencies = [
  "fancy-regex",
  "fluent-uri",
  "fraction",
+ "futures",
  "hash-table",
  "itoa",
  "json-codec",
@@ -1788,7 +1781,6 @@ dependencies = [
 name = "view-renderer"
 version = "0.2.19"
 dependencies = [
- "async-trait",
  "const_str_slice_concat",
  "erased",
  "futures",

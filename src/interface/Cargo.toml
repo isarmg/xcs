@@ -22,7 +22,7 @@ typed-builder = {version = "0.23", path = "../foundation/typed-builder"}
 typed-builder-macro = {version = "0.23", path = "../foundation/typed-builder-macro"}
 console_error_panic_hook = {version = "0.1", path = "../foundation/console_error_panic_hook"}
 gloo-events = {version = "0.2", path = "../foundation/gloo-events"}
-gloo-timers = { version = "0.3", features = ["futures"], path = "../foundation/gloo-timers"}
+gloo-timers = { version = "0.3", path = "../foundation/gloo-timers" }
 futures = { version = "0.3.34", path = "../foundation/futures", default-features = false, features = ["async-await-macro", "channel", "executor", "io", "shared-state", "sink", "std", "utilities"] }
 js-sys = {version = "=0.3.106", path = "../foundation/js-sys"}
 send_wrapper = {version = "0.6", path = "../foundation/send_wrapper"}

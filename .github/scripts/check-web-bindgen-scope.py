@@ -56,6 +56,13 @@ def browser_check(output):
             assert '"status":"passed"' in result.stdout, result.stdout + result.stderr
             body = result.stdout.split('<body>', 1)[1].split('</body>', 1)[0]
             checks = json.loads(body)['checks']
+            expected = {
+                'generated async export', 'generated async import', 'JsFuture and Promise IntoFuture',
+                'future_to_promise resolution and rejection', 'spawn_local next microtask',
+                'empty Unicode and large strings', 'async class method and retained state',
+                'task dispatch Send and local futures', 'task dispatch initialization and tick',
+            }
+            assert len(checks) == len(expected) and set(checks) == expected, checks
             return f'{len(checks)} actual Chromium async runtime checks passed'
     finally:
         server.shutdown()
@@ -101,9 +108,11 @@ def check():
         fixture_manifest.write_text('[package]\nname="web-binding-contract-fixture"\nversion="0.0.0"\nedition="2021"\n'
                                     '[workspace]\n[lib]\ncrate-type=["cdylib"]\n[dependencies]\nwasm-bindgen={path="' +
                                     str(ROOT / 'src/foundation/wasm-bindgen') + '"}\njs-sys={path="' +
-                                    str(ROOT / 'src/foundation/js-sys') + '",default-features=false,features=["std"]}\n')
+                                    str(ROOT / 'src/foundation/js-sys') + '",default-features=false,features=["std"]}\ntask-dispatch={path="' +
+                                    str(ROOT / 'src/foundation/task-dispatch') + '",features=["wasm-bindgen"]}\n')
         (fixture / 'src/lib.rs').write_text((ROOT / 'test/tools/web-bindings/fixtures/contract.rs').read_text() + '\n' +
-                                              (ROOT / 'test/wasm-binding-macros/async-runtime.rs').read_text())
+                                              (ROOT / 'test/wasm-binding-macros/async-runtime.rs').read_text() + '\n' +
+                                              (ROOT / 'test/task-dispatch/browser.rs').read_text())
         cargo('generate-lockfile', '--offline', '--manifest-path', str(fixture_manifest))
         target = TARGET
         cargo('build', '--locked', '--offline', '--release', '--target', 'wasm32-unknown-unknown',

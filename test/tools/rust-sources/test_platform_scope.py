@@ -19,7 +19,8 @@ class PlatformScope(unittest.TestCase):
             {(entry["id"], entry["target"]) for entry in manager.entries(policy)},
             {("root-native", manager.NATIVE_TARGET), ("web", manager.WEB_TARGET),
              ("smb", manager.NATIVE_TARGET), ("build-tools", manager.NATIVE_TARGET),
-             ("validation-tools", manager.NATIVE_TARGET), ("sqlite-pool-validation", manager.NATIVE_TARGET)},
+             ("validation-tools", manager.NATIVE_TARGET), ("sqlite-pool-validation", manager.NATIVE_TARGET),
+             ("schema-async-validation", manager.NATIVE_TARGET)},
         )
 
     def test_sqlite_pool_validation_matches_the_real_retained_capability(self):
@@ -29,7 +30,7 @@ class PlatformScope(unittest.TestCase):
         self.assertEqual(optional["role"], "compile")
         self.assertIs(optional["production"], False)
         self.assertEqual(manager.profile_features(ROOT, optional), ("platform-io/sqlite-pool",))
-        self.assertTrue(all(not profile.get("features") for profile in policy["profiles"] if profile is not optional))
+        self.assertTrue(all(not profile.get("features") for profile in policy["profiles"] if profile.get("production")))
         platform = tomllib.loads((ROOT / "src/platform/Cargo.toml").read_text())
         driver = tomllib.loads((ROOT / "src/foundation/sqlite-access/Cargo.toml").read_text())
         notification = tomllib.loads((ROOT / "src/foundation/async-notification/Cargo.toml").read_text())
@@ -42,6 +43,21 @@ class PlatformScope(unittest.TestCase):
         parking = notification["target"]['cfg(not(target_family = "wasm"))']["dependencies"]["parking"]
         self.assertEqual(parking["path"], "../parking")
         self.assertTrue(parking["optional"])
+
+    def test_schema_async_validation_is_explicit_and_not_a_web_dependency(self):
+        policy = manager.read_json(ROOT / manager.POLICY)
+        optional = next(profile for profile in policy["profiles"] if profile["id"] == "schema-async-validation")
+        self.assertEqual(optional["manifests"], ["tools/contract-check/Cargo.toml"])
+        self.assertEqual(optional["role"], "compile")
+        self.assertIs(optional["production"], False)
+        self.assertEqual(manager.profile_features(ROOT, optional), ("contract-check/schema-async",))
+        tool = tomllib.loads((ROOT / "tools/contract-check/Cargo.toml").read_text())
+        self.assertEqual(tool["features"]["schema-async"], ["schema-validation/resolve-async"])
+        self.assertNotIn("schema-async", tool["features"].get("default", []))
+        renderer = tomllib.loads((ROOT / "src/foundation/view-renderer/Cargo.toml").read_text())
+        self.assertNotIn("async-trait", renderer.get("dependencies", {}))
+        gate = (ROOT / ".github/scripts/check-schema-validation.py").read_text()
+        self.assertIn("resolve-async,jsonb-testkit,arbitrary-precision", gate)
 
     def test_linux_uapi_preserves_every_amd64_feature_and_binding(self):
         directory = ROOT / "src/foundation/linux-raw-sys"

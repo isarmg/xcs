@@ -589,18 +589,9 @@ impl WindowListenerHandle {
     }
 }
 
-/// Returns `true` if the current environment is a server.
+/// Returns `false`: this maintained runtime supports client-side rendering only.
 pub fn is_server() -> bool {
-    #[cfg(feature = "hydration")]
-    {
-        Owner::current_shared_context()
-            .map(|sc| !sc.is_browser())
-            .unwrap_or(false)
-    }
-    #[cfg(not(feature = "hydration"))]
-    {
-        false
-    }
+    false
 }
 
 /// Returns `true` if the current environment is a browser.

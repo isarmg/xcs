@@ -45,3 +45,18 @@ fn dropping_an_owner_runs_cleanup_for_browser_resources() {
     drop(owner);
     assert!(released.load(Ordering::SeqCst));
 }
+
+#[test]
+fn csr_owner_parent_and_weak_reference_preserve_lifecycle() {
+    let parent = Owner::new();
+    let child = parent.with(Owner::new);
+    let weak = child.downgrade();
+    assert_eq!(child.parent(), Some(parent.clone()));
+    assert_eq!(weak.upgrade(), Some(child.clone()));
+    parent.pause();
+    assert!(child.paused());
+    parent.resume();
+    assert!(!child.paused());
+    drop(child);
+    assert!(weak.upgrade().is_none());
+}

@@ -16,7 +16,7 @@ uuid = { version = "1", features = ["js"], path = "../foundation/uuid"}
 json-codec = {version = "1", path = "../foundation/json-codec"}
 wasm-bindgen = {version = "=0.2.129", path = "../foundation/wasm-bindgen"}
 js-sys = {version = "=0.3.106", path = "../foundation/js-sys"}
-gloo-timers = { version = "0.3", features = ["futures"], path = "../foundation/gloo-timers"}
+gloo-timers = { version = "0.3", path = "../foundation/gloo-timers" }
 send_wrapper = {version = "0.6", path = "../foundation/send_wrapper"}
 web-sys = { version = "=0.3.106", features = ["Window", "Document", "Element", "HtmlElement", "HtmlInputElement", "Crypto", "AbortController", "AbortSignal", "Request", "RequestInit", "RequestMode", "RequestCredentials", "RequestRedirect", "Response", "ReadableStream", "ReadableStreamDefaultReader", "Headers", "UrlSearchParams", "Storage", "Event", "MouseEvent", "SubmitEvent", "console"], path = "../foundation/web-sys"}
 
