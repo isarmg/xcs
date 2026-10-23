@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
-"""Compare probe reports; optional deterministic entity-write regression gate."""
+"""Compare current probe reports; optional typed-history-write regression gate."""
 import argparse
 import json
+import math
 
 REQUIRED_CHECKS = (
     "restart_state_equality", "range_bytes_correct", "held_read_during_save",
@@ -30,13 +31,19 @@ def invalid_constant(value):
     raise ValueError(f"invalid JSON constant: {value}")
 
 
+def finite_float(value):
+    number = float(value)
+    require(math.isfinite(number), f"non-finite JSON number: {value}")
+    return number
+
+
 def integer(value, label, minimum=0):
     require(type(value) is int and value >= minimum, f"invalid {label}: expected integer >= {minimum}")
     return value
 
 
 def writes(sample):
-    return sum(sample["sqlite_entity_writes"][key] for key in WRITES)
+    return sum(sample["sqlite_history_writes"][key] for key in WRITES)
 
 
 def validate(report):
@@ -57,9 +64,10 @@ def validate(report):
         previous = history
         for key in TIMINGS:
             integer(sample[key], key)
-        require(isinstance(sample["sqlite_entity_writes"], dict), "missing write instrumentation")
+        integer(sample["index_sqlite_bytes"], "index_sqlite_bytes", 1)
+        require(isinstance(sample["sqlite_history_writes"], dict), "missing typed history write instrumentation")
         for key in WRITES:
-            integer(sample["sqlite_entity_writes"][key], key)
+            integer(sample["sqlite_history_writes"][key], key)
 
 
 def compare(old, new, require_incremental=False):
@@ -78,14 +86,16 @@ def compare(old, new, require_incremental=False):
                 "incremental gate requires the complete history checkpoints")
         counts = [writes(sample) for sample in new["samples"]]
         require(min(counts) > 0, f"missing write instrumentation: {counts}")
-        require(max(counts) <= 100, f"publication rewrites too many entities: {counts}")
-        require(max(counts[1:]) <= min(counts[1:]) + 10, f"entity writes grow with history: {counts}")
+        require(max(counts) <= 100, f"publication rewrites too many history rows: {counts}")
+        require(max(counts[1:]) <= min(counts[1:]) + 10, f"history writes grow with history: {counts}")
     print("Development simulation; timing ratios are observations, never gates.")
+    print("Typed history writes exclude the fixed current_state marker; index.sqlite bytes are apparent main-file lengths after reopen.")
     for before, after in zip(old["samples"], new["samples"]):
         ratios = ", ".join(f"{key}: {after[key] / max(before[key], 1):.3f}x" for key in TIMINGS)
-        print(f"history={after['history_versions']}: entity writes {writes(before)} -> {writes(after)}; {ratios}")
+        print(f"history={after['history_versions']}: history writes {writes(before)} -> {writes(after)}; "
+              f"index.sqlite bytes {before['index_sqlite_bytes']} -> {after['index_sqlite_bytes']}; {ratios}")
     if require_incremental:
-        print("PASS: bounded entity writes and correctness checks")
+        print("PASS: bounded typed history writes and correctness checks")
 
 
 def main():
@@ -98,7 +108,8 @@ def main():
         reports = []
         for path in (args.baseline, args.current):
             with open(path, encoding="utf-8") as file:
-                reports.append(json.load(file, object_pairs_hook=unique_object, parse_constant=invalid_constant))
+                reports.append(json.load(file, object_pairs_hook=unique_object,
+                                         parse_constant=invalid_constant, parse_float=finite_float))
         compare(*reports, args.require_incremental)
     except (OSError, ValueError, KeyError, TypeError) as error:
         parser.exit(1, f"Performance comparison failed: {error}\n")

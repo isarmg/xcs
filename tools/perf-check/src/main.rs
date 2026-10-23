@@ -38,10 +38,12 @@ fn sql(path: &Path, install: bool) -> Result<Value> {
     platform_io::sqlite::block_on_sqlite_connection(async {
         let mut conn = platform_io::sqlite::open_index_connection(path, false, None).await.map_err(|e| e.to_string())?;
         if install {
-            conn.execute("CREATE TABLE IF NOT EXISTS perf_writes(inserts INTEGER,updates INTEGER,deletes INTEGER,payload_bytes INTEGER);DELETE FROM perf_writes;INSERT INTO perf_writes VALUES(0,0,0,0);CREATE TRIGGER IF NOT EXISTS perf_insert AFTER INSERT ON entities BEGIN UPDATE perf_writes SET inserts=inserts+1,payload_bytes=payload_bytes+length(NEW.json);END;CREATE TRIGGER IF NOT EXISTS perf_update AFTER UPDATE ON entities BEGIN UPDATE perf_writes SET updates=updates+1,payload_bytes=payload_bytes+length(NEW.json);END;CREATE TRIGGER IF NOT EXISTS perf_delete AFTER DELETE ON entities BEGIN UPDATE perf_writes SET deletes=deletes+1;END;").await.map_err(|e|e.to_string())?;
+            // Count only typed history rows, not generic mirrors, the fixed
+            // current_state marker, or these instrumentation updates.
+            conn.execute("CREATE TABLE IF NOT EXISTS perf_history_writes(inserts INTEGER,updates INTEGER,deletes INTEGER);DELETE FROM perf_history_writes;INSERT INTO perf_history_writes VALUES(0,0,0);CREATE TRIGGER IF NOT EXISTS perf_history_insert AFTER INSERT ON file_history_versions BEGIN UPDATE perf_history_writes SET inserts=inserts+1;END;CREATE TRIGGER IF NOT EXISTS perf_history_update AFTER UPDATE ON file_history_versions BEGIN UPDATE perf_history_writes SET updates=updates+1;END;CREATE TRIGGER IF NOT EXISTS perf_history_delete AFTER DELETE ON file_history_versions BEGIN UPDATE perf_history_writes SET deletes=deletes+1;END;").await.map_err(|e|e.to_string())?;
         }
-        let r = sqlite_access::query("SELECT inserts,updates,deletes,payload_bytes FROM perf_writes").fetch_one(&mut conn).await.map_err(|e|e.to_string())?;
-        Ok::<Value,String>(json!({"inserts":r.get::<i64,_>(0),"updates":r.get::<i64,_>(1),"deletes":r.get::<i64,_>(2),"entity_json_bytes_written":r.get::<i64,_>(3)}))
+        let r = sqlite_access::query("SELECT inserts,updates,deletes FROM perf_history_writes").fetch_one(&mut conn).await.map_err(|e|e.to_string())?;
+        Ok::<Value,String>(json!({"inserts":r.get::<i64,_>(0),"updates":r.get::<i64,_>(1),"deletes":r.get::<i64,_>(2)}))
     }).map_err(Into::into)
 }
 // Accept only the two persisted object layouts, never report a shard prefix
@@ -181,7 +183,10 @@ fn main() -> Result<()> {
                 "restart must recover identical state"
             );
             let read_us = range(&engine, &id, &expected, 8)?;
-            samples.push(json!({"history_versions":n,"save_us":save_us,"restart_us":restart_us,"range_open_read_8_us":read_us,"sqlite_entity_writes":writes,"disk":disk_bytes(temp.path())?}));
+            // Main database apparent length after reopen; excludes journal/WAL
+            // sidecars and includes the probe's own counter table.
+            let index_sqlite_bytes = fs::metadata(root.join("index.sqlite"))?.len();
+            samples.push(json!({"history_versions":n,"save_us":save_us,"restart_us":restart_us,"range_open_read_8_us":read_us,"sqlite_history_writes":writes,"index_sqlite_bytes":index_sqlite_bytes,"disk":disk_bytes(temp.path())?}));
         }
     }
     // Larger immutable version: open/verify cost is intentionally included in every range request.

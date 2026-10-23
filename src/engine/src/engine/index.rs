@@ -1,12 +1,11 @@
 //! Rebuildable SQLite projection; never an authority for publication.
 //!
 //! Startup rebuilds from recovered durable evidence, including migration of the
-//! old full-snapshot projection. Publications compare typed values and serialize
-//! only changed rows. Comparisons still scan state; this is not an O(delta) CPU
-//! claim. No duplicate full-State snapshot is retained in SQLite.
+//! old full-snapshot and generic entity projections. Only file-history candidate
+//! fields and the publication sequence are stored. Comparisons still scan all
+//! versions; this is not an O(delta) CPU claim. Business objects come from State.
 use super::Engine;
 use crate::*;
-use data_serialization::Serialize;
 use sqlite_access::{Connection, Executor, Row};
 use std::{collections::BTreeMap, path::Path};
 
@@ -27,199 +26,49 @@ pub(super) struct QueryProof {
     indexed_reads: usize,
 }
 
-const SCHEMA: &str = "CREATE TABLE current_state(singleton INTEGER PRIMARY KEY CHECK(singleton=1),sequence TEXT NOT NULL);CREATE TABLE entities(kind TEXT NOT NULL,id TEXT NOT NULL,json BLOB NOT NULL,PRIMARY KEY(kind,id));";
-
+/// Only fields consumed by the candidate query participate in this delta.
+/// IDs borrow the frozen states; no entity JSON or second State is retained.
 #[derive(Debug, Default, PartialEq)]
-struct IndexWork {
-    upserts: usize,
-    deletes: usize,
-    serialized_bytes: usize,
+struct HistoryDelta<'a> {
+    upserts: Vec<&'a str>,
+    deletes: Vec<&'a str>,
 }
-
-#[derive(Default)]
-struct Delta {
-    upserts: Vec<(&'static str, String, Vec<u8>)>,
-    deletes: Vec<(&'static str, String)>,
-}
-impl Delta {
-    fn put<T: Serialize>(&mut self, kind: &'static str, id: String, value: &T) -> Result<()> {
-        self.upserts.push((kind, id, canonical_json(value)?));
-        Ok(())
-    }
-    fn map<T: Serialize + PartialEq>(
-        &mut self,
-        kind: &'static str,
-        before: Option<&BTreeMap<String, T>>,
-        after: &BTreeMap<String, T>,
-    ) -> Result<()> {
+impl<'a> HistoryDelta<'a> {
+    fn between(
+        before: Option<&'a BTreeMap<String, FileVersion>>,
+        after: &'a BTreeMap<String, FileVersion>,
+    ) -> Self {
+        let mut delta = Self::default();
         let Some(before) = before else {
-            for (id, value) in after {
-                self.put(kind, id.clone(), value)?;
-            }
-            return Ok(());
+            delta.upserts.extend(after.keys().map(String::as_str));
+            return delta;
         };
         // Merge the ordered maps once, preserving each output vector's key
         // order without two tree searches per unchanged row.
         let mut before = before.iter().peekable();
         for (id, value) in after {
             while let Some((old_id, _)) = before.next_if(|(old_id, _)| *old_id < id) {
-                self.deletes.push((kind, old_id.clone()));
+                delta.deletes.push(old_id);
             }
             let previous = before
                 .next_if(|(old_id, _)| *old_id == id)
                 .map(|(_, value)| value);
-            if previous != Some(value) {
-                self.put(kind, id.clone(), value)?;
+            if previous.is_none_or(|old| {
+                old.file_id != value.file_id
+                    || old.history_tree_id != value.history_tree_id
+                    || old.version_sequence != value.version_sequence
+            }) {
+                delta.upserts.push(id);
             }
         }
-        self.deletes
-            .extend(before.map(|(id, _)| (kind, id.clone())));
-        Ok(())
-    }
-    fn between(before: Option<&State>, after: &State) -> Result<Self> {
-        let mut delta = Self::default();
-        // Exhaustive destructuring makes newly added State fields a compile-time
-        // projection update requirement rather than silently omitting them.
-        let State {
-            sequence: _,
-            business_generation,
-            topology_generation,
-            control_auth,
-            events,
-            repositories,
-            histories,
-            branches,
-            file_selections,
-            directory_branches,
-            directory_trees,
-            file_write_origins,
-            file_contexts,
-            file_path_nodes,
-            file_metadata_nodes,
-            file_branch_merges,
-            file_branch_aliases,
-            file_node_parents,
-            file_path_notes,
-            directory_tree_selections,
-            file_locations,
-            file_backup_paths,
-            file_backup_policies,
-            directory_selections,
-            directory_selection_generations,
-            file_selection_generations,
-            file_notes,
-            version_notes,
-            file_names,
-            commits,
-            versions,
-            placements,
-            merge_links,
-            history_boundaries,
-            content_states,
-            operations,
-            plans,
-            placement_rules,
-            protection_policies,
-            operation_principals,
-        } = after;
-        macro_rules! maps {
-            ($($field:ident),* $(,)?) => {$(
-                delta.map(stringify!($field), before.map(|s| &s.$field), $field)?;
-            )*};
-        }
-        maps!(
-            repositories,
-            histories,
-            branches,
-            file_selections,
-            directory_branches,
-            directory_trees,
-            file_write_origins,
-            file_contexts,
-            file_path_nodes,
-            file_metadata_nodes,
-            file_branch_merges,
-            file_branch_aliases,
-            file_node_parents,
-            file_path_notes,
-            directory_tree_selections,
-            file_locations,
-            file_backup_paths,
-            file_backup_policies,
-            directory_selections,
-            file_notes,
-            version_notes,
-            file_names,
-            commits,
-            versions,
-            placements,
-            merge_links,
-            history_boundaries,
-            content_states,
-            operations,
-            plans,
-            placement_rules,
-            protection_policies,
-            operation_principals
-        );
-        // These two maps have a string-u64 wire representation.
-        macro_rules! generations {
-            ($($field:ident),*) => {$(
-                for (id, value) in $field {
-                    if before.and_then(|s| s.$field.get(id)) != Some(value) {
-                        delta.put(stringify!($field), id.clone(), &value.to_string())?;
-                    }
-                }
-                if let Some(before) = before {
-                    for id in before.$field.keys().filter(|id| !$field.contains_key(*id)) {
-                        delta.deletes.push((stringify!($field), id.clone()));
-                    }
-                }
-            )*};
-        }
-        generations!(directory_selection_generations, file_selection_generations);
-        if before.is_none_or(|s| s.business_generation != *business_generation) {
-            delta.put(
-                "$state",
-                "business_generation".into(),
-                &business_generation.to_string(),
-            )?;
-        }
-        if before.is_none_or(|s| s.topology_generation != *topology_generation) {
-            delta.put(
-                "$state",
-                "topology_generation".into(),
-                &topology_generation.to_string(),
-            )?;
-        }
-        if before.is_none_or(|s| s.control_auth != *control_auth) {
-            delta.put("$state", "control_auth".into(), control_auth)?;
-        }
-        // Events normally append, but replacement/truncation is also supported.
-        for (i, event) in events.iter().enumerate() {
-            if before.and_then(|s| s.events.get(i)) != Some(event) {
-                delta.put("$events", i.to_string(), event)?;
-            }
-        }
-        if let Some(before) = before {
-            for i in events.len()..before.events.len() {
-                delta.deletes.push(("$events", i.to_string()));
-            }
-        }
-        Ok(delta)
-    }
-    fn work(&self) -> IndexWork {
-        IndexWork {
-            upserts: self.upserts.len(),
-            deletes: self.deletes.len(),
-            serialized_bytes: self.upserts.iter().map(|(_, _, v)| v.len()).sum(),
-        }
+        delta.deletes.extend(before.map(|(id, _)| id.as_str()));
+        delta
     }
 }
 
 #[cfg(test)]
-fn project(path: &Path, before: Option<&State>, after: &State) -> Result<IndexWork> {
-    let delta = Delta::between(before, after)?;
+fn project(path: &Path, before: Option<&State>, after: &State) -> Result<()> {
+    let delta = HistoryDelta::between(before.map(|state| &state.versions), &after.versions);
     project_delta(path, before, after, &delta)
 }
 
@@ -272,8 +121,8 @@ fn project_delta(
     path: &Path,
     before: Option<&State>,
     after: &State,
-    delta: &Delta,
-) -> Result<IndexWork> {
+    delta: &HistoryDelta<'_>,
+) -> Result<()> {
     try_project_delta(path, before, after, delta).map_err(Into::into)
 }
 
@@ -281,10 +130,9 @@ fn try_project_delta(
     path: &Path,
     before: Option<&State>,
     after: &State,
-    delta: &Delta,
-) -> std::result::Result<IndexWork, ProjectionFailure> {
-    let work = delta.work();
-    let result = platform_io::sqlite::block_on_sqlite_connection(async {
+    delta: &HistoryDelta<'_>,
+) -> std::result::Result<(), ProjectionFailure> {
+    platform_io::sqlite::block_on_sqlite_connection(async {
         let mut c = platform_io::sqlite::open_index_connection(path, before.is_none(), None)
             .await
             .map_err(ProjectionFailure::from)?;
@@ -318,7 +166,7 @@ fn try_project_delta(
                 );
             }
         } else {
-            // Transactional replacement also migrates the legacy snapshot table.
+            // Transactional replacement removes both obsolete full-State layouts.
             // A damaged cache may have substituted views for our tables.
             for (name, drop_view) in [
                 ("current_state", "DROP VIEW current_state"),
@@ -338,35 +186,24 @@ fn try_project_delta(
             tx.execute("DROP TABLE IF EXISTS current_state;DROP TABLE IF EXISTS entities;DROP TABLE IF EXISTS file_history_versions;")
                 .await
                 .map_err(ProjectionFailure::from)?;
-            tx.execute(SCHEMA).await.map_err(ProjectionFailure::from)?;
+            tx.execute(CURRENT_STATE_TABLE).await.map_err(ProjectionFailure::from)?;
             tx.execute(HISTORY_TABLE).await.map_err(ProjectionFailure::from)?;
             tx.execute(HISTORY_INDEX).await.map_err(ProjectionFailure::from)?;
         }
-        for (kind, id) in &delta.deletes {
-            if *kind == "versions" {
-                sqlite_access::query("DELETE FROM file_history_versions WHERE version_id=?")
-                    .bind(id)
-                    .execute(&mut *tx)
-                    .await
-                    .map_err(ProjectionFailure::from)?;
-            }
-            sqlite_access::query("DELETE FROM entities WHERE kind=? AND id=?")
-                .bind(kind)
-                .bind(id)
+        for id in &delta.deletes {
+            sqlite_access::query("DELETE FROM file_history_versions WHERE version_id=?")
+                .bind(*id)
                 .execute(&mut *tx)
                 .await
                 .map_err(ProjectionFailure::from)?;
         }
-        for (kind, id, data) in &delta.upserts {
-            if *kind == "versions" {
-                let v = &after.versions[id];
-                sqlite_access::query("INSERT INTO file_history_versions VALUES(?,?,?,?) ON CONFLICT(version_id) DO UPDATE SET file_id=excluded.file_id,history_tree_id=excluded.history_tree_id,version_sequence_key=excluded.version_sequence_key")
-                    .bind(id).bind(&v.file_id).bind(&v.history_tree_id).bind(v.version_sequence.to_be_bytes().as_slice())
-                    .execute(&mut *tx).await.map_err(ProjectionFailure::from)?;
-            }
-            sqlite_access::query("INSERT INTO entities(kind,id,json) VALUES(?,?,?) ON CONFLICT(kind,id) DO UPDATE SET json=excluded.json")
-                .bind(kind).bind(id).bind(data).execute(&mut *tx).await.map_err(ProjectionFailure::from)?;
+        for id in &delta.upserts {
+            let v = &after.versions[*id];
+            sqlite_access::query("INSERT INTO file_history_versions VALUES(?,?,?,?) ON CONFLICT(version_id) DO UPDATE SET file_id=excluded.file_id,history_tree_id=excluded.history_tree_id,version_sequence_key=excluded.version_sequence_key")
+                .bind(*id).bind(&v.file_id).bind(&v.history_tree_id).bind(v.version_sequence.to_be_bytes().as_slice())
+                .execute(&mut *tx).await.map_err(ProjectionFailure::from)?;
         }
+        // Metadata-only publications still advance the marker in this transaction.
         sqlite_access::query("INSERT INTO current_state VALUES(1,?) ON CONFLICT(singleton) DO UPDATE SET sequence=excluded.sequence")
             .bind(after.sequence.to_string()).execute(&mut *tx).await.map_err(ProjectionFailure::from)?;
         tx.commit().await.map_err(ProjectionFailure::from)?;
@@ -380,9 +217,7 @@ fn try_project_delta(
             });
         }
         result
-    });
-    result?;
-    Ok(work)
+    })
 }
 
 // Move every journal before the main database. A partial quarantine must never
@@ -457,7 +292,7 @@ impl Engine {
     pub(crate) fn rebuild_index(&self) -> Result<()> {
         let mut proof = self.history_query_proof.lock().unwrap();
         proof.healthy = false;
-        let delta = Delta::between(None, &self.state)?;
+        let delta = HistoryDelta::between(None, &self.state.versions);
         checked_index_files(&self.root)?;
         let path = self.root.join("index.sqlite");
         if let Err(error) = try_project_delta(&path, None, &self.state, &delta) {
@@ -477,7 +312,7 @@ impl Engine {
         Ok(())
     }
     pub(crate) fn update_index(&self, previous: &State) -> Result<()> {
-        let delta = Delta::between(Some(previous), &self.state)?;
+        let delta = HistoryDelta::between(Some(&previous.versions), &self.state.versions);
         let mut proof = self.history_query_proof.lock().unwrap();
         if let Err(error) = checked_index_files(&self.root) {
             proof.healthy = false;
@@ -494,20 +329,8 @@ impl Engine {
         }
         if proof.healthy && proof.sequence == previous.sequence {
             // Reuse the changed-version delta, including replacements/moves.
-            for id in delta
-                .deletes
-                .iter()
-                .filter(|(kind, _)| *kind == "versions")
-                .map(|(_, id)| id)
-                .chain(
-                    delta
-                        .upserts
-                        .iter()
-                        .filter(|(kind, _, _)| *kind == "versions")
-                        .map(|(_, id, _)| id),
-                )
-            {
-                if let Some(old) = previous.versions.get(id) {
+            for id in delta.deletes.iter().chain(&delta.upserts) {
+                if let Some(old) = previous.versions.get(*id) {
                     let count = proof
                         .counts
                         .get_mut(&old.file_id)
@@ -517,7 +340,7 @@ impl Engine {
                         proof.counts.remove(&old.file_id);
                     }
                 }
-                if let Some(new) = self.state.versions.get(id) {
+                if let Some(new) = self.state.versions.get(*id) {
                     *proof.counts.entry(new.file_id.clone()).or_default() += 1;
                 }
             }

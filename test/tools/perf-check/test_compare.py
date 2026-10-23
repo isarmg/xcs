@@ -20,8 +20,8 @@ def report():
         "checks": dict.fromkeys(CHECKS, True),
         "samples": [
             {"history_versions": n, "save_us": 1, "restart_us": 1,
-             "range_open_read_8_us": 1,
-             "sqlite_entity_writes": {"inserts": 7, "updates": 2, "deletes": 0}}
+             "range_open_read_8_us": 1, "index_sqlite_bytes": 16384,
+             "sqlite_history_writes": {"inserts": 7, "updates": 2, "deletes": 0}}
             for n in (1, 2, 4)
         ],
     }
@@ -29,10 +29,13 @@ def report():
 
 class CompareTests(unittest.TestCase):
     def compare(self, before, after, optimized=False):
+        return self.compare_json(json.dumps(before), json.dumps(after), optimized)
+
+    def compare_json(self, before, after, optimized=False):
         with tempfile.TemporaryDirectory(prefix="zxs-compare-") as folder:
             paths = [Path(folder) / name for name in ("before.json", "after.json")]
             for path, value in zip(paths, (before, after)):
-                path.write_text(json.dumps(value))
+                path.write_text(value)
             return subprocess.run(
                 [sys.executable, *(["-O"] if optimized else []),
                  str((Path(__file__).resolve().parents[3] / "tools/perf-check" / "compare.py")),
@@ -74,7 +77,7 @@ class CompareTests(unittest.TestCase):
         for mutate in (
             lambda value: value["checks"].update(integrity_check=False),
             lambda value: value.update(copies=99),
-            lambda value: value["samples"][-1]["sqlite_entity_writes"].update(inserts=10000),
+            lambda value: value["samples"][-1]["sqlite_history_writes"].update(inserts=10000),
         ):
             after = report()
             mutate(after)
@@ -86,11 +89,12 @@ class CompareTests(unittest.TestCase):
         for value in (-1, True, 1.5, float("nan"), float("inf"), "1"):
             for key in ("inserts", "updates", "deletes"):
                 after = report()
-                after["samples"][-1]["sqlite_entity_writes"][key] = value
+                after["samples"][-1]["sqlite_history_writes"][key] = value
                 self.assertNotEqual(self.compare(report(), after).returncode, 0)
-            after = report()
-            after["samples"][-1]["save_us"] = value
-            self.assertNotEqual(self.compare(report(), after).returncode, 0)
+            for key in ("save_us", "restart_us", "range_open_read_8_us", "index_sqlite_bytes"):
+                after = report()
+                after["samples"][-1][key] = value
+                self.assertNotEqual(self.compare(report(), after).returncode, 0)
 
     def test_truncated_or_repeated_history_cannot_claim_bounded_growth(self):
         for histories in ((1,), (1, 4), (1, 1, 4), (4, 2, 1), (1, 2, 5)):
@@ -98,12 +102,58 @@ class CompareTests(unittest.TestCase):
             before["samples"] = [dict(before["samples"][0], history_versions=n) for n in histories]
             self.assertNotEqual(self.compare(before, copy.deepcopy(before)).returncode, 0)
 
-    def test_real_reports_keep_the_incremental_gate(self):
+    def test_missing_instrumentation_is_rejected(self):
+        for key in ("inserts", "updates", "deletes"):
+            after = report()
+            del after["samples"][-1]["sqlite_history_writes"][key]
+            self.assertNotEqual(self.compare(report(), after).returncode, 0)
+        for key in ("sqlite_history_writes", "index_sqlite_bytes"):
+            after = report()
+            del after["samples"][-1][key]
+            self.assertNotEqual(self.compare(report(), after).returncode, 0)
+        after = report()
+        after["samples"][-1]["sqlite_history_writes"] = dict.fromkeys(("inserts", "updates", "deletes"), 0)
+        self.assertNotEqual(self.compare(report(), after).returncode, 0)
+
+    def test_history_growth_and_excessive_writes_are_rejected(self):
+        for inserts in (20, 101):
+            after = report()
+            after["samples"][-1]["sqlite_history_writes"]["inserts"] = inserts
+            self.assertNotEqual(self.compare(report(), after).returncode, 0)
+
+    def test_strict_json_rejects_duplicates_nonfinite_and_trailing_data(self):
+        valid = json.dumps(report())
+        for invalid in (
+            valid.replace('"inserts": 7', '"inserts": 7, "inserts": 1', 1),
+            valid + " {}",
+            *(valid[:-1] + ', "extra": ' + value + '}'
+              for value in ("NaN", "Infinity", "-Infinity", "1e400")),
+        ):
+            for optimized in (False, True):
+                result = self.compare_json(valid, invalid, optimized)
+                self.assertNotEqual(result.returncode, 0)
+                self.assertNotIn("PASS:", result.stdout)
+
+    def test_output_uses_matching_history_and_index_metrics(self):
+        after = report()
+        after["samples"][-1]["index_sqlite_bytes"] = 8192
+        after["samples"][-1]["restart_us"] = 999
+        result = self.compare(report(), after)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIn("history writes 9 -> 9", result.stdout)
+        self.assertIn("index.sqlite bytes 16384 -> 8192", result.stdout)
+        self.assertIn("restart_us: 999.000x", result.stdout)
+        self.assertIn("exclude the fixed current_state marker", result.stdout)
+
+    def test_archived_entity_reports_are_not_comparable(self):
         root = Path(__file__).resolve().parents[3] / "tools/perf-check/results"
         before = json.loads((root / "growth-baseline64.json").read_text())
         after = json.loads((root / "growth-optimized64.json").read_text())
-        result = self.compare(before, after)
-        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertNotEqual(self.compare(before, after).returncode, 0)
+        after = report()
+        for sample in after["samples"]:
+            sample["sqlite_entity_writes"] = sample.pop("sqlite_history_writes")
+        self.assertNotEqual(self.compare(report(), after).returncode, 0)
 
 
 if __name__ == "__main__":

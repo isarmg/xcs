@@ -25,3 +25,45 @@ fn metadata_metrics_count_flat_and_sharded_files_by_kind() {
         assert!(metadata_object_kind(&objects.join(bad)).is_err());
     }
 }
+
+#[test]
+fn sqlite_metrics_count_only_typed_history_rows_and_reset() {
+    let temp = tempfile::tempdir().unwrap();
+    let index = temp.path().join("index.sqlite");
+    let execute = |statement: &'static str| {
+        platform_io::sqlite::block_on_sqlite_connection(async {
+            let mut conn = platform_io::sqlite::open_index_connection(&index, true, None)
+                .await
+                .unwrap();
+            conn.execute(statement).await.unwrap();
+        });
+    };
+    execute(
+        "CREATE TABLE file_history_versions(version_id TEXT PRIMARY KEY,value INTEGER);CREATE TABLE current_state(singleton INTEGER PRIMARY KEY,sequence TEXT);CREATE TABLE entities(id TEXT PRIMARY KEY,json BLOB);",
+    );
+    assert_eq!(
+        sql(&index, true).unwrap(),
+        json!({"inserts":0,"updates":0,"deletes":0})
+    );
+    execute(
+        "INSERT INTO current_state VALUES(1,'1');UPDATE current_state SET sequence='2';INSERT INTO entities VALUES('mirror','ignored');UPDATE entities SET json='ignored again';DELETE FROM entities;INSERT INTO file_history_versions VALUES('v1',1);UPDATE file_history_versions SET value=2;DELETE FROM file_history_versions;",
+    );
+    assert_eq!(
+        sql(&index, false).unwrap(),
+        json!({"inserts":1,"updates":1,"deletes":1})
+    );
+    assert_eq!(
+        sql(&index, true).unwrap(),
+        json!({"inserts":0,"updates":0,"deletes":0})
+    );
+    // Reopen may rebuild the typed table and remove its triggers.
+    execute(
+        "DROP TABLE file_history_versions;CREATE TABLE file_history_versions(version_id TEXT PRIMARY KEY,value INTEGER);",
+    );
+    sql(&index, true).unwrap();
+    execute("INSERT INTO file_history_versions VALUES('v2',1);");
+    assert_eq!(
+        sql(&index, false).unwrap(),
+        json!({"inserts":1,"updates":0,"deletes":0})
+    );
+}

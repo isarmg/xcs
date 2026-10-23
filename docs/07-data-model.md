@@ -77,9 +77,9 @@ version_sequence 是本域递增的逻辑版本序号；拆分按确定次序重
 
 ## 7.3 SQLite 的职责
 
-SQLite 保存路径查询、分支列表、版本和节点历史、旧关系标记、文件合并来源、副本位置、任务状态和事件游标等索引。建议本地访问、单写者更新，并在同一 SQLite 事务内更新一批索引变更。
+当前实现仅保存文件历史候选表 `file_history_versions`、其 `(file_id, version_sequence_key, version_id)` 查询索引和 `current_state` 发布序号标记，不维护通用实体 JSON 或完整 State 镜像。路径、分支、节点关系、副本位置、任务和事件等读取仍使用恢复后的 State 及对应业务路径，不能将这些读取视为已有 SQLite 索引消费者。
 
-关键索引包括 `(repository_id, branch_id)`、`(tree_id, parent_entry_id, lookup_key)`、`(file_id, commit_sequence)`、`(version_id, disk_id)`、`(principal_id, operation_id)` 和 `(workspace_id, state)`。
+索引由本地单写者更新，类型化版本行与发布序号在同一 SQLite 事务中提交。仅非索引元数据变化时仍推进序号；候选查询核验完整性后从 State 取得完整版本对象，不能以 SQLite 行作为业务或授权依据。具体字段、适用规模及失败回退见[文件历史候选索引](19-capacity-and-performance.md#s19-11)。
 
 SQLite 的 `journal_mode=WAL` 只控制本地写前日志，不协调其他盘的普通文件发布，不提供本系统的跨盘提交判断。[S11]
 

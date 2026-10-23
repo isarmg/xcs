@@ -322,7 +322,9 @@ fn measure_history_candidate_latency() {
     }
 }
 
-fn rows(path: &Path) -> (String, Vec<(String, String, Vec<u8>)>) {
+type HistoryRow = (String, String, String, Vec<u8>);
+
+fn rows(path: &Path) -> (String, Vec<HistoryRow>) {
     platform_io::sqlite::block_on_sqlite_connection(async {
         let mut c = platform_io::sqlite::open_index_connection(path, false, None)
             .await
@@ -331,12 +333,12 @@ fn rows(path: &Path) -> (String, Vec<(String, String, Vec<u8>)>) {
             .fetch_one(&mut c)
             .await
             .unwrap();
-        let rows = sqlite_access::query("SELECT kind,id,json FROM entities ORDER BY kind,id")
+        let rows = sqlite_access::query("SELECT version_id,file_id,history_tree_id,version_sequence_key FROM file_history_versions ORDER BY version_id")
             .fetch_all(&mut c)
             .await
             .unwrap()
             .into_iter()
-            .map(|r| (r.get(0), r.get(1), r.get(2)))
+            .map(|r| (r.get(0), r.get(1), r.get(2), r.get(3)))
             .collect();
         c.close().await.unwrap();
         (sequence, rows)
@@ -351,59 +353,69 @@ fn sql(path: &Path, statement: &'static str) {
         c.close().await.unwrap();
     });
 }
-fn event(sequence: u64) -> Event {
-    Event {
-        sequence,
-        operation_id: format!("op_{sequence}"),
-        kind: "test".into(),
-        object_id: "object".into(),
-    }
+fn assert_projection(path: &Path, state: &State) {
+    let expected = state
+        .versions
+        .iter()
+        .map(|(id, v)| {
+            (
+                id.clone(),
+                v.file_id.clone(),
+                v.history_tree_id.clone(),
+                v.version_sequence.to_be_bytes().to_vec(),
+            )
+        })
+        .collect();
+    assert_eq!(rows(path), (state.sequence.to_string(), expected));
 }
-
-fn projected_state(path: &Path) -> State {
-    let (sequence, rows) = rows(path);
-    let mut value = json_codec::to_value(State::default()).unwrap();
-    value["sequence"] = sequence.into();
-    let mut events = BTreeMap::new();
-    for (kind, id, bytes) in rows {
-        let row: json_codec::Value = json_codec::from_slice(&bytes).unwrap();
-        match kind.as_str() {
-            "$state" => value[&id] = row,
-            "$events" => {
-                events.insert(id.parse::<usize>().unwrap(), row);
-            }
-            _ => {
-                let map = value
-                    .as_object_mut()
-                    .unwrap()
-                    .entry(kind)
-                    .or_insert_with(|| json_codec::json!({}));
-                map[&id] = row;
-            }
-        }
-    }
-    value["events"] = events.into_values().collect::<Vec<_>>().into();
-    json_codec::from_value(value).unwrap()
+fn install_write_audit(path: &Path) {
+    sql(
+        path,
+        "CREATE TABLE writes(inserts INTEGER,updates INTEGER,deletes INTEGER,markers INTEGER);INSERT INTO writes VALUES(0,0,0,0);CREATE TRIGGER changed_insert AFTER INSERT ON file_history_versions BEGIN UPDATE writes SET inserts=inserts+1;END;CREATE TRIGGER changed_update AFTER UPDATE ON file_history_versions BEGIN UPDATE writes SET updates=updates+1;END;CREATE TRIGGER changed_delete AFTER DELETE ON file_history_versions BEGIN UPDATE writes SET deletes=deletes+1;END;CREATE TRIGGER changed_marker AFTER UPDATE ON current_state BEGIN UPDATE writes SET markers=markers+1;END;",
+    );
+}
+fn writes(path: &Path) -> (i64, i64, i64, i64) {
+    platform_io::sqlite::block_on_sqlite_connection(async {
+        let mut c = platform_io::sqlite::open_index_connection(path, false, None)
+            .await
+            .unwrap();
+        let row = sqlite_access::query("SELECT inserts,updates,deletes,markers FROM writes")
+            .fetch_one(&mut c)
+            .await
+            .unwrap();
+        c.close().await.unwrap();
+        (row.get(0), row.get(1), row.get(2), row.get(3))
+    })
 }
 
 #[test]
-fn ordered_map_delta_matches_lookup_reference_across_all_small_maps() {
-    fn lookup_delta(before: Option<&BTreeMap<String, u8>>, after: &BTreeMap<String, u8>) -> Delta {
-        let mut delta = Delta::default();
+fn ordered_history_delta_matches_lookup_reference_across_all_small_maps() {
+    fn lookup_delta<'a>(
+        before: Option<&'a BTreeMap<String, FileVersion>>,
+        after: &'a BTreeMap<String, FileVersion>,
+    ) -> HistoryDelta<'a> {
+        let mut delta = HistoryDelta::default();
         for (id, value) in after {
-            if before.and_then(|map| map.get(id)) != Some(value) {
-                delta.put("test", id.clone(), value).unwrap();
+            let previous = before.and_then(|map| map.get(id));
+            if previous.map(|v| (&v.file_id, &v.history_tree_id, v.version_sequence))
+                != Some((
+                    &value.file_id,
+                    &value.history_tree_id,
+                    value.version_sequence,
+                ))
+            {
+                delta.upserts.push(id);
             }
         }
         if let Some(before) = before {
             for id in before.keys().filter(|id| !after.contains_key(*id)) {
-                delta.deletes.push(("test", id.clone()));
+                delta.deletes.push(id);
             }
         }
         delta
     }
 
-    // Every key can be absent or have either value. All pairs cover empty,
+    // Every key can be absent or have either projected value. All pairs cover
     // unchanged, inserted, deleted and changed rows, including boundary keys.
     let keys = ["", "a", "aa", "z", "é"];
     let maps: Vec<_> = (0..3_usize.pow(keys.len() as u32))
@@ -413,7 +425,7 @@ fn ordered_map_delta_matches_lookup_reference_across_all_small_maps() {
                 let choice = pattern % 3;
                 pattern /= 3;
                 if choice != 0 {
-                    map.insert(key.to_owned(), (choice - 1) as u8);
+                    map.insert(key.to_owned(), version(key, "file", (choice - 1) as u64));
                 }
             }
             map
@@ -421,17 +433,17 @@ fn ordered_map_delta_matches_lookup_reference_across_all_small_maps() {
         .collect();
     for before in std::iter::once(None).chain(maps.iter().map(Some)) {
         for after in &maps {
-            let expected = lookup_delta(before, after);
-            let mut actual = Delta::default();
-            actual.map("test", before, after).unwrap();
-            assert_eq!(actual.upserts, expected.upserts, "{before:?} -> {after:?}");
-            assert_eq!(actual.deletes, expected.deletes, "{before:?} -> {after:?}");
+            assert_eq!(
+                HistoryDelta::between(before, after),
+                lookup_delta(before, after),
+                "{before:?} -> {after:?}"
+            );
         }
     }
 }
 
 #[test]
-fn incremental_matches_full_projection_after_insert_update_delete_and_truncation() {
+fn incremental_matches_full_history_projection_after_insert_update_and_delete() {
     let temp = tempfile::tempdir().unwrap();
     let incremental = temp.path().join("incremental.sqlite");
     let full = temp.path().join("full.sqlite");
@@ -440,98 +452,105 @@ fn incremental_matches_full_projection_after_insert_update_delete_and_truncation
     for sequence in 1..=4 {
         let previous = state.clone();
         state.sequence = sequence;
-        state.business_generation = sequence;
-        state
-            .file_notes
-            .insert("file".into(), format!("note {sequence}"));
-        state
-            .file_selection_generations
-            .insert("file".into(), u64::MAX);
-        state.events.push(event(sequence));
-        state.control_auth = Some(json_codec::json!({"nested": {"generation": sequence}}));
-        if sequence == 2 {
-            state
-                .file_notes
-                .insert("deleted".into(), "temporary".into());
-        }
-        if sequence == 3 {
-            state.file_notes.remove("deleted");
-            state.file_selection_generations.clear();
-            state.control_auth = None;
-            state.events[0] = event(99);
-        }
-        if sequence == 4 {
-            state.events.truncate(1);
+        match sequence {
+            1 => {
+                state
+                    .versions
+                    .insert("first".into(), version("first", "file", 0));
+            }
+            2 => {
+                state
+                    .versions
+                    .insert("deleted".into(), version("deleted", "file", 1));
+                state.versions.get_mut("first").unwrap().file_id = "moved".into();
+            }
+            3 => {
+                state.versions.remove("deleted");
+                let first = state.versions.get_mut("first").unwrap();
+                first.version_sequence = u64::MAX;
+                first.history_tree_id = "changed".into();
+            }
+            4 => {
+                state.versions.get_mut("first").unwrap().creation_name = "new name".into();
+                state
+                    .file_notes
+                    .insert("file".into(), "not a candidate field".into());
+            }
+            _ => unreachable!(),
         }
         project(&incremental, Some(&previous), &state).unwrap();
         project(&full, None, &state).unwrap();
         assert_eq!(rows(&incremental), rows(&full));
-        assert_eq!(projected_state(&incremental), state);
+        assert_projection(&incremental, &state);
     }
-    let (_, projected) = rows(&incremental);
-    assert!(
-        projected
-            .iter()
-            .any(|(kind, _, json)| kind == "file_selection_generations"
-                && json == b"\"18446744073709551615\"")
-    );
 }
 
 #[test]
-fn per_change_writes_and_serialization_do_not_grow_with_unchanged_entities() {
+fn per_change_writes_do_not_grow_with_unchanged_versions() {
     let temp = tempfile::tempdir().unwrap();
     for count in [1, 1000] {
         let path = temp.path().join(format!("{count}.sqlite"));
         let mut previous = State::default();
         for i in 0..count {
+            let id = format!("version_{i}");
             previous
-                .file_notes
-                .insert(format!("file_{i}"), "unchanged".into());
+                .versions
+                .insert(id.clone(), version(&id, "file", i));
         }
         project(&path, None, &previous).unwrap();
-        // The audit sees actual SQLite writes, not just the delta planner.
-        sql(
-            &path,
-            "CREATE TABLE writes(n INTEGER);INSERT INTO writes VALUES(0);CREATE TRIGGER changed_insert AFTER INSERT ON entities BEGIN UPDATE writes SET n=n+1;END;CREATE TRIGGER changed_update AFTER UPDATE ON entities BEGIN UPDATE writes SET n=n+1;END;CREATE TRIGGER changed_delete AFTER DELETE ON entities BEGIN UPDATE writes SET n=n+1;END;",
-        );
+        // Count actual SQLite writes, not just the delta planner's output.
+        install_write_audit(&path);
         let mut next = previous.clone();
         next.sequence = 1;
-        next.file_notes.insert("file_0".into(), "changed".into());
-        let work = project(&path, Some(&previous), &next).unwrap();
-        assert_eq!(
-            work,
-            IndexWork {
-                upserts: 1,
-                deletes: 0,
-                serialized_bytes: 9
-            }
-        );
-        let writes: i64 = platform_io::sqlite::block_on_sqlite_connection(async {
-            let mut c = platform_io::sqlite::open_index_connection(&path, false, None)
-                .await
-                .unwrap();
-            sqlite_access::query_scalar("SELECT n FROM writes")
-                .fetch_one(&mut c)
-                .await
-                .unwrap()
-        });
-        assert_eq!(writes, 1);
-        assert_eq!(
-            project(&path, Some(&next), &next).unwrap(),
-            IndexWork::default()
-        );
+        next.versions.get_mut("version_0").unwrap().history_tree_id = "changed".into();
+        project(&path, Some(&previous), &next).unwrap();
+        assert_eq!(writes(&path), (0, 1, 0, 1));
+        project(&path, Some(&next), &next).unwrap();
+        assert_eq!(writes(&path), (0, 1, 0, 2));
         let mut removed = next.clone();
         removed.sequence = 2;
-        removed.file_notes.remove("file_0");
-        assert_eq!(
-            project(&path, Some(&next), &removed).unwrap(),
-            IndexWork {
-                upserts: 0,
-                deletes: 1,
-                serialized_bytes: 0
-            }
-        );
+        removed.versions.remove("version_0");
+        project(&path, Some(&next), &removed).unwrap();
+        assert_eq!(writes(&path), (0, 1, 1, 3));
+        assert_projection(&path, &removed);
     }
+}
+
+#[test]
+fn unprojected_changes_advance_marker_and_proof_without_history_writes() {
+    let temp = tempfile::tempdir().unwrap();
+    let mut engine = engine(&temp);
+    populate(&mut engine);
+    let path = engine.root.join("index.sqlite");
+    let baseline = rows(&path).1;
+    install_write_audit(&path);
+    let previous = engine.state().clone();
+    let next = std::sync::Arc::make_mut(&mut engine.state);
+    next.sequence += 1;
+    next.versions.get_mut("a").unwrap().creation_name = "current name".into();
+    next.file_notes.insert("file".into(), "current note".into());
+    assert_eq!(
+        HistoryDelta::between(Some(&previous.versions), &next.versions),
+        HistoryDelta::default()
+    );
+    engine.update_index(&previous).unwrap();
+    assert_eq!(writes(&path), (0, 0, 0, 1));
+    assert_eq!(rows(&path), (engine.state.sequence.to_string(), baseline));
+    let proof = engine.history_query_proof.lock().unwrap();
+    assert!(proof.healthy);
+    assert_eq!(proof.sequence, engine.state.sequence);
+    assert_eq!(proof.counts.get("file"), Some(&5));
+    drop(proof);
+    let history = engine.indexed_file_history("file").unwrap();
+    assert_eq!(history, scan(&engine, "file"));
+    assert_eq!(
+        history
+            .iter()
+            .find(|v| v.version_id == "a")
+            .unwrap()
+            .creation_name,
+        "current name"
+    );
 }
 
 #[test]
@@ -543,11 +562,13 @@ fn failed_delta_rolls_back_rows_and_sequence_then_rebuilds_from_state() {
     let baseline = rows(&path);
     let mut next = previous.clone();
     next.sequence = 7;
-    next.file_notes.insert("first".into(), "changed".into());
-    next.file_notes.insert("second".into(), "fail".into());
+    next.versions
+        .insert("first".into(), version("first", "file", 1));
+    next.versions
+        .insert("second".into(), version("second", "file", 2));
     sql(
         &path,
-        "CREATE TRIGGER fail_second BEFORE INSERT ON entities WHEN NEW.id='second' BEGIN SELECT RAISE(ABORT,'injected failure');END;",
+        "CREATE TRIGGER fail_second BEFORE INSERT ON file_history_versions WHEN NEW.version_id='second' BEGIN SELECT RAISE(ABORT,'injected failure');END;",
     );
     assert!(project(&path, Some(&previous), &next).is_err());
     // The failed transaction's native worker has closed before returning.
@@ -558,7 +579,7 @@ fn failed_delta_rolls_back_rows_and_sequence_then_rebuilds_from_state() {
     project(&path, None, &next).unwrap();
     let rebuilt = rows(&path);
     assert_eq!(rebuilt.0, "7");
-    assert!(rebuilt.1.iter().any(|(_, id, _)| id == "second"));
+    assert!(rebuilt.1.iter().any(|(id, _, _, _)| id == "second"));
     assert!(project(&path, Some(&previous), &next).is_err());
     assert_eq!(rows(&path), rebuilt);
 }
@@ -594,7 +615,7 @@ fn publication_rejects_substituted_marker_view_and_reopen_recovers() {
     let engine = Engine::open(&root).unwrap();
     assert!(!engine.is_read_only());
     assert_eq!(*engine.state, published);
-    assert_eq!(projected_state(&root.join("index.sqlite")), published);
+    assert_projection(&root.join("index.sqlite"), &published);
     assert!(engine.history_query_proof.lock().unwrap().healthy);
 }
 
@@ -612,11 +633,11 @@ fn published_evidence_survives_index_failure_and_reopen_rebuilds() {
         .create_repository("first", "P01", 1, "admin", &new_id("op"))
         .unwrap();
     let path = root.join("index.sqlite");
-    assert_eq!(&projected_state(&path), engine.state());
+    assert_projection(&path, engine.state());
     let baseline = rows(&path);
     sql(
         &path,
-        "CREATE TRIGGER fail_write BEFORE INSERT ON entities BEGIN SELECT RAISE(ABORT,'injected projection failure');END;",
+        "CREATE TRIGGER fail_write BEFORE INSERT ON current_state BEGIN SELECT RAISE(ABORT,'injected projection failure');END;",
     );
     let operation = new_id("op");
     let error = engine
@@ -631,12 +652,12 @@ fn published_evidence_survives_index_failure_and_reopen_rebuilds() {
     let engine = Engine::open(&root).unwrap();
     assert!(!engine.is_read_only());
     assert_eq!(*engine.state, published);
-    assert_eq!(projected_state(&path), published);
+    assert_projection(&path, &published);
     drop(engine);
     std::fs::remove_file(&path).unwrap();
     let engine = Engine::open(&root).unwrap();
     assert_eq!(*engine.state, published);
-    assert_eq!(projected_state(&path), published);
+    assert_projection(&path, &published);
 }
 
 #[test]
@@ -660,7 +681,7 @@ fn startup_rebuilds_a_corrupt_disposable_database_from_durable_evidence() {
         std::fs::write(root.join("index.sqlite"), &corrupt_bytes).unwrap();
         let recovered = Engine::open(&root).unwrap();
         assert_eq!(*recovered.state, published);
-        assert_eq!(projected_state(&root.join("index.sqlite")), published);
+        assert_projection(&root.join("index.sqlite"), &published);
         assert!(recovered.history_query_proof.lock().unwrap().healthy);
         assert!(!recovered.is_read_only());
         let quarantines: Vec<_> = std::fs::read_dir(&root)
@@ -693,7 +714,7 @@ fn corrupt_reader_closes_before_immediate_rebuild() {
     assert!(!engine.history_query_proof.lock().unwrap().healthy);
     engine.rebuild_index().unwrap();
     assert_eq!(engine.indexed_file_history("missing"), Some(vec![]));
-    assert_eq!(&projected_state(&path), engine.state());
+    assert_projection(&path, engine.state());
 }
 
 #[test]
@@ -798,19 +819,50 @@ fn non_corruption_errors_cannot_authorize_quarantine() {
 }
 
 #[test]
-fn startup_migrates_legacy_snapshot_projection() {
-    let temp = tempfile::tempdir().unwrap();
-    let path = temp.path().join("index.sqlite");
-    platform_io::sqlite::block_on_sqlite_connection(async {
-        let mut c = platform_io::sqlite::open_index_connection(&path, true, None)
+fn startup_removes_obsolete_snapshot_and_entity_projections() {
+    for entity_view in [false, true] {
+        let temp = tempfile::tempdir().unwrap();
+        let path = temp.path().join("index.sqlite");
+        platform_io::sqlite::block_on_sqlite_connection(async {
+            let mut c = platform_io::sqlite::open_index_connection(&path, true, None)
+                .await
+                .unwrap();
+            c.execute("CREATE TABLE current_state(singleton INTEGER PRIMARY KEY,sequence TEXT,snapshot BLOB);INSERT INTO current_state VALUES(1,'999',X'7b7d');").await.unwrap();
+            c.execute(if entity_view {
+                "CREATE VIEW entities AS SELECT 'stale' AS kind, 'stale' AS id, X'7b7d' AS json"
+            } else {
+                "CREATE TABLE entities(kind TEXT,id TEXT,json BLOB,PRIMARY KEY(kind,id));INSERT INTO entities VALUES('stale','stale',X'7b7d');CREATE TRIGGER obsolete_entity_trigger BEFORE INSERT ON entities BEGIN SELECT RAISE(ABORT,'obsolete');END;"
+            }).await.unwrap();
+            c.close().await.unwrap();
+        });
+        let mut state = State::default();
+        state
+            .versions
+            .insert("current".into(), version("current", "file", u64::MAX));
+        project(&path, None, &state).unwrap();
+        assert_projection(&path, &state);
+        platform_io::sqlite::block_on_sqlite_connection(async {
+            let mut c = platform_io::sqlite::open_index_read_connection(&path)
+                .await
+                .unwrap();
+            let objects: Vec<(String, String)> = sqlite_access::query(
+                "SELECT name,sql FROM sqlite_schema WHERE name NOT LIKE 'sqlite_%' ORDER BY name",
+            )
+            .fetch_all(&mut c)
             .await
-            .unwrap();
-        c.execute("CREATE TABLE current_state(singleton INTEGER PRIMARY KEY,sequence TEXT,snapshot BLOB);INSERT INTO current_state VALUES(1,'999',X'7b7d');CREATE TABLE entities(kind TEXT,id TEXT,json BLOB,PRIMARY KEY(kind,id));INSERT INTO entities VALUES('stale','stale',X'7b7d');").await.unwrap();
-        c.close().await.unwrap();
-    });
-    project(&path, None, &State::default()).unwrap();
-    let (sequence, entities) = rows(&path);
-    assert_eq!(sequence, "0");
-    assert_eq!(entities.len(), 3);
-    assert!(entities.iter().all(|(kind, _, _)| kind == "$state"));
+            .unwrap()
+            .into_iter()
+            .map(|row| (row.get(0), row.get(1)))
+            .collect();
+            assert_eq!(
+                objects,
+                vec![
+                    ("current_state".into(), CURRENT_STATE_TABLE.into()),
+                    ("file_history_lookup".into(), HISTORY_INDEX.into()),
+                    ("file_history_versions".into(), HISTORY_TABLE.into()),
+                ]
+            );
+            c.close().await.unwrap();
+        });
+    }
 }
