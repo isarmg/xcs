@@ -74,6 +74,12 @@ pub(super) struct VerifiedPayloadSet {
     full_revalidation: bool,
 }
 const MAX_HELD_PAYLOAD_FILES: usize = 128;
+// Thread-local counters isolate concurrently running tests. No release cost.
+#[cfg(test)]
+std::thread_local! {
+    static VERIFICATION_COST: std::cell::Cell<(u64, u64)> = const { std::cell::Cell::new((0, 0)) };
+    static AFTER_REPLICA_VALIDATION: std::cell::RefCell<Option<Box<dyn FnOnce()>>> = const { std::cell::RefCell::new(None) };
+}
 /// Disk identities are pinned before copying begins. Only complete verification
 /// can turn this preparation into a live decision proof.
 pub(super) struct PayloadPreparation {
@@ -119,14 +125,16 @@ impl PayloadPreparation {
             })?;
         let full_revalidation = replicas > MAX_HELD_PAYLOAD_FILES / 4;
         let mut entries = Vec::new();
-        for evidence in &candidate.versions {
-            for slot in &evidence.placement.route_slot_ids {
-                let entry = verify_replica(config, &evidence.version, slot)?;
-                if !full_revalidation {
-                    entries.push(entry);
+        if !full_revalidation {
+            for evidence in &candidate.versions {
+                for slot in &evidence.placement.route_slot_ids {
+                    entries.push(verify_replica(config, &evidence.version, slot)?);
                 }
             }
         }
+        // Large candidates retain no per-replica evidence. validate below
+        // already hashes every byte with held-inode checks; a preceding pass
+        // would only hash and immediately discard the same proof.
         let proof = VerifiedPayloadSet {
             entries,
             disks: self.disks,
@@ -137,6 +145,11 @@ impl PayloadPreparation {
     }
 }
 fn verify_replica(config: &Config, version: &FileVersion, slot: &str) -> Result<VerifiedPayload> {
+    #[cfg(test)]
+    VERIFICATION_COST.with(|cost| {
+        let (replicas, bytes) = cost.get();
+        cost.set((replicas + 1, bytes));
+    });
     let disk = config
         .disks
         .iter()
@@ -184,6 +197,11 @@ fn verify_replica(config: &Config, version: &FileVersion, slot: &str) -> Result<
     for expected in manifest.chunks {
         let n = remaining.min(buffer.len() as u64) as usize;
         body.file.read_exact(&mut buffer[..n])?;
+        #[cfg(test)]
+        VERIFICATION_COST.with(|cost| {
+            let (replicas, bytes) = cost.get();
+            cost.set((replicas, bytes + n as u64));
+        });
         if blake3::hash(&buffer[..n]).as_bytes() != &expected {
             return Err(Error::new("CHECKSUM_MISMATCH", "payload chunk differs"));
         }
@@ -215,7 +233,7 @@ impl VerifiedPayloadSet {
     fn prepare(config: &Config, candidate: &Candidate) -> Result<Self> {
         PayloadPreparation::new(config, candidate)?.verify(config, candidate)
     }
-    pub(super) fn validate(&self, config: &Config, candidate: &Candidate) -> Result<()> {
+    fn validate_disks(&self) -> Result<()> {
         for disk in &self.disks {
             let current = std::fs::symlink_metadata(&disk.root)?;
             let held = disk.directory.metadata()?;
@@ -233,6 +251,10 @@ impl VerifiedPayloadSet {
             }
             disk.seal.validate(&disk.root.join("disk.json"))?;
         }
+        Ok(())
+    }
+    pub(super) fn validate(&self, config: &Config, candidate: &Candidate) -> Result<()> {
+        self.validate_disks()?;
         let expected: usize = candidate
             .versions
             .iter()
@@ -251,7 +273,15 @@ impl VerifiedPayloadSet {
                 self.validate_payload(config, &evidence.version, slot)?;
             }
         }
-        Ok(())
+        #[cfg(test)]
+        AFTER_REPLICA_VALIDATION.with(|hook| {
+            if let Some(run) = hook.borrow_mut().take() {
+                run();
+            }
+        });
+        // Long-running full revalidation must also preserve the disk identity
+        // pinned before preparation, including after the final replica read.
+        self.validate_disks()
     }
     pub(super) fn validate_payload(
         &self,

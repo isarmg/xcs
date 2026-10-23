@@ -3,6 +3,9 @@ fn fixture() -> (tempfile::TempDir, Engine, Candidate) {
     fixture_with_files(1)
 }
 fn fixture_with_files(count: usize) -> (tempfile::TempDir, Engine, Candidate) {
+    fixture_with_payload(count, b"original")
+}
+fn fixture_with_payload(count: usize, payload: &[u8]) -> (tempfile::TempDir, Engine, Candidate) {
     let temp = tempfile::tempdir().unwrap();
     let config = Config::development([
         temp.path().join("p"),
@@ -21,7 +24,7 @@ fn fixture_with_files(count: usize) -> (tempfile::TempDir, Engine, Candidate) {
             .stage_bytes(
                 &workspace.workspace_id,
                 &format!("body-{index}.txt"),
-                b"original",
+                payload,
             )
             .unwrap();
     }
@@ -217,4 +220,144 @@ fn preparation_pins_disk_identity_before_payload_work() {
         Err(error) => assert_eq!(error.code(), "PREPARATION_STALE"),
         Ok(_) => panic!("replaced disk seal was accepted"),
     }
+}
+
+// Pre-optimization reference: retain the discarded first pass explicitly.
+fn reference_prepare(config: &Config, candidate: &Candidate) -> Result<VerifiedPayloadSet> {
+    let preparation = PayloadPreparation::new(config, candidate)?;
+    let replicas: usize = candidate
+        .versions
+        .iter()
+        .map(|e| e.placement.route_slot_ids.len())
+        .sum();
+    let full_revalidation = replicas > MAX_HELD_PAYLOAD_FILES / 4;
+    let mut entries = Vec::new();
+    for evidence in &candidate.versions {
+        for slot in &evidence.placement.route_slot_ids {
+            let entry = verify_replica(config, &evidence.version, slot)?;
+            if !full_revalidation {
+                entries.push(entry);
+            }
+        }
+    }
+    let proof = VerifiedPayloadSet {
+        entries,
+        disks: preparation.disks,
+        full_revalidation,
+    };
+    proof.validate(config, candidate)?;
+    Ok(proof)
+}
+fn verification_cost<T>(run: impl FnOnce() -> T) -> (T, (u64, u64)) {
+    VERIFICATION_COST.with(|cost| cost.set((0, 0)));
+    let result = run();
+    (result, VERIFICATION_COST.with(|cost| cost.get()))
+}
+#[test]
+fn preparation_hash_cost_matches_reference_at_proof_budget_boundary() {
+    let (_temp, engine, candidate) = fixture_with_files(MAX_HELD_PAYLOAD_FILES / 12 + 1);
+    for replicas in [MAX_HELD_PAYLOAD_FILES / 4, MAX_HELD_PAYLOAD_FILES / 4 + 1] {
+        let mut candidate = candidate.clone();
+        let last = candidate.versions.last_mut().unwrap();
+        last.placement.route_slot_ids.truncate(replicas - 30);
+        let (reference, old_cost) =
+            verification_cost(|| reference_prepare(&engine.config, &candidate));
+        let (optimized, new_cost) =
+            verification_cost(|| VerifiedPayloadSet::prepare(&engine.config, &candidate));
+        let reference = reference.unwrap();
+        let optimized = optimized.unwrap();
+        assert_eq!(reference.full_revalidation, optimized.full_revalidation);
+        assert_eq!(reference.entries.len(), optimized.entries.len());
+        let replicas = replicas as u64;
+        assert_eq!(new_cost, (replicas, replicas * 8));
+        let passes = if optimized.full_revalidation { 2 } else { 1 };
+        assert_eq!(old_cost, (replicas * passes, replicas * 8 * passes));
+        optimized.validate(&engine.config, &candidate).unwrap();
+    }
+}
+#[test]
+fn large_preparation_rejects_corruption_like_reference() {
+    let (_temp, engine, candidate) = fixture_with_files(MAX_HELD_PAYLOAD_FILES / 12 + 1);
+    // Corrupt the final replica to prove the optimized pass visits all replicas.
+    let evidence = candidate.versions.last().unwrap();
+    let slot = evidence.placement.route_slot_ids.last().unwrap();
+    let disk = engine.disk(slot).unwrap();
+    let directory = version_dir(
+        disk,
+        &evidence.version.history_tree_id,
+        &evidence.version.version_id,
+    );
+    let body = crate::container_storage::content_path(&directory, &evidence.version).unwrap();
+    use std::os::unix::fs::PermissionsExt;
+    std::fs::set_permissions(&body, std::fs::Permissions::from_mode(0o600)).unwrap();
+    std::fs::write(body, b"tampered").unwrap();
+    let old_error = reference_prepare(&engine.config, &candidate).err().unwrap();
+    let new_error = VerifiedPayloadSet::prepare(&engine.config, &candidate)
+        .err()
+        .unwrap();
+    assert_eq!(new_error.code(), "CHECKSUM_MISMATCH");
+    assert_eq!(old_error.code(), new_error.code());
+}
+#[test]
+#[ignore = "manual preparation-only benchmark; not a physical-storage benchmark"]
+fn benchmark_large_preparation_hash_passes() {
+    let payload = vec![0x5a; 1024 * 1024];
+    let (_temp, engine, candidate) =
+        fixture_with_payload(MAX_HELD_PAYLOAD_FILES / 12 + 1, &payload);
+    for round in 0..4 {
+        for reference in if round % 2 == 0 {
+            [true, false]
+        } else {
+            [false, true]
+        } {
+            let start = std::time::Instant::now();
+            let (proof, (replicas, bytes)) = verification_cost(|| {
+                if reference {
+                    reference_prepare(&engine.config, &candidate)
+                } else {
+                    VerifiedPayloadSet::prepare(&engine.config, &candidate)
+                }
+            });
+            let proof = proof.unwrap();
+            assert!(proof.full_revalidation);
+            assert!(proof.entries.is_empty());
+            eprintln!(
+                "preparation round={round} reference={reference} elapsed_us={} replica_hashes={replicas} payload_bytes={bytes}",
+                start.elapsed().as_micros()
+            );
+        }
+    }
+}
+
+#[test]
+fn large_preparation_rechecks_disk_identity_after_last_replica() {
+    let (_temp, engine, candidate) = fixture_with_files(MAX_HELD_PAYLOAD_FILES / 12 + 1);
+    let preparation = PayloadPreparation::new(&engine.config, &candidate).unwrap();
+    let path = preparation.disks[0].root.join("disk.json");
+    let bytes = std::fs::read(&path).unwrap();
+    // Replace with identical contents after all hashes succeed, while the
+    // original disk seal is still held. Content equality is not live evidence.
+    AFTER_REPLICA_VALIDATION.with(|hook| {
+        *hook.borrow_mut() = Some(Box::new(move || {
+            std::fs::rename(&path, path.with_extension("old")).unwrap();
+            std::fs::write(&path, bytes).unwrap();
+        }));
+    });
+    let error = preparation
+        .verify(&engine.config, &candidate)
+        .err()
+        .unwrap();
+    assert_eq!(error.code(), "PREPARATION_STALE");
+}
+#[test]
+fn large_preparation_rejects_disk_change_before_hashing() {
+    let (_temp, engine, candidate) = fixture_with_files(MAX_HELD_PAYLOAD_FILES / 12 + 1);
+    let preparation = PayloadPreparation::new(&engine.config, &candidate).unwrap();
+    let path = preparation.disks[0].root.join("disk.json");
+    let bytes = std::fs::read(&path).unwrap();
+    std::fs::rename(&path, path.with_extension("old")).unwrap();
+    std::fs::write(&path, bytes).unwrap();
+    let (result, cost) = verification_cost(|| preparation.verify(&engine.config, &candidate));
+    assert_eq!(result.err().unwrap().code(), "PREPARATION_STALE");
+    assert_eq!(cost, (0, 0));
 }
