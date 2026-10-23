@@ -78528,10 +78528,10 @@
   "foundation_layout_receipt": "5f02def35b57751ea9e54a2f1f22fdfebdbd6dda1ed910de7f8fa805f55e281d",
   "initial_test_relocation_sha256": "791ad728a408677dd54ef98e3feaffe825c5fc5670e888440615933d9498ecc3",
   "lockfiles_sha256": {
-    "Cargo.lock": "a45ecb87a9e705b33f11ebbcd494c64cfc8d4c995074737e1f6774e769c2ffd6"
+    "Cargo.lock": "93f23cc54cdeb9396f305aad83bd6869a0c8e2e834a2ee9bc5e167c7700b7bde"
   },
   "manifests_sha256": {
-    "Cargo.toml": "e8532e986d0c77955d597a4242c22420d9f2832f04d52d68faf344d3091298cb",
+    "Cargo.toml": "ccf4eaf7393cceea3de0b3888728e7053cb9e6f0b81b6ab80dcda1bc2be31c48",
     "src/auth/Cargo.toml": "e6986ad60c15d48e2b3d60a5157de60ac7318f1ecc80befc1adfd60059b5dab3",
     "src/client/Cargo.toml": "fe89bb77ac7a669a4acf5d7136f0146a2847a12938b7be300c2d5670592c8660",
     "src/contract/Cargo.toml": "3cdb429c2617fb934312c73d89045b838d1329b4db8e317701fa4daa04c95d8f",
@@ -78755,15 +78755,15 @@
     "src/foundation/web-runtime/wasm-encoder/Cargo.toml": "63f4fdeb12bc8dc6860ff36442cc2fdd71d8519f3a9dd79e105d7dcafe69f301",
     "src/foundation/web-runtime/wasmparser/Cargo.toml": "771207359c85d13aa247962a53b713da998d1bbc634fee7931dfb1c180e558f8",
     "src/foundation/web-runtime/web-sys/Cargo.toml": "01d5648616483a1e463244828bbafec6d848942e1bf414e1069c69f3afc6b4c1",
-    "src/interface/Cargo.toml": "c1c4242ee9de8724e64ce83229bf45c04b08a7fb7fa207cd9cdfdc8db6d6f6ed",
+    "src/interface/Cargo.toml": "b17dd3df4a52cecc13dc62769d5e8857088258fdc2bfe350c2b70dc5cc6f8ab5",
     "src/macros/Cargo.toml": "abdb767c05856f890b63b18f86b16f4487a30bd8d2832f5caeeeb6d668e44c0c",
     "src/naming/Cargo.toml": "5dea667ea941dfde629bfc5e809ba6d6c12ca018507c4030ecdfdddcc2a01aff",
     "src/platform/Cargo.toml": "8b667ac649113e5e58334f7b8c3fddb47aa10873ac610a073868874b77dba968",
     "src/rescue/Cargo.toml": "8d5bd0f02eff46f12595c50064d4f801718b022f1bc37fc9e09f47dae31760d1",
     "src/server/Cargo.toml": "4abb831dc339fec580acd92f84db820c4ecbbed3d47a9f1a32f1191fd684b314",
-    "src/smb-vfs/Cargo.toml": "c0b4f15583df51d7bde918690772090a33fcce35532f61de997f7b74f4cbdbc6",
-    "src/smb/Cargo.toml": "856054e869285830ac86cd698349d9de8e9e645170620f0f6f570cbc57a07e14",
-    "src/web/Cargo.toml": "407bc230a4eeab58d4fff848f169d9899377284ce39b8badb4376fd5ca423b96",
+    "src/smb-vfs/Cargo.toml": "8513f0d76d84f2e345de71376e751d36313fb2c42878af69b6d71ec37b3a3817",
+    "src/smb/Cargo.toml": "66ca64b286cff2b2a6b2f551145e267b2eac6017affcd4c239605a9d080ecec4",
+    "src/web/Cargo.toml": "612dd26e977186b9f9a32a0e8a739d34ce6b7f22d05ab7b7f1955c39d0910e7f",
     "tools/browser-smoke/Cargo.toml": "c9444749ebc71e294f3772f37697a9752fa53006100f4c4c7946ecb44283fcae",
     "tools/contract-check/Cargo.toml": "db127e20e1e01f96ba91c6960aef31c3b1082a40f8695f01ef615c21e748bcda",
     "tools/perf-check/Cargo.toml": "f679ad92d373d773117c4e8b07ccf4dbc0c46d56b964f92fcee0b1f445855ddc",
@@ -78831,7 +78831,7 @@
       "description": "Project-specific browser CSR runtime",
       "directory": "src/interface",
       "files_sha256": {
-        "Cargo.toml": "c1c4242ee9de8724e64ce83229bf45c04b08a7fb7fa207cd9cdfdc8db6d6f6ed",
+        "Cargo.toml": "b17dd3df4a52cecc13dc62769d5e8857088258fdc2bfe350c2b70dc5cc6f8ab5",
         "src/animated_show.rs": "cd95f8823c423be1c48e4c2054872c6ab63b2efad10d091a49786f033afdf59a",
         "src/attribute_interceptor.rs": "7b148fc2ba4b4a07a078ce2c9e063f8e8a9a02d0cac75dc2d1b78220747a1954",
         "src/children.rs": "774081a72328ff254cd3f087335688fe63c0925fe8b46e4407c4ffb7cdbd96ff",

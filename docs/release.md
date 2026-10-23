@@ -38,7 +38,7 @@
 rustup show active-toolchain
 rustup target add wasm32-unknown-unknown
 python3 tools/rust-sources/manage.py verify --metadata
-cargo run --locked --offline -p release-tools -- v0.1.0
+cargo run --locked --offline -p release-tools --
 bash .github/scripts/check.sh web-production
 python3 .github/scripts/check-rust-diagnostics.py -- \
   cargo build --locked --offline --release --package storage-server --package storage-rescue --message-format=json
