@@ -53,6 +53,50 @@ fn draft(kind: Kind) -> Draft {
     }
 }
 #[test]
+fn rename_and_delete_review_is_ready_without_fetching_an_unused_catalogue() {
+    Owner::new().with(|| {
+        for kind in [Kind::Rename, Kind::Delete] {
+            let state = RwSignal::new(State {
+                page: crate::ui::Page::Details,
+                ..Default::default()
+            });
+            let captured = draft(kind);
+            let expected = request(&captured).unwrap();
+            assert!(captured.catalogue.is_empty());
+            assert!(!super::super::actions::open_draft(state, captured));
+            state.with_untracked(|s| {
+                let opened = s.files.batch.as_ref().unwrap();
+                assert!(!opened.loading);
+                assert!(opened.catalogue.is_empty());
+                assert_eq!(request(opened).unwrap(), expected);
+                assert_eq!(s.page, crate::ui::Page::Files);
+            });
+        }
+    });
+}
+
+#[test]
+fn destinations_and_missing_source_records_still_require_the_catalogue() {
+    Owner::new().with(|| {
+        for kind in [Kind::Move, Kind::Copy, Kind::Rename, Kind::Delete] {
+            for missing_sources in [false, true] {
+                if !kind.has_destination() && !missing_sources {
+                    continue;
+                }
+                let state = RwSignal::new(State::default());
+                let mut captured = draft(kind);
+                if missing_sources {
+                    captured.sources.clear();
+                    captured.selected_sources.clear();
+                }
+                assert!(super::super::actions::open_draft(state, captured));
+                assert!(state.with_untracked(|s| s.files.batch.as_ref().unwrap().loading));
+            }
+        }
+    });
+}
+
+#[test]
 fn uncertain_results_keep_the_original_operation_until_its_own_receipt() {
     let mut draft = draft(Kind::Copy);
     draft.submitted_operation = Some("operation-one".into());

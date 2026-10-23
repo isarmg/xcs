@@ -71,16 +71,15 @@ pub(crate) fn start(state: RwSignal<State>, kind: Kind, entry: Option<Value>) {
         target_path: String::new(),
         targets: vec![],
         target_resolved: false,
-        loading: true,
+        loading: false,
         submitted_operation: None,
         generation: 0,
         error: String::new(),
     };
     let epoch = snapshot.session_epoch;
-    state.update(|s| {
-        s.files.batch = Some(draft);
-        s.page = crate::ui::Page::Files;
-    });
+    if !open_draft(state, draft) {
+        return;
+    }
     spawn_local(async move {
         let result = api::request(
             "GET",
@@ -133,6 +132,17 @@ pub(crate) fn start(state: RwSignal<State>, kind: Kind, entry: Option<Value>) {
             }
         }
     });
+}
+pub(super) fn open_draft(state: RwSignal<State>, mut draft: Draft) -> bool {
+    // Folder listings already contain complete, frozen source records.
+    // Rename/delete need no destination catalogue or extra read to open.
+    draft.loading = draft.kind.has_destination() || draft.sources.is_empty();
+    let load_catalogue = draft.loading;
+    state.update(|s| {
+        s.files.batch = Some(draft);
+        s.page = crate::ui::Page::Files;
+    });
+    load_catalogue
 }
 fn same_draft(state: RwSignal<State>, id: &str) -> bool {
     state.with_untracked(|s| s.files.batch.as_ref().is_some_and(|draft| draft.id == id))
