@@ -1,65 +1,83 @@
-# Protected setup and offline management boundary
+<a id="protected-setup-and-offline-management-boundary"></a>
 
-`storage_server::setup_recovery::SetupRecovery` is the synchronous service boundary for explicit first setup and isolated recovery. Its public and protected HTTP route groups are merged by the managed runtime, which serializes operations with backend open/retry and installation.
+# 受保护初始化与离线管理边界
 
-## Local deployment inputs
+`storage_server::setup_recovery::SetupRecovery` 是显式首次初始化与隔离恢复的同步服务边界。受管理运行时合并其公开/受保护 HTTP 路由组，并将操作与后端打开、重试、安装串行化。
 
-The system directory, management directory, and allowlist mapping opaque disk IDs to existing absolute disk directories are trusted local configuration. HTTP requests cannot supply filesystem paths. Missing disk directories are not created: a missing mount is an unavailable disk, not a new disk. Unavailable allowlisted members remain status descriptors rather than preventing checks or restore from other, selected surviving members. First initialization still requires the complete configured allowlist to be available and empty. Production setup requires each configured disk root to be an active mountpoint, followed by core independent-Btrfs verification. Development simulation is denied unless explicitly enabled in trusted local deployment settings. Directory device/inode identities are bound and rechecked.
+<a id="local-deployment-inputs"></a>
 
-For first setup, a local administrator must provision `management_root/bootstrap.key`: exactly 64 hexadecimal ASCII characters, no newline, mode 0600, regular file, one hard link, no symbolic link. The service never generates or logs a bootstrap secret. Loopback access alone is not authorization. An adapter transmits this secret in `X-ZXS-Bootstrap`, never a URL, browser persistent storage, or logs. This capability is distinct from a normal account session.
+## 本地部署输入
 
-The bootstrap key is bound to the configured system and management directory. Removing or changing the key revokes previously created in-memory permits. Keys expire 30 minutes after their filesystem modification time; in-memory permits additionally expire after 10 minutes. Existing management credentials cannot be bypassed by the bootstrap restore operation, including a corrupt credential file. No default account, missing-auth credential reset, disk formatting, or anonymous remote administration is implemented.
+系统目录、管理目录，以及不透明磁盘 ID 到既有绝对磁盘目录的允许列表属于可信本地配置。HTTP 请求不能提供文件系统路径。不存在的目录不会被创建：缺失挂载表示磁盘不可用，不是新盘。不可用的允许成员仍作为状态描述保留，不阻止检查或从选定幸存成员恢复。首次初始化仍要求完整配置允许列表全部可用且为空。生产初始化要求每个盘根为活动挂载点，再执行核心独立 Btrfs 核验。除非可信部署配置显式启用，否则拒绝开发模拟；目录设备/inode 身份会绑定并复查。
 
-## DTOs and adapter obligations
+首次初始化前，本地管理员须配置 `management_root/bootstrap.key`：精确 64 个十六进制 ASCII 字符、无换行、0600 权限、普通文件、一个硬链接、非符号链接。服务不生成或记录 bootstrap 密钥，回环访问本身不是授权。适配器只通过 `X-ZXS-Bootstrap` 传递它，不能放入 URL、浏览器持久存储或日志。此能力与普通账户会话不同。
 
-- `SetupStatus`: state (`empty`, `existing`, `recovery_required`, `unavailable`), opaque disk IDs, and `local_authorization_required`. The status also reports whether trusted local deployment explicitly enabled development simulation. Only the coarse state belongs in public status; release the disk candidates only after authorization.
-- `SetupRequest`: `disk_ids` containing one to 32 distinct allowlisted IDs, `mode` (`production` or `development`), `username`, `password`. One storage disk is sufficient; additional backup levels are optional. Credentials deliberately do not implement Debug or Serialize.
-- `RestoreRequest`: one to 32 distinct allowlisted IDs, and `accept_stale_credentials: true` for bootstrap restore. The selected survivors must satisfy the original configured membership quorum, not a quorum recomputed from reachable disks. Existing account passwords and grants may be stale after loss of the management disk; all restored sessions must be cleared.
-- `RecoveryPreviewRequest`: `operation_id`, `reason`.
-- `RecoveryCommitRequest`: `recovery_id`, `digest`, `accept_permanent_loss`.
+密钥绑定配置的系统与管理目录；删除或修改密钥会撤销既有内存许可。密钥在文件修改时间后 30 分钟过期，内存许可另在十分钟后过期。bootstrap 恢复不能绕过既有管理凭据，包括损坏凭据文件。不提供默认账户、缺少认证时重置凭据、磁盘格式化或匿名远程管理。
 
-All request DTOs reject unknown fields. An HTTP adapter must use a 16 KiB maximum decoded body and 10-second body deadline, the ordinary exact-origin and CSRF protection, request admission/rate limits (including bootstrap verification attempts), and fresh current-system-admin authentication for administrator operations. Do not use legacy credential snapshots as offline admission. Use an independent bounded management worker semaphore, so blocked data workers do not exhaust management admission. Hold the runtime lifecycle gate for the entire blocking operation, not merely request submission. Do not run healthy `/api/admin/check` a second time through the offline checker. Do not expose offline export paths or file payloads through this boundary.
+<a id="dtos-and-adapter-obligations"></a>
 
-## Initialization and interrupted setup
+## DTO 与适配器义务
 
-A new installation requires all configured disk directories to be empty, no configuration, no legacy or current management credentials, no authority marker, and no previous setup intent. Unknown directory contents are existing data, not permission to erase them. Invalid credentials are rejected before writing storage.
+- `SetupStatus`：状态 `empty`、`existing`、`recovery_required`、`unavailable`，不透明磁盘 ID 及 `local_authorization_required`；同时说明可信部署是否显式启用开发模拟。公开状态仅包含粗粒度状态，授权后才提供候选磁盘。
+- `SetupRequest`：`disk_ids` 为 1—32 个不同的允许 ID，另有 `mode`（`production` / `development`）、`username`、`password`。一个存储盘足够，附加备份层可选。凭据有意不实现 Debug 或 Serialize。
+- `RestoreRequest`：1—32 个不同允许 ID；bootstrap 恢复要求 `accept_stale_credentials: true`。选定幸存者必须满足原配置成员法定数，不能按可达盘重算法定数。管理盘丢失后旧密码/授权可能过时，所有恢复会话必须清除。
+- `RecoveryPreviewRequest`：`operation_id`、`reason`。
+- `RecoveryCommitRequest`：`recovery_id`、`digest`、`accept_permanent_loss`。
 
-Initialization acquires an exclusive process-level `setup.lock`, validates the selected core configuration, and durably creates `setup-intent.json` before enrolling any disk. Core initialization also acquires its normal system and disk writer locks. Multi-disk initialization cannot be made atomic by renaming one system file: an interruption therefore leaves a durable fence. It never silently cleans up, rolls back disk identities, or retries as a fresh installation.
+全部请求 DTO 拒绝未知字段。HTTP 适配器要求解码请求体最大 16 KiB、十秒期限、普通精确 origin / CSRF 保护、请求准入/速率限制（含 bootstrap 尝试），管理员操作须使用当前系统管理员新鲜认证。旧凭据快照不能作为离线准入。管理阻塞任务使用独立有界信号量，防止数据工作耗尽管理容量；整个阻塞操作期间持有运行时生命周期门，而非只持有到提交请求。健康的 `/api/admin/check` 不应再经离线检查器重复执行。此边界不暴露离线导出路径或文件正文。
 
-The trusted installer callback must durably publish the management-authority marker before establishing `AuthStore::initialize_management`, then replicate the initial management snapshot using the managed runtime protocol. It must not call legacy engine-authoritative `open_auth` or `protect_auth`. Report success only after that callback succeeds, then let the managed runtime schedule a serialized backend reopen. Its response describes whether recovery is pending or a restart is required. The setup intent remains as evidence even after success, so later loss of configuration does not look like first setup.
+<a id="initialization-and-interrupted-setup"></a>
 
-## Recovery
+## 初始化与中断
 
-Authenticated offline checking invokes the existing proof-verifying core checker on one allowlisted disk. Normal system restore requires a current system administrator; when all management credentials are absent, explicit local bootstrap authorization can instead restore existing, verified authoritative credentials. Restore never creates new credentials. The core requires a strict majority of the original configured metadata members and never initializes old disks. A configured single-member pool needs its sole surviving member; one survivor cannot authorize restore of a configured three-member pool.
+新安装要求所有配置磁盘目录为空、无配置、无新旧管理凭据、无权威标记、无先前初始化意图。未知目录内容是已有数据，不是清空授权。凭据无效必须在写存储前拒绝。
 
-Degraded recovery uses `Engine::open_for_recovery`, never ordinary open which may advance a decided candidate. Existing core checks restrict it to an already accepted unpublished operation with every original disk accessible. Preview produces a bound plan; commit requires its ID, digest, the same principal, and explicit permanent-loss acknowledgement. This is not quorum bypass for new writes.
+初始化取得进程级排他 `setup.lock`、验证核心配置，并在登记任何磁盘前持久写入 `setup-intent.json`。核心另获取正常系统/磁盘写锁。多盘初始化不能靠重命名单个系统文件实现原子性，因此中断留下持久围栏；不静默清理、回滚磁盘身份或按全新安装重试。
 
-These operations are application-level recovery, not SMART, fsck, hardware repair, or arbitrary filesystem administration.
+可信安装回调必须在建立 `AuthStore::initialize_management` 前持久发布管理权威标记，再按受管理运行时协议复制初始快照；不得调用旧引擎权威 `open_auth`、`protect_auth`。仅回调成功后报告成功，随后由运行时安排串行后端重开。响应说明恢复待完成或需要重启。成功后也保留意图证据，防止日后配置丢失被视为首次安装。
 
-## HTTP endpoints
+<a id="recovery"></a>
 
-`GET /api/setup/status` verifies `X-ZXS-Bootstrap` and returns the authorized status plus `csrf_token`. `POST /api/setup/initialize` and `POST /api/setup/restore-system` require the same bootstrap header, `X-CSRF-Token` from status, exact same-origin validation, and JSON. Query strings are rejected on setup routes. Bootstrap authorization does not replace CSRF protection.
+## 恢复
 
-Authenticated administrator operations are `POST /api/management/offline-check`, `/api/management/restore-system`, `/api/management/recovery-preview`, and `/api/management/recovery-commit`. They retain ordinary current-session, CSRF, and origin checks. Runtime results are returned unchanged; the UI must not automatically resubmit a mutation after an unknown transport outcome.
+认证离线检查在一个允许盘上调用现有验证证明的核心检查器。普通系统恢复需当前系统管理员；全部管理凭据缺失时，可用明确本地 bootstrap 授权恢复既有、已验证权威凭据，不能创建新凭据。核心要求原配置元数据成员严格多数，不初始化旧盘。单成员池需要唯一幸存成员；三成员池只有一个幸存者不能授权恢复。
 
-## Precisely bounded interrupted-initialization completion
+降级恢复使用 `Engine::open_for_recovery`，不能用可能推进已决定候选的普通 open。核心限制为已 ACCEPT 但未发布的操作，且全部原磁盘可访问。预览产生绑定计划；提交要求其 ID、摘要、同一主体及明确永久损失确认。这不是新写入的法定数绕过。
 
-`POST /api/setup/complete-initialization` accepts only `username` and `password`, with the same local bootstrap, CSRF, origin, size, and admission checks. Authorized status reports `completion_available`; it is not inferred from a missing credential file. The original initialization writes a private intent binding the complete configuration, pool identity, selected disk IDs, and original bootstrap authorization. Only after storage initialization succeeds does it durably record the exact pristine disk trees before entering authority/credential installation.
+这些是应用级恢复，不是 SMART、fsck、硬件维修或任意文件系统管理。
 
-Completion requires both matching records, the original locally authorized key, unchanged configuration and disk contents, current mount/mode checks, empty workspaces, and the core's pristine initial state with no auth snapshot. It never accepts old unbound intents or an arbitrary existing pool. Existing authority markers or any credential file, including corrupt files, always require explicit recovery and cannot be replaced. This covers only the proven post-storage/pre-authority interruption window. A crash after authority publication but before primary credentials remains fail-closed; this is not a claim that all interrupted setups can be completed automatically.
+<a id="http-endpoints"></a>
 
-## Locally provisioned configuration presets
+## HTTP 端点
 
-Deployment can register opaque preset IDs mapped to local absolute configuration files. Registration does not read those files and unavailable presets never stop the management listener. Only an explicitly selected, bootstrap-authorized action opens a preset: no leaf symlink following, regular single-link file, effective-user ownership, mode 0400 or 0600, and at most 64 MiB, matching the local draft boundary. Invalid IDs are not exposed as Web candidates. HTTP never accepts a configuration path or configuration JSON.
+`GET /api/setup/status` 验证 `X-ZXS-Bootstrap` 并返回授权状态与 `csrf_token`。`POST /api/setup/initialize`、`POST /api/setup/restore-system` 要求相同 bootstrap 头、状态返回的 `X-CSRF-Token`、精确同源校验及 JSON。初始化路由拒绝查询字符串；bootstrap 不能代替 CSRF。
 
-`POST /api/setup/preset-preview` accepts `preset_id` and returns `preset_id`, `config_digest`, and the validated configuration with every disk root removed and replaced by its opaque `candidate_id`. It preserves the meaningful topology, resource limits, and other Config parameters for review. `POST /api/setup/initialize-preset` requires `preset_id`, the reviewed `config_digest`, `username`, and `password`. A changed local preset requires a fresh preview; it cannot silently change the confirmed installation.
+认证管理员端点为 `POST /api/management/offline-check`、`/api/management/restore-system`、`/api/management/recovery-preview`、`/api/management/recovery-commit`，保留正常当前会话、CSRF、origin 检查。运行时结果原样返回；传输结果未知时 UI 不自动重发变更。
 
-Every selected preset root must map to a locally allowlisted disk. Core configuration, full-installation emptiness, current disk identity, production mount/independence, development opt-in, bootstrap expiry/revocation, serialization, and durable initialization proof checks remain unchanged. The same initialization transaction preserves all validated Config parameters, including additional non-metadata members; it does not squeeze a preset into the default single-disk setup or discard its optional backups. The precise pre-authority completion procedure also applies to interrupted preset initialization using its original bound configuration.
+<a id="precisely-bounded-interrupted-initialization-completion"></a>
 
-## Rejected or interrupted storage recovery
+## 精确受限的中断初始化补全
 
-Bootstrap restore rechecks the local permit after disk recovery and immediately before installing management credentials. Deleting, rotating, expiring, or making the bootstrap key unsafe during recovery rejects publication. Storage configuration and a recovered credential snapshot may already have been written; those files remain recovery evidence, not authorization.
+`POST /api/setup/complete-initialization` 只接受 `username`、`password`，沿用本地 bootstrap、CSRF、origin、大小和准入检查。授权状态报告 `completion_available`，不能从凭据缺失推断。原初始化先写私有意图，绑定完整配置、池身份、选定磁盘 ID 与原 bootstrap 授权；只有存储初始化成功后，才在进入权威/凭据安装前持久记录精确原始磁盘树。
 
-Background storage discovery and daemon restart never install credentials from an engine snapshot, even when both the management credential file and authority marker are absent. Missing or corrupt management credentials remain fail-closed. Existing valid local management credentials retain authority, and a successful explicitly authorized restore revokes recovered sessions before installing the credential snapshot.
+补全要求两条记录匹配、原本地密钥、配置/磁盘内容不变、当前挂载/模式检查、空工作区，以及核心原始初态无认证快照。不接受旧未绑定意图或任意既有池。既有权威标记或任何凭据文件（含损坏文件）均要求显式恢复，不能替换。它仅覆盖有证明的“存储完成、权威尚未发布”窗口；权威发布后、主凭据建立前崩溃仍失败关闭，不宣称所有中断都能自动补全。
 
-The offline `zxs-rescue restore-system` command restores storage metadata only; `credential_recovery_snapshot_available` does not authorize management login. Preserve partial or rejected recovery state for inspection. To recover management credentials, stop the related service and perform explicitly authorized bootstrap restore into separately provisioned clean system state, acknowledging potentially stale credentials. Do not delete or overwrite live authority, credential files, or partial recovery evidence to make an installation appear empty. There is no automatic migration or CLI password-reset fallback.
+<a id="locally-provisioned-configuration-presets"></a>
+
+## 本地预设配置
+
+部署可将不透明 preset ID 映射到本地绝对配置文件。登记不读取文件，不可用预设不能阻止管理监听。只有显式选择且 bootstrap 授权的动作才打开文件：不跟随末级符号链接、普通单链接文件、有效用户所有、0400/0600 权限、最多 64 MiB，与本地草稿边界一致。非法 ID 不作为 Web 候选；HTTP 从不接受配置路径或配置 JSON。
+
+`POST /api/setup/preset-preview` 接受 `preset_id`，返回 `preset_id`、`config_digest` 及验证后的配置，将所有盘根替换为不透明 `candidate_id`，保留拓扑、资源上限及其他 Config 参数供审阅。`POST /api/setup/initialize-preset` 要求 `preset_id`、已审阅 `config_digest`、`username`、`password`。本地预设变化需重新预览，不能静默改变已确认安装。
+
+每个选定预设盘根必须映射到本地允许盘。核心配置、全安装空状态、当前盘身份、生产挂载/独立性、开发显式启用、bootstrap 时效/撤销、串行化和持久初始化证明均不变。同一初始化事务保留全部验证 Config 参数，包含附加非元数据成员；不将预设挤入默认单盘或丢弃可选备份。精确权威前补全流程同样适用于按原绑定配置中断的预设初始化。
+
+<a id="rejected-or-interrupted-storage-recovery"></a>
+
+## 拒绝或中断的存储恢复
+
+bootstrap 恢复在磁盘恢复后、安装管理凭据前再次核验本地许可。恢复期间密钥删除、轮换、过期或变得不安全都会拒绝发布。存储配置及恢复凭据快照可能已经写入；这些是恢复证据，不是授权。
+
+后台存储发现及进程重启从不从引擎快照安装凭据，即使管理凭据文件与权威标记均缺失。缺失/损坏凭据继续失败关闭。有效本地管理凭据保留权威；显式授权恢复成功时，在安装快照前撤销恢复会话。
+
+离线 `zxs-rescue restore-system` 仅恢复存储元数据；`credential_recovery_snapshot_available` 不授权管理登录。保留部分或被拒绝恢复状态供检查。恢复管理凭据须停止相关服务，在另行配置的干净系统状态中明确授权 bootstrap 恢复，并确认凭据可能过时。不得删除或覆盖在线权威、凭据或部分恢复证据，把安装伪装为空。没有自动迁移或 CLI 密码重置回退。

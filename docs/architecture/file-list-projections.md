@@ -1,34 +1,85 @@
-# File listing snapshots and keyed rows
+<a id="file-listing-snapshots-and-keyed-rows"></a>
 
-The file table uses the project's `ForSnapshot` primitive. This change is limited to listing ownership, projection, and row rendering; it does not alter server APIs, upload-ledger policy, branch/history rules, fonts, or G4 styling.
+# 文件列表快照与带键行
 
-## Data flow
+文件表使用项目的 `ForSnapshot` 原语。本变更限于列表所有权、投影和行渲染，
+不改变服务端 API、上传账本策略、分支/历史规则、字体或 G4 样式。
+当前 Web 不提供文件上传、下载或预览；服务端保留传输 API 不代表 Web 具备这些能力。
 
-1. `files::Model::entries` is an immutable `Arc<[Value]>` server snapshot. Navigation replaces it with an empty snapshot; an accepted listing response replaces it with the returned entries. Existing session, location, and request-generation checks still run before publishing a response.
-2. `files::rows::Listing` captures only session epoch, disk, directory, and that shared snapshot. Equality short-circuits identical snapshot allocations. Unrelated global-state notifications do not clone or traverse entry JSON. A genuinely new allocation may require a content comparison to determine whether the response changed.
-3. A memo projects display fields and stable keys, then stably sorts folders before files and names by the existing lowercase rule. The rows share one location context and contain display fields only. No JSON payload is copied into rows or event closures, and retained rows cannot pin whole old listing snapshots.
-4. A separate normalized-query memo filters those sorted rows. Filtering clones only row handles; it does not sort again or copy JSON/display strings.
-5. `ForSnapshot` keys combine session, disk, directory, and the existing entry-ID/logical-path identity. A refreshed payload updates the retained row's read-only signal. Every mutable rendered field reads that signal. Event handlers use its stable identity to resolve current JSON, rather than capturing initial row data.
-6. Selection, checked state, and disabled state are independent reactive reads. The header operates on the same projected visible rows as the table. Per-row checked-state reads can still run when the global state changes; this is not a claim that all application updates are constant time.
+<a id="data-flow"></a>
 
-## Identity and event safety
+## 数据流
 
-Stable identity deliberately excludes request generation, selected version, size, and display name so metadata refreshes can retain the row. Different aliases of one file retain different logical-path keys. Removing a key and later reinserting it creates a new row, as required by `ForSnapshot`.
+1. `files::Model::entries` 是不可变的 `Arc<[Value]>` 服务端快照。导航时将其替换为
+   空快照；接受列表响应时将其替换为返回的条目。发布响应之前仍执行现有的会话、
+   位置和请求代次检查。
+2. `files::rows::Listing` 仅捕获会话代次、磁盘、目录和该共享快照。
+   相等性检查对同一快照分配直接短路。无关全局状态通知不会克隆或遍历条目 JSON。
+   真正的新分配可能需要内容比较，以确定响应是否变化。
+3. 一个记忆化派生值投影显示字段和稳定键，再按现有的小写名称规则稳定排序，目录优先于
+   文件。各行共享一个位置上下文，且只包含显示字段。不会将 JSON 载荷复制到行或事件闭包，
+   保留的行也不会让整个旧列表快照一直驻留。
+4. 独立的规范化查询记忆化派生值过滤这些已排序行。过滤只克隆行句柄，
+   不会重新排序，也不会复制 JSON 或显示字符串。
+5. `ForSnapshot` 的键结合会话、磁盘、目录和现有条目 ID/逻辑路径身份。
+   刷新的载荷更新被保留行的只读信号。每个可变渲染字段都读取该信号。
+   事件处理器使用其稳定身份解析当前 JSON，而不是捕获初始行数据。
+6. 选择状态、勾选状态和禁用状态分别进行响应式读取。表头操作与表格使用同一组投影后的
+   可见行。全局状态变化时仍可能执行逐行勾选状态读取；本文不声称所有应用更新都是恒定时间。
 
-Before selecting or opening a row, the handler resolves its identity against the current immutable listing. It searches the current entries by entry ID and path without allocating candidate keys. This also works when a newer snapshot arrived before the row signal was refreshed. Removed entries and a changed session/disk/directory are rejected. This avoids a queued event reopening captured stale metadata. The unchanged downstream history/download code consequently receives the current selected entry. Metadata-only changes need not notify unchanged display fields: event-time resolution still obtains the new version. The select-all handler uses the freshly evaluated visible-row memo directly and does not perform a per-row listing scan.
+<a id="identity-and-event-safety"></a>
 
-All four production listing replacement sites are in `files/actions/browse.rs`: open disk, go root, go directory, and accepted listing response. There are no production in-place mutations. `PickerContext` shares the same immutable entries but retains value equality and all existing generation/context fields, preserving picker cancellation rules. The copy-on-write regression demonstrates that a future `Arc::make_mut` change cannot silently mutate a snapshot retained by the memo.
+## 身份与事件安全
 
-## Validation and limits
+稳定身份有意不包含请求代次、选定版本、大小和显示名称，使元数据刷新能够保留行。
+同一文件的不同别名保持不同的逻辑路径键。移除某个键后再插入时，按 `ForSnapshot`
+约定创建新行。
 
-`test/web/unit/files/rows/tests.rs` exercises the actual projection memos, stable ordering and filtering, alias/location/session keys, changed payload under a retained key, fresh event-time resolution, removed entries, and copy-on-write snapshot changes. Deterministic counters count projection passes, entries projected, and filter passes; they do not estimate wall-clock speedup, allocations, or browser frame time.
+选择或打开行之前，处理器会根据当前不可变列表解析其身份。
+它按条目 ID 和路径搜索当前条目，不分配候选键。即使新快照先于行信号刷新到达，
+该机制也能工作。已移除条目以及会话/磁盘/目录改变的情况会被拒绝，避免队列中的事件
+重新打开此前捕获的过期元数据。由此，下游历史与详情代码取得的是当前所选条目。
+仅元数据变化时，不必通知未改变的显示字段：
+事件发生时的解析仍会取得新版本。全选处理器直接使用刚求值的可见行记忆化结果，
+不逐行扫描列表。
 
-Existing `test/interface/unit/for_snapshot/tests.rs` tests retained signal identity and changed payload publication in the actual `ForSnapshot` registry, including reorder/removal and unchanged snapshots. The browser-smoke file-row scenario checks real node identity, checkbox state, focus, and matching-filter retention. Native tests cannot establish DOM/focus behavior: the new browser scenario must run in the real browser CI suite before claiming those checks passed. No browser frame-time or allocation benchmark is claimed.
+生产代码中四个列表替换位置均在 `files/actions/browse.rs`：打开磁盘、返回根目录、
+进入目录和接受列表响应。生产代码没有原地修改列表。
+早期候选中的 `PickerContext` 曾共享同一组不可变条目，并保留值相等性和全部既有
+代次/上下文字段，以保持选择器取消规则；当前 Web 已不包含该选择器上下文。
+写时复制回归测试证明，将来引入 `Arc::make_mut` 也不能静默修改被记忆化结果保留的快照。
 
-### Verified candidate evidence (2026-10-21)
+<a id="validation-and-limits"></a>
 
-The isolated candidate is based on commit `7a6857a9c8c6083a8f957ad237d414387fae3b65`, with only the bounded file-list changes. Native `web-app` tests passed 117/117, `web-interface` snapshot-registry tests passed 4/4, the browser-smoke harness typecheck passed, the `wasm32-unknown-unknown` application check passed, and native Clippy with all targets and warnings denied passed.
+## 验证与限制
 
-For each listing size of 100, 1,000, and 10,000 entries, 100 unrelated state updates left the measured counters at one projection/sort, exactly N projected entries, and one filter pass. Changing the search query added one filter pass and no sort. These are executed deterministic work counters, not a latency or frame-rate benchmark.
+`test/web/unit/files/rows/tests.rs` 覆盖真实投影的记忆化派生值、稳定排序与过滤、
+别名/位置/会话键、保留键下的载荷变化、事件发生时解析最新数据、条目移除，
+以及写时复制快照变化。确定性计数器统计投影轮次、投影条目数和过滤轮次，
+不用于估算实际耗时加速比、内存分配或浏览器帧时间。
 
-The real-browser startup probe was attempted with matching Chromium and ChromeDriver 154.0.8037.57 on the cloud computer. ChromeDriver started, but Chromium aborted with `process_singleton_posix.cc:297: socket() failed: Operation not permitted (1)`. No sandbox/security workaround was attempted. Thus the new real DOM/focus/filter checks are implemented and compile-checked but remain unexecuted until the real-browser CI environment runs them. No production release WASM build or browser performance result is claimed for this candidate.
+现有 `test/interface/unit/for_snapshot/tests.rs` 在真实的 `ForSnapshot` 注册表中
+测试信号身份保留和变化载荷发布，覆盖重排/移除及未变化快照。
+浏览器冒烟测试中的文件行场景检查真实节点身份、复选框状态、焦点和匹配过滤后的保留情况。
+原生测试不能证明 DOM/焦点行为：只有新的浏览器场景在真实浏览器 CI 套件中运行后，
+才能声称这些检查已通过。本文不声称获得了浏览器帧时间或内存分配基准。
+
+<a id="verified-candidate-evidence-2026-10-21"></a>
+
+### 已验证的候选证据（2026-10-21）
+
+隔离候选基于提交 `7a6857a9c8c6083a8f957ad237d414387fae3b65`，仅含范围受限的
+文件列表变更。原生 `web-app` 测试通过 117/117，`web-interface` 快照注册表测试
+通过 4/4，浏览器冒烟测试框架类型检查通过，`wasm32-unknown-unknown` 应用检查通过，
+原生 Clippy 全目标检查以拒绝警告的配置通过。
+
+对 100、1,000 和 10,000 条目的各个列表，执行 100 次无关状态更新后，测得计数器
+仍为一次投影/排序、恰好 N 个投影条目和一次过滤。改变搜索查询增加一次过滤，
+不增加排序。这些是实际执行的确定性工作量计数，不是延迟或帧率基准。
+
+曾在云电脑上使用版本匹配的 Chromium 与 ChromeDriver 154.0.8037.57 尝试真实浏览器
+启动探针。ChromeDriver 启动成功，但 Chromium 中止并报错：
+`process_singleton_posix.cc:297: socket() failed: Operation not permitted (1)`。
+没有尝试绕过沙箱/安全限制。因此，新的真实 DOM/焦点/过滤检查已实现并完成编译检查，
+但在真实浏览器 CI 环境运行之前仍属未执行。本候选不声称完成生产发布 WASM 构建，
+也不声称取得浏览器性能结果。

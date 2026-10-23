@@ -9,7 +9,7 @@ use web_interface::prelude::*;
 use web_interface::tasks::spawn_local;
 
 pub(crate) fn load_disks(state: RwSignal<State>) {
-    if state.with_untracked(|s| s.files.loading_disks) {
+    if state.with_untracked(|s| !s.session_active() || s.files.loading_disks) {
         return;
     }
     state.update(|s| s.files.loading_disks = true);
@@ -92,6 +92,9 @@ pub(crate) fn go_directory(state: RwSignal<State>, directory: String) {
     load_entries(state);
 }
 pub(crate) fn load_entries(state: RwSignal<State>) {
+    if !state.with_untracked(State::session_active) {
+        return;
+    }
     let epoch = state.with_untracked(|s| s.session_epoch);
     let (slot, directory, generation) = state.with_untracked(|s| {
         (
@@ -175,6 +178,9 @@ pub(crate) fn select_entry(state: RwSignal<State>, entry: Value) {
     }
 }
 pub(crate) fn load_file_history(state: RwSignal<State>) {
+    if !state.with_untracked(State::session_active) {
+        return;
+    }
     let epoch = state.with_untracked(|s| s.session_epoch);
     let (id, context) = state.with_untracked(|s| {
         s.files

@@ -1,10 +1,16 @@
-<!-- Active example adapter. Immutable source and version are recorded in ../toml.md. -->
-# toml_datetime
+<!-- 维护中的示例适配文档。不可变来源与版本记录见 ../toml.md。 -->
+<a id="toml_datetime"></a>
+
+# TOML 日期与时间
 
 [![Latest Version](https://img.shields.io/crates/v/toml_datetime.svg)](https://crates.io/crates/toml_datetime)
 [![Documentation](https://docs.rs/toml_datetime/badge.svg)](https://docs.rs/toml_datetime)
 
-## License
+当前实现由统一 `toml` 包的 `datetime` 模块提供，负责日期、时间和偏移；本页保留上游链接及许可原文。当前能力和验证范围见[组件总览](../toml.md)。
+
+<a id="license"></a>
+
+## 许可（保留上游原文）
 
 Licensed under either of
 
@@ -13,7 +19,9 @@ Licensed under either of
 
 at your option.
 
-### Contribution
+<a id="contribution"></a>
+
+### 贡献许可声明（保留上游原文）
 
 Unless you explicitly state otherwise, any contribution intentionally
 submitted for inclusion in the work by you, as defined in the Apache-2.0

@@ -331,3 +331,172 @@ fn send_failure_also_disconnects_all_clones() {
         io::ErrorKind::NotConnected
     );
 }
+
+#[test]
+fn response_descriptor_contract_failure_disconnects_every_clone() {
+    use std::os::fd::AsFd;
+    for mode in ["missing_open_fd", "unexpected_stat_fd", "error_fd"] {
+        let (one, two) = UnixStream::pair().unwrap();
+        let server = std::thread::spawn(move || {
+            let mut stream = FrameStream::new(two).unwrap();
+            stream.receive::<Request>().unwrap();
+            let file = std::fs::File::open("/etc/hostname").unwrap();
+            let response = if mode == "error_fd" {
+                Response::Error {
+                    code: "NOT_FOUND".into(),
+                    message: "missing".into(),
+                    retryable: false,
+                    operation_id: None,
+                }
+            } else {
+                Response::Ok {
+                    result: json_codec::json!({}),
+                }
+            };
+            stream
+                .send(&response, (mode != "missing_open_fd").then(|| file.as_fd()))
+                .unwrap();
+            assert_eq!(
+                stream.receive::<Request>().unwrap_err().kind(),
+                io::ErrorKind::UnexpectedEof
+            );
+        });
+        let client = Client(Arc::new(Mutex::new(Some(FrameStream::new(one).unwrap()))));
+        let clone = client.clone();
+        let request = if mode == "missing_open_fd" {
+            Request::Open {
+                path: "file".into(),
+                writable: false,
+                create: false,
+                truncate: false,
+                exclusive: false,
+                write_through: false,
+            }
+        } else {
+            Request::Stat {
+                path: "file".into(),
+            }
+        };
+        assert_eq!(
+            client.call(request).unwrap_err().kind(),
+            io::ErrorKind::InvalidData
+        );
+        assert_eq!(
+            clone
+                .call(Request::Stat {
+                    path: "next".into()
+                })
+                .unwrap_err()
+                .kind(),
+            io::ErrorKind::NotConnected
+        );
+        server.join().unwrap();
+    }
+}
+
+#[test]
+fn successful_open_descriptor_keeps_the_shared_connection_reusable() {
+    use std::os::fd::AsFd;
+    let (one, two) = UnixStream::pair().unwrap();
+    let server = std::thread::spawn(move || {
+        let mut stream = FrameStream::new(two).unwrap();
+        assert!(matches!(
+            stream.receive::<Request>().unwrap().0,
+            Request::Open { .. }
+        ));
+        let file = std::fs::File::open("/etc/hostname").unwrap();
+        stream
+            .send(
+                &Response::Ok {
+                    result: json_codec::json!({
+                        "entry_id": "entry", "kind": "file", "path": "file",
+                        "handle": "1", "size": "0", "max_file_bytes": "1024",
+                        "version_id": null, "workspace_id": null
+                    }),
+                },
+                Some(file.as_fd()),
+            )
+            .unwrap();
+        assert!(
+            matches!(stream.receive::<Request>().unwrap().0, Request::Stat { path } if path == "next")
+        );
+        stream
+            .send(
+                &Response::Ok {
+                    result: json_codec::json!({"found": true}),
+                },
+                None,
+            )
+            .unwrap();
+    });
+    let client = Client(Arc::new(Mutex::new(Some(FrameStream::new(one).unwrap()))));
+    let clone = client.clone();
+    let (opened, descriptor) = client
+        .open(Request::Open {
+            path: "file".into(),
+            writable: false,
+            create: false,
+            truncate: false,
+            exclusive: false,
+            write_through: false,
+        })
+        .unwrap();
+    assert_eq!(opened.handle, 1);
+    let file = std::fs::File::from(descriptor);
+    assert!(file.metadata().unwrap().is_file());
+    let (result, descriptor) = clone
+        .call(Request::Stat {
+            path: "next".into(),
+        })
+        .unwrap();
+    assert_eq!(result["found"], true);
+    assert!(descriptor.is_none());
+    // The subsequent exchange must not consume or close the caller-owned FD.
+    assert!(file.metadata().unwrap().is_file());
+    server.join().unwrap();
+}
+
+#[test]
+fn rejected_response_descriptors_are_closed_before_returning() {
+    use std::{io::Read, os::fd::AsFd, time::Duration};
+    for error_response in [false, true] {
+        let (one, two) = UnixStream::pair().unwrap();
+        let (descriptor, mut peer) = UnixStream::pair().unwrap();
+        peer.set_read_timeout(Some(Duration::from_secs(2))).unwrap();
+        let server = std::thread::spawn(move || {
+            let mut stream = FrameStream::new(two).unwrap();
+            stream.receive::<Request>().unwrap();
+            let response = if error_response {
+                Response::Error {
+                    code: "NOT_FOUND".into(),
+                    message: "missing".into(),
+                    retryable: false,
+                    operation_id: None,
+                }
+            } else {
+                Response::Ok {
+                    result: json_codec::json!({}),
+                }
+            };
+            stream.send(&response, Some(descriptor.as_fd())).unwrap();
+            // Only the received SCM_RIGHTS copy remains after this drop.
+            drop(descriptor);
+        });
+        let client = Client(Arc::new(Mutex::new(Some(FrameStream::new(one).unwrap()))));
+        assert_eq!(
+            client
+                .call(Request::Stat {
+                    path: "file".into()
+                })
+                .unwrap_err()
+                .kind(),
+            io::ErrorKind::InvalidData
+        );
+        server.join().unwrap();
+        assert_eq!(
+            peer.read(&mut [0u8; 1]).unwrap(),
+            0,
+            "rejected descriptor leaked"
+        );
+    }
+}

@@ -1,74 +1,67 @@
-# Retained-history growth: current implementation
+<a id="retained-history-growth-current-implementation"></a>
 
-The current implementation reduces repeated work without deleting retained
-history or weakening the authoritative journal, exact candidate identity, or
-corruption/repair requirements. Historical performance reports describe their
-original commits; they do not establish performance for the current source.
+# 保留历史增长：当前实现
 
-## Stable snapshot boundaries
+当前实现减少重复工作，不删除保留历史，也不削弱权威日志、精确候选身份，
+或损坏检测/修复要求。历史性能报告描述的是各自原始提交，不能证明当前源码的性能。
 
-Snapshot map pages use deterministic content-defined boundaries on entity keys.
-A key hash selects a boundary with nominal probability 1/32; the existing
-128-entry hard cap remains. Values do not select boundaries, so a value update
-does not move other entities between pages. An ordinary insertion usually
-changes a nearby page rather than shifting all later positional pages.
-Adversarial key distributions can still hit the hard cap and have worse sharing;
-this is not a constant-write guarantee.
+<a id="stable-snapshot-boundaries"></a>
 
-The project uses one current, unnumbered root/page representation. Valid page
-partitions are checked structurally, not selected by a release-version branch.
-Tombstone admission uses the same page builder for a new publication and the
-actual hash-bound pages for an existing recovery candidate.
-Recovery repairs the original root and pages, never substitutes a new-layout
-root for an old candidate.
+## 稳定的快照边界
 
-The page builder is an iterator, avoiding a second complete collection of cloned
-map pages. Immutable replica storage canonical-encodes once and hashes those
-same bytes, preserving the domain-separated digest and byte limits.
+快照映射页在实体键上使用确定性的内容定义边界。键哈希以名义概率 1/32 选择边界，
+同时保留现有每页 128 个条目的硬上限。值不参与边界选择，因此值更新不会使其他实体
+跨页移动。普通插入通常只修改附近页面，而不是使后续所有按位置划分的页面发生偏移。
+对抗性的键分布仍可能触及硬上限并降低共享效果；这不是恒定写入量保证。
 
-## Recovery-local repair reuse
+项目只使用一种当前的、不编号的根/页面表示。通过结构检查判断分页是否合法，
+不通过发布版本分支选择表示。新发布的墓碑准入使用同一个页面构建器，
+已有恢复候选则使用其实际受哈希绑定的页面。
+恢复修复原始根与页面，绝不为旧候选换用新布局的根。
 
-A recovery invocation remembers page hashes only after all required replicas
-were safely verified/repaired. Repeated references to those immutable pages do
-not repeat the same repair work. The cache is limited to 16,384 hashes; entries
-beyond the limit take the original full repair path. It does not survive a
-restart and never replaces the initial byte verification.
+页面构建器是迭代器，避免再创建一份完整的、克隆后的映射页面集合。
+不可变副本存储只进行一次规范编码，并对同一份字节计算哈希，
+保留域分离摘要和字节限制。
 
-Exact snapshot repair also replaces redundant reserialization during replay.
-This avoids generating replacement roots that are not bound by the original
-candidate during journal replay.
-Historical-only pages remain covered by repair; unsafe targets and irreparable
-corruption still fail.
+<a id="recovery-local-repair-reuse"></a>
 
-## Container inspection projection
+## 恢复调用内的修复复用
 
-One call-local projection indexes merge events and memoizes first-parent tag
-inheritance. Version records are constructed once per file/history and reused
-across replica caches. Metadata precedence, explicit parent overrides, parent
-ordering, cycles, missing nodes, and serialized fields retain their behavior.
+一次恢复调用只有在全部必需副本都被安全验证/修复后，才会记住相应页面哈希。
+随后重复引用这些不可变页面时，不再重复相同修复工作。
+缓存最多保留 16,384 个哈希；超出限制的条目走原始完整修复路径。
+缓存不跨重启保留，也绝不替代首次字节验证。
 
-A deterministic 4,096-node chain requires 4,096 ancestry visits rather than
-8,390,656 repeated visits, with no new visits when another replica requests the
-same records. This is an algorithmic counter, not a throughput benchmark.
+精确快照修复还取代了重放中的冗余重新序列化，避免在日志重放期间生成不受原始候选
+绑定的替代根。仅在历史中使用的页面仍在修复覆盖范围内；
+不安全目标和不可修复损坏仍会失败。
 
-## Paged history roots and remaining costs
+<a id="container-inspection-projection"></a>
 
-Each candidate binds a `PagedHistoryRoot` for every history. Its fixed map
-references reach domain-separated `history-index` and `state-page` objects;
-portable-package proofs preserve that exact root identity, not the hash of a
-flattened logical manifest. Readers validate field sets, routing prefixes,
-depth, duplicates, object hashes, and the reconstructed semantic graph. The
-obsolete flat-manifest representation is not a compatibility reader.
+## 容器检查投影
 
-History dependencies can be selected object by object from different verified
-members. This does not generalize to State snapshots: snapshot verification
-currently requires one member with a complete correct root and page set.
-Recovery must not silently substitute a newly encoded root for a bound one.
-See [the paged-history decision](../adr/0004-paged-history-manifests.md) and
-[implementation limits](optimization-status.md).
+一次调用内的投影会为合并事件建立索引，并记忆化第一父节点的标签继承。
+每个文件/历史的版本记录只构建一次，并在多个副本缓存间复用。
+元数据优先级、显式父节点覆盖、父节点顺序、环、缺失节点及序列化字段均保持原有行为。
 
-State construction/cloning, complete logical-history projection, retained
-events, and proof/coverage verification still grow with retained state. A
-bounded page or individual metadata object is not a bound on total package
-objects, import traversal memory, or complete save cost. This is not end-to-end
-O(delta), constant-memory operation, or a physical-disk durability guarantee.
+确定性的 4,096 节点链需要 4,096 次祖先访问，而不是 8,390,656 次重复访问；
+另一个副本请求同一组记录时不会增加访问次数。这是算法工作量计数，不是吞吐量基准。
+
+<a id="paged-history-roots-and-remaining-costs"></a>
+
+## 分页历史根与剩余成本
+
+每个候选为每段历史绑定一个 `PagedHistoryRoot`。其固定映射引用可到达域分离的
+`history-index` 和 `state-page` 对象；可移植包证明保留的是这一精确根身份，
+而不是展平后的逻辑清单哈希。读取器验证字段集合、路由前缀、深度、重复项、对象哈希，
+以及重建后的语义图。不提供针对已废弃扁平清单表示的兼容读取器。
+
+可以逐对象从不同的已验证成员选择历史依赖。这不适用于 State 快照：
+当前快照验证要求至少一个成员拥有完整且正确的根和页面集合。
+恢复不得静默地用重新编码的根替换已经绑定的根。
+参见[分页历史决策](../adr/0004-paged-history-manifests.md)和
+[实现限制](optimization-status.md)。
+
+State 的构建/克隆、完整逻辑历史投影、保留事件和证明/覆盖验证仍随保留状态增长。
+单个页面或元数据对象有界，不代表包的对象总数、导入遍历内存或完整保存成本有界。
+本实现不构成端到端 O(delta)、恒定内存操作或物理磁盘持久性保证。

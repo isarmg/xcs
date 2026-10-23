@@ -45,7 +45,7 @@ impl Default for Model {
 }
 
 pub(crate) fn load(state: RwSignal<State>) {
-    if state.with_untracked(|s| !s.admin) {
+    if state.with_untracked(|s| !s.session_active() || !s.admin) {
         return;
     }
     load_history(state);
@@ -72,7 +72,7 @@ pub(crate) fn load(state: RwSignal<State>) {
     });
 }
 fn load_history(state: RwSignal<State>) {
-    if state.with_untracked(|s| !s.admin || s.monitor.history_loading) {
+    if state.with_untracked(|s| !s.session_active() || !s.admin || s.monitor.history_loading) {
         return;
     }
     state.update(|s| s.monitor.history_loading = true);
@@ -107,7 +107,7 @@ fn history_matches(model: &Model, generation: u64, range: &str) -> bool {
 }
 fn select_range(state: RwSignal<State>, range: String) {
     if !RANGES.contains(&range.as_str())
-        || state.with_untracked(|s| s.monitor.range == range || !s.admin)
+        || state.with_untracked(|s| s.monitor.range == range || !s.session_active() || !s.admin)
     {
         return;
     }

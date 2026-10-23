@@ -584,3 +584,40 @@ fn singleton_security_and_csrf_headers_fail_closed() {
         })
     ));
 }
+
+#[test]
+fn password_hash_propagates_entropy_failure_without_panicking() {
+    let error = hash_password_with_entropy("correct horse battery staple", |_| {
+        Err(Error::Random("injected entropy failure".into()))
+    })
+    .unwrap_err();
+    assert_eq!(error, Error::Random("injected entropy failure".into()));
+}
+
+#[test]
+fn password_hash_validates_before_requesting_entropy() {
+    let error = hash_password_with_entropy("short", |_| {
+        panic!("invalid passwords must not request entropy")
+    })
+    .unwrap_err();
+    assert_eq!(error, Error::InvalidPassword);
+}
+
+#[test]
+fn password_hash_uses_the_supplied_full_length_salt() {
+    let encoded = hash_password_with_entropy("contract-fixture-password", |bytes| {
+        assert_eq!(bytes.len(), ARGON2_SALT_BYTES);
+        for (index, byte) in bytes.iter_mut().enumerate() {
+            *byte = index as u8;
+        }
+        Ok(())
+    })
+    .unwrap();
+    require_current_password_hash(&encoded).unwrap();
+    assert!(verify_password("contract-fixture-password", &encoded));
+    let vectors = credential_validation_vectors().unwrap();
+    assert_eq!(
+        encoded,
+        vectors["password_hash"]["encoded"].as_str().unwrap()
+    );
+}

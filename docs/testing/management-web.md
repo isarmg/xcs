@@ -1,82 +1,41 @@
-# Management Web acceptance
+<a id="management-web-acceptance"></a>
 
-The Web shell never infers a fresh installation from storage failure or missing
-credentials. `/api/management/status` is public and coarse; storage writes are
-admitted only after an explicit `ready` status. Session restoration and login do
-not load the data disk before showing the shell. Read-only, unavailable,
-unconfigured, recovery-required and unknown states remain distinct.
+# 管理 Web 验收
 
-Protected setup is an explicit form, not a fallback login action. The local
-bootstrap key is held in component memory and sent only as `X-ZXS-Bootstrap` to
-the same-origin setup endpoints. The status response supplies the CSRF token and
-allowlisted disk IDs. At least one distinct allowlisted ID and an explicit confirmation
-are required (maximum 32). One storage disk is usable without any backup level;
-the wizard explicitly warns that one disk has no redundancy. Development mode appears only when deployment explicitly enables
-it. Password/key inputs clear at submission. An ambiguous response permanently
-blocks repeat initialization within that mounted form; the operator must verify
-server state rather than blindly resubmit. No arbitrary host path is accepted.
+Web 外壳不能从存储失败或缺少凭据推断新安装。`/api/management/status` 公开且粗粒度，只有明确 `ready` 才准入存储写入。恢复会话和登录不在显示外壳前加载数据盘；只读、不可用、未配置、需恢复和未知状态分别保留。
 
-## Automated checks
+受保护初始化是独立表单，不是登录失败回退。bootstrap 密钥只保存在组件内存，并仅通过 `X-ZXS-Bootstrap` 发送到同源初始化端点。状态返回 CSRF token 与允许磁盘 ID。必须选择至少一个不同的允许 ID、明确确认，最多 32 个。单盘无需备份层即可使用，向导明确提示无冗余；只有部署显式启用才显示开发模式。密码/密钥输入在提交时清空。响应不确定后，该挂载表单永久阻止重复初始化，操作者应验证服务端状态，不能盲目重发。不接受任意宿主路径。
 
-- `cargo test -p web-app --lib`: typed status, mutation admission, setup allowlist,
-  explicit confirmation, uncertain outcomes, and existing session/metadata tests.
-- `cargo clippy -p web-app --target wasm32-unknown-unknown -- -D warnings`.
-- The existing `browser-smoke` CI target runs production WASM in Chrome. Its
-  `runner/management.rs` starts a second real daemon with corrupt pool config and
-  a verified management-authority file, checks existing-admin login, health,
-  CPU/memory, retry and logout; it then provisions a disposable bootstrap key and
-  one-disk allowlist, checks the no-redundancy warning, completes real development
-  setup in the browser, waits for storage reopen, logs in the new administrator
-  and checks URL/browser storage for leaked credentials. It then stops the daemon,
-  moves the only storage directory out of place, restarts and verifies browser
-  login and CPU/memory monitoring still work without recreating the missing disk.
+<a id="automated-checks"></a>
 
-Do not substitute static source checks for browser acceptance. If local Chrome
-is blocked by the environment's sandbox, report that limitation and require the
-CI Chrome job; do not retry with security bypass flags. Existing G4/font and
-file-metadata/history/branch tests continue unchanged.
+## 自动检查
 
-## Protected completion and local presets
+- `cargo test -p web-app --lib`：类型化状态、变更准入、初始化允许列表、明确确认、不确定结果及既有会话/元数据测试。
+- `cargo clippy -p web-app --target wasm32-unknown-unknown -- -D warnings`。
+- 既有 `browser-smoke` CI 在 Chrome 运行生产 WASM。`runner/management.rs` 启动带损坏池配置和已验证管理权威文件的第二个真实守护进程，检查原管理员登录、健康、CPU/内存、重试与登出；随后配置一次性 bootstrap 密钥和单盘允许列表，检查无冗余提示，通过浏览器完成真实开发初始化，等待存储重开，以新管理员登录，并检查 URL/浏览器存储无凭据泄露。再停止进程、移走唯一存储目录、重启，验证浏览器登录及 CPU/内存仍工作且缺失盘未被重建。
 
-Authorized setup status may expose `completion_available`. It is the only UI
-admission signal for the separate, explicitly confirmed
-`complete-initialization` action. Generic recovery, an existing pool or missing
-credentials never infer permission to reset an administrator. After an unknown
-initialize outcome, new initialization remains blocked; the user must reenter
-the original key and recheck status before a server-proven completion can be
-selected. Changing actions clears confirmation.
+静态源码检查不能代替浏览器验收。若本地 Chrome 被环境沙箱阻止，应报告限制并要求 CI Chrome 检查，不用绕过安全的参数重试。既有 G4/字体、文件元数据/历史/分支测试保持。
 
-Local preset IDs are listed by authorized status. The user selects an opaque
-ID and requests an authorized `preset-preview`; the sanitized configuration is
-read-only, replaces disk roots with candidate IDs, and preserves all parameters.
-Initialize submits only the selected ID, its reviewed `config_digest`, and the
-administrator credentials. It never submits configuration JSON, host paths, the
-wizard's disk selection, or mode overrides. The backend rejects a locally
-changed preset until reviewed again. Preset configuration is independent of the wizard selection.
+<a id="protected-completion-and-local-presets"></a>
 
-Focused Web unit regressions cover proof-only completion (including uncertain
-outcomes), no authority-reset inference, explicit reconfirmation, unreviewed or
-unapproved preset rejection, and exact bounded request bodies. The real Chrome runner now additionally exercises a four-disk local preset:
-review its sanitized summary, modify the local preset, assert the real HTTP 409
-SETUP_PRESET_CHANGED rejection leaves storage and authentication absent, re-review,
-initialize, compare the entire preserved Config, and log in. It also seeds a
-genuine interrupted pre-authority initialization using the setup service with a
-test-owned failing install callback, then completes it through the real Web form
-and logs in while asserting the pool configuration was not rewritten. No product
-debug endpoint or filesystem-permission trick is used. A native unit test checks
-that the fixture has genuine completion proof without published authority.
-These Chrome scenarios are implemented, not yet executed; native compilation
-and unit tests must not be reported as real browser acceptance.
+## 受保护补全与本地预设
 
-## Single-disk regression boundary
+授权状态可返回 `completion_available`，它是独立、明确确认的 `complete-initialization` 动作唯一 UI 准入信号。通用恢复、既有池或缺少凭据都不能推断可重置管理员。初始化结果未知后仍阻止新初始化；必须重新输入原密钥并复查状态，才能选择服务端证明可行的补全。切换动作清除确认。
 
-HTTP tests initialize a genuinely one-member development pool using the same
-bootstrap/Origin/CSRF path, sign in, wait for storage-ready, and create a repository
-with target_copies=1. After removing that only storage directory and reopening
-the daemon, login, health, account management and storage diagnostics still work,
-while storage access fails closed and the directory is not recreated. This is
-simulated-directory coverage, not physical Btrfs unplug/power-loss acceptance.
-Web request-builder tests cover one-disk setup and explicit one-copy repository
-defaults, retain explicit multi-copy choices, and reject empty, duplicate and
-unapproved disk selections. Historical-save requests retain inherited policy
-unless the user explicitly overrides it.
+授权状态列出本地预设 ID。用户选不透明 ID 并请求授权 `preset-preview`；只读脱敏配置以 candidate ID 替代盘根，保留全部参数。初始化仅提交选中 ID、已审阅 `config_digest` 和管理员凭据，不提交配置 JSON、宿主路径、向导磁盘选择或模式覆盖。本地预设变化后，后端拒绝直到重新审阅。预设与向导选择独立。
+
+专项 Web 单元回归覆盖仅凭证明补全（含不确定结果）、不推断权威重置、明确重确认、拒绝未预览/未批准预设及准确有界请求体。真实 Chrome 运行器另实现四盘预设：审阅脱敏摘要，修改本地预设，验证真实 HTTP 409 `SETUP_PRESET_CHANGED` 后仍无存储与认证，再审阅、初始化、比较完整 Config 并登录。它还通过初始化服务及测试专用失败安装回调构造真实权威发布前中断，经真实 Web 表单补全并登录，断言池配置未改写。不使用产品调试端点或文件权限技巧。原生单元测试确认夹具具有真实补全证明且无已发布权威。
+
+上述新增 Chrome 场景已实现，但本页既有记录尚未提供执行结果；原生编译/单元测试不能称为真实浏览器验收。后续运行以对应提交的实际证据更新状态。
+
+<a id="single-disk-regression-boundary"></a>
+
+## 单盘回归边界
+
+HTTP 测试通过相同 bootstrap/Origin/CSRF 路径初始化真实单成员开发池，登录、等待存储就绪并创建 `target_copies=1` 仓库。移除唯一存储目录并重开进程后，登录、健康、账户管理及存储诊断继续工作，存储访问失败关闭且不重建目录。这是模拟目录覆盖，不是物理 Btrfs 拔盘/掉电验收。
+
+Web 请求构造测试覆盖单盘初始化、明确单副本默认值，保留显式多副本选择，拒绝空、重复或未批准磁盘集合。历史保存请求除非用户明确覆盖，否则继承策略。
+
+## 会话与异步状态评审
+
+业务读取既要在请求发出前检查有效会话准入，也要在完成时核对会话 epoch / 请求代数，避免过期响应写回。完成阶段围栏不能代替发出前鉴权检查。管理状态按设计可匿名读取，但状态 GET 不得与存储重试 POST 重叠，让旧快照清除 `retry_unknown`。页面导航不等于文档根销毁：根所有的 UI 任务可按既有设计跨页面继续，文档根清理才取消；操作回执仍与操作身份绑定。相关源码回归不替代浏览器实际运行证据。

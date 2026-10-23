@@ -65,3 +65,40 @@ fn authentication_lock_contention_is_not_recovery_or_session_revocation() {
     assert!(state.session_active());
     assert_eq!(state.principal, "admin");
 }
+
+#[test]
+fn status_reads_wait_until_storage_retry_settles() {
+    Owner::new().with(|| {
+        let state = RwSignal::new(State {
+            authenticated: true,
+            admin: true,
+            ..Default::default()
+        });
+        state.update(|s| {
+            s.management.retrying = true;
+            s.management.storage = Storage::Unavailable;
+            s.management.generation = 7;
+        });
+        // The timer and the manual action share this admission boundary.
+        // An overlapping read could otherwise return pre-retry state and
+        // incorrectly clear retry_unknown after the POST fails ambiguously.
+        load(state);
+        state.with_untracked(|s| {
+            assert!(!s.management.loading);
+            assert_eq!(s.management.generation, 7);
+            assert_eq!(s.management.storage, Storage::Unavailable);
+            assert!(s.management.retrying);
+        });
+        state.update(|s| {
+            s.management.retrying = false;
+            s.management.retry_unknown = true;
+        });
+        load(state);
+        state.with_untracked(|s| {
+            assert!(s.management.loading);
+            assert_eq!(s.management.generation, 8);
+            // Admission alone cannot resolve an uncertain write.
+            assert!(s.management.retry_unknown);
+        });
+    });
+}

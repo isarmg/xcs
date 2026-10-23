@@ -228,3 +228,32 @@ fn stale_detail_rename_keeps_original_identity_and_tree_instead_of_retargeting_s
     draft.sources[0]["head_tree_id"] = "replacement-tree".into();
     assert!(request(&draft).is_err());
 }
+
+#[test]
+fn target_reads_preserve_the_draft_when_the_session_is_inactive() {
+    Owner::new().with(|| {
+        for (authenticated, restoring, logout_pending, logout_unconfirmed) in [
+            (false, false, false, false),
+            (true, true, false, false),
+            (true, false, true, false),
+            (true, false, false, true),
+        ] {
+            let state = RwSignal::new(State {
+                authenticated,
+                restoring,
+                logout_pending,
+                logout_unconfirmed,
+                ..Default::default()
+            });
+            state.update(|s| s.files.batch = Some(draft(Kind::Copy)));
+            super::super::actions::load_target(state);
+            state.with_untracked(|s| {
+                let draft = s.files.batch.as_ref().unwrap();
+                assert_eq!(draft.generation, 0);
+                assert!(!draft.loading);
+                assert!(draft.target_resolved);
+                assert_eq!(draft.targets.len(), 2);
+            });
+        }
+    });
+}

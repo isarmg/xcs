@@ -1,38 +1,43 @@
-# Architecture workload probe
+<a id="architecture-workload-probe"></a>
 
-This is a non-destructive **Development-mode simulation**, never proof of physical disk independence, failure durability, or production throughput. Each run creates a private tempfile pool, three simulated member directories and a system directory. It accepts no target directory or device argument, never opens a raw device, and removes only its own tempfile tree on exit. It does not change an existing ZXS pool.
+# 架构工作负载探针
 
-## Reproduce
+这是非破坏性的**开发模式模拟**，不证明物理磁盘独立性、故障持久性或生产吞吐。每次运行创建私有 tempfile 池、三个模拟成员目录和一个系统目录；不接受目标目录或设备参数，不打开原始设备，退出时只删除自己的临时树，不改变既有 ZXS 池。
 
-Use the repository's Rust 1.99 toolchain:
+<a id="reproduce"></a>
+
+## 重现方式
+
+使用仓库指定的 Rust 1.99 工具链：
 
 ```sh
 cargo run --locked -p perf-check -- 64 > current.json
 python3 tools/perf-check/compare.py tools/perf-check/results/baseline-92cd662.json current.json --require-incremental
 ```
 
-The positional argument is the number of retained one-file saves (4–4096). Default is 64. Run identical counts, dependency lockfiles, build profiles, machines and filesystem conditions for comparisons. For larger sweeps use 64, 256 and 1024, allowing substantial time and space: historical metadata is still retained and startup recovery still scans durable evidence. Timings include fsync and are highly sensitive to shared-machine load, cache warmth and filesystem implementation. They are deliberately not pass/fail gates.
+位置参数为保留的单文件保存次数（4—4096），默认 64。比较时保持次数、依赖锁文件、构建配置、机器和文件系统条件一致。较大规模可选 64、256、1024，但需预留较多时间和空间：历史元数据仍保留，启动恢复仍扫描持久证据。计时包含 fsync，对共享机器负载、缓存冷热和文件系统实现高度敏感，有意不作为通过/失败门禁。
 
-To reproduce the historical baseline, archive commit `92cd662` into a fresh scratch directory and copy `tools/perf-check` from commit `728358018330027e67a4db5d389d32b42cc0c192` (the pre-rename harness) into that archive. Do not use the renamed harness against the old crate paths. Run its manifest against those baseline crates with the historical lockfile and profile. Do not replace the live checkout or copy simulated pool files between revisions. Each report is generated from a newly initialized pool. UUIDs and timestamps vary, so metadata byte sizes are descriptive rather than byte-for-byte golden fixtures.
+重现历史基线时，将提交 `92cd662` 归档到新的临时目录，再把提交 `728358018330027e67a4db5d389d32b42cc0c192` 的 `tools/perf-check`（改名前测试工具）复制到该归档。不要对旧 crate 路径使用改名后的工具。以历史锁文件及构建配置，针对基线 crate 运行其 manifest；不得替换当前工作副本或跨版本复制模拟池。每份报告来自新初始化的池。UUID 和时间戳会变化，因此元数据字节数用于描述，不是逐字节黄金夹具。
 
-## Workload and checks
+<a id="workload-and-checks"></a>
 
-- Retain history for one 1 KiB file, with three copies; sample at 1, N/4, N/2 and N saves.
-- Measure a complete create-workspace, stage, commit save, including its durable I/O.
-- At sample points install SQLite triggers on `entities` to count actual inserted/updated/deleted rows and entity JSON bytes written by the next save. Trigger bookkeeping adds measurement overhead. It excludes `current_state`, journal and filesystem writes and is not total write amplification.
-- Close/reopen the engine at each sample and require exact recovered `State` equality. Reinstall triggers after restart because projection rebuild may replace tables.
-- Open and seek to eight 64-byte ranges; assert exact bytes. This uses the public **legacy fully verified `open_content` API**, not the optimized HTTP range endpoint. These timings cannot establish HTTP range-path speedup.
-- Write a 4 MiB version; measure first and repeated legacy open/range reads. The first open is not an OS-cache-cold read: the save has just written the bytes.
-- Hold a read descriptor and its lease while another thread starts reading that immutable version and the single writer commits a newer version. Require the old bytes throughout and after the save. Scheduler overlap is not guaranteed; this is a held-read correctness exercise, not a server concurrency/latency claim.
-- Require a clean final engine integrity check.
+## 工作负载与检查
 
-Reports use descriptive measurement fields without a project-format version tag.
-The comparator requires matching workload settings, sample checkpoints and all five
-named correctness checks; unrelated report metadata is not a format dispatch key.
-Archived evidence is not rewritten when the current report shape changes.
+- 为一个 1 KiB 文件保留历史及三份副本，在第 1、N/4、N/2、N 次保存采样。
+- 测量完整的创建工作区、暂存、提交保存流程，包含其持久 I/O。
+- 采样时在 SQLite 的 `entities` 上安装触发器，统计下一次保存实际插入/更新/删除行数及实体 JSON 写入字节。触发器记账增加测量开销，不含 `current_state`、日志和文件系统写入，不能当作总写放大。
+- 每次采样关闭/重开引擎，要求恢复的 `State` 精确相等。重启后重新安装触发器，因为投影重建可能替换表。
+- 打开并定位八个 64 字节范围，断言字节精确相等。使用公开的**既有完整验证 `open_content` API**，而非优化 HTTP 范围端点；这些计时不能证明 HTTP 范围路径加速。
+- 写入一个 4 MiB 版本，测量首次及重复的既有打开/范围读取。首次打开不是操作系统冷缓存读取，因为保存刚写入这些字节。
+- 持有读取描述符及租约，另一线程开始读该不可变版本，同时单写入者提交新版本。要求整个保存期间及之后旧字节保持不变。调度不保证真正重叠；这是持有读取的正确性练习，不是服务端并发/延迟证明。
+- 最终引擎完整性检查必须无异常。
 
-The optional comparison gate checks bounded SQLite entity writes (at most 100 per sampled save and at most 10 growth after first save). It does not require a specific speedup. The baseline is expected to fail this incremental-write gate. Keep architecture-specific deterministic unit tests as the more precise contracts: journal scan-count bounds, chunk-reader byte bounds and projection changed-row counts.
+报告使用描述性测量字段，不带项目格式版本标签。比较器要求工作负载参数、采样点及五项具名正确性检查匹配；无关报告元数据不是格式分派键。当前报告结构变化时不改写归档证据。
 
-## Limits
+可选比较门禁检查 SQLite 实体写入有界：每次采样保存最多 100 次，首个保存之后增长最多十次。不要求特定加速幅度，基线预期不能通过此增量写入门禁。应继续使用更精确的架构确定性单元契约：日志扫描次数界限、分块读取字节界限及投影变化行数。
 
-This does not make the whole save path O(delta): full state copies, comparisons, serialization, snapshots, historical metadata retention and startup replay may still grow. The journal optimization removes repeated hot append scans, not startup replay. Triggers observe SQLite logical rows, not disk sectors or write amplification. Directory-size totals are apparent file lengths, not allocated space. Range HTTP authentication, transport, cancellation and contention are covered by server tests, not this core harness.
+<a id="limits"></a>
+
+## 限制
+
+整个保存路径并未变为 O(delta)：完整状态复制、比较、序列化、快照、历史元数据保留及启动回放仍可能增长。日志优化消除热追加时重复扫描，不消除启动回放。触发器观测 SQLite 逻辑行，而非磁盘扇区或写放大。目录大小合计是文件表观长度，不是实际分配空间。HTTP 范围认证、传输、取消及争用由服务端测试覆盖，不由此核心探针覆盖。

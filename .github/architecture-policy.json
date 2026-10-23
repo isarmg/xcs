@@ -1,0 +1,166 @@
+{
+  "version": 1,
+  "owners": {
+    "authentication": {
+      "path": "src/auth",
+      "runtime": [],
+      "build": [],
+      "dev": []
+    },
+    "storage-contract": {
+      "path": "src/contract",
+      "runtime": [],
+      "build": [],
+      "dev": []
+    },
+    "name-policy": {
+      "path": "src/naming",
+      "runtime": [
+        "storage-contract"
+      ],
+      "build": [],
+      "dev": []
+    },
+    "platform-io": {
+      "path": "src/platform",
+      "runtime": [],
+      "build": [],
+      "dev": []
+    },
+    "storage-client": {
+      "path": "src/client",
+      "runtime": [
+        "storage-contract"
+      ],
+      "build": [],
+      "dev": []
+    },
+    "storage-engine": {
+      "path": "src/engine",
+      "runtime": [
+        "storage-contract",
+        "name-policy",
+        "platform-io"
+      ],
+      "build": [],
+      "dev": []
+    },
+    "storage-server": {
+      "path": "src/server",
+      "runtime": [
+        "authentication",
+        "storage-engine",
+        "platform-io",
+        "storage-contract",
+        "name-policy",
+        "smb-protocol"
+      ],
+      "build": [],
+      "dev": []
+    },
+    "smb-protocol": {
+      "path": "src/smb",
+      "runtime": [
+        "storage-contract"
+      ],
+      "build": [],
+      "dev": []
+    },
+    "smb-vfs": {
+      "path": "src/smb-vfs",
+      "runtime": [
+        "smb-protocol"
+      ],
+      "build": [],
+      "dev": []
+    },
+    "web-app": {
+      "path": "src/web",
+      "runtime": [
+        "web-interface",
+        "storage-contract",
+        "name-policy"
+      ],
+      "build": [],
+      "dev": []
+    },
+    "web-interface": {
+      "path": "src/interface",
+      "runtime": [
+        "view-macros"
+      ],
+      "build": [],
+      "dev": []
+    },
+    "view-macros": {
+      "path": "src/macros",
+      "runtime": [],
+      "build": [],
+      "dev": [
+        "web-interface"
+      ]
+    },
+    "storage-rescue": {
+      "path": "src/rescue",
+      "runtime": [
+        "authentication",
+        "platform-io",
+        "storage-engine"
+      ],
+      "build": [],
+      "dev": [
+        "storage-server"
+      ]
+    },
+    "unicode-build": {
+      "path": "tools/unicode-build",
+      "runtime": [],
+      "build": [],
+      "dev": []
+    },
+    "contract-check": {
+      "path": "tools/contract-check",
+      "runtime": [
+        "storage-contract"
+      ],
+      "build": [],
+      "dev": []
+    },
+    "release-tools": {
+      "path": "tools/release-tools",
+      "runtime": [],
+      "build": [],
+      "dev": []
+    },
+    "perf-check": {
+      "path": "tools/perf-check",
+      "runtime": [
+        "storage-engine",
+        "platform-io"
+      ],
+      "build": [],
+      "dev": []
+    },
+    "web-build": {
+      "path": "tools/web-build",
+      "runtime": [],
+      "build": [],
+      "dev": []
+    },
+    "browser-smoke": {
+      "path": "tools/browser-smoke",
+      "runtime": [
+        "storage-engine",
+        "storage-server"
+      ],
+      "build": [],
+      "dev": []
+    },
+    "web-bindings": {
+      "path": "tools/web-bindings",
+      "runtime": [],
+      "build": [],
+      "dev": []
+    }
+  }
+}

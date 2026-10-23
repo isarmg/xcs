@@ -4,7 +4,7 @@ use futures::StreamExt;
 use json_codec::Value;
 use std::path::Path;
 use tokio::adapters::io::ReaderStream;
-use tokio::io::{AsyncReadExt, AsyncSeekExt, AsyncWriteExt};
+use tokio::io::{AsyncRead, AsyncReadExt, AsyncSeekExt, AsyncWriteExt};
 
 // Match the hashing pass's maximum read size without reserving a large body
 // buffer for tiny files. Clamp before converting to usize (including on wasm).
@@ -12,10 +12,43 @@ fn upload_chunk_capacity(length: u64) -> usize {
     length.clamp(4 * 1024, 256 * 1024) as usize
 }
 
-fn upload_stream(file: tokio::fs::File, length: u64) -> ReaderStream<tokio::fs::File> {
+fn upload_stream(
+    file: tokio::fs::File,
+    length: u64,
+) -> ReaderStream<tokio::io::Take<tokio::fs::File>> {
     // Remain demand-driven: no producer task, read-ahead queue, or whole-file
     // buffering. Tokio performs at most one blocking read per file at a time.
-    ReaderStream::with_capacity(file, upload_chunk_capacity(length))
+    ReaderStream::with_capacity(file.take(length), upload_chunk_capacity(length))
+}
+
+// Hash only the selected length, then probe once for growth. Reading to EOF
+// without a budget can follow a concurrently appended file indefinitely.
+// This is not a filesystem snapshot: the server still verifies the final body
+// hash, and the body stream cannot send bytes beyond the selected length.
+async fn hash_upload_source(
+    source: &mut (impl AsyncRead + Unpin),
+    length: u64,
+) -> Result<String, Error> {
+    let mut remaining = length;
+    let mut hasher = blake3::Hasher::new();
+    let mut buffer = vec![0_u8; upload_chunk_capacity(length)];
+    while remaining > 0 {
+        let limit = remaining.min(buffer.len() as u64) as usize;
+        let count = source.read(&mut buffer[..limit]).await?;
+        if count == 0 {
+            return Err(Error::Response(
+                "upload source length changed during preparation".into(),
+            ));
+        }
+        hasher.update(&buffer[..count]);
+        remaining -= count as u64;
+    }
+    if source.read(&mut buffer[..1]).await? != 0 {
+        return Err(Error::Response(
+            "upload source length changed during preparation".into(),
+        ));
+    }
+    Ok(hasher.finalize().to_hex().to_string())
 }
 
 /// A hashed, rewound upload ready for dispatch. Preparing does not send bytes.
@@ -66,7 +99,8 @@ impl Client {
     }
 
     /// Stream an already selected descriptor without reopening its original path.
-    /// Ownership prevents shared seek offsets or concurrent reuse by callers.
+    /// The descriptor is retained, but callers must not mutate the file or use
+    /// duplicated descriptors that share its seek offset during the transfer.
     pub async fn upload_open_file(
         &self,
         workspace: &str,
@@ -93,19 +127,8 @@ impl Client {
             ));
         }
         file.seek(std::io::SeekFrom::Start(0)).await?;
-        let mut hasher = blake3::Hasher::new();
-        let mut buffer = vec![0_u8; 256 * 1024];
-        loop {
-            let count = file.read(&mut buffer).await?;
-            if count == 0 {
-                break;
-            }
-            hasher.update(&buffer[..count]);
-        }
-        // Release the hash scratch space before reserving the streamed body.
-        drop(buffer);
+        let content_hash = hash_upload_source(&mut file, metadata.len()).await?;
         file.seek(std::io::SeekFrom::Start(0)).await?;
-        let content_hash = hasher.finalize().to_hex().to_string();
         let mut url = self.url(&format!(
             "/api/workspaces/{}/files/{}/content",
             segment(workspace),

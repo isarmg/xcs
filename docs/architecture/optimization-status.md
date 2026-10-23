@@ -1,96 +1,86 @@
-# Architecture optimization status
+<a id="architecture-optimization-status"></a>
 
-This records the architecture work started from `92cd662`. It is not a claim of
-production fault certification or constant-time operations.
+# 架构优化状态
 
-## Implemented
+本文记录从 `92cd662` 开始的架构工作，不代表已通过生产故障认证，
+也不声称操作具有恒定时间复杂度。
 
-- Web and the operational CLI share commit preparation, response parsing, size limits,
-  and mutation-outcome rules in `storage-contract::client_protocol`.
-- The server uses typed application commands for high-risk business mutations.
-  Namespace relocation centralizes identity-preserving path/name updates.
-- SQLite projection updates only changed entities inside a transaction. The
-  authoritative filesystem/journal recovery model remains unchanged.
-- Journal appends reuse a bounded verified-tail cache, invalidating it when the
-  underlying journal identity or contents change.
-- HTTP download ranges verify touched checksum chunks with replica fallback.
-  SMB's direct file-descriptor API still requires full verification.
-- Upload preparation, download planning/streaming, and monitoring I/O are
-  separated from the live Engine mutex.
-- Workspace commit copying, hashing, and metadata preparation use an owned
-  non-publishing snapshot outside that mutex. Publication remains serialized.
-  See [the preparation contract](detached-workspace-commits.md) for admission,
-  stale-state checks, cancellation, and bounded-descriptor fallback.
-- Verified recovery checkpoints reduce historical snapshot decoding and permit
-  suffix replay only after authoritative evidence and repair dependencies pass
-  validation. See [checkpoint guarantees](verified-recovery-checkpoints.md).
-- A reproducible development workload measures logical SQLite entity writes,
-  verifies recovered-state equality and historical reads, and compares against
-  the pre-optimization baseline.
-- A [second retained-history pass](history-growth-optimization.md) stabilizes
-  snapshot page boundaries, reuses invocation-local page repairs and container
-  projections, and avoids duplicate canonical serialization.
-- Event arrays now use ordered, validated snapshot pages rather than one scalar
-  root field. Scalar-event or missing-event snapshots are rejected without migration. Duplicate or
-  discontinuous event indexes and ambiguous scalar/page representations fail
-  validation instead of silently losing or reordering events.
-- Publication prepares bounded immutable snapshot and history-manifest bytes
-  once, then reuses their exact hashes and bytes for preflight and replica
-  installation. The prepared snapshot descriptor is also reused by tombstone
-  admission. Existing immutable-file collision verification remains enabled.
-- Snapshot encoding borrows typed state entries page by page instead of creating
-  an intermediate JSON tree for the complete State. An exhaustive field
-  declaration prevents silent omissions; differential tests retain the exact
-  current descriptor, canonical object bytes and hashes. The temporary page builder
-  buffers at most 128 top-level entries, while final encoded objects remain
-  retained until installation.
-- Immutable object hashes use a two-hex-digit directory prefix. Flat-layout
-  objects are unsupported and are never reused, migrated or deleted. Lookup
-  rejects a flat object at the requested address; inventory rejects non-shard
-  entries. Exact current-format dependency repair remains enabled.
-- History roots now support a bounded paged radix graph, with exact candidate-root
-  binding across publication, read-only evidence selection, recovery and
-  independent packages. Only the current paged-root shape is accepted; obsolete flat roots are not
-  migrated or rewritten. A serialized synthetic codec test crosses the
-  actual 64 MiB flat-object ceiling; it is not an end-to-end throughput result.
+<a id="implemented"></a>
 
-## Deliberate limits
+## 已实现
 
-The complete save path is not O(delta). State cloning/comparison, snapshots,
-historical manifests, and retained metadata can still grow with history. The
-initial workspace preparation snapshot is copied under the mutex. Other mutation
-classes and recovery remain synchronous.
+- Web 与原生 HTTP 客户端复用 `storage-contract::client_protocol` 中的响应解析和
+  大小限制；该模块还集中定义提交准备与变更结果判定规则。当前 Web 使用结果判定规则，
+  原生 HTTP 客户端保留提交准备能力。不能据此推断 Web 提供上传、下载或预览，
+  也不能将历史运维 CLI 视为正常 `zxs` 用户入口。
+- 服务端使用类型化应用命令处理高风险业务变更。
+  命名空间迁移集中处理保留身份的路径/名称更新。
+- SQLite 投影仅在事务内更新发生变化的实体。
+  权威文件系统/日志恢复模型保持不变。
+- 日志追加复用有界的已验证尾部缓存，底层日志身份或内容变化时使缓存失效。
+- HTTP 下载范围对涉及的校验和分块进行验证，并可回退到其他副本。
+  SMB 的直接文件描述符 API 仍要求完整验证。此处描述保留的 HTTP API，
+  不是当前 Web 的下载能力。
+- 上传准备、下载规划/流式传输和监控 I/O 与活动 Engine 互斥锁分离。
+- 工作区提交的复制、哈希和元数据准备使用锁外、拥有独立所有权且不能发布的快照。
+  发布仍然串行化。准入、过期状态检查、取消和有界描述符回退见
+  [准备约定](detached-workspace-commits.md)。
+- 已验证恢复检查点减少历史快照解码；只有权威证据和修复依赖通过验证后，
+  才允许后缀重放。参见[检查点保证](verified-recovery-checkpoints.md)。
+- 可复现的开发工作负载测量逻辑 SQLite 实体写入，验证恢复状态相等和历史读取，
+  并与优化前基线比较。
+- [第二轮保留历史优化](history-growth-optimization.md)稳定快照页面边界，
+  复用调用内的页面修复和容器投影，并避免重复规范序列化。
+- 事件数组现使用有序、经过验证的快照页，不再存为根中的单个标量字段。
+  标量事件快照或缺少事件的快照直接被拒绝，不进行迁移。重复或不连续的事件索引，
+  以及有歧义的标量/页面表示均无法通过验证，不会静默丢失事件或改变顺序。
+- 发布只准备一次有界的不可变快照和历史清单字节，随后在预检和副本安装中复用
+  完全相同的哈希与字节。准备好的快照描述符也供墓碑准入复用。
+  现有不可变文件冲突验证仍然启用。
+- 快照编码按页借用类型化状态条目，不再为完整 State 创建中间 JSON 树。
+  穷尽式字段声明防止静默遗漏；差分测试保持当前描述符、规范对象字节和哈希精确一致。
+  临时页面构建器最多缓冲 128 个顶层条目，最终编码对象则保留到安装完成。
+- 不可变对象哈希使用两位十六进制目录前缀。不支持扁平布局对象，也不会复用、迁移
+  或删除它们。查找会拒绝请求地址上的扁平对象；清单检查会拒绝非分片条目。
+  当前格式的精确依赖修复仍然启用。
+- 历史根现支持有界分页基数图，在发布、只读证据选择、恢复和独立包之间保持精确的
+  候选根绑定。只接受当前分页根形态，不迁移或重写已废弃的扁平根。
+  一个经过序列化的合成编解码测试跨越了实际的 64 MiB 扁平对象上限；
+  这不是端到端吞吐量结果。
 
-Event paging removes the previous single event-array object bottleneck, not all
-metadata limits: page references, individual pages and publication proofs remain
-bounded. No operation or event evidence is expired, and no historical objects
-are garbage-collected by this optimization.
+<a id="deliberate-limits"></a>
 
-The paged history graph does not remove complete logical-history projection or
-State cloning. Single entities, candidate root maps, snapshot page-reference
-vectors and proof envelopes still have limits. See
-[the format decision](../adr/0004-paged-history-manifests.md).
+## 有意保留的限制
 
-Concurrent namespace relocation must not race detached pathname-based payload
-installation. Write admission is therefore conservatively fenced during a
-workspace preparation; reads remain available. This is not parallel publication.
-Large candidates retain bounded descriptors by using full sequential payload
-reverification in the decision critical section rather than weaker proof data.
+完整保存路径不是 O(delta)。State 克隆/比较、快照、历史清单和保留元数据仍可
+随历史增长。工作区准备的初始快照在互斥锁内复制。
+其他变更类型和恢复仍然同步执行。
 
-Checkpoints do not make total startup work constant. Journal prefixes and
-coverage dependencies remain verified; oversized coverage and degraded opens
-fall back to full replay. Skipping this work would change corruption-detection
-and repair guarantees and requires a separate protocol/integrity-policy design.
+事件分页消除了此前单个事件数组对象的瓶颈，并未移除所有元数据限制：
+页面引用、单个页面和发布证明仍然有界。本优化不会使任何操作或事件证据过期，
+也不会垃圾回收历史对象。
 
-## Evidence still required
+分页历史图没有消除完整逻辑历史投影或 State 克隆。单个实体、候选根映射、
+快照页面引用向量和证明封装仍有限制。
+参见[格式决策](../adr/0004-paged-history-manifests.md)。
 
-Local fixtures, tmpfs workload timings, and CI do not establish physical disk
-independence, power-loss durability, real-device latency, or write amplification.
-The [physical-storage validation plan](../tools/perf-check/PHYSICAL-DISK-VALIDATION.md)
-has not been executed. It requires explicitly approved disposable independent
-devices and fault-injection methods. Do not treat this hardware-dependent part
-of the original plan as completed.
+并发命名空间迁移不得与脱离锁、按路径名安装载荷的过程发生竞争。
+因此，工作区准备期间会保守阻止写入准入，而读取仍可用。这不是并行发布。
+大候选通过在决策临界区内完整、顺序复验载荷来保持描述符数量有界，
+而不是改用较弱的证明数据。
 
-For workload commands and measurement limitations, see
-[the probe](../tools/perf-check.md) and
-[recorded results](../tools/perf-check/results.md).
+检查点不会使总启动工作量恒定。日志前缀和覆盖依赖仍须验证；
+覆盖超限或降级打开时回退到完整重放。跳过这些工作会改变损坏检测和修复保证，
+需要单独设计协议及完整性策略。
+
+<a id="evidence-still-required"></a>
+
+## 仍需补充的证据
+
+本地夹具、tmpfs 工作负载计时和 CI 不能证明物理磁盘独立性、断电持久性、
+真实设备延迟或写放大。[物理存储验证计划](../tools/perf-check/PHYSICAL-DISK-VALIDATION.md)
+尚未执行，执行需获得明确批准，使用可丢弃的独立设备和故障注入方法。
+不得将原计划中这一依赖硬件的部分视为已完成。
+
+工作负载命令与测量限制见[探针](../tools/perf-check.md)及
+[已记录结果](../tools/perf-check/results.md)。

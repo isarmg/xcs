@@ -1,90 +1,45 @@
-# SQLite access architecture
+<a id="sqlite-access-architecture"></a>
 
-The maintained `sqlite-access` package combines the former SQLx facade, query engine,
-and SQLite driver. It is one Cargo package, not three renamed wrapper packages.
-The native `libsqlite3-sys` binding remains a separate package because it owns the
-SQLite C build and native linking contract.
+# SQLite 访问层架构
 
-## Module boundaries
+维护的 `sqlite-access` 将原 SQLx facade、查询引擎和 SQLite 驱动合为一个 Cargo 包，而非三个改名包装包。原生 `libsqlite3-sys` 继续独立，因为它负责 SQLite C 构建与原生链接契约。
 
-- `src/query_engine`: pooling, transactions, statements, typed values, query builders,
-  errors and statement caching. This module retains `forbid(unsafe_code)`.
-- `src/sqlite`: SQLite-specific types, options, worker connections and native FFI.
-  This is the only module allowed to use unsafe code.
-- `src/lib.rs`: the unified public query API and SQLite types. Generic query-engine
-  modules remain available where actual consumers need them, including
-  `common::StatementCache`; the implementation module itself is private.
-- `test/foundation/sqlite-access/{facade,query_engine,sqlite}`: preserved upstream
-  tests, separately attributed to their original source packages. Archived upstream
-  tests for removed database backends/macros remain provenance, not supported APIs.
-- `test/platform/unit/sqlite/driver`: locally authored direct-connection and parser
-  contracts, separate from attributed upstream test material.
+<a id="module-boundaries"></a>
 
-The shared `TransactionConnection` implementation belongs to `transaction::connection`.
-Its physical file remains `src/query_engine/pool/maybe.rs`, selected with an explicit
-module path to preserve immutable source-history ownership. This does not restore
-a legacy public module or introduce a compatibility wrapper.
+## 模块边界
 
-## Feature policy
+- `src/query_engine`：池、事务、语句、类型化值、查询构建器、错误与语句缓存，保留 `forbid(unsafe_code)`。
+- `src/sqlite`：SQLite 类型、选项、工作线程连接与原生 FFI，是唯一允许 unsafe 的模块。
+- `src/lib.rs`：统一查询 API 与 SQLite 类型。真实消费者需要的通用查询模块继续可用，包括 `common::StatementCache`；实现模块本身私有。
+- `test/foundation/sqlite-access/{facade,query_engine,sqlite}`：保留的上游测试，分别归属于原包。已删除数据库后端/宏的归档测试只作来源材料，不代表支持的 API。
+- `test/platform/unit/sqlite/driver`：本地编写的直接连接及解析契约，与上游测试分离。
 
-Production continues to select `sqlite-bundled`. Direct filename/connect-with
-operations, transactions, and the SQLite-specific string parser require neither a
-Tokio runtime nor URL hostname/IDNA/Unicode normalization. Percent and form codecs
-remain because SQLite URI options and percent-encoded filenames use them.
+共享 `TransactionConnection` 属于 `transaction::connection`。物理文件仍为 `src/query_engine/pool/maybe.rs`，使用显式模块路径保留不可变来源历史归属；不恢复旧公开模块，也不引入兼容包装。
 
-- `pool` opts into Tokio-backed multi-connection scheduling, semaphores, idle queues
-  and close notifications. `platform-io/sqlite-pool` exposes the platform's retained
-  async multi-connection and snapshot-pool adapters. Synchronous snapshot capture
-  and the storage engine's direct workers remain available without it.
-- `url` opts into interoperability with a typed general-purpose `Url`, including
-  `ConnectOptions::from_url` and `to_url_lossy`. String `connect` and `FromStr` retain
-  the original SQLite-specific parsing without enabling the general parser.
-- Transactions own their borrowed or pooled connection source independently of
-  the pool module. Disabling pooling does not introduce a second transaction
-  implementation or a compatibility facade.
+<a id="feature-policy"></a>
 
-The family gate executes both default and retained optional capabilities, asserts
-that minimal production dependency closures exclude pool scheduling and general
-URL parsing, and verifies disabled APIs fail compilation. This prunes selected
-build closures only; it does not reduce the repository's total active package
-count or remove retained upstream source/license provenance.
+## 特性策略
 
-The source catalog records `sqlite-pool-validation` separately as a non-production,
-compile-role profile rooted at `platform-io` with exactly its `sqlite-pool` feature,
-matching the family gate's optional platform tests. Its native pool notification
-path still needs `parking`; that source is not a default product dependency or an
-unused package to retire. Feature-specific metadata is resolved independently of
-default profiles, and the requested feature set is recorded with the closure.
+生产继续选择 `sqlite-bundled`。直接文件名/connect-with、事务和 SQLite 专用字符串解析不需要 Tokio、URL 主机名/IDNA/Unicode 规范化。百分号与表单 codec 保留，因为 SQLite URI 选项及编码文件名需要它们。
 
-Direct-worker tests preserve memory isolation/sharing, absolute and relative
-filenames, literal Unicode/percent/query characters, URI option encoding,
-transactions/savepoints/rollback, errors and explicit closure. Non-UTF8 filenames
-continue to return the existing `InvalidData` error before opening a native
-connection; this change does not silently broaden the filename contract.
+- `pool` 显式启用 Tokio 多连接调度、信号量、空闲队列和关闭通知。`platform-io/sqlite-pool` 暴露平台保留的异步多连接/快照池适配器；同步快照和引擎直接工作线程无需该特性。
+- `url` 启用通用类型化 `Url` 互操作，包括 `ConnectOptions::from_url`、`to_url_lossy`。字符串 `connect` / `FromStr` 保留原 SQLite 专用解析，不启用通用解析器。
+- 事务独立拥有借用或池化连接来源，不依赖 pool 模块；禁用池不会产生第二套事务实现或兼容 facade。
 
-JSON, UUID, regexp, offline
-metadata, serialization, bit-vector and IP address type exports remain opt-in.
-`sqlite-deserialize`, `sqlite-load-extension`, `sqlite-preupdate-hook` and
-`sqlite-unlock-notify` retain explicit capability gates. `sqlite-unbundled` uses
-real system SQLite headers and libraries; it is not a second driver implementation.
-No PostgreSQL, MySQL, migrations, generic Any driver, runtime selector or TLS
-selector is restored by this consolidation.
+系列门禁执行默认与保留的可选能力，断言最小生产闭包排除池调度和通用 URL 解析，并验证禁用 API 无法编译。这只裁剪所选构建闭包，不减少仓库总活动包数，也不移除保留的源码/许可证来源。
 
-## Upstream provenance and validation
+来源目录另将 `sqlite-pool-validation` 记录为非生产、编译用途 profile，以 `platform-io` 为根且仅启用 `sqlite-pool`，对应可选平台测试。原生池通知仍需要 `parking`；它既不是默认产品依赖，也不是可退役的无用包。特性专用元数据与默认 profile 独立解析，闭包记录请求特性集合。
 
-The upstream origins are `sqlx` 0.9.0, `sqlx-core` 0.9.0 and `sqlx-sqlite` 0.9.0,
-from https://github.com/launchbadge/sqlx, under MIT OR Apache-2.0. Immutable original
-manifests, licenses and source hashes remain in `compliance/provenance`; the
-multi-origin receipt records every production file and reversible external test
-adaptation. Original upstream documentation is not renamed.
+直接工作线程测试保留内存隔离/共享、绝对/相对文件名、字面 Unicode/百分号/查询字符、URI 选项编码、事务/savepoint/回滚、错误及显式关闭。非 UTF-8 文件名仍在打开原生连接前返回既有 `InvalidData`，不静默扩大文件名契约。
 
-The SQLite scope gate builds a real consumer and rejects removed APIs/features.
-Retained regexp tests use the runtime-independent futures executor and isolated
-in-memory databases, without implicit SQLx fixtures. Existing first-party tests
-exercise timeout, rollback, savepoints, Unicode row diagnostics, statement-cache
-capacity/eviction, clear and pool closure. No tests operate on user databases.
+JSON、UUID、regexp、离线元数据、序列化、位向量及 IP 地址类型均显式启用。`sqlite-deserialize`、`sqlite-load-extension`、`sqlite-preupdate-hook`、`sqlite-unlock-notify` 保留能力开关。`sqlite-unbundled` 使用真实系统 SQLite 头与库，不是第二个驱动。整合不恢复 PostgreSQL、MySQL、migration、通用 Any 驱动或运行时/TLS 选择器。
 
-SQLite ABI symbols, `_sqlx_savepoint_*` SQL identifiers and `file:sqlx-in-memory-*`
-connection URI names are intentionally preserved: these are native/SQL identifiers,
-not Cargo package names. Diagnostic worker threads use the functional name
-`sqlite-worker-*`. There are no active `SQLX_*` environment selectors.
+<a id="upstream-provenance-and-validation"></a>
+
+## 上游来源与验证
+
+来源为 https://github.com/launchbadge/sqlx 的 `sqlx`、`sqlx-core`、`sqlx-sqlite` 0.9.0，许可 MIT OR Apache-2.0。原始 manifest、许可证与源码哈希不可变地保留在 `compliance/provenance`；多来源收据记录每份生产文件及可逆外置测试适配。原上游文档不改名。
+
+SQLite 范围门禁构建真实消费者并拒绝删除的 API/特性。保留 regexp 测试使用不依赖运行时的 futures 执行器和隔离内存库，无隐式 SQLx 夹具。第一方测试覆盖超时、回滚、savepoint、Unicode 行诊断、语句缓存容量/驱逐、清空及池关闭。不操作用户数据库。
+
+SQLite ABI 符号、`_sqlx_savepoint_*` SQL 标识及 `file:sqlx-in-memory-*` 连接 URI 有意保留，它们是原生/SQL 标识，不是 Cargo 包名。诊断工作线程使用 `sqlite-worker-*`，无活动 `SQLX_*` 环境选择器。

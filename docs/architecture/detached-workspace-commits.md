@@ -1,69 +1,60 @@
-# Detached workspace commit preparation
+<a id="detached-workspace-commit-preparation"></a>
 
-The HTTP and SMB application boundary uses an owned preparation API for ordinary
-workspace content commits. The original synchronous core APIs remain available
-for embedded callers and recovery workflows.
+# 脱离锁的工作区提交准备
 
-## Boundaries
+HTTP 与 SMB 应用边界通过拥有独立所有权的准备 API 处理普通工作区内容提交。
+原有同步核心 API 仍供嵌入式调用方和恢复流程使用。
 
-1. While holding the live Engine mutex, authorize the request, capture its exact
-   workspace, configuration, state and publication base, and acquire one
-   per-Engine preparation admission. No payload is read in this step.
-2. Release that mutex. A private, non-publishing planning snapshot validates the
-   request and builds the unpublished mutation. Source hashing, complete payload
-   copying, verification, metadata preflight and content-addressed metadata writes
-   run here. Independent file payload preparations use at most four workers;
-   versions of one file and that file's protection route remain sequential.
-   This phase writes no PREPARE, ACCEPT, FINALIZE or PUBLICATION record and does
-   not mark the live workspace committed.
-3. Reacquire the live mutex. Refresh protected account status at the application
-   boundary and recheck current repository grants, workspace owner and fence,
-   lease expiry, exact workspace contents, configuration, publication snapshot,
-   sequence, decision slot, and business/topology generations. Then publish the
-   single serialized decision and update the live workspace.
+<a id="boundaries"></a>
 
-The live Engine conservatively fences other ordinary writes, protected account
-publication, purge cleanup, and degraded recovery publication while preparation
-owns its admission. They return retryable COMMIT_PREPARATION_BUSY; reads remain
-available. This prevents physical container relocation during payload install.
-Workspace abort may still invalidate the prepared workspace without removing its
-staged input. The final authority and exact-base checks remain in force: any
-stale base yields a definite retryable conflict before ACCEPT, not an
-indeterminate operation. Retry with the same operation ID and request digest.
-See [write-admission details](detached-write-admission.md) for scope and limits.
+## 阶段边界
 
-## Verification and lifetime
+1. 持有活动 Engine 互斥锁时，对请求授权，捕获其精确的工作区、配置、状态和发布基线，
+   并获取该 Engine 的一个准备准入名额。此步骤不读取载荷。
+2. 释放互斥锁。私有且不能发布的规划快照验证请求并构建尚未发布的变更。
+   源内容哈希、完整载荷复制、验证、元数据预检和按内容寻址的元数据写入在此执行。
+   相互独立的文件载荷准备最多使用四个工作线程；同一文件的各版本及其保护路径
+   仍按顺序处理。此阶段不写入 PREPARE、ACCEPT、FINALIZE 或 PUBLICATION 记录，
+   也不将活动工作区标记为已提交。
+3. 重新获取活动互斥锁。在应用边界刷新受保护账户状态，重新检查当前仓库授权、
+   工作区所有者与隔离栅栏、租约有效期、精确工作区内容、配置、发布快照、序列号、
+   决策槽，以及业务/拓扑代次。随后发布单个串行化决策并更新活动工作区。
 
-Detached publication preparation fully verifies each replica and retains opaque,
-non-serializable evidence bound to its held file descriptors, metadata, disk
-identity and candidate. The locked decision path rechecks that exact evidence
-instead of rereading the payload. Per-payload held descriptors are capped at 128
-(four per replica). Larger candidates retain only disk identity handles and fully
-reverify replicas sequentially during preparation, before the first decision
-record, and before issuing each payload receipt. This bounded-descriptor fallback
-supports large batches but performs full payload reads in the final critical
-section. It does not substitute timestamp-only evidence for held inode proofs.
-Publication still requires verified complete replicas; recovery has no live proof
-and performs complete verification.
+准备过程占有准入名额期间，活动 Engine 会保守阻止其他普通写入、受保护账户发布、
+清除清理和降级恢复发布。这些操作返回可重试的 COMMIT_PREPARATION_BUSY，
+读取仍然可用。该机制防止载荷安装期间发生物理容器迁移。
+工作区中止仍可使已准备工作区失效，但不会移除其暂存输入。
+最终权限与精确基线检查仍然有效：任何过期基线都会在 ACCEPT 之前产生明确、可重试的
+冲突，而不是结果不确定的操作。重试应使用相同操作 ID 和请求摘要。
+范围与限制见[写入准入细节](detached-write-admission.md)。
 
-The preparation owns duplicate handles for the pool's existing process locks.
-Those locks remain alive if the original Engine owner is dropped during work.
-The preparation admission follows a running blocking task through request
-cancellation and is released on completion or drop. Cancelled or stale preparation
-may leave immutable unreferenced payloads/content-addressed metadata. It cannot
-publish a stale workspace or remove the original staged input.
+<a id="verification-and-lifetime"></a>
 
-## Cost and limits
+## 验证与生命周期
 
-There is one detached workspace preparation per Engine, not a process-global
-limit shared by unrelated pools. This bounds the additional metadata snapshot to
-one extra full State clone: the peak is live state, frozen planning state and
-planned next state. Workers share the snapshot; they do not clone State per file.
-The snapshot copy itself still takes the mutex and is proportional to metadata
-size. This phase does not introduce a copy-on-write State representation.
+脱离锁的发布准备会完整验证每个副本，并保留不透明、不可序列化的证据，绑定持有的
+文件描述符、元数据、磁盘身份和候选。加锁的决策路径重新检查这一精确证据，
+而不再重读载荷。为载荷保留的文件描述符总数上限为 128 个（每副本四个）。
+更大的候选只保留磁盘身份句柄，并在准备期间、首条决策记录写入之前，以及每份载荷收据
+签发之前，顺序完整复验副本。这种有界描述符回退支持大批次，但会在最终临界区内完整
+读取载荷。它不会用仅含时间戳的证据替代持有 inode 的证明。
+发布仍要求完整副本通过验证；恢复不持有运行期证明，因此会执行完整验证。
 
-Other mutation classes, package import/export, historical-save operations and
-recovery remain on their existing synchronous paths. This is not a claim that
-all Engine work is lock-free. Deterministic tests check boundaries, verification,
-staleness, authorization, fault points and bounded worker count; no throughput
-claim follows from these structural tests or tmpfs timings.
+准备对象持有池现有进程锁的重复句柄。即使原始 Engine 所有者在工作期间被释放，
+这些锁仍然有效。请求取消后，准备准入名额仍跟随正在运行的阻塞任务，
+在任务完成或持有对象释放时归还。已取消或过期的准备可能留下未被引用的不可变载荷
+或按内容寻址的元数据，但不能发布过期工作区，也不能移除原始暂存输入。
+
+<a id="cost-and-limits"></a>
+
+## 成本与限制
+
+每个 Engine 最多有一个脱离锁的工作区准备，并非由无关池共享进程级全局限制。
+因此额外元数据快照被限制为多一份完整 State 克隆：峰值同时存在活动状态、
+冻结的规划状态和规划后的下一状态。工作线程共享快照，不会为每个文件克隆 State。
+快照复制本身仍持有互斥锁，其成本与元数据大小成正比。
+本阶段没有引入写时复制的 State 表示。
+
+其他变更类型、包导入/导出、历史保存操作和恢复仍走现有同步路径。
+本文不声称全部 Engine 工作都无锁。确定性测试检查阶段边界、验证、过期状态、授权、
+故障点和工作线程数量上限；不能从这些结构测试或 tmpfs 计时推导吞吐量结论。

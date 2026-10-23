@@ -1,90 +1,40 @@
-# Date/time capability
+<a id="datetime-capability"></a>
 
-`date-time` owns calendar arithmetic, timestamps, UTC and explicit fixed offsets,
-format descriptions, parsing, formatting, and optional serialization. It replaces
-five packages (`time`, `time-core`, `deranged`, `powerfmt`, `num-conv`) with one
-functional package, not forwarding wrappers or compatibility Cargo aliases.
-The Rust import is `date_time`; standard-library `std::time`/`core::time` and the
-tracing collector's private `fmt::time` namespace remain distinct.
+# 日期与时间能力
 
-Calendar units, ranged integer invariants, width-aware display and integer
-conversions now share one compilation/feature boundary. Support modules are
-private except for intentionally exported calendar units and utility functions.
-The numeric helper retains the widening and low-bits truncation contracts actually
-used by date/time arithmetic, not deprecated conversion aliases or unused
-saturating/checked extension APIs. Unused standalone formatter buffer/extensions
-are removed. Ranged arithmetic keeps one uniform generated implementation across
-integer widths; narrowly scoped dead-code allowances account for width/feature
-selection, without weakening the warning gate. The 68 hyphenated lint names from
-the time manifest become underscore spellings with unchanged levels/priorities.
-`check-cfg` remains Cargo's hyphenated configuration key.
+`date-time` 负责日历运算、时间戳、UTC 与显式固定偏移、格式描述、解析、格式化及可选序列化。它将 `time`、`time-core`、`deranged`、`powerfmt`、`num-conv` 五个包合为一个职责包，而非转发包装或兼容 Cargo 别名。Rust 导入名为 `date_time`；标准库的 `std::time` / `core::time` 及 tracing 采集器私有 `fmt::time` 命名空间与它不同。
 
-## Supported consumers and features
+日历单位、有界整数不变量、宽度感知显示与整数转换共用编译/特性边界。除有意公开的日历单位与工具函数外，支持模块均私有。数值辅助层只保留日期运算实际使用的扩宽与低位截断契约，不保留废弃转换别名或未用的饱和/检查扩展 API。未用的独立格式缓冲及扩展已移除。有界运算在各整数宽度上使用统一生成实现；宽度/特性选择所需的 dead-code 例外范围受限，不降低警告门禁。原 time manifest 的 68 个连字符 lint 名改为下划线拼写，级别和优先级不变；`check-cfg` 仍是 Cargo 的连字符配置键。
 
-- storage-engine uses formatting/parsing for stored container timestamps.
-- storage-server uses formatting for wire timestamps and telemetry.
-- tracing's `time` feature enables date-time formatting for its real `UtcTime`
-  and `OffsetTime` collectors. A fixed offset is supplied explicitly.
-- The serialization gate exercises the actual data-serialization/json-codec
-  providers, including a date-time JSON round trip.
-- `std` (default) enables `alloc`. No-default-feature calendar/duration arithmetic
-  requires neither allocator nor standard library. Parsing is available without
-  either; allocated format descriptions require `alloc`.
-- `formatting` requires `std`; `large-dates` expands year ranges locally, without
-  cross-package feature forwarding.
-- `serialization` uses data-serialization directly, including private ranged
-  representations. Human-readable and well-known adapters additionally enable
-  formatting/parsing. Compact serialization does not require `std`.
-- `wasm-bindgen` retains the actual js-sys Date interoperability and clock path
-  for browser WASM. Linux amd64 is the native platform; browser WASM is retained
-  for the product's web client, not as another native platform.
+<a id="supported-consumers-and-features"></a>
 
-## Explicit unsupported boundary
+## 消费者与支持特性
 
-There is no OS-local-timezone discovery or timezone-refresh API. The previously
-advertised `local-offset` feature referenced an absent `num_threads` backend and
-had no product consumer. Its feature, local-offset error variant, local clock and
-TZ-refresh methods and platform implementations are removed and archived in the
-consolidation receipt. UTC is never substituted for a requested system offset.
-Callers provide a fixed offset, or use UTC. Named zones, DST rules and changing
-local timezone resolution require a separately designed capability.
+- storage-engine 解析和格式化持久化容器时间戳。
+- storage-server 格式化线上时间戳及遥测时间。
+- tracing 的 `time` 特性为真实 `UtcTime`、`OffsetTime` 采集器启用 date-time；固定偏移由调用者显式提供。
+- 序列化门禁使用真实 data-serialization/json-codec，包含 date-time JSON 往返。
+- 默认 `std` 启用 `alloc`。禁用默认特性的日历/时长运算不需要分配器或标准库；解析也不需要二者，动态分配的格式描述需要 `alloc`。
+- `formatting` 需要 `std`；`large-dates` 在包内扩展年份范围，无跨包特性转发。
+- `serialization` 直接使用 data-serialization，包括私有有界表示。可读及知名格式适配器另启用格式化/解析；紧凑序列化不需要 `std`。
+- `wasm-bindgen` 保留真实 js-sys Date 互操作和浏览器时钟路径。原生目标为 Linux amd64；浏览器 WASM 服务于 Web 客户端，不是另一种原生平台。
 
-The unbacked random, property-test and procedural-macro features are absent.
-No date/time procedural macro package was vendored or merged. Use constructors
-and runtime format-description parsing, not an advertised unavailable macro.
-Negative gates verify unsupported features, local-time methods and private
-implementation modules cannot be consumed.
+<a id="explicit-unsupported-boundary"></a>
 
-## Evidence and limits
+## 明确不支持的能力
 
-`.github/scripts/check-date-time-family.py` checks native/WASM isolated feature
-closures, calendar and timestamp boundary behavior, real serialization, and
-actual tracing UTC/+05:30 timer formatting. WASM checks are compilation evidence,
-not browser execution. Existing tracing and serialization gates retain their
-owned consumers and now resolve the date-time package.
+不提供操作系统本地时区发现或时区刷新 API。原 `local-offset` 特性引用缺失的 `num_threads` 后端，也没有产品消费者；特性、本地偏移错误变体、本地时钟及 TZ 刷新方法和平台实现已移除并归档。请求系统偏移时不能静默以 UTC 代替。调用者使用 UTC 或显式固定偏移；命名时区、夏令时及变化中的本地时区解析需要单独设计。
 
-All original provenance stays immutable. External historical tests are relocated
-with exact reversible import/config edits, not silently rewritten as new tests.
-Project capability tests live outside `src`, under `test/date-time`.
-The 17 historical benchmark source files stay byte-identical and inert pending a
-separate audited relocation. They are not executed and no speed, binary-size or
-memory improvement is claimed from package consolidation. Historical upstream
-integration/doctest material is not equated with the executable project gates.
+未提供实际实现的随机、属性测试及过程宏特性已删除。没有引入或合并日期过程宏包；应使用构造器和运行时格式描述解析，而非不存在的宏。负向门禁验证不支持的特性、本地时间方法及私有实现模块无法被消费。
 
-The feature-isolated inherited default unit target executes 64 tests. The ISO
-fixture now uses two ordinary table-driven tests instead of an unavailable
-`rstest` provider: all 23 configuration cases retain their six assertions, and
-all seven invalid encodings are checked independently. The receiving workspace's
-`cargo test -p date-time --lib` passes 66 tests with formatting enabled. Original
-source attribution is unchanged; the [bounded fixture inverse proof](../reports/date-time-iso-fixture-proof.json)
-records the reviewed transformation separately from frozen consolidation history.
-The historical all-feature unit target still references unavailable `serde_test2`
-and the old JSON test harness. Feature-isolated project gates independently
-exercise the real serialization, formatting and parsing providers; they are not
-presented as a successful complete upstream all-features unit suite.
+<a id="evidence-and-limits"></a>
 
-The new byte-count regression exposed and fixes an existing RFC3339 bug:
-`format_into` wrote fractional-second digits without counting them in its return
-value. Its returned count now includes those digits. Tests compare reported and
-actual byte counts for 1-, 3- and 9-digit fractions in UTC and +05:30, including a
-pre-epoch instant. This is a correctness fix, not a performance claim.
+## 证据与限制
+
+`.github/scripts/check-date-time-family.py` 检查原生/WASM 隔离特性闭包、日历和时间戳边界、真实序列化，以及 tracing 的 UTC / +05:30 格式化。WASM 检查是编译证据，不是浏览器执行。tracing 与序列化门禁保留各自消费者，现解析到 date-time 包。
+
+原始来源保持不可变。历史外置测试通过精确可逆的导入/配置编辑迁移，不默默改写为新测试。项目能力测试位于 `test/date-time`，不在 `src`。17 份历史基准源码仍原样、不执行，等待单独审阅的迁移；不能由包合并推断速度、产物大小或内存改善，也不能把历史上游集成/文档测试材料等同于项目门禁。
+
+特性隔离的继承默认单元目标执行 64 项测试。ISO 夹具将不可用的 `rstest` 改为两项普通表驱动测试：23 组配置各保留六项断言，另独立检查七种非法编码。接收工作区启用 formatting 后，`cargo test -p date-time --lib` 通过 66 项测试。原始来源归属不变；[限定夹具逆向证明](../reports/date-time-iso-fixture-proof.json)将此已审阅转换与冻结整合历史分开记录。历史全特性单元目标仍引用不可用的 `serde_test2` 和旧 JSON 测试框架；独立能力门禁使用真实序列化、格式化与解析实现，不代表完整上游全特性套件通过。
+
+新增字节计数回归发现并修复既有 RFC3339 缺陷：`format_into` 写入小数秒数字却未计入返回值。现在返回值包含这些字节。测试比较 UTC 和 +05:30 中 1、3、9 位小数秒的报告/实际字节数，包含纪元前时刻。这是正确性修复，不是性能声明。

@@ -1,138 +1,71 @@
-# Storage-independent management
+<a id="storage-independent-management"></a>
 
-The daemon owns a system-disk management root independently of configured data-disk roots. HTTP assets, login, accounts and host diagnostics do not open the storage engine on their request path. Engine open/recovery runs in one bounded background worker. A hung worker retains its admission slot; HTTP timeouts do not spawn replacement workers indefinitely.
+# 独立于存储的管理面
 
-## Authority and revocation
+守护进程在系统盘上拥有独立于数据盘根目录的管理目录。HTTP 资源、登录、账户和宿主诊断的请求路径不打开存储引擎。引擎打开/恢复由一个有界后台工作线程执行；线程挂起仍占用准入槽，HTTP 超时不得无限创建替代线程。
 
-`management-auth.json` is the durable primary for accounts, grants and sessions. Engine copies are disaster-recovery snapshots, never an authorization fallback. The old `auth.json` cache cannot authorize offline login. A durable `management-authority.json` fence in the system state root prevents automatic replay of old engine credentials after primary loss. A missing or invalid primary is recovery-required, not an empty installation or a default administrator.
+<a id="authority-and-revocation"></a>
 
-Account changes first commit to the system primary. Storage admission closes while the newest account snapshot is asynchronously copied; only a matching current snapshot can reopen admission. Sessions are not included in disaster-recovery copies. Replica failure cannot roll back a password change, revocation or durable account change.
+## 权威与撤销
 
-At actual engine dispatch, after acquiring the engine lock, managed requests revalidate against the current primary, including session expiry, logout and account generation. There is no engine-snapshot fallback if the management authority disappears. Already-admitted operations may finish; this boundary is not rollback of work already executing. Management authentication never acquires the engine lock.
+`management-auth.json` 是账户、授权和会话的持久化主权威。引擎副本只作灾备快照，不能用于授权回退；旧 `auth.json` 缓存不能授权离线登录。系统状态目录中的持久 `management-authority.json` 围栏阻止主权威丢失后自动重放旧引擎凭据。主文件缺失或无效表示需要恢复，不是空安装或默认管理员。
 
-## States and recovery
+账户变更先提交到系统主权威。异步复制最新账户快照期间关闭存储准入，只有匹配当前状态的副本才能重新开放。会话不写入灾备副本；副本失败不能回滚密码变更、撤销或持久账户变更。
 
-Public `/api/management/status` exposes only management liveness, authentication availability and storage state: `ready`, `read_only`, `unavailable`, `unconfigured`, or `recovery_required`. Authentication availability is `ready`, `busy` (a credential operation currently owns the state lock), or `recovery_required`. `busy` is transient, does not diagnose credential corruption, and must not trigger logout or recovery. Status probing never waits for that lock. It does not disclose disk paths or credentials. Missing storage configuration alone does not authorize setup.
+受管理请求取得引擎锁后，在实际分派前按当前主权威重新验证会话过期、登出和账户代数。管理权威消失时不回退到引擎快照。已获准执行的操作可能完成，此边界不回滚已经执行的工作。管理认证从不获取引擎锁。
 
-Storage observations and capabilities are cached. A stale observation closes storage admission after fifteen seconds rather than leaving readiness advertised indefinitely. Host telemetry remains available with disk sampling marked unavailable. Data operations fail closed when admission is unavailable. Readiness/capabilities and protected setup use management capacity independently of blocked data requests.
+<a id="states-and-recovery"></a>
 
-Authenticated administrators may request `/api/system/storage/retry`. Recovery is serialized. A faulted engine cannot be replaced while a request, observer or transfer retains it; `STORAGE_DRAINING` explicitly asks the caller to retry after those holders finish. A permanently blocked disk call may require a daemon restart or host-level intervention. A restart does not reset authentication.
+## 状态与恢复
 
-First setup and explicit disaster recovery use the separately documented protected Web setup protocol. A local, expiring bootstrap capability is required when no valid primary exists. Restoring old credentials requires acknowledging that older passwords or grants may return; restored sessions are always discarded. Authenticated storage restoration preserves a valid system primary.
+公开 `/api/management/status` 仅暴露管理存活、认证可用性和存储状态：`ready`、`read_only`、`unavailable`、`unconfigured`、`recovery_required`。认证可用性为 `ready`、`busy`（凭据操作占有状态锁）或 `recovery_required`。`busy` 是瞬态，不表示凭据损坏，不应导致登出或恢复。状态探测不等待该锁，也不泄露磁盘路径或凭据。仅缺少存储配置不足以授权初始化。
 
-Initialization completion is deliberately narrower than credential recovery: only a pristine pool bound to this Web setup's durable intent and post-initialization proof, before any authority or credential publication, can complete. Existing authority markers always block this path, even if the primary is missing. Other interrupted stages remain fail-closed for explicit local diagnosis.
+存储观测和能力缓存；观测过期十五秒后关闭存储准入，不无限保留就绪声明。宿主遥测继续可用，磁盘采样标为不可用。数据操作在无准入时失败关闭；就绪/能力查询与受保护初始化使用独立管理容量，不受阻塞数据请求耗尽。
 
-Locally provisioned configuration presets are identifiers, not browser-supplied paths or arbitrary JSON. Their files are not read during HTTP startup or preset listing. An authorized preview reads only the selected protected file, hides disk paths, and returns a configuration digest. Initialization checks that digest again before writing so a changed local preset cannot silently substitute another topology or policy.
+已认证管理员可请求 `/api/system/storage/retry`。恢复串行执行；请求、观测器或传输仍持有故障引擎时不能替换，`STORAGE_DRAINING` 明确要求持有者完成后重试。永久阻塞的磁盘调用可能需要重启守护进程或宿主干预；重启不会重置认证。
 
-## Unconfirmed browser actions
+首次初始化和显式灾备恢复使用独立的受保护 Web 协议。没有有效主权威时，需要本地且有时效的 bootstrap 能力。恢复旧凭据须确认旧密码/授权可能重现；恢复会话一律丢弃。经认证的存储恢复保留有效系统主权威。
 
-An interrupted account update leaves the current administration view write-fenced.
-Refreshing `/api/admin/accounts` is observation only: neither an old nor an updated
-snapshot proves that the original request has finished, and passwords are not
-represented in that snapshot. There is currently no durable, request-correlated
-account-operation receipt/status API, automatic replay, or online unlock action.
-Other operation IDs can still be resolved only by their own terminal receipts.
+初始化补全比凭据恢复更窄：仅本次 Web 初始化持久意图与初始化后证明绑定的原始空池，且尚未发布权威或凭据，才可补全。任何既有权威标记均阻止此路径，即使主文件缺失也如此。其余中断阶段失败关闭，需显式本地诊断。
 
-For an unknown account update, do not issue an opposite update from another tab
-or bypass the fence by reloading. An operator must quiesce account writers, stop
-and restart the daemon so old queued/running requests cannot publish later, then
-check the authoritative account state using a valid administrator session. Verify
-credentials separately if the update changed a password; account-list equality
-is not password confirmation. Only after that reconciliation should a fresh
-management session issue further updates. Restarting does not undo a committed
-account change or reset authentication. Durable correlated account receipts and
-safe online reconciliation remain a separate protocol/persistence follow-up.
+本地配置预设是标识符，不是浏览器提供的路径或任意 JSON。HTTP 启动和预设列表不读取文件；授权预览只读选中的受保护文件，隐藏磁盘路径并返回配置摘要。初始化写入前再次核对摘要，防止本地修改静默替换拓扑或策略。
 
-When sign-out is unconfirmed, the current page retains the old credential solely
-for revocation retry. Login, session restore, setup and business actions in that
-page remain unavailable until sign-out succeeds or the server confirms the
-session is already unauthorized. A failed sign-out must not be replaced by a new
-login in the page holding that pending revocation.
+<a id="unconfirmed-browser-actions"></a>
 
-These browser fences and pending logout intent are in memory, not a durable or
-cross-tab protocol. App-owned language reloads are blocked, but a manual reload,
-closed tab, browser restart or independently opened tab can lose that local
-intent and attempt to restore a still-valid server cookie. None of those actions
-confirms logout or resolves an unknown account mutation. Keep the failed-logout
-page open and retry revocation; do not treat another login or a fresh page as
-proof that the earlier session was revoked. Persisted, cross-tab revocation intent
-is not implemented by this containment change.
+## 浏览器动作结果不确定
 
-## HTTP resource isolation
+账户更新中断后，当前管理界面保持写围栏。刷新 `/api/admin/accounts` 仅为观测：旧或新快照都不能证明原请求已结束，且快照不包含密码。当前没有持久、与请求关联的账户操作回执/状态 API、自动重放或在线解锁。其他操作 ID 也只能由自身终态回执确认。
 
-Password verification runs outside the shared credential-state lock. Session
-publication rechecks the account generation, password hash, enabled state and
-recovery fence under the lock; a concurrent password/role change cannot issue a
-session from the old proof. Durable publication remains serialized.
+账户更新结果未知时，不得从其他标签页执行反向更新或刷新绕过围栏。操作者须停止账户写入方，停止并重启守护进程，确保旧排队/运行请求不再稍后发布，再用有效管理员会话检查权威账户状态。若改了密码，单独验证凭据；账户列表相同不能证明密码。完成核对后才用新管理会话继续更新。重启不撤销已提交变更，也不重置认证。持久关联回执及安全在线核对仍是独立协议/持久化后续工作。
 
-Each router admits at most eight ordinary authorization, account-list and logout
-jobs before scheduling blocking work. Upload-status authorization, backend status and spool inspection
-share one job holding both backend and account-scoped read admission. These
-permits remain owned by actual blocking work after HTTP cancellation.
+登出结果未确认时，当前页面只为重试撤销而保留旧凭据。直到登出成功或服务端确认会话已无权，页面不可登录、恢复会话、初始化或执行业务动作。持有待撤销意图的页面不能以新登录替代失败登出。
 
-Telemetry status and history share an independent two-job pool, with admission
-retained until blocking work completes, including after HTTP cancellation. They
-do not consume data-backend or management-readiness capacity.
+这些浏览器围栏与待登出意图仅在内存中，不是持久或跨标签协议。应用发起的语言重载会被阻止，但手动刷新、关闭标签、浏览器重启或独立标签可能丢失本地意图，并尝试恢复仍有效的服务端 cookie。这些动作都不能证明登出或解决未知账户变更。保留失败登出页面并重试撤销，不把新登录或新页面当作旧会话已撤销的证明；持久跨标签撤销意图尚未实现。
 
-Mutating API requests have a separate 64-request ingress bound before body
-collection. Ordinary JSON/login body collection has a 30-second total deadline
-as well as its existing byte limit. Setup bodies retain their stricter 10-second outer
-deadline. Streaming uploads retain their separate upload limits and deadlines. Read-only health and management status
-requests do not consume the mutating-request pool.
+<a id="http-resource-isolation"></a>
 
-Optional SMB startup waits and directory preparation run off async workers. A
-termination signal requests HTTP graceful shutdown and immediately stops optional
-SMB admission and closes its connected sockets, without waiting for HTTP drain.
-HTTP completion, error, or service-future cancellation also drops the owned bridge;
-it is not a detached background listener. An optional bridge failure still leaves
-management HTTP available.
+## HTTP 资源隔离
 
-Admitted HTTP requests drain normally; no arbitrary timeout abandons publication
-or mistakes dropping a server future for cancelling the HTTP library's connection
-tasks. Already-running SMB/backend blocking work retains its permits and recovery
-evidence until it returns. Socket shutdown wakes idle RPC reads, but cannot cancel
-a filesystem system call. HTTP drain and the Tokio runtime's blocking-worker join
-are therefore not bounded when kernel I/O cannot return; host-level intervention
-may still be required. No shutdown path force-exits the process to claim success.
-Native management recovery writers are owned as well: shutdown closes their
-enqueue gate and waits for the current worker without allowing a generation
-follow-up. HTTP setup errors and service-future cancellation also retain this
-drain in runtime-owned blocking work. The example systemd unit uses
-`TimeoutStopSec=infinity` to preserve this durability contract. An administrator
-may explicitly force-stop a process stuck in kernel I/O, but that is a crash,
-not a successful graceful drain; recovery must complete on the next start.
+密码验证在共享凭据状态锁之外执行；发布会话时在锁内重新核对账户代数、密码哈希、启用状态和恢复围栏，防止并发密码/角色变更后凭旧证明发会话。持久发布仍串行。
 
-## Optional HTTP files at startup
+每个路由器在调度阻塞工作前，最多准入八项普通授权、账户列表和登出任务。上传状态授权、后端状态及暂存清点共用一项同时持有后端和账户范围读取准入的任务。HTTP 取消后，许可仍由实际阻塞工作持有。
 
-HTTP upload staging is optional to management startup. If its directory cannot
-be prepared, locked or safely inventoried, login, accounts, protected setup,
-storage recovery and host diagnostics remain available. Upload and upload-status
-requests return `503 HTTP_UPLOADS_UNAVAILABLE` after normal authentication and
-CSRF admission. There is no unbudgeted or in-memory upload fallback. Existing
-spool files are retained; repair the local cause and restart to recover inventory.
-Immutable content reads do not require the HTTP upload spool.
+遥测状态与历史共用独立的双任务池，准入直到阻塞工作完成才释放，包括 HTTP 取消之后；它们不消耗数据后端或管理就绪容量。
 
-A configured Web asset tree that is missing, unreadable, incomplete (no
-`index.html`), over admission limits, or contains rejected links/special files
-is not installed as a static file service. Non-API fallback requests instead
-return `503 WEB_ASSETS_UNAVAILABLE` with `no-store`; reserved unknown API paths
-remain JSON 404s. Management HTTP APIs still work, but the browser UI is not
-available without a valid asset bundle. Keep assets on an independently working
-system filesystem to preserve the normal Web interface during data-disk failure.
+变更 API 在收集请求体前有独立的 64 请求入口上限。普通 JSON/登录请求体除字节上限外有 30 秒总期限；初始化仍用更严格的十秒外层期限。流式上传保留独立上限/期限。只读健康和管理状态请求不消耗变更池。这里的上传指保留的 HTTP API，不是 Web 产品上传功能。
 
-Public management status includes coarse `auxiliary.http_uploads` and
-`auxiliary.web_assets` startup states (`ready`, `unavailable`; assets may also be
-`not_configured`), without filesystem paths or internal error details. These are
-startup admission results, not continuous probes or a claim of data readiness.
-Listener/origin/proxy/admission validation, credential authority, bootstrap
-capability checks, CSRF and path rules remain mandatory. Security errors outside
-these isolated optional capabilities are not globally ignored.
+可选 SMB 启动等待及目录准备不占异步工作线程。终止信号请求 HTTP 优雅关闭，并立即停止可选 SMB 准入、关闭连接，不等待 HTTP 排空。HTTP 完成、失败或服务 future 取消都会释放所拥有的桥接；它不是脱离所有者的后台监听器。可选桥接失败仍保留管理 HTTP。
 
-This startup isolation does not solve the existing static-serving time-of-check /
-time-of-use boundary: the admitted asset tree must remain operator-controlled and
-unchanged while the daemon runs. The current static service reopens pathnames, so
-post-admission replacement (including symlink races) is not safe-open protection.
-The next hardening step is descriptor-relative, no-symlink file opening through
-response completion, including compressed representations and validators, with
-replacement/race tests. A blocked kernel I/O call during startup is also not
-bounded by this change; only completed initialization failures are isolated.
+已准入 HTTP 请求正常排空，不以任意超时放弃发布，也不把丢弃服务 future 当成取消 HTTP 库连接任务。已经运行的 SMB/后端阻塞工作持有许可和恢复证据直到返回。socket 关闭可唤醒空闲 RPC 读，但不能取消文件系统调用。因此内核 I/O 不返回时，HTTP 排空和 Tokio 阻塞线程等待没有时间上界，可能需宿主干预；没有关闭路径强制退出后宣称成功。原生管理恢复写入器同样有所有者：关闭入队入口，等待当前工作且不允许后继代数任务。HTTP 初始化失败或服务 future 取消后，该排空仍由运行时阻塞任务承担。示例 systemd 单元使用 `TimeoutStopSec=infinity` 保留持久性契约。管理员可显式强停卡在内核 I/O 的进程，但这是崩溃，不是成功优雅退出；下次启动必须完成恢复。
+
+<a id="optional-http-files-at-startup"></a>
+
+## 启动时的可选 HTTP 文件
+
+HTTP 上传暂存不是管理启动的必要条件。目录准备、加锁或安全清点失败时，登录、账户、受保护初始化、存储恢复和宿主诊断仍可用。上传/上传状态在正常认证及 CSRF 准入后返回 `503 HTTP_UPLOADS_UNAVAILABLE`，不使用无预算或内存回退。原暂存文件保留，修复本地原因后重启恢复清点。不可变正文读取不依赖上传暂存。
+
+配置的 Web 资源树若缺失、不可读、不完整（无 `index.html`）、超准入上限或含被拒绝链接/特殊文件，则不安装静态服务；非 API 回退返回带 `no-store` 的 `503 WEB_ASSETS_UNAVAILABLE`，保留的未知 API 路径仍返回 JSON 404。管理 HTTP API 继续可用，但没有有效资源包就没有浏览器界面。将资源放在独立可工作的系统文件系统，才能在数据盘故障时保留正常 Web 界面。
+
+公开管理状态的 `auxiliary.http_uploads`、`auxiliary.web_assets` 只给出粗粒度启动状态 `ready` / `unavailable`，资源还可为 `not_configured`，不含路径或内部错误。这是启动准入结果，不是持续探测，也不证明数据就绪。监听、origin、代理、准入、凭据权威、bootstrap、CSRF 和路径规则仍必须检查；不能全局忽略这些隔离可选能力之外的安全错误。
+
+此启动隔离没有解决静态服务检查/使用时差：准入资源树运行期间必须受操作者控制且保持不变。当前静态服务重新按路径打开，因此准入后替换（含符号链接竞态）不具备安全打开保护。后续加固需要直到响应完成都使用描述符相对、禁止符号链接的打开方式，包含压缩表示、验证器及替换/竞态测试。启动期阻塞内核 I/O 也未因此有界；只隔离已返回的初始化失败。

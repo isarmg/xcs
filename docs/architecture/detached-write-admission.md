@@ -1,31 +1,26 @@
-# Detached preparation write admission
+<a id="detached-preparation-write-admission"></a>
 
-Detached workspace preparation releases the Engine mutex for payload I/O, but
-it does not permit concurrent physical namespace mutations. The live Engine's
-preparation claim fences ordinary write admission until the owned preparation
-is dropped or consumed under exclusive Engine access. The private planning view
-uses an independent admission flag so it can build its unpublished mutation.
+# 脱离锁的准备流程与写入准入
 
-This deliberately conservative restriction prevents a container rename from
-moving a directory after payload installation resolves its path and before it
-creates or opens the destination. Final state-generation checks alone cannot
-repair filesystem side effects from that race.
+脱离锁的工作区准备在载荷 I/O 期间释放 Engine 互斥锁，但不允许并发修改物理命名空间。
+活动 Engine 的准备占用会阻止普通写入准入，直到准备对象被释放，或在独占 Engine
+访问期间被消费。私有规划视图使用独立的准入标志，因此能够构建尚未发布的变更。
 
-Queries, content reads, checksums, and disk observations remain available. They
-do not repair containers or purge payloads. Ordinary writes, upload completion,
-protected authentication publication, purge cleanup, and degraded recovery
-publication reject with retryable COMMIT_PREPARATION_BUSY. An already running
-upload may finish copying its private scratch bytes, but cannot publish its
-workspace manifest until admission is free. Workspace abort may still fence the
-workspace because it changes only its manifest and preserves staged payloads.
+这一有意采取的保守限制防止如下竞争：载荷安装解析了目标路径之后、创建或打开目标
+之前，容器重命名将目录移走。仅靠最终的状态代次检查无法修复该竞争造成的文件系统
+副作用。
 
-The finisher releases its own claim only after regaining exclusive Engine
-access, then repeats all original authority, lease, workspace, and publication
-base checks. Cancellation retains the claim for as long as the worker owns it.
-A busy protected-authentication write is a definite pre-publication rejection:
-its local account changes roll back without latching authentication into an
-indeterminate recovery state. Other backup errors retain fail-closed behavior.
+查询、内容读取、校验和计算和磁盘观测仍然可用。这些操作不会修复容器或清除载荷。
+普通写入、上传完成、受保护认证信息发布、清除清理和降级恢复发布会被拒绝，
+返回可重试的 COMMIT_PREPARATION_BUSY。已经运行的上传可以完成其私有临时字节复制，
+但在准入名额释放前不能发布工作区清单。工作区中止仍可通过隔离栅栏使工作区失效，
+因为它仅改变清单并保留暂存载荷。这里的上传指服务端保留的传输路径，
+不表示当前 Web 提供上传功能。
 
-Both COMMIT_PREPARATION_STALE and payload-proof PREPARATION_STALE map to HTTP
-409; retryability is retained. This is read concurrency, not general concurrent
-write support.
+收尾方只有在重新取得 Engine 独占访问后才释放自己的占用，随后重复原有的全部权限、
+租约、工作区和发布基线检查。取消请求不会提前释放仍由工作线程持有的占用。
+受保护认证信息写入遇忙时，得到的是明确的发布前拒绝：本地账户改动会回滚，
+不会使认证陷入结果不确定的恢复状态。其他备份错误仍采取故障关闭策略。
+
+COMMIT_PREPARATION_STALE 和载荷证明的 PREPARATION_STALE 均映射为 HTTP 409，
+并保留可重试属性。这提供的是读并发，不是通用并发写入支持。

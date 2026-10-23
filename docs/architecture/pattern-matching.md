@@ -1,54 +1,68 @@
-# Pattern matching source family
+<a id="pattern-matching-source-family"></a>
 
-## Package boundary
+# 模式匹配源码族
 
-One `regex` package owns four implementation layers. Their dependency direction is acyclic:
+<a id="package-boundary"></a>
 
-- `regex::syntax`: AST, HIR, Unicode properties, UTF-8 ranges and literal extraction. Requires `alloc`, not a matcher.
-- `regex::literal`: Aho–Corasick and literal prefilters. Requires `alloc`; `literal-perf` opts into memchr acceleration.
-- `regex::automata`: DFA/NFA construction and search, hybrid execution, captures and the meta engine. Uses syntax and literal layers only through explicit capabilities.
-- Root `Regex`, `RegexSet` and `bytes` APIs: enabled by `matcher`; reuse the same automata and syntax types rather than wrappers or duplicate crates.
+## 包边界
 
-Syntax-only consumers use `default-features = false, features = ["syntax"]`; Unicode and standard-library support remain independent. `jsonschema-regex` uses syntax/std/Unicode without enabling a matcher. `matchers` selects DFA construction/search; `fancy-regex` selects its actual automata requirements. `tracing-subscriber` refers to the same automata type identity. Existing high-level consumers with defaults disabled explicitly request `matcher`.
+一个 `regex` 包负责四个实现层，依赖方向无环：
 
-`dfa-search` alone is `no_std` and allocation-free: it can search precompiled DFAs without syntax compilation. `syntax`, `literal` and construction capabilities require allocation but not `std`. Both Linux amd64 and browser WASM remain supported. None of the four origins has a build script. No package-level cycle or new proc-macro dependency is introduced.
+- `regex::syntax`：AST、HIR、Unicode 属性、UTF-8 范围和字面提取，需要 `alloc`，不需要匹配器。
+- `regex::literal`：Aho–Corasick 和字面预过滤，需要 `alloc`；`literal-perf` 显式启用 memchr 加速。
+- `regex::automata`：DFA/NFA 构造与搜索、混合执行、捕获及 meta 引擎，只通过明确能力使用 syntax/literal。
+- 根 `Regex`、`RegexSet`、`bytes`：由 `matcher` 启用，复用相同自动机与语法类型，不使用包装或重复 crate。
 
-Feature unification is additive, so combining a parser consumer with a matcher consumer in one binary still enables both; parser isolation is guaranteed for its standalone feature closure, not for every unified dependency graph. `engine-perf` preserves the automata-only acceleration policy; high-level `perf` retains matcher-oriented engine selection. Package reduction is not a claimed runtime speedup.
+仅语法消费者使用 `default-features = false, features = ["syntax"]`，Unicode 和标准库能力独立选择。schema 模式转换（原 `jsonschema-regex`，现位于 `schema-validation`）使用语法/Unicode 能力而不启用匹配器。`matchers` 选择 DFA 构建/搜索；`fancy-regex` 选择实际需要的自动机能力；tracing 采集层使用相同自动机类型身份。禁用默认特性的高层消费者必须显式选择 `matcher`。
 
-## Unsupported compatibility removed
+仅 `dfa-search` 为无需分配的 `no_std`，可搜索预编译 DFA 而不编译语法；`syntax`、`literal` 和构建能力需要分配，不需要 `std`。支持 Linux amd64 和浏览器 WASM。四个来源都无构建脚本，没有新增包环或过程宏依赖。
 
-Nightly `Pattern` integration and the `pattern`, `unstable`, `use_std`, `perf-cache` compatibility feature names are not retained. The removed Pattern implementation is archived verbatim in the consolidation receipt. `arbitrary` was an advertised but unresolvable optional provider; its derive attributes and specialized impls are removed rather than exposing a broken feature. Stable parser and matcher APIs remain available. Original upstream documentation and license evidence remain immutable.
+特性统一是加法合并：同一二进制组合解析器与匹配器会启用二者。解析器隔离只针对独立特性闭包，不承诺所有统一依赖图都隔离。`engine-perf` 保留仅自动机的加速策略，高层 `perf` 保留面向匹配器的引擎选择。减少包数不代表运行加速。
 
-## Source and license attribution
+<a id="unsupported-compatibility-removed"></a>
 
-| Layer | Original package | Version | Source | License |
+## 已移除兼容接口
+
+不保留 nightly `Pattern` 集成，也不保留 `pattern`、`unstable`、`use_std`、`perf-cache` 兼容特性名。移除的 Pattern 实现在整合收据中逐字保存。`arbitrary` 曾是不可解析的可选提供者，其 derive 属性和专用 impl 已移除，不再暴露坏特性。稳定解析/匹配 API 继续可用。原上游文档和许可证据不可变。
+
+<a id="source-and-license-attribution"></a>
+
+## 来源与许可证
+
+| 层 | 原始包 | 版本 | 来源 | 许可证 |
 | --- | --- | --- | --- | --- |
-| Root API | regex | 1.13.1 | https://github.com/rust-lang/regex | MIT OR Apache-2.0 |
-| Automata | regex-automata | 0.4.18 | https://github.com/rust-lang/regex | MIT OR Apache-2.0 |
-| Syntax | regex-syntax | 0.8.11 | https://github.com/rust-lang/regex | MIT OR Apache-2.0; bundled Unicode data license |
-| Literal | aho-corasick | 1.1.5 | https://github.com/BurntSushi/aho-corasick | Unlicense OR MIT |
+| 根 API | regex | 1.13.1 | https://github.com/rust-lang/regex | MIT OR Apache-2.0 |
+| 自动机 | regex-automata | 0.4.18 | https://github.com/rust-lang/regex | MIT OR Apache-2.0 |
+| 语法 | regex-syntax | 0.8.11 | https://github.com/rust-lang/regex | MIT OR Apache-2.0；内置 Unicode 数据许可 |
+| 字面匹配 | aho-corasick | 1.1.5 | https://github.com/BurntSushi/aho-corasick | Unlicense OR MIT |
 
-The manifest combines the implementation license obligations; source-origin records retain each original license and version. Original archives, hashes, upstream manifests and Unicode notices remain under `compliance/provenance` and `compliance/licenses/upstream`. The content-addressed consolidation receipt in `compliance/rust-sources.json` records every production-file route and all 107 original external test files, including reversible import changes. No test file is discarded and each retains its original `source_sha256_before` and origin.
+manifest 合并实现所需许可义务，各来源记录仍保留独立许可证和版本。原始归档、哈希、上游 manifest、Unicode 通知在 `compliance/provenance`、`compliance/licenses/upstream`。`compliance/rust-sources.json` 中按内容寻址的收据记录每份生产文件及全部 107 份原始外置测试，包括可逆导入修改；没有丢弃测试，各自保留 `source_sha256_before` 与来源。
 
-## Verification and limits
+<a id="verification-and-limits"></a>
 
-Runnable original syntax and literal unit suites remain attached to their actual production modules. The project-owned `test/regex-family/retained_regressions.rs` adapter runs existing high-level regression, replacement and fuzz regression suites without changing assertions or supplying fake helpers.
+## 验证与限制
 
-The full automata unit harness still requires the absent real `quickcheck` and `bstr` providers and a declared `env_logger` test dependency. The upstream TOML-driven aggregate suite requires the absent `regex-test` provider. These are unavailable suites, not passing tests; their source is preserved. Existing upstream ignored expensive fuzz cases remain explicitly ignored, not newly suppressed by this consolidation. Missing `doc_comment` README inclusion was removed; Rust API examples are still directly available to rustdoc.
+可运行的原始语法/字面单元套件仍接入实际生产模块。项目 `test/regex-family/retained_regressions.rs` 适配器运行既有高层回归、替换及 fuzz 回归，不改变断言或提供假辅助实现。
 
-### Recorded verification for this isolated consolidation
+完整自动机单元框架仍需要缺失的真实 `quickcheck`、`bstr` 及声明中的 `env_logger` 测试依赖；上游 TOML 汇总套件需要缺失的 `regex-test`。这些是不可运行套件，不是通过的测试，源码继续保留。上游原有昂贵 fuzz 忽略项仍明确忽略，并非本次新增压制。移除了缺失 `doc_comment` 的 README 引入，Rust API 示例仍直接供 rustdoc 使用。
 
-- 147 syntax unit tests and 163 literal unit tests passed.
-- 52 high-level upstream regressions passed; the originally ignored `fuzz1` case was run separately and passed (53 total).
-- 17 original `matchers` unit tests and 4 direct consumer behavior tests passed, covering streaming matching, fancy backreferences/lookbehind, schema translation and tracing field filters.
-- 845 API doctests passed; 7 pre-existing upstream ignored explanatory snippets remain marked as such.
-- 42 native feature configurations and 14 WASM configurations passed, including every retained individual feature, full features and allocation-free DFA search.
-- 8 positive/negative API-boundary probes and 5 removed-feature rejection probes passed.
+<a id="recorded-verification-for-this-isolated-consolidation"></a>
 
-These results do not claim execution of unavailable quickcheck/regex-test suites. The pre-existing nightly syntax benchmark is preserved at `src/foundation/text-unicode/regex/benches/syntax.rs`, explicitly unregistered on the stable toolchain, rather than silently discarded or presented as a passing test.
+### 本次隔离整合记录的验证
 
-## Maintained verification
+- 147 项语法单元和 163 项字面单元通过。
+- 52 项高层上游回归通过；原忽略的 `fuzz1` 单独运行并通过，共 53 项。
+- 17 项原 `matchers` 单元与四项直接消费者行为通过，覆盖流式匹配、fancy 反向引用/后向断言、schema 转换和 tracing 字段过滤。
+- 845 项 API 文档测试通过；七份上游原有说明片段保持忽略。
+- 42 种原生与 14 种 WASM 特性配置通过，包含全部保留单项特性、全特性及无分配 DFA 搜索。
+- 八项正/负 API 边界探针与五项已删除特性拒绝探针通过。
 
-The foundation CI suite runs `python3 .github/scripts/check-pattern-matching.py`.
-It builds every retained individual native capability and the documented WASM boundary matrix, rejects warning diagnostics in the regex package, executes preserved syntax/literal/high-level regression tests (including the explicitly ignored fuzz regression), doctests, and real consumer behavior.
-Temporary manifests and locks live outside maintained source paths; no missing upstream provider is replaced by a mock. Complete automata property tests and the aggregate regex-test TOML suite remain unexecuted because their genuine providers are absent. Seven upstream illustrative doctests remain ignored; no speedup or exhaustive input coverage is claimed.
+这些记录不表示不可用的 quickcheck/regex-test 已执行。既有 nightly 语法基准保留在 `src/foundation/text-unicode/regex/benches/syntax.rs`，稳定工具链下明确不注册，不静默丢弃或称为通过。
+
+<a id="maintained-verification"></a>
+
+## 持续验证
+
+基础 CI 运行 `python3 .github/scripts/check-pattern-matching.py`，构建每项保留原生能力和上述 WASM 边界矩阵，拒绝 regex 包警告，执行保留的语法/字面/高层回归（包含显式运行忽略 fuzz 回归）、文档与真实消费者行为。
+
+临时 manifest/锁文件位于维护源码之外，不用 mock 替代缺失上游提供者。完整自动机属性测试与 regex-test TOML 汇总套件仍因真实提供者缺失而未执行。七份上游说明文档测试保持忽略；不宣称加速或穷尽输入。

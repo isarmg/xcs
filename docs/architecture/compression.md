@@ -1,108 +1,107 @@
-# Compression foundation
+<a id="compression-foundation"></a>
 
-The `compression` package consolidates four Cargo packages into one functional
-component. This reduces this family by three packages; it is not a measured
-runtime, binary-size, or memory-performance improvement.
+# 压缩基础组件
 
-## Capabilities and boundaries
+`compression` 包将四个 Cargo 包整合为一个功能组件，使这一组件族减少了三个包。
+这不代表已经测得运行时、二进制体积或内存性能方面的提升。
 
-The default feature set is empty. `compression::checksum` supplies safe scalar
-Adler-32 with no allocator, standard library, or dependencies. Module-level
-`forbid(unsafe_code)` remains in both the scalar checksum and DEFLATE codec.
+<a id="capabilities-and-boundaries"></a>
 
-- `std` enables standard-library checksum I/O; it does not pull in stream formats.
-- `codec` enables allocation-free low-level DEFLATE inflate.
-- `alloc` enables allocated codec APIs when combined with `codec`, including
-  deflate and bounded-output convenience decompressors.
-- `streams` enables `std`, `alloc`, `codec` and the real `crc32fast` provider.
-  The `streams::{read,bufread,write}` modules support raw DEFLATE, zlib and gzip.
-- `simd` enables `accelerated_checksum` and uses it inside the codec. Stable
-  Linux amd64 dispatch selects available SSE2, SSSE3 or AVX2; no-std selects
-  compile-time features. Browser WASM falls back to scalar, even if its compiler
-  enables simd128. Unsafe intrinsics stay inside the original scoped kernels.
-- `runtime-detection` enables std and optional CRC runtime detection. Enable
-  it with `streams` for the release builder. Adler SIMD dispatch uses `std`.
-- `block-boundary` enables the real codec block-boundary capability.
-- `serialization` adds the existing codec-state adapter through the real
-  data-serialization provider, with alloc and derive. It remains optional.
+## 能力与边界
 
-Only tools/web-build consumed flate2 in the reviewed product graph. Its gzip
-asset writer now explicitly opts into streams, SIMD and runtime detection.
-No old Cargo package alias remains. The existing compression algorithms and
-DEFLATE/zlib/gzip wire formats are unchanged; this is structural consolidation,
-not a new codec or a cryptographic-checksum replacement.
+默认功能集为空。`compression::checksum` 提供安全的标量 Adler-32 实现，
+不依赖分配器、标准库或其他依赖。标量校验和模块与 DEFLATE 编解码器均保留
+模块级 `forbid(unsafe_code)`。
 
-## Streaming contracts
+- `std` 启用基于标准库的校验和 I/O，不引入流格式。
+- `codec` 启用无需分配内存的底层 DEFLATE inflate。
+- `alloc` 与 `codec` 配合时启用需要内存分配的编解码 API，包括
+  deflate 和限制输出大小的便捷解压 API。
+- `streams` 启用 `std`、`alloc`、`codec` 和真实的 `crc32fast` 提供方。
+  `streams::{read,bufread,write}` 模块支持原始 DEFLATE、zlib 和 gzip。
+- `simd` 启用 `accelerated_checksum`，并在编解码器内部使用它。稳定版
+  Linux amd64 分派会选择可用的 SSE2、SSSE3 或 AVX2；no-std 按编译期功能选择。
+  浏览器 WASM 即使由启用 simd128 的编译器构建，也回退到标量实现。
+  不安全的内建指令仍限于原有的局部内核。
+- `runtime-detection` 启用 std 和可选的 CRC 运行时检测。发布构建器需将其
+  与 `streams` 一起启用。Adler SIMD 分派使用 `std`。
+- `block-boundary` 启用编解码器真实的块边界能力。
+- `serialization` 通过真实的数据序列化提供方加入现有的编解码器状态适配器，
+  并启用 alloc 和 derive；该功能仍为可选项。
 
-Read wrappers may consume bytes beyond the compressed stream; bufread wrappers
-preserve remaining buffered bytes. A single-member gzip decoder stops after the
-first member; MultiGzDecoder processes concatenated members. Callers still need
-to finish writers and honor low-level consumed/written counters. The bounded
-codec convenience APIs remain available for untrusted input. No new guarantee
-is made that every raw/zlib stream adapter diagnoses truncation identically;
-the retained upstream behavior and regression contracts are tested separately.
+在已审查的产品依赖图中，只有 tools/web-build 使用 flate2。其 gzip 资源写入器
+现已显式启用 streams、SIMD 和运行时检测。不再保留旧 Cargo 包别名。
+现有压缩算法和 DEFLATE/zlib/gzip 传输格式保持不变；这次调整是结构整合，
+既不是新编解码器，也不是密码学校验和的替代方案。
 
-## Removed unsupported surfaces
+<a id="streaming-contracts"></a>
 
-Native-zlib/C backend switches previously lacked a provider in this repository.
-They and old backend-selection/compatibility switches are removed, as are
-compiler-internal rustc-dep-of-std and unstable alloc_io selection. Native-only
-window-size/dictionary/level-adjustment APIs are not advertised by the Rust
-backend. Nightly AVX512, NEON and WASM-SIMD modules are not part of the retained
-Linux amd64/WASM-scalar support. The four removed complete implementation files
-have exact original bytes, hashes and reasons in the consolidation receipt.
-Their original license and upstream identities have not been removed.
+## 流式处理约定
 
-## Origins and immutable attribution
+read 包装器可能读取超出压缩流末尾的字节；bufread 包装器会保留缓冲区中的剩余字节。
+单成员 gzip 解码器在第一个成员结束后停止；MultiGzDecoder 处理串联的多个成员。
+调用方仍须完成写入器的收尾，并遵守底层已消耗/已写入计数。
+限制输出大小的编解码便捷 API 仍可用于不可信输入。本次没有新增保证，声称所有
+原始 DEFLATE/zlib 流适配器都以相同方式诊断截断；保留的上游行为与回归约定分别测试。
+
+<a id="removed-unsupported-surfaces"></a>
+
+## 已移除的不受支持接口
+
+原生 zlib/C 后端开关此前在仓库中没有提供方，现已连同旧的后端选择/兼容性开关
+一并移除。编译器内部使用的 rustc-dep-of-std 和不稳定的 alloc_io 选择也已移除。
+Rust 后端不宣称支持仅适用于原生后端的窗口大小、字典和压缩级别调整 API。
+Nightly AVX512、NEON 和 WASM-SIMD 模块不在保留的 Linux amd64/WASM 标量
+支持范围内。整合收据记录了四个完整移除实现文件的原始精确字节、哈希和移除理由；
+其原始许可证和上游身份均未移除。
+
+<a id="origins-and-immutable-attribution"></a>
+
+## 来源与不可变归属记录
 
 - flate2 1.1.10: https://github.com/rust-lang/flate2-rs
 - miniz_oxide 0.9.1: https://github.com/Frommi/miniz_oxide/tree/master/miniz_oxide
 - adler2 2.0.1: https://github.com/oyvindln/adler2
 - simd-adler32 0.3.10: https://github.com/mcountryman/simd-adler32
 
-All original manifests, upstream documents and legal materials remain governed
-by compliance/provenance. Each input remains independently attributed in the
-content-addressed source consolidation receipt, including the codec's earlier
-source move. Thirty-seven external files have exact origin/source hashes and
-bounded reversible transfer edits. The inert Adler benchmark is retained
-byte-identically as source history, not advertised as executed coverage.
+所有原始清单、上游文档和法律材料继续受 compliance/provenance 管理。
+按内容寻址的源码整合收据为每个输入保留独立归属，包括编解码器此前的源码移动。
+37 个外部文件均记录了精确的来源/源码哈希，以及范围受限、可逆的迁移编辑。
+未启用的 Adler 基准按原始字节保留为源码历史，不将其列为已执行的覆盖。
 
-## Maintained validation and explicit gaps
+<a id="maintained-validation-and-explicit-gaps"></a>
 
-`.github/scripts/check-compression-family.py` runs in the foundation CI suite.
-It checks 26 isolated native/WASM capability configurations, verifies that
-checksum/codec-only dependency closures remain empty, rejects disabled APIs and
-removed backend features with real compiler/Cargo failures, runs retained unit
-and integration tests plus doctests, tests a real serialized decoder checkpoint/resume, and tests the actual web-build consumer.
-It mirrors only this package and its tests into temporary storage; dependency
-providers remain the real maintained sources and no governed manifest is edited.
+## 持续维护的验证与明确缺口
 
-`test/compression/contracts.rs` covers independent zlib/gzip vectors, levels
-and empty data, malformed/truncated/checksum-corrupt data, bounded output,
-streaming flush and short buffers, concatenated gzip and trailing bytes, and
-scalar/SSE2/SSSE3/AVX2 agreement at alignment/chunk boundaries. Each SIMD kernel
-is exercised only when its original runtime/compile-time availability guard
-allows it. WASM is compile-checked; no WASM execution or cross-machine benchmark
-result is claimed.
+`.github/scripts/check-compression-family.py` 在 foundation CI 套件中运行。
+它检查 26 种隔离的原生/WASM 能力配置，验证仅校验和/仅编解码器的依赖闭包仍为空，
+通过真实的编译器/Cargo 失败确认已禁用 API 和已移除后端功能不可用，运行保留的
+单元测试、集成测试及文档测试，测试真实的解码器状态序列化检查点/恢复流程，
+并测试实际的 web-build 消费方。
+它仅将此包及其测试镜像到临时存储；依赖提供方仍使用真实维护的源码，
+不编辑任何受管理的清单。
 
-Three randomized stream unit modules and SIMD randomized backend modules need
-upstream rand/quickcheck providers that are not vendored. Those external test
-files remain byte-identical and inactive, with no substitutes or fake providers.
-Native-backend-only capability tests and two native-only memory tests remain
-inactive. These gaps are not counted as passing tests. Maintained deterministic
-contracts augment, but do not pretend to replace, unavailable upstream coverage.
+`test/compression/contracts.rs` 覆盖独立的 zlib/gzip 测试向量、压缩级别和空数据、
+格式错误/截断/校验和损坏数据、有界输出、流式 flush 和短缓冲区、串联 gzip 与尾随字节，
+以及对齐/分块边界处标量/SSE2/SSSE3/AVX2 结果的一致性。每个 SIMD 内核仅在其原始
+运行时/编译期可用性检查允许时才会执行。WASM 仅做编译检查；不声称已执行 WASM
+或取得跨机器基准结果。
 
-## Receiving-tree integration checks
+三个随机化流单元测试模块和 SIMD 随机化后端模块需要尚未纳入仓库的上游
+rand/quickcheck 提供方。这些外部测试文件按原始字节保留且未启用，没有替代实现
+或伪造提供方。仅适用于原生后端的能力测试和两个仅原生的内存测试也未启用。
+这些缺口不计为通过的测试。持续维护的确定性约定测试补充了缺失的上游覆盖，
+但不冒充其替代品。
 
-The receiving-tree run also checks all maintained workspace formatting, the
-server/client/admin native builds and strict Clippy, and documentation contracts.
-Three lightweight consumer regressions inspect generated serialization harness
-manifests for existing local paths, matching package identities and supported
-features, and verify the release builder's explicit compression capabilities.
-These checks prevent a renamed package from surviving only in an older test
-harness. They do not replace the compiler and runtime checks above.
+<a id="receiving-tree-integration-checks"></a>
 
-Both scalar Adler implementations remain deliberately separate: the serial
-kernel and four-lane kernel have different small-buffer/large-buffer tradeoffs.
-Structural consolidation is not a reason to impose one kernel on all callers.
-The existing dispatch and canonical checksum semantics remain unchanged.
+## 接收代码树的集成检查
+
+接收代码树的验证还检查整个受维护工作区的格式、server/client/admin 原生构建、
+严格 Clippy 和文档约定。三个轻量级消费方回归检查会检查生成的序列化测试框架清单，
+确认本地路径存在、包身份匹配且功能受支持，并验证发布构建器显式选择的压缩能力。
+这些检查可防止改名后的包只在旧测试框架中仍然存在，不能替代上述编译器和运行时检查。
+
+两种标量 Adler 实现仍有意分开：串行内核与四路内核在小/大缓冲区上的取舍不同。
+结构整合不意味着应强制所有调用方使用同一个内核。
+现有分派方式和规范校验和语义保持不变。

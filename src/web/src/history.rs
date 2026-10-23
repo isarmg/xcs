@@ -18,7 +18,7 @@ pub(crate) struct Model {
     pub disk: String,
 }
 pub(crate) fn load(state: RwSignal<State>) {
-    if state.with_untracked(|s| s.activity.loading) {
+    if state.with_untracked(|s| !s.session_active() || s.activity.loading) {
         return;
     }
     state.update(|s| s.activity.loading = true);

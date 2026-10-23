@@ -1,119 +1,101 @@
-# Verified recovery checkpoints: implementation boundary and next protocol
+<a id="verified-recovery-checkpoints-implementation-boundary-and-next-protocol"></a>
 
-## Current implementation
+# 已验证恢复检查点：实现边界与后续协议
 
-Journal append now retains a bounded, process-local verified tail. Each journal
-entry contains its device/inode, length, nanosecond modification/change times,
-and receipts for only its latest decision slot. At most 64 journals and 64
-receipts (and 64 KiB of receipt string data) per journal are retained. Cold access, an older receipt retry, changed
-file identity/metadata, or eviction performs the ordinary full verified scan.
-Failed writes invalidate the entry. Successful writes become cacheable only
-after the file and containing directory are synchronized. Replacement and
-truncation invalidate the entry; same-size external rewrites also invalidate it
-via change time even when modification time is restored. This uses the existing
-exclusive Engine ownership locks; unsupported concurrent external writers are
-not made safe by a cache. Metadata fingerprints are not cryptographic evidence
-against silent storage corruption or adversarial timestamp/inode manipulation.
+<a id="current-implementation"></a>
 
-The append cache is **not a durable checkpoint**. The separate durable
-replay checkpoint is implemented in `engine/recovery_checkpoint.rs`. After a
-successful full or suffix recovery, it writes identical content-hashed envelopes
-to all configured metadata members. Selection requires agreement between all configured
-copies, the same pool/configuration, and each saved tip appearing in that
-member's fully verified journal chain. Startup still scans journals from byte
-zero and rejects forks and candidate-linkage errors.
+## 当前实现
 
-A bounded coverage manifest records repair-relevant files and directory rules:
-- Metadata and proof bytes are cryptographically hashed and reread on selection.
-- Existing payload paths, sizes, types and link counts remain covered. Modern
-  named-version payload bytes are excluded because historical replay does not
-  reverify them. Legacy/content bytes ARE hashed because legacy migration does
-  reverify them, even after migration. Namespaced containers are identified by
-  their ownership markers, not a fixed path depth.
-- New entries are allowed only in recognized append-only namespaces. Stable-file
-  and named-container directory layouts remain exact to catch rename ambiguity.
-- Absent historical version/history/container paths are recorded explicitly.
-  Restoring such a path forces historical proof/name repair instead of silently
-  skipping an obligation that was previously inapplicable.
-- A derived `container.json` may differ only for a file/history with genuinely
-  new version evidence in a continuous, fully sealed suffix. Suffix replay
-  reconstructs that cache. Forks, pending decisions, reused version IDs and
-  unrelated suffix activity do not authorize this exception.
+日志追加现会保留有界、进程内的已验证尾部缓存。每个日志缓存条目记录设备/inode、
+长度、纳秒级修改/状态变更时间，以及仅属于最新决策槽的收据。
+最多保留 64 个日志，每个日志最多保留 64 份收据及 64 KiB 收据字符串数据。
+冷访问、重试较早的收据、文件身份/元数据变化或缓存淘汰，都会执行常规的完整验证扫描。
+写入失败会使条目失效。写入成功后，只有文件及其所在目录都完成同步，结果才可进入缓存。
+文件替换和截断会使条目失效；相同大小的外部重写即使恢复了修改时间，也会通过状态变更
+时间使缓存失效。该机制使用现有的 Engine 独占所有权锁；缓存不会让不受支持的并发
+外部写入变得安全。元数据指纹不是抵御静默存储损坏或恶意时间戳/inode 操纵的密码学证据。
 
-A valid checkpoint loads one authoritative boundary snapshot, applies its
-recovery-result overlay, and replays subsequent decisions normally. Missing or
-changed covered dependencies, renames, unknown layout changes, missing members,
-legacy byte corruption and torn tails conservatively trigger full recovery.
-No checkpoint is built on the commit hot path. Coverage is capped at 8 MiB and
-32,768 entries per disk, with a 16 MiB envelope limit; exceeding a cap disables
-this optional acceleration rather than weakening verification.
+追加缓存**不是持久化检查点**。独立的持久化重放检查点实现在
+`engine/recovery_checkpoint.rs` 中。完整恢复或后缀恢复成功后，它将相同的、
+带内容哈希的封装写入所有已配置的元数据成员。选用检查点要求所有已配置副本一致、
+池/配置相同，且每个已保存的末端都出现在对应成员经过完整验证的日志链中。
+启动时仍从字节零开始扫描日志，并拒绝分叉和候选链接错误。
 
-Partial/malformed checkpoint writes cannot publish a decision. No history is
-removed, no publication authority is transferred to a checkpoint, and no bounded
-**total startup** claim is made. Journal scan and coverage verification still
-scale with retained history. A seven-decision prefix followed by three ordinary
-same-file saves is tested to decode four snapshots instead of ten; the next
-unchanged open decodes one.
+有界覆盖清单记录修复相关文件和目录规则：
 
-Recovery also tries healthy replicas of the exact candidate-bound snapshot root
-when its first source is missing or corrupt. After a complete snapshot verifies,
-missing/corrupt regular snapshot/page replicas can be atomically repaired from
-that hash-verified source. Unsafe targets still fail, and failure of every source
-fails closed. This never substitutes a different snapshot or suppresses a fork.
+- 元数据与证明字节通过密码学哈希绑定，选用检查点时会重新读取。
+- 现有载荷路径、大小、类型和链接数仍在覆盖范围内。现代命名版本的载荷字节不包含在内，
+  因为历史重放不会重新验证这些字节。旧格式内容字节则**会**计算哈希，因为旧格式迁移
+  会重新验证它们，即使迁移之后也是如此。命名空间内的容器通过所有权标记识别，
+  而不是通过固定路径深度识别。
+- 只允许在已识别的仅追加命名空间中新增条目。稳定文件和命名容器的目录布局仍须精确匹配，
+  以发现重命名歧义。
+- 明确记录不存在的历史版本/历史/容器路径。恢复此类路径会强制执行历史证明/名称修复，
+  而不是静默跳过此前不适用的修复义务。
+- 仅当某个文件/历史在连续且完整封存的后缀中确实具有新的版本证据时，才允许其派生的
+  `container.json` 不同。后缀重放会重建该缓存。分叉、待决决策、复用的版本 ID
+  以及无关后缀活动均不能授权这一例外。
 
-## Why a latest-snapshot pointer is insufficient
+有效检查点加载一个权威边界快照，应用其恢复结果覆盖层，再正常重放后续决策。
+覆盖依赖缺失或变化、重命名、未知布局变化、成员缺失、旧格式字节损坏及撕裂尾部，
+都会保守地触发完整恢复。提交热路径上不构建检查点。
+每块磁盘的覆盖清单上限为 8 MiB 和 32,768 个条目，封装上限为 16 MiB；
+超出任一上限都会禁用这一可选加速，而不是削弱验证。
 
-Recovery currently verifies candidate-to-previous-snapshot linkage, resolves
-accepted but unpublished decisions, and repairs immutable snapshots, history
-manifests, candidates, publication seals and historical local proofs. It also
-synchronizes container names. Skipping directly to the latest sealed snapshot
-would skip these repair obligations. A recovered publication can additionally
-overlay its operation result on the candidate snapshot; a checkpoint must bind
-that final visible state rather than accidentally restoring the unoverlaid
-candidate snapshot.
+部分写入或格式错误的检查点不能发布决策。本机制不移除任何历史，不将发布权威转移给
+检查点，也不声称**总启动工作量**有界。日志扫描和覆盖验证仍随保留历史增长。
+测试中，七个决策前缀之后接三个普通的同文件保存，只需解码四个快照而不是十个；
+下一次未发生变化的打开只解码一个快照。
 
-Neither a checksum stored beside a checkpoint nor a publication seal by itself
-proves that all preceding decisions have been checked or that their historical
-repair dependencies remain available. File metadata alone is not an acceptable
-durable trust anchor.
+当第一个来源缺失或损坏时，恢复也会尝试与候选精确绑定的同一快照根的健康副本。
+完整快照验证通过后，可用该哈希已验证来源原子修复缺失/损坏的普通快照/页面副本。
+不安全目标仍会失败，所有来源均失败时采取故障关闭策略。
+该机制绝不会替换成不同快照，也不会掩盖分叉。
 
-## Remaining extensions
+<a id="why-a-latest-snapshot-pointer-is-insufficient"></a>
 
-The current bounded inline coverage format deliberately falls back once its
-size limit is reached. A paged, independently hash-bound coverage tree could
-extend acceleration to larger stores without an unbounded checkpoint object.
-Incremental coverage refresh could reduce checkpoint construction work. Degraded
-(missing configured members) opens currently keep ordinary recovery and its visibility rules;
-they do not use the replay shortcut. Further optimization must preserve those
-rules and all historical repair obligations.
+## 为什么指向最新快照的指针不够
 
-## Required failure and regression matrix
+当前恢复会验证候选与前一快照的链接，处理已接受但未发布的决策，并修复不可变快照、
+历史清单、候选、发布封印和历史本地证明。它还会同步容器名称。
+直接跳到最新封存快照会跳过这些修复义务。恢复出的发布还可能将其操作结果覆盖到
+候选快照上；检查点必须绑定最终可见状态，不能误恢复尚未应用覆盖层的候选快照。
 
-- Crash before/after each dependency write, checkpoint receipt and seal; partial
-  checkpoint replication; restart with one member absent; restore after system
-  disk loss; accepted/unpublished suffixes at every existing decision failpoint.
-- Truncated, malformed and checksum-invalid checkpoints; wrong pool or membership;
-  boundary not on a frame; wrong prefix hash; stale/newer checkpoint; conflicting
-  checkpoints; forked candidate hidden before or after a checkpoint.
-- Missing/corrupt historical snapshot page, history manifest, candidate,
-  publication object, local commit proof and publication proof. Confirm repair
-  parity with full replay or the same explicit error where repair is impossible.
-- Renamed containers, intentionally purged versions, lost payloads and degraded
-  recovery result overlays. Preserve original operation receipts and visibility.
-- Legacy format compatibility, old operation idempotency, journal torn-tail
-  recovery, missing checkpoint fallback, and no authoritative history deletion.
-- Demonstrate reduced historical snapshot decoding and bounded suffix replay;
-  report remaining scan and coverage costs honestly over growing histories.
+无论是与检查点存放在一起的校验和，还是单独的发布封印，都不能证明此前所有决策
+已经检查，也不能证明其历史修复依赖仍然可用。仅靠文件元数据不足以构成持久化信任锚。
 
-## Truly bounded total startup is a separate protocol decision
+<a id="remaining-extensions"></a>
 
-Immediate detection of arbitrary corruption anywhere in retained historical
-journal bytes requires reading those bytes (or a storage integrity mechanism
-with an equivalent verified trust guarantee). A persisted hash does not verify
-unread bytes. Segmented journals with sealed checkpoint roots can bound the
-active segment, but skipping old-segment reads changes *when* latent corruption
-is detected. Such a design needs an explicit integrity/scrubbing policy,
-authenticated segment ownership/roots, durable segment closure, retention and
-repair rules, and separate offline full-history verification. It must not be
-introduced as an incidental performance-cache change or silently relax the
-current recovery contract.
+## 后续扩展
+
+当前有界的内联覆盖格式在达到大小限制后有意回退。分页且独立受哈希绑定的覆盖树
+可以让更大的存储获得加速，而不产生无界的检查点对象。
+增量刷新覆盖范围可以减少检查点构建工作。降级打开（缺少已配置成员）目前仍使用
+常规恢复及其可见性规则，不使用重放捷径。后续优化必须保留这些规则和全部历史修复义务。
+
+<a id="required-failure-and-regression-matrix"></a>
+
+## 必需的故障与回归矩阵
+
+- 在每次依赖写入、检查点收据和封印前后崩溃；部分检查点复制；缺少一个成员时重启；
+  系统盘丢失后恢复；在现有每个决策故障点覆盖已接受/未发布的后缀。
+- 截断、格式错误和校验和无效的检查点；错误的池或成员关系；边界不在帧边界上；
+  错误的前缀哈希；过期/较新的检查点；冲突检查点；隐藏在检查点之前或之后的分叉候选。
+- 历史快照页、历史清单、候选、发布对象、本地提交证明和发布证明缺失/损坏。
+  确认修复效果与完整重放一致，或在无法修复时给出相同的明确错误。
+- 重命名容器、有意清除的版本、丢失载荷和降级恢复结果覆盖层。
+  保留原始操作收据与可见性。
+- 旧格式兼容性、旧操作幂等性、日志撕裂尾部恢复、检查点缺失时回退，
+  以及不删除任何权威历史。
+- 证明历史快照解码量减少和后缀重放有界；如实报告历史增长时仍然存在的扫描与覆盖成本。
+
+<a id="truly-bounded-total-startup-is-a-separate-protocol-decision"></a>
+
+## 真正有界的总启动工作量是独立的协议决策
+
+要立即检测保留历史日志字节中任意位置的损坏，就必须读取这些字节，或使用具有
+等效、经过验证的信任保证的存储完整性机制。持久化哈希无法验证未读取的字节。
+带封存检查点根的分段日志可以限制活动段大小，但跳过旧段读取会改变潜在损坏的
+*检测时机*。这类设计需要明确的完整性/巡检策略、经过认证的段所有权/根、
+持久化段封闭、保留与修复规则，以及独立的离线全历史验证。
+不得将其作为附带的性能缓存改动引入，也不得静默放宽当前恢复约定。

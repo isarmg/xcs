@@ -1,18 +1,22 @@
-<!-- Active example adapter. Immutable source and version are recorded in ../toml.md. -->
-# toml
+<!-- 维护中的示例适配文档。不可变来源与版本记录见 ../toml.md。 -->
+<a id="toml"></a>
+
+# TOML 编解码
 
 [![Latest Version](https://img.shields.io/crates/v/toml.svg)](https://crates.io/crates/toml)
 [![Documentation](https://docs.rs/toml/badge.svg)](https://docs.rs/toml)
 
-A [serde]-compatible [TOML][toml] decoder and encoder for Rust.
+面向 Rust、兼容 [serde] 的 [TOML][toml] 解码器和编码器。当前统一包的模块、能力和验证边界见[组件总览](../toml.md)。
 
-For format-preserving editing or finer control over output, see [toml_edit]
+若需保留格式的编辑或更细的输出控制，可参阅上游 [toml_edit] 说明；当前项目入口为 `toml::editor`。
 
 [serde]: https://serde.rs/
 [toml]: https://github.com/toml-lang/toml
 [toml_edit]: https://docs.rs/toml_edit
 
-## License
+<a id="license"></a>
+
+## 许可（保留上游原文）
 
 Licensed under either of
 
@@ -21,7 +25,9 @@ Licensed under either of
 
 at your option.
 
-### Contribution
+<a id="contribution"></a>
+
+### 贡献许可声明（保留上游原文）
 
 Unless you explicitly state otherwise, any contribution intentionally
 submitted for inclusion in the work by you, as defined in the Apache-2.0

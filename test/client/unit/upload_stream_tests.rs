@@ -143,3 +143,75 @@ async fn prepared_upload_retains_length_and_hash_headers() {
     );
     assert!(request.body().unwrap().as_bytes().is_none());
 }
+
+#[tokio::test]
+async fn upload_hash_rejects_short_or_growing_sources_with_bounded_reads() {
+    for (content, expected_length) in [(b"short".as_slice(), 6), (b"growing".as_slice(), 3)] {
+        let mut reader = content;
+        assert!(matches!(
+            hash_upload_source(&mut reader, expected_length).await,
+            Err(Error::Response(message)) if message.contains("length changed")
+        ));
+        if expected_length == 3 {
+            assert_eq!(
+                reader, b"ing",
+                "only one byte beyond the budget may be read"
+            );
+        }
+    }
+    // An infinite source must fail after the length plus a single probe, not
+    // keep preparing forever. No file-system mutation race is needed here.
+    let mut infinite = tokio::io::repeat(0);
+    let result = tokio::time::timeout(
+        std::time::Duration::from_secs(1),
+        hash_upload_source(&mut infinite, 4),
+    )
+    .await
+    .expect("upload preparation followed an unbounded source");
+    assert!(matches!(result, Err(Error::Response(_))));
+}
+
+#[tokio::test]
+async fn upload_hash_matches_exact_empty_and_nonempty_sources() {
+    for content in [b"".as_slice(), b"immutable upload".as_slice()] {
+        let mut reader = content;
+        assert_eq!(
+            hash_upload_source(&mut reader, content.len() as u64)
+                .await
+                .unwrap(),
+            blake3::hash(content).to_hex().as_str()
+        );
+    }
+}
+
+#[tokio::test]
+async fn upload_stream_never_emits_bytes_appended_beyond_prepared_length() {
+    let (file, _) = source(8);
+    let descriptor = Client::open_upload_source(file.path()).await.unwrap();
+    let mut stream = upload_stream(descriptor, 8);
+    std::fs::OpenOptions::new()
+        .append(true)
+        .open(file.path())
+        .unwrap()
+        .write_all(b"not part of the prepared upload")
+        .unwrap();
+    let mut received = Vec::new();
+    while let Some(chunk) = stream.next().await {
+        received.extend_from_slice(&chunk.unwrap());
+    }
+    assert_eq!(received, (0..8).collect::<Vec<u8>>());
+}
+
+#[tokio::test]
+async fn upload_hash_preserves_source_io_errors() {
+    let file = tempfile::NamedTempFile::new().unwrap();
+    let write_only = std::fs::OpenOptions::new()
+        .write(true)
+        .open(file.path())
+        .unwrap();
+    let mut reader = tokio::fs::File::from_std(write_only);
+    assert!(matches!(
+        hash_upload_source(&mut reader, 1).await,
+        Err(Error::Io(_))
+    ));
+}

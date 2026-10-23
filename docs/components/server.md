@@ -1,4 +1,6 @@
-# storage-server
+<a id="storage-server"></a>
+
+# 存储服务端（storage-server）
 
 Axum HTTP 服务、持久会话认证及受保护的 Samba 本机桥接。业务变更经过 `storage-engine::Engine`，HTTP 层不直接修改数据盘内容。
 

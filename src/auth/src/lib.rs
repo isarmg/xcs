@@ -235,8 +235,20 @@ pub fn validate_password(password: &str) -> Result<(), Error> {
 /// Hash a password with the exact current Argon2id policy and a fresh 16-byte
 /// salt. There is no verifier fallback for hashes using another policy.
 pub fn hash_password(password: &str) -> Result<String, Error> {
+    hash_password_with_entropy(password, |bytes| {
+        system_entropy::fill(bytes).map_err(|error| Error::Random(error.to_string()))
+    })
+}
+
+fn hash_password_with_entropy(
+    password: &str,
+    fill: impl FnOnce(&mut [u8]) -> Result<(), Error>,
+) -> Result<String, Error> {
     validate_password(password)?;
-    let salt = SaltString::generate(&mut argon2::password_hash::random_generator_core::OsRng);
+    let mut bytes = [0_u8; ARGON2_SALT_BYTES];
+    fill(&mut bytes)?;
+    let salt =
+        SaltString::encode_b64(&bytes).map_err(|error| Error::PasswordHash(error.to_string()))?;
     current_argon2()
         .hash_password(password.as_bytes(), &salt)
         .map(|hash| hash.to_string())

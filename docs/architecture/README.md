@@ -2,7 +2,7 @@
 
 [文档目录](../README.md) · [架构决策](../adr/README.md)
 
-这些页面解释当前代码的实现边界与优化，不替代编号规范。现有英文专题保留术语和证据引用；此中文索引统一入口，新读者可先阅读写入流程，再按源码研究专题。
+这些页面解释当前代码的实现边界与优化，不替代编号规范。维护正文以中文为主，保留代码标识、术语和证据引用；新读者可先阅读写入流程，再按源码研究专题。工程维护规则统一见[第 20 章](../20-engineering.md)，专题不另立冲突的规范。
 
 - [源码命名迁移与来源架构](source-naming.md)：活动身份、原始来源与互操作边界；配套[职责命名规范](../NAMING.md)。
 - [Foundation 按职能整合方案](foundation-package-consolidation.md)：包数口径、分批合并候选、技术边界与验收标准。
@@ -24,13 +24,13 @@
 
 描述实现时链接实际代码；测量和检查结果保留执行时点，进入 [reports](../reports/README.md) 或对应测试证据目录。未经执行的设备实验保持待验证。
 
-- [Numeric traits and value types](numeric.md): opt-in arithmetic capabilities and retained upstream identities.
-- [Pattern matching capabilities and maintained verification](pattern-matching.md)
+- [数值 trait 与值类型](numeric.md)：显式启用的算术能力与保留的上游身份。
+- [模式匹配能力与维护验证](pattern-matching.md)
 
 - [读取投影与请求内上下文](read-projections.md)：目录读取的复杂度边界与冻结响应保证。
-- [Tracing instrumentation and collectors](../components/tracing.md): explicit capabilities, direct JSON fields, source origins and retained verification.
+- [Tracing 埋点与采集](../components/tracing.md)：显式能力、直接 JSON 字段、来源与保留验证。
 - [Unicode 数据职责包](unicode-data-families.md)：能力边界、来源与验证范围。
 - [URL 与编码职责包](url-encoding.md)：能力边界、来源与验证范围。
 - [压缩与校验整合](compression.md)：能力边界、来源与验证范围。
 
-- [Component and slot property grammar](view-prop-parser.md)：共享选项解析、诊断语义与构建依赖边界。
+- [组件与插槽属性语法](view-prop-parser.md)：共享选项解析、诊断语义与构建依赖边界。

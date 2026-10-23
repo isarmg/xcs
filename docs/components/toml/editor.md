@@ -1,5 +1,7 @@
-<!-- Active example adapter. Immutable source and version are recorded in ../toml.md. -->
-# toml_edit
+<!-- 维护中的示例适配文档。不可变来源与版本记录见 ../toml.md。 -->
+<a id="toml_edit"></a>
+
+# TOML 格式保留编辑器
 
 [![Build Status](https://github.com/toml-rs/toml/workflows/Continuous%20integration/badge.svg)](https://github.com/toml-rs/toml/actions)
 [![codecov](https://codecov.io/gh/toml-rs/toml/branch/master/graph/badge.svg)](https://codecov.io/gh/toml-rs/toml)
@@ -8,13 +10,13 @@
 [![Join the chat at https://gitter.im/toml_edit/Lobby](https://badges.gitter.im/a.svg)](https://gitter.im/toml_edit/Lobby)
 
 
-This crate allows you to parse and modify toml
-documents, while preserving comments, spaces *and
-relative order* of items.
+编辑器允许解析和修改 TOML 文档，同时保留注释、空格和条目的相对顺序。当前入口为统一 `toml` 包的 `editor` 模块，能力及验证范围见[组件总览](../toml.md)。
 
-`toml_edit` is primarily tailored for [cargo-edit](https://github.com/killercup/cargo-edit/) needs.
+上游 `toml_edit` 主要面向 [cargo-edit](https://github.com/killercup/cargo-edit/) 的需求设计。
 
-## Example
+<a id="example"></a>
+
+## 示例
 
 ```rust
 use toml::editor::{DocumentMut, value};
@@ -39,13 +41,17 @@ c = { d = "hello" }
 }
 ```
 
-## Limitations
+<a id="limitations"></a>
 
-Things it does not preserve:
+## 限制
 
-* Order of dotted keys, see [issue](https://github.com/toml-rs/toml/issues/163).
+以下内容不会保留：
 
-## License
+* 点分隔键的顺序，见[上游问题](https://github.com/toml-rs/toml/issues/163)。
+
+<a id="license"></a>
+
+## 许可（保留上游原文）
 
 Licensed under either of
 
@@ -54,7 +60,9 @@ Licensed under either of
 
 at your option.
 
-### Contribution
+<a id="contribution"></a>
+
+### 贡献许可声明（保留上游原文）
 
 Unless you explicitly state otherwise, any contribution intentionally
 submitted for inclusion in the work by you, as defined in the Apache-2.0

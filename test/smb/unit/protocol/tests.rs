@@ -1,5 +1,9 @@
 use super::*;
-use std::{fs::File, io::Seek, os::fd::AsFd};
+use std::{
+    fs::File,
+    io::{Seek, Write},
+    os::fd::AsFd,
+};
 
 #[test]
 fn hello_requires_an_explicit_capability_list() {
@@ -192,4 +196,62 @@ fn directory_reads_use_only_session_handles_and_do_not_accept_client_snapshots()
         assert!(json_codec::from_value::<Request>(forged).is_err());
     }
     assert!(json_codec::from_value::<Request>(json_codec::json!({"op":"list","path":""})).is_err());
+}
+
+#[test]
+fn partial_write_progress_does_not_restart_the_frame_deadline() {
+    let (one, mut two) = UnixStream::pair().unwrap();
+    let size: libc::c_int = 4096;
+    // SAFETY: setsockopt reads the live integer through its correctly sized
+    // pointer and only reduces this test socket's send buffer.
+    assert_eq!(
+        unsafe {
+            libc::setsockopt(
+                one.as_raw_fd(),
+                libc::SOL_SOCKET,
+                libc::SO_SNDBUF,
+                (&size as *const libc::c_int).cast(),
+                mem::size_of_val(&size) as libc::socklen_t,
+            )
+        },
+        0
+    );
+    let sender = std::thread::spawn(move || {
+        FrameStream::with_timeout(one, Duration::from_millis(100))
+            .unwrap()
+            .send(&"x".repeat(512 * 1024), None)
+    });
+    // Small but continuous progress would keep a per-write timeout alive until
+    // the whole payload was sent. A whole-frame deadline must stop it instead.
+    let mut buffer = [0u8; 8192];
+    let mut received = 0;
+    loop {
+        std::thread::sleep(Duration::from_millis(20));
+        match two.read(&mut buffer).unwrap() {
+            0 => break,
+            count => received += count,
+        }
+    }
+    let error = sender.join().unwrap().unwrap_err();
+    assert!(matches!(
+        error.kind(),
+        io::ErrorKind::WouldBlock | io::ErrorKind::TimedOut
+    ));
+    assert!(received < 512 * 1024);
+}
+
+#[test]
+fn blocked_send_is_cancelled_by_socket_shutdown() {
+    let (one, _two) = UnixStream::pair().unwrap();
+    let cancel = one.try_clone().unwrap();
+    let sender = std::thread::spawn(move || {
+        FrameStream::with_timeout(one, Duration::from_secs(30))
+            .unwrap()
+            .send(&"x".repeat(4 * 1024 * 1024), None)
+    });
+    std::thread::sleep(Duration::from_millis(50));
+    cancel.shutdown(std::net::Shutdown::Both).unwrap();
+    let started = Instant::now();
+    assert!(sender.join().unwrap().is_err());
+    assert!(started.elapsed() < Duration::from_secs(2));
 }

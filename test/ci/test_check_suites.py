@@ -84,6 +84,7 @@ class SuiteCoverageTests(unittest.TestCase):
 
     def test_static_gate_requires_no_rust_or_metadata_resolution(self):
         calls = self.suite("static")
+        self.assertEqual(calls.count({"tool": "python3", "args": [".github/scripts/check-architecture.py"]}), 1)
         self.assertTrue(all(call["tool"] in ("python3", "node") for call in calls))
         self.assertIn(
             {"tool": "python3", "args": [".github/scripts/check-workflows.py"]}, calls,

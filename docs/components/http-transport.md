@@ -1,85 +1,59 @@
-# HTTP transport
+<a id="http-transport"></a>
 
-`http-transport` combines the maintained Hyper protocol engine and HyperUtil adapters in one package. Protocol types remain owned by the engine; `adapters` uses those same types rather than duplicate providers. The original edition and unsafe boundaries are unchanged. Client/server, runtime, pooling, proxy and service adapters remain explicit features. Bare protocol configurations do not enable Tokio networking or runtime features.
+# HTTP 传输
 
-## Maintained scope
+`http-transport` 在同一个包中整合维护中的 Hyper 协议引擎和 HyperUtil 适配器。协议类型仍由引擎维护；`adapters` 使用同一组类型，而非重复提供方。原有 edition 和 unsafe 边界保持不变。客户端/服务端、运行时、连接池、代理及服务适配器仍由显式特性控制。基础协议配置不会启用 Tokio 网络或运行时特性。
 
-HTTP/1 is maintained. The former HTTP/2 feature depended on an absent `h2` provider and was not activated by any maintained product profile. It is removed, not replaced with an empty feature. Cargo rejects requests for `http2`; `full` means the supported HTTP/1 and adapter union. Existing protocol version constants and C ABI symbols remain semantically unchanged. The existing C HTTP/2 option entry point consistently reports `HYPERE_FEATURE_NOT_ENABLED`; it does not claim HTTP/2 support. The private, opaque options structure no longer stores an unused HTTP/2 flag.
+<a id="maintained-scope"></a>
 
-Only retired HTTP/2 cfg conditions were evaluated in the syntax-aware pruning pass. Mixed conditions preserve unrelated predicates. Eight original implementation files are archived byte-for-byte; original test ownership is retained, including dormant upstream tests. Parser algorithms and TLS implementations were not rewritten. Adapter-only lint scope and explicit Future imports preserve the original module/edition boundary.
+## 维护范围
 
-## Validation
+维护 HTTP/1。旧 HTTP/2 特性依赖缺失的 `h2` 提供方，且维护中的产品配置均未启用它。该特性已移除，不会以空特性代替。Cargo 拒绝 `http2`；`full` 表示受支持的 HTTP/1 与适配器并集。现有协议版本常量和 C ABI 符号的语义保持不变。现有 C HTTP/2 选项入口始终报告 `HYPERE_FEATURE_NOT_ENABLED`，不宣称支持 HTTP/2。私有不透明选项结构不再保存未使用的 HTTP/2 标志。
 
-The maintained gate checks 26 native/WASM feature profiles, rejects compiler warnings and the retired HTTP/2 feature, and validates original unstable tracing/FFI opt-in configurations. Twenty-five behavior tests exercise real HTTP/1 client/server handshakes, body/status/header transfer, malformed requests, service errors, service-adapter identity and readiness, route integration, upgrades, HTTP/1 pool reuse, unsupported version/ALPN rejection, and owned connection/graceful futures over in-memory duplex streams. Two focused FFI tests exercise distinct non-zero-sized opaque option allocations, setters/free, and the preserved unsupported HTTP/2 entry point without consuming the options. No listening socket or fake transport provider is used. Historical transport/adapters tests are not represented as executed. The six active tests from the dispatch/wakeup helper origins are explicitly executed by the private primitive harness described below.
+语法感知裁剪只求值已停用的 HTTP/2 cfg 条件。混合条件保留无关谓词。八个原始实现文件逐字节归档；原始测试归属保留，包括未启用的上游测试。未重写解析算法或 TLS 实现。仅针对适配器的 lint 范围和显式 Future 导入保留了原有模块/edition 边界。
 
-## Provenance
+<a id="validation"></a>
 
-Sources: Hyper 1.12.0 and HyperUtil 0.1.21, as recorded in the repository's immutable source catalog and consolidation receipt. The receipt, not this prose, is authoritative for original versions, input hashes, licenses and exact source/test routes. The standalone consolidation generator regenerates all transformed routes from original Git objects. The explicit cfg edit inventory and pruner fixtures accompany the staged change. Host/native/WASM checks do not imply non-Linux product support.
+## 验证
 
-## Integrated feature design
+维护门禁检查 26 种原生/WASM 特性配置，拒绝编译器警告及已停用的 HTTP/2 特性，并验证原有不稳定 tracing/FFI 的显式启用配置。25 项行为测试通过内存双工流验证真实 HTTP/1 客户端/服务端握手、正文/状态/请求头传输、畸形请求、服务错误、服务适配器身份与就绪状态、路由集成、升级、HTTP/1 连接池复用、不支持版本/ALPN 的拒绝，以及自持有连接/优雅关闭 future。两项专项 FFI 测试验证不同的非零大小不透明选项分配、设置/释放，以及保留的不支持 HTTP/2 入口，且该入口不消耗选项。未使用监听套接字或伪造传输提供方。历史传输/适配器测试不被描述为已执行。来自分派/唤醒辅助来源的六个活动测试由下文的私有原语测试驱动显式执行。
 
-`full` directly names the supported client, proxy, pool, server, service and runtime capability union. There is no redundant `adapters-full` aggregation feature. Transitive capability edges are omitted where their prerequisite already guarantees them. The merged futures and service-stack providers each have one type identity. Combined tests exercise a real route and observable middleware through the HTTP/1 engine, and deterministically verify that an adapter never calls a service before readiness. No throughput or latency improvement is claimed without measurement.
+<a id="provenance"></a>
 
-### Upgrade boundary regression
+## 来源
 
-`test/architecture/http-transport/upgrade.rs` exercises generic HTTP/1.1 upgrade
-using real Tokio duplex I/O: 101 headers, preservation of already-buffered bytes,
-subsequent bidirectional I/O, clean EOF, and parser rejection of an unsupported
-HTTP/2.0 wire request before the application service executes. It does not
-implement or claim WebSocket handshake/frame support. The routing component's
-unusable WebSocket feature is explicitly absent rather than silently enabled.
+来源为 Hyper 1.12.0 和 HyperUtil 0.1.21，记录在仓库不可变来源目录及整合凭据中。原始版本、输入哈希、许可证及精确源码/测试路径以凭据为准，而非以本文为准。独立整合生成器从原始 Git 对象重新生成全部转换路径。显式 cfg 编辑清单与裁剪器测试夹具随待集成变更提供。宿主/原生/WASM 检查不表示产品支持非 Linux 平台。
 
-## Header deadlines and protocol detection
+<a id="integrated-feature-design"></a>
 
-The auto server retains its protocol probe: fragmented HTTP/2 prefaces must be
-rejected without emitting an HTTP/1 response. Direct HTTP/1 parsing does not have
-that same fragmented-input behavior, so deleting the probe is not an equivalent
-simplification. All 23 preface split positions have regression coverage.
+## 整合后的特性设计
 
-The probe uses the existing HTTP/1 timer policy and starts the first-header
-deadline on its first poll. It transfers the same pinned timer into HTTP/1 parsing,
-rather than granting a fresh budget after detection. Subsequent keepalive headers
-retain their ordinary fresh deadline. This bounds idle or matching-prefix stalls
-without changing buffered upgrade bytes, protocol errors or graceful shutdown.
+`full` 直接列出受支持的客户端、代理、连接池、服务端、服务及运行时能力并集。不保留冗余的 `adapters-full` 聚合特性。前置条件已保证的传递能力边不再重复声明。合并后的 futures 和 service-stack 提供方分别只有一个类型身份。组合测试通过 HTTP/1 引擎验证真实路由及可观测中间件，并确定性地验证适配器绝不会在服务就绪前调用它。没有测量就不宣称吞吐或延迟改善。
 
-The maintained routing server installs the Tokio timer and activates the existing
-30-second header policy. Generic consumers still have no default deadline without
-a timer; explicitly disabling the header timeout remains supported. An explicitly
-configured timeout requires a timer. Paused-time tests cover those policies,
-first-poll timing, deadline handoff, keepalive renewal and the actual routing serve
-path using a duplex listener, not a real network socket.
+<a id="upgrade-boundary-regression"></a>
 
-Paused-time upload and streamed-download regressions each keep a partial 64 KiB
-body open for 61 seconds after complete headers, then verify byte-exact successful
-completion. The header policy is not a replacement for application body or
-operation limits.
+### 升级边界回归
 
-## Private dispatch and wakeup ownership
+`test/architecture/http-transport/upgrade.rs` 使用真实 Tokio 双工 I/O 验证通用 HTTP/1.1 升级：101 响应头、已缓冲字节保留、后续双向 I/O、正常 EOF，以及解析器在应用服务执行前拒绝不支持的 HTTP/2.0 线协议请求。它未实现、也不宣称支持 WebSocket 握手/帧。路由组件中不可用的 WebSocket 特性被明确移除，而不是静默启用。
 
-The transport owns the actual `want` 0.3.2, `try-lock` 0.2.5 and
-`atomic-waker` 1.1.2 implementations under `src/common/{demand,try_lock,task_waker}.rs`.
-Their former Cargo packages and all three declared dependency edges are removed.
-`demand` and its lock compile only with `client`; `task_waker` compiles only with
-`http1`. No helper is re-exported and no compatibility facade or second public
-HTTP type is introduced. Request/response, body, service and FFI ownership is
-unchanged. The demand module forbids unsafe code; the two unsafe implementations
-retain separate, reviewable modules and their original atomic orderings.
+<a id="header-deadlines-and-protocol-detection"></a>
 
-The complete leaf sources and benchmark bodies are preserved. Only module
-visibility, imports, crate-only attributes and test harness paths change; the
-`want` tests now use maintained Tokio oneshot and futures executor providers.
-The source archive preserves every pre-move leaf source, manifest, benchmark and
-test byte. Existing license files, upstream hashes and prior Hyper/HyperUtil
-receipts remain authoritative and unchanged.
+## 请求头期限与协议探测
 
-The transport gate compiles these same private production source files directly
-in a disposable harness. It requires all six previously active leaf tests plus
-twelve added contracts to pass, with zero ignored tests. Contracts cover task
-movement, explicit cancellation, dropped senders/receivers, giving after closure,
-lock exclusion and ordering, unwind release, latest-waker replacement, taking
-registrations, early wakeup, and concurrent registration/notification. The two
-race tests run 128 schedules each and are repeated three additional times.
-Dormant commented upstream examples are retained but are not counted as executed
-coverage. The gate also rejects any active or declared optional dependency on
-one of the three retired packages, and keeps the existing 25 transport and two
-FFI tests and native/WASM capability matrix.
+自动服务端保留协议探测：分片的 HTTP/2 前言必须被拒绝，且不得发送 HTTP/1 响应。直接 HTTP/1 解析不具备相同的分片输入行为，因此删除探测并非等价简化。全部 23 个前言切分位置均有回归覆盖。
+
+探测沿用现有 HTTP/1 计时器策略，在首次轮询时开始首个请求头期限。它将同一个固定的计时器传入 HTTP/1 解析，而不是在探测后重新给予时间预算。后续 keepalive 请求头仍正常获得新期限。这样可约束空闲或匹配前缀后的停滞，且不改变已缓冲升级字节、协议错误或优雅关闭。
+
+维护中的路由服务端安装 Tokio 计时器，并启用现有 30 秒请求头策略。通用消费者未提供计时器时仍没有默认期限；仍支持显式禁用请求头超时。显式配置超时必须提供计时器。暂停时间测试覆盖这些策略、首次轮询计时、期限交接、keepalive 续期，以及使用双工监听器而非真实网络套接字的实际路由 serve 路径。
+
+暂停时间的上传和流式下载回归分别在完整请求头之后，将未完成的 64 KiB 正文保持打开 61 秒，再验证成功完成且字节完全一致。请求头策略不能替代应用正文或操作限制。
+
+<a id="private-dispatch-and-wakeup-ownership"></a>
+
+## 私有分派与唤醒实现归属
+
+传输层在 `src/common/{demand,try_lock,task_waker}.rs` 下维护 `want` 0.3.2、`try-lock` 0.2.5 和 `atomic-waker` 1.1.2 的实际实现。原 Cargo 包及三条声明依赖边均已移除。`demand` 及其锁仅随 `client` 编译；`task_waker` 仅随 `http1` 编译。不再导出这些辅助能力，也不引入兼容门面或第二组公共 HTTP 类型。请求/响应、正文、服务和 FFI 的归属不变。demand 模块禁止 unsafe；两个 unsafe 实现分别保留在可独立审阅的模块中，原子顺序不变。
+
+完整叶子源码及基准正文均保留。只改变模块可见性、导入、crate 专用属性和测试驱动路径；`want` 测试现使用维护中的 Tokio oneshot 和 futures 执行器提供方。源码归档保留迁移前每份叶子源码、清单、基准及测试的原始字节。现有许可文件、上游哈希及此前 Hyper/HyperUtil 凭据仍为权威记录且未改变。
+
+传输门禁在一次性测试驱动中直接编译这些相同的私有生产源码。它要求此前启用的全部六项叶子测试和新增十二项契约通过，且没有忽略项。契约覆盖任务移动、显式取消、发送方/接收方丢弃、关闭后给予通知、锁互斥与顺序、展开时释放、替换最新唤醒器、取走注册、提前唤醒及并发注册/通知。两项竞争测试各运行 128 种调度，并额外重复三次。未启用的注释内上游示例仍保留，但不计为已执行覆盖。门禁还拒绝对三个已停用包的任何活动依赖或声明的可选依赖，并保留现有 25 项传输测试、两项 FFI 测试及原生/WASM 能力矩阵。

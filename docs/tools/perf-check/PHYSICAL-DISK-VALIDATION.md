@@ -1,28 +1,36 @@
-# Physical-storage validation plan (not executed)
+<a id="physical-storage-validation-plan-not-executed"></a>
 
-The Development workload is not physical redundancy evidence. Execute this plan only in an explicitly approved disposable lab. No destructive-device commands are included or run by the harness.
+# 物理存储验证计划（尚未执行）
 
-## Preconditions and authorization
+开发工作负载不是物理冗余证据。仅在明确批准的可丢弃实验环境执行本计划。测试工具不包含或执行破坏性设备命令。
 
-1. Obtain the owner's approval for each dedicated test device, system volume, controller and fault-injection method. Record stable serial/WWN, physical topology, mountpoints, capacity, firmware, filesystem and power-loss-protection/cache settings. Confirm no production/customer data, backups or unrelated mounts use them.
-2. Use three genuinely independent physical member devices plus an independently managed system volume. Three partitions, loopbacks, directories or virtual disks on one physical drive do not qualify. Record shared power/controller failure domains explicitly.
-3. Back up anything required outside the approved disposable equipment. Provide a supervised stop/recovery plan. Verify ZXS production identity checks accept independent devices and reject aliases/duplicate physical devices. Initialization itself requires separate approval; do not reuse the Development fixtures as production evidence.
-4. Pin repository revision, Rust/build profile, OS/kernel/filesystem versions and workload seed. Capture logs with secrets removed. Record successful client acknowledgments externally before faults.
+<a id="preconditions-and-authorization"></a>
 
-## Fault matrix
+## 前提与授权
 
-For every supported replica policy and relevant placement topology:
+1. 对每个专用测试设备、系统卷、控制器及故障注入方法取得所有者批准。记录稳定序列号/WWN、物理拓扑、挂载点、容量、固件、文件系统及掉电保护/缓存设置；确认无生产/客户数据、备份或无关挂载使用它们。
+2. 使用三个真正独立的物理成员设备和独立管理的系统卷。同一物理盘上的三个分区、loopback、目录或虚拟盘不合格；明确记录共享供电/控制器故障域。此三盘实验配置用于验证多副本，不改变产品允许单数据盘的规则。
+3. 将需要保留的资料备份到批准的可丢弃设备之外，提供有人监督的停止/恢复计划。验证生产设备身份检查接受独立设备、拒绝别名/重复物理设备。初始化本身另需批准；开发夹具不能当作生产证据。
+4. 固定仓库提交、Rust/构建配置、操作系统/内核/文件系统版本及工作负载种子。保存去除秘密的日志，故障前在外部记录客户端成功确认。
 
-- Establish acknowledged versions, hashes, metadata sequence and independent offline-export oracle.
-- Remove one approved member through a lab-supported hot-unplug mechanism. Verify surviving acknowledged content, explicit degraded health and policy-appropriate write rejection or behavior. Never infer quorum rules from the number of directories.
-- Restore/reintroduce that member using supported recovery. Verify stale members cannot override newer acknowledged metadata; repair/replication must preserve hashes and policy.
-- Interrupt the application process at each publication fault-injection boundary. Restart and require exactly the published operation outcome or a safe explicit failure; retries must not create conflicting acknowledged versions.
-- Separately test abrupt system power loss on the approved rig, including cache behavior. A process kill does not emulate loss of device/controller write cache. Record which writes were externally acknowledged before interruption.
-- Test system-volume loss using the documented restore flow and sufficient surviving trusted metadata members. Export and compare all acknowledged versions from surviving replicas.
-- Test loss of more devices than the configured tolerance: require explicit unavailability/quorum errors rather than corrupted bytes, forged success or silent new initialization.
-- On approved disposable copies only, introduce controlled payload and metadata corruption. Require checksum rejection, verified replica fallback and no publication based solely on an untrusted index.
-- Test long reads concurrent with saves, repair and supported purge operations. Validate range checksums and leases, memory bounds and writer lock latency through the actual HTTP path.
+<a id="fault-matrix"></a>
 
-## Acceptance and evidence
+## 故障矩阵
 
-Retain revision/configuration, device independence evidence, exact fault timing, acknowledged operation IDs, engine and offline-check results, full export hashes, recovery duration, rejected operations and unexplained deviations. A pass requires every acknowledged retained version recoverable within the advertised fault tolerance, no unverified corrupt bytes, no stale metadata winning recovery and correct explicit failures outside tolerance. Publish performance percentiles only with repeated controlled runs and confidence intervals. Label process-crash, logical-corruption and real power-loss evidence separately.
+对每种支持的副本策略及相关放置拓扑执行：
+
+- 建立已确认版本、哈希、元数据序列及独立离线导出参考。
+- 通过实验室支持的热拔方式移除一个已批准成员。验证已确认内容在幸存副本中可用、明确降级健康，以及符合策略的写入拒绝或行为。不得按目录数量推断法定数规则。
+- 通过支持的恢复方式重接成员。验证过时成员不能覆盖较新的已确认元数据；修复/复制保持哈希和策略。
+- 在每个发布故障注入边界中断应用进程，重启后要求准确发布结果或安全明确失败；重试不得产生相互冲突的已确认版本。
+- 在批准实验设备上另测突然系统掉电，包含缓存行为。杀进程不等于丢失设备/控制器写缓存；记录中断前哪些写入已得到外部确认。
+- 按文档恢复流程测试系统卷丢失，要求足够幸存可信元数据成员。导出并比较幸存副本中全部已确认版本。
+- 测试超过配置容忍数的设备丢失：必须明确不可用/法定数错误，不能返回损坏字节、伪造成功或静默重新初始化。
+- 只在批准的可丢弃副本上注入受控正文和元数据损坏。要求校验和拒绝、已验证副本回退，不得仅凭不可信索引发布。
+- 通过实际 HTTP 路径测试长读取与保存、修复、支持的清除操作并发，验证范围校验和、租约、内存边界及写锁延迟。
+
+<a id="acceptance-and-evidence"></a>
+
+## 验收与证据
+
+保留提交/配置、设备独立性证据、准确故障时点、已确认操作 ID、引擎和离线检查结果、完整导出哈希、恢复时长、被拒绝操作及未解释偏差。通过要求：在声明容忍范围内，每个已确认且应保留版本均可恢复；不返回未经验证的损坏字节；过时元数据不能主导恢复；超出容忍范围时准确明确失败。性能百分位仅在重复受控运行并提供置信区间后发布。进程崩溃、逻辑损坏与真实掉电证据分别标记。

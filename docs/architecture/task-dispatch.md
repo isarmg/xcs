@@ -1,28 +1,11 @@
-# Task dispatch boundary
+<a id="task-dispatch-boundary"></a>
 
-`task-dispatch` owns one process-wide executor selection. Its supported backends
-are the browser event loop, Tokio, and the futures executor used by native tests.
-Initialization is atomic and exactly one caller can succeed. A failed duplicate
-initialization does not replace the active backend.
+# 任务调度边界
 
-Both `spawn` and `spawn_local` panic before initialization in every build profile.
-Tasks must never disappear silently because of release mode or logging features.
-Browser dispatch queues both Send and local futures on the browser microtask
-executor. Tokio callers must enter their runtime, and local tasks additionally
-need a `LocalSet`. The futures backend owns one shared lazy thread pool and one
-local pool per calling thread; recursive polling does not borrow a pool twice.
-`poll_local` intentionally does nothing before initialization or for event-driven
-backends.
+`task-dispatch` 负责进程级执行器选择。支持浏览器事件循环、Tokio 和原生测试使用的 futures 执行器。初始化具有原子性，只允许一个调用者成功；重复初始化失败不会替换已生效的后端。
 
-The unused generic custom-executor API and unsupported glib/async-executor
-adapters are removed. In particular, a thread-local executor may not be published
-through process-global function pointers. New backends require an actual consumer
-and an explicit execution contract, not compatibility stubs.
+所有构建配置下，初始化前调用 `spawn` 或 `spawn_local` 都会 panic。任务不得因为 release 模式或日志特性而静默消失。浏览器将 Send 和局部 future 都排入微任务执行器。Tokio 调用者必须进入其运行时，局部任务另需 `LocalSet`。futures 后端共享一个惰性线程池，并为每个调用线程维护局部池；递归轮询不会二次借用同一池。初始化前或使用事件驱动后端时，`poll_local` 按设计不执行操作。
 
-Maintained execution tests live in `test/task-dispatch`. The foundation async gate
-runs initialization and cross-thread behavior in debug and release and checks
-WASM compilation. The web bindings gate also executes the browser dispatch
-contract in Chromium. Original upstream tests in `test/foundation/task-dispatch`
-remain attributed source evidence; those for removed adapters are not active
-contracts. Original source identities, versions and licenses remain recorded by
-the repository's compliance inventory and provenance material.
+未使用的通用自定义执行器 API，以及不支持的 glib / async-executor 适配器已移除。线程局部执行器尤其不得通过进程全局函数指针发布。新后端必须有真实消费者和明确执行契约，不能只提供兼容空壳。
+
+维护的执行测试位于 `test/task-dispatch`。基础异步门禁在 debug / release 下检查初始化和跨线程行为，并检查 WASM 编译。Web 绑定门禁还在 Chromium 中执行浏览器调度契约。`test/foundation/task-dispatch` 中原始上游测试保留来源归属；已删除适配器的测试不是活动契约。原始源码身份、版本与许可证继续由合规清单和来源材料登记。

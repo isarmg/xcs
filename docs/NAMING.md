@@ -100,13 +100,11 @@ DOM 辅助、视图渲染、响应式状态、任务调度、视图分支和共�
 
 `cryptographic-core` 统一原 digest、block-buffer、crypto-common 的共享接口与缓冲层，内部保留职责模块，不再维护三个独立包。原始来源、版本和许可证分别保留；算法组件及 hybrid-array 不因此合并。详见[密码学合并记录](components/crypto-consolidation.md)。
 
-## Command-line runtime and procedural derives
+<a id="command-line-runtime-and-procedural-derives"></a>
 
-- `command-line`: one runtime owner for parsing, command construction, help/errors,
-  and a private OS-string tokenizer. Builder and lexer are modules, not packages.
-- `command-derive`: host-side procedural macros. Rust requires this compiler target
-  to remain separate from the normal runtime library.
+## 命令行运行时与过程宏派生
 
-The four historical upstream origins remain recorded under these two owners.
-There are no old-name aliases. See the [consolidation report](reports/command-line-consolidation-20261021.md)
-for preserved behavior, removed unsupported capabilities, and archival evidence.
+- `command-line`：解析、命令构造、帮助、错误与私有 OS 字符串分词的统一运行时。builder 和 lexer 是内部模块，不再是独立包。
+- `command-derive`：宿主机过程宏。Rust 要求该编译目标与普通运行时库分开。
+
+四个历史上游来源仍分别登记在这两个当前维护组件之下，不保留旧名称转发别名。保留行为、已移除能力与归档证据见[整合报告](reports/command-line-consolidation-20261021.md)。

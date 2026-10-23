@@ -8,6 +8,7 @@ case "${1:-}" in
     # Fast preflight only; full source-tool regressions run in rust-sources.
     # No Rust toolchain, registry, package installer or live browser required.
     python3 .github/scripts/check-workflows.py
+    python3 .github/scripts/check-architecture.py
     python3 tools/rust-sources/manage.py verify
     python3 tools/rust-sources/architecture.py verify
     python3 -m unittest discover -s test/ci -p 'test_*.py'

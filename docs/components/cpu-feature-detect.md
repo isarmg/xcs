@@ -1,9 +1,8 @@
-# CPU feature detection
+<a id="cpu-feature-detection"></a>
 
-`cpu-feature-detect` provides cached runtime CPU-feature checks without requiring
-`std`. The Rust crate identifier is `cpu_feature_detect`. It retains the CPU and
-operating-system state checks of the consolidated implementation; renaming does
-not enable stronger target instructions globally.
+# CPU 特性检测
+
+`cpu-feature-detect` 提供带缓存的运行时 CPU 特性检查，无需 `std`。Rust crate 标识为 `cpu_feature_detect`。它保留整合前实现的 CPU 和操作系统状态检查；重命名不会在全局启用更强的目标指令。
 
 ```rust
 #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
@@ -15,16 +14,8 @@ not enable stronger target instructions globally.
 }
 ```
 
-A detector with several feature strings requires all of them. Initialization
-caches the result; its zero-sized token allows later reads without repeating the
-initialization check. Compiler-enabled target features can make a check constant.
-Runtime detection does not itself make it safe to execute an unsupported intrinsic.
-AVX-family checks retain the required OSXSAVE/XSAVE and XCR0 state predicates.
+含多个特性字符串的检测器要求全部满足。初始化会缓存结果；零大小令牌允许后续读取时不再重复初始化检查。编译器启用的目标特性可能让检查成为常量。运行时检测本身并不使不受支持的内建指令变得可安全执行。AVX 系列检查保留必要的 OSXSAVE/XSAVE 和 XCR0 状态谓词。
 
-The maintained deployment scope is Linux amd64 and browser WASM consumers. The
-macro's architecture-specific implementation remains conditional; browser code
-must not invoke x86-only dispatch unconditionally.
+维护的部署范围为 Linux amd64 和浏览器 WASM 消费者。宏的架构专用实现仍受条件编译控制；浏览器代码不得无条件调用仅适用于 x86 的分派。
 
-The unmodified [upstream documentation](../upstream/cpufeatures-0.3.1/README.md)
-records cpufeatures 0.3.1, its original platform/feature catalogue and licenses.
-Original source, versions and legal material remain in the provenance catalogue.
+未改动的[上游文档](../upstream/cpufeatures-0.3.1/README.md)记录 cpufeatures 0.3.1、其原始平台/特性目录和许可证。原始源码、版本及法律材料保留在来源目录中。

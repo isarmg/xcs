@@ -1,7 +1,7 @@
 use data_serialization::{Deserialize, Serialize, de::DeserializeOwned};
 use json_codec::Value;
 use std::{
-    io::{self, Read, Write},
+    io::{self, Read},
     mem,
     os::{
         fd::{AsRawFd, BorrowedFd, FromRawFd, OwnedFd},
@@ -195,6 +195,7 @@ impl FrameStream {
                 "RPC frame size exceeded",
             ));
         }
+        let deadline = Instant::now() + self.1;
         let header = (payload.len() as u32).to_be_bytes();
         let mut vector = libc::iovec {
             iov_base: header.as_ptr().cast_mut().cast(),
@@ -224,22 +225,92 @@ impl FrameStream {
             }
         }
         let sent = loop {
+            remaining_timeout(deadline)?;
             // SAFETY: all message pointers and lengths were initialized above;
             // the socket is a live owned Unix stream. MSG_NOSIGNAL avoids SIGPIPE.
-            let result = unsafe { libc::sendmsg(self.0.as_raw_fd(), &message, libc::MSG_NOSIGNAL) };
+            let result = unsafe {
+                libc::sendmsg(
+                    self.0.as_raw_fd(),
+                    &message,
+                    libc::MSG_NOSIGNAL | libc::MSG_DONTWAIT,
+                )
+            };
             if result >= 0 {
                 break result as usize;
             }
             let error = io::Error::last_os_error();
-            if error.kind() != io::ErrorKind::Interrupted {
-                return Err(error);
+            match error.kind() {
+                io::ErrorKind::Interrupted => continue,
+                io::ErrorKind::WouldBlock => self.wait_writable(deadline)?,
+                _ => return Err(error),
             }
         };
         if sent == 0 {
             return Err(io::ErrorKind::WriteZero.into());
         }
-        self.0.write_all(&header[sent..])?;
-        self.0.write_all(&payload)
+        self.write_before_deadline(&header[sent..], deadline)?;
+        self.write_before_deadline(&payload, deadline)
+    }
+
+    // A blocking send can keep making progress beyond SO_SNDTIMEO. Use
+    // per-call nonblocking writes (without changing shared descriptor flags)
+    // and one poll deadline for the complete header and payload.
+    fn write_before_deadline(&mut self, mut bytes: &[u8], deadline: Instant) -> io::Result<()> {
+        while !bytes.is_empty() {
+            remaining_timeout(deadline)?;
+            // SAFETY: bytes is live readable storage and the socket is owned.
+            let count = unsafe {
+                libc::send(
+                    self.0.as_raw_fd(),
+                    bytes.as_ptr().cast(),
+                    bytes.len(),
+                    libc::MSG_NOSIGNAL | libc::MSG_DONTWAIT,
+                )
+            };
+            if count == 0 {
+                return Err(io::ErrorKind::WriteZero.into());
+            }
+            if count > 0 {
+                bytes = &bytes[count as usize..];
+                continue;
+            }
+            let error = io::Error::last_os_error();
+            match error.kind() {
+                io::ErrorKind::Interrupted => continue,
+                io::ErrorKind::WouldBlock => self.wait_writable(deadline)?,
+                _ => return Err(error),
+            }
+        }
+        Ok(())
+    }
+
+    fn wait_writable(&self, deadline: Instant) -> io::Result<()> {
+        loop {
+            let remaining = remaining_timeout(deadline)?;
+            // Round up so sub-millisecond waits do not spin; the caller checks
+            // the absolute deadline again before attempting another write.
+            let millis = remaining
+                .as_millis()
+                .saturating_add(1)
+                .min(i32::MAX as u128) as i32;
+            let mut event = libc::pollfd {
+                fd: self.0.as_raw_fd(),
+                events: libc::POLLOUT,
+                revents: 0,
+            };
+            // SAFETY: poll receives one live writable pollfd, not an array.
+            let ready = unsafe { libc::poll(&mut event, 1, millis) };
+            if ready > 0 {
+                // HUP/ERR also wake poll. The next send reports the OS error.
+                return Ok(());
+            }
+            if ready < 0 {
+                let error = io::Error::last_os_error();
+                if error.kind() != io::ErrorKind::Interrupted {
+                    return Err(error);
+                }
+            }
+        }
     }
 
     pub fn receive<T: DeserializeOwned>(&mut self) -> io::Result<(T, Option<OwnedFd>)> {
@@ -353,16 +424,16 @@ impl FrameStream {
     }
 
     fn set_remaining_timeout(&self, deadline: Option<Instant>) -> io::Result<()> {
-        let remaining = deadline
-            .map(|deadline| {
-                deadline
-                    .checked_duration_since(Instant::now())
-                    .filter(|remaining| !remaining.is_zero())
-                    .ok_or_else(|| io::Error::from(io::ErrorKind::TimedOut))
-            })
-            .transpose()?;
+        let remaining = deadline.map(remaining_timeout).transpose()?;
         self.0.set_read_timeout(remaining)
     }
+}
+
+fn remaining_timeout(deadline: Instant) -> io::Result<Duration> {
+    deadline
+        .checked_duration_since(Instant::now())
+        .filter(|remaining| !remaining.is_zero())
+        .ok_or_else(|| io::Error::from(io::ErrorKind::TimedOut))
 }
 
 #[cfg(test)]

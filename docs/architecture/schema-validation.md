@@ -1,47 +1,32 @@
-# Schema capability boundary
+<a id="schema-capability-boundary"></a>
 
-`schema-validation` consolidates the implementation of schema values, ECMA pattern translation,
-reference registries and offline JSON Schema validation. Implementations are private modules;
-consumers use `values`, `patterns`, `references`, or the root validator API.
+# Schema 能力边界
 
-## Features
+`schema-validation` 整合 schema 值、ECMA 模式转换、引用注册表及离线 JSON Schema 验证。实现模块私有，消费者使用 `values`、`patterns`、`references` 或根验证 API。
 
-- No features: an empty, `no_std` capability boundary.
-- `value`: generic typed JSON access, comparison and numeric semantics, without a validator,
-  reference registry, URL dependency or regex engine. `json-codec` enables the JSON value backend.
-- `pattern`: allocation-backed ECMA syntax validation and translation; the regex dependency has
-  syntax and Unicode tables only, not `std`, a matcher or automata.
-- `reference`: URI references, draft detection, registries and custom synchronous retrieval.
-- `validator` (default): the offline validator, using value, pattern and reference capabilities.
-- `arbitrary-precision`: exact large integer/rational semantics through the existing numeric and
-  JSON codec implementation, without automatically selecting a validator.
-- `jsonb`: typed PostgreSQL JSONB representation. `jsonb-testkit` additionally exposes the real
-  retained byte encoder used by test fixtures.
-- `resolve-async`: real asynchronous retrieval and reference resolution. Only futures allocation
-  and utility capabilities are enabled; no executor, network client or blocking bridge is supplied.
-- `idna`: opt-in domain normalization using `url-encoding/domain`, not the old URL/IDNA packages.
-- `conformance`: typed-value accessor conformance helpers.
+<a id="features"></a>
 
-The URL encoding dependency is optional, enabled only by reference/validator capabilities with
-its `std` edge. Domain tables remain opt-in. Default retrieval rejects external HTTP and file
-resources. Provide a `Retrieve` or `AsyncRetrieve` implementation explicitly when needed.
-Unbacked Python, Ruby, procedural-validator-macro and reqwest bridges are not features or APIs.
+## 特性
 
-## Retained evidence
+- 无特性：空的 `no_std` 能力边界。
+- `value`：泛型类型化 JSON 访问、比较及数值语义，不含验证器、引用注册表、URL 依赖或正则引擎。`json-codec` 启用 JSON 值后端。
+- `pattern`：需分配器的 ECMA 语法验证/转换；正则依赖仅启用语法和 Unicode 表，不启用 `std`、匹配器或自动机。
+- `reference`：URI 引用、draft 检测、注册表及自定义同步检索。
+- 默认 `validator`：离线验证器，使用 value、pattern、reference 能力。
+- `arbitrary-precision`：通过现有 numeric 和 JSON codec 实现精确大整数/有理数语义，不自动选择验证器。
+- `jsonb`：类型化 PostgreSQL JSONB 表示；`jsonb-testkit` 另导出测试夹具使用的真实保留字节编码器。
+- `resolve-async`：真实异步检索与引用解析，仅启用 futures 分配和辅助能力，不提供执行器、网络客户端或阻塞桥接。
+- `idna`：通过 `url-encoding/domain` 显式启用域名规范化，不使用旧 URL/IDNA 包。
+- `conformance`：类型化值访问器一致性辅助能力。
 
-All 38 bundled metaschema JSON files remain byte-exact, including their standard identifiers.
-Original source manifests, licenses and history must be retained by the guarded consolidation
-receipt before retiring the four original package directories. Source construction alone is not
-proof that retirement has been applied.
+URL 编码依赖可选，只由 reference/validator 能力启用其 `std` 边；域名表需另行选择。默认检索拒绝外部 HTTP 和文件资源；需要时显式实现 `Retrieve` 或 `AsyncRetrieve`。没有实际实现的 Python、Ruby、过程验证宏与 reqwest 桥接不是可用特性或 API。
 
-Original external tests remain byte-exact under `test/foundation/schema-validation/upstream`.
-Authored runners live under `test/schema-validation`, separately from attributed historical evidence.
-The canonical integration target adapts the original `run_case` assertions, replacing only its
-unavailable test-registration macro with an ordinary runner. It executes all 31 JSON fixtures
-and asserts their 1,509-case count. It does not substitute a no-op provider or weaken assertions.
-The original macro-dependent unit/integration suites are retained as source evidence, not claimed
-as fully executed by the focused gate.
+<a id="retained-evidence"></a>
 
-Run `.github/scripts/check-schema-validation.py` for capability builds, dependency-graph checks,
-default and arbitrary-precision canonical runs, and real asynchronous/typed JSONB runtime tests.
-The numeric-precision and pattern-matching consumer gates exercise the consolidated APIs.
+## 保留证据
+
+38 份内置 metaschema JSON 均保持原始字节与标准标识。退役四个原包目录之前，必须通过受保护整合收据保留原始 manifest、许可证和历史；仅构造源码不证明已完成退役。
+
+原始外置测试逐字节保存在 `test/foundation/schema-validation/upstream`。自写运行器在 `test/schema-validation`，与归属明确的历史材料分开。规范集成目标保留原 `run_case` 断言，仅用普通运行器替换不可用的注册宏；执行 31 份 JSON 夹具并断言共 1,509 个用例，不使用空实现或弱化断言。原宏依赖的单元/集成套件作为来源材料保留，不宣称专项门禁完整执行了这些套件。
+
+运行 `.github/scripts/check-schema-validation.py` 检查能力构建、依赖图、默认及任意精度规范用例，以及真实异步/类型化 JSONB 运行测试。数值精度和模式匹配消费者门禁使用整合后的 API。

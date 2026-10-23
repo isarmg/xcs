@@ -1,8 +1,10 @@
-# Source-spanned values
+<a id="source-spanned-values"></a>
 
-The `toml::span` module (formerly the source-spanned-value component) records a value together with its byte range in a source document. Its origin is serde_spanned 0.6.9. The original [upstream README](../upstream/serde_spanned-0.6.9/README.md), source provenance, and MIT/Apache-2.0 license materials are preserved unchanged.
+# 带源码区间的值
 
-The value wrapper does not require a serialization engine to construct or inspect:
+`toml::span` 模块（原 source-spanned-value 组件）将值与其在源文档中的字节区间一并记录。其来源为 serde_spanned 0.6.9。原始[上游 README](../upstream/serde_spanned-0.6.9/README.md)、源码来源及 MIT/Apache-2.0 许可材料均原样保留。
+
+构造或查看此值包装器无需序列化引擎：
 
 ```rust
 use toml::span::Spanned;
@@ -13,4 +15,4 @@ assert_eq!(value.get_ref(), "hello");
 assert_eq!(value.into_inner(), "hello");
 ```
 
-The serialization feature implements the internal data-serialization traits. Its four special serialized marker strings remain the original format contract; Rust component renaming does not change document bytes or span semantics.
+serialization 特性实现内部 data-serialization trait。四个特殊序列化标记字符串保持原有格式契约；Rust 组件重命名不改变文档字节或区间语义。

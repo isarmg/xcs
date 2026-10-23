@@ -162,6 +162,9 @@ pub(super) fn toggle_source(state: RwSignal<State>, id: String, checked: bool) {
     });
 }
 pub(super) fn load_target(state: RwSignal<State>) {
+    if !state.with_untracked(State::session_active) {
+        return;
+    }
     let snapshot = state.get_untracked();
     let Some(draft) = snapshot.files.batch else {
         return;

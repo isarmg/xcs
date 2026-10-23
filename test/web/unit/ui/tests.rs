@@ -192,3 +192,42 @@ fn unconfirmed_logout_cannot_be_replaced_by_login_or_restore() {
         state.update(|s| assert!(begin_login(s).is_some()));
     });
 }
+
+#[test]
+fn business_reads_do_not_start_outside_a_settled_session() {
+    Owner::new().with(|| {
+        for (authenticated, restoring, logout_pending, logout_unconfirmed) in [
+            (false, false, false, false),
+            (true, true, false, false),
+            (true, false, true, false),
+            (true, false, false, true),
+        ] {
+            let state = RwSignal::new(State {
+                authenticated,
+                restoring,
+                logout_pending,
+                logout_unconfirmed,
+                admin: true,
+                ..Default::default()
+            });
+            state.update(|s| {
+                s.files.slot = "P01".into();
+                s.files.selected = Some(json!({"kind":"file","file_id":"file-1"}));
+            });
+            files::load_disks(state);
+            files::load_entries(state);
+            history::load(state);
+            monitor::load(state);
+            state.with_untracked(|s| {
+                assert!(!s.files.loading_disks);
+                assert!(!s.files.loading);
+                assert!(!s.files.history_loading);
+                assert_eq!(s.files.generation, 0);
+                assert_eq!(s.files.history_generation, 0);
+                assert!(!s.activity.loading);
+                assert!(!s.monitor.loading);
+                assert!(!s.monitor.history_loading);
+            });
+        }
+    });
+}

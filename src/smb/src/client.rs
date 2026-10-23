@@ -130,18 +130,12 @@ impl Client {
     }
     fn connect_stream(stream: UnixStream, username: &str, repository_id: &str) -> io::Result<Self> {
         let client = Self(Arc::new(Mutex::new(Some(FrameStream::new(stream)?))));
-        let (result, fd) = client.call(Request::Hello {
+        let (result, _) = client.call(Request::Hello {
             protocol: PROTOCOL.into(),
             capabilities: vec![WRITE_RESERVATION_CAPABILITY.into()],
             username: username.into(),
             repository_id: repository_id.into(),
         })?;
-        if fd.is_some() {
-            return Err(io::Error::new(
-                io::ErrorKind::InvalidData,
-                "hello returned a descriptor",
-            ));
-        }
         if result.get("protocol").and_then(Value::as_str) != Some(PROTOCOL)
             || !result
                 .get("capabilities")
@@ -169,7 +163,22 @@ impl Client {
         })?;
         let exchange = stream
             .send(&request, None)
-            .and_then(|()| stream.receive::<Response>());
+            .and_then(|()| stream.receive::<Response>())
+            .and_then(|(response, fd)| {
+                // Descriptor ownership is part of the response contract, not
+                // an optional convenience for individual VFS callers. Reject
+                // malformed replies while still holding the shared lock so no
+                // clone can issue another request on a compromised session.
+                let expects_fd = matches!(request, Request::Open { .. })
+                    && matches!(response, Response::Ok { .. });
+                if fd.is_some() != expects_fd {
+                    return Err(io::Error::new(
+                        io::ErrorKind::InvalidData,
+                        "RPC response descriptor does not match the request",
+                    ));
+                }
+                Ok((response, fd))
+            });
         let (response, fd) = match exchange {
             Ok(response) => response,
             Err(error) => {

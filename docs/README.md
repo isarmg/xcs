@@ -2,7 +2,7 @@
 
 [项目入口](../README.md) · [工程结构](20-engineering.md)
 
-本目录统一提供所有产品、组件、开发、运维、验收及上游原始说明；许可证与机器可读溯源统一放在 [compliance/](../compliance/README.md)。项目仅有一个根 Cargo 工作区，目录说明见[单仓库结构](monorepo.md)。编号 01—25 保留既有主题和锚点；稳定规则、架构决策、操作指南及变更证据按下面的用途索引阅读。机器可读契约统一放在 `contracts/`。
+本目录统一提供所有产品、组件、开发、运维、验收及上游原始说明；许可证与机器可读溯源统一放在 [compliance/](../compliance/README.md)。项目仅有一个根 Cargo 工作区，目录说明见[单仓库结构](monorepo.md)。编号 01—25 保留既有主题和锚点；稳定规则、架构决策、操作指南及变更证据按下面的用途索引阅读。维护说明以中文为主；原始上游资料、许可证与历史证据保留原文。机器可读契约统一放在 `contracts/`。
 
 ## 从这里开始
 
@@ -19,6 +19,7 @@
 | 类型 | 入口 | 使用边界 |
 | --- | --- | --- |
 | 稳定规范 | 第 01—19、21—22 章及 [机器契约](contracts/README.md) | 定义要求、格式和验收标准；目标不等于已完成验收 |
+| 统一工程规范 | [第 20 章](20-engineering.md)、[命名细则](NAMING.md)、[测试布局](architecture/test-layout.md) | 规定结构、接口、错误、并发、unsafe 与变更评审；自动化范围以 CI 实际入口为准 |
 | 架构决策（ADR） | [adr/](adr/README.md) | 记录选择、代价和依据；[实现专题](architecture/README.md) 解释当前代码 |
 | 操作与开发指南 | [入门](getting-started.md)、[操作手册](25-operation-manual.md)、[CI](ci.md)、[发布](release.md) | 给出执行顺序、配置和恢复入口 |
 | 变更与验证证据 | [CHANGELOG](CHANGELOG.md)、[历史报告](reports/README.md)、各测试证据目录 | 绑定执行时点和范围，保留失败、未执行与待验证项 |

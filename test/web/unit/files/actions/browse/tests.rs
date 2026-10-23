@@ -41,3 +41,31 @@ fn directory_navigation_drops_the_previous_write_permission_before_loading() {
         });
     });
 }
+
+#[test]
+fn selected_file_history_read_requires_an_active_session() {
+    Owner::new().with(|| {
+        for (authenticated, restoring, logout_pending, logout_unconfirmed) in [
+            (false, false, false, false),
+            (true, true, false, false),
+            (true, false, true, false),
+            (true, false, false, true),
+        ] {
+            let state = RwSignal::new(State {
+                authenticated,
+                restoring,
+                logout_pending,
+                logout_unconfirmed,
+                ..Default::default()
+            });
+            state.update(|s| {
+                s.files.selected = Some(json_codec::json!({"file_id":"file-1"}));
+            });
+            load_file_history(state);
+            state.with_untracked(|s| {
+                assert!(!s.files.history_loading);
+                assert_eq!(s.files.history_generation, 0);
+            });
+        }
+    });
+}

@@ -1,47 +1,33 @@
-# Concurrent collections
+<a id="concurrent-collections"></a>
 
-`src/foundation/concurrency/concurrent-collections` is one Rust package with four explicit API
-namespaces: `utilities`, `epoch`, `queue`, and `deque`. It replaces the separate
-Crossbeam utility, reclamation, queue, and work-stealing packages. Rayon and SQLite access
-consume this same package, not compatibility aliases.
+# 并发集合
 
-- No features: no-std utility atomics, backoff, and cache padding.
-- `alloc`: epoch reclamation and allocating queues when pointer atomics exist.
-- `std` (default): scoped threads, synchronization utilities, the default epoch
-  collector, and work-stealing deques. `std` implies `alloc`.
-The empty upstream `nightly` compatibility feature is removed: it selected no
-retained implementation. A negative Cargo-resolution probe prevents its return.
+`src/foundation/concurrency/concurrent-collections` 是一个 Rust 包，公开 `utilities`、`epoch`、`queue`、`deque` 四个明确命名空间，替代独立的 Crossbeam 工具、回收、队列与工作窃取包。Rayon 和 SQLite 访问层使用同一包，不经过兼容别名。
 
-Each original module keeps its own statics, thread-local collector and primitive
-wrappers. Imports are qualified within those boundaries. Atomic orders, fences,
-unsafe operations, ownership/drop behavior, and the reclamation algorithms are
-unchanged. Sanitizer/no-atomic build detection is preserved. The combined build
-calls the three retained detection entries rather than silently dropping one.
+- 无特性：`no_std` 工具原子、退避与缓存行填充。
+- `alloc`：存在指针原子时提供 epoch 回收与分配型队列。
+- 默认 `std`：作用域线程、同步工具、默认 epoch 收集器与工作窃取双端队列，隐含 `alloc`。
 
-## Origins
+上游空的 `nightly` 兼容特性未选择任何保留实现，已移除；负向 Cargo 解析探针防止重新引入。
 
-The active primary is crossbeam-utils 0.8.23. Imported origins are crossbeam-epoch
-0.9.21, crossbeam-queue 0.3.14, and crossbeam-deque 0.8.8. All originate from
-https://github.com/crossbeam-rs/crossbeam and retain MIT OR Apache-2.0 licensing.
-Exact upstream identities, file routes, retained tests and reversible import
-edits are recorded by the consolidation receipt and central compliance inventory.
-Original license material and upstream documentation are not rewritten.
+各原模块保留自己的静态值、线程局部收集器及原语包装，导入在模块边界内限定。原子顺序、内存屏障、unsafe 操作、所有权/析构及回收算法不变。sanitizer / 无原子构建检测保留；合并构建调用三个保留的探测入口，不静默遗漏任何一个。
 
-## Validation and limits
+<a id="origins"></a>
 
-The isolated candidate runs 41 retained unit tests; 60 independently runnable
-retained integration tests; four additional Rayon, queue, destructor and stealing
-checks; 265 passing documentation tests (five upstream ignored); six native and
-WASM feature checks; and a negative no-alloc API check. Rayon and SQLite access consumers
-compile against the same package. Order/unsafe/static/TLS token inventories were
-compared as an additional review aid, not as a semantic proof.
+## 来源
 
-The six integration sources requiring an absent `rand` dev provider remain
-preserved but are not counted as executed. The Loom test source and configuration
-branches remain preserved; no Loom provider is present and no Loom or Miri run is
-claimed. WASM results are compile checks, not browser-thread execution. These
-checks do not establish exhaustive schedule coverage or a performance gain.
+活动主来源为 crossbeam-utils 0.8.23，导入来源为 crossbeam-epoch 0.9.21、crossbeam-queue 0.3.14、crossbeam-deque 0.8.8。均来自 https://github.com/crossbeam-rs/crossbeam，保留 MIT OR Apache-2.0 许可。准确身份、文件路径、保留测试和可逆导入修改由整合收据与中央合规清单登记；原许可证及上游文档不改写。
 
-## Maintained verification
+<a id="validation-and-limits"></a>
 
-Run `python3 .github/scripts/check-concurrent-collections.py`. The foundation CI suite runs this gate: six native/WASM feature builds, allocation-API rejection, 41 retained units, 60 retained integration tests, four concurrency/Rayon checks, and 265 doctests (five original ignored examples). Disposable manifests and locks never alter the root lock or governed source bytes. Six integrations requiring missing rand, Loom, Miri and exhaustive scheduling remain explicitly unverified.
+## 验证与限制
+
+隔离候选执行 41 项保留单元测试、60 项可独立运行的保留集成测试、四项附加 Rayon/队列/析构/窃取检查、265 项通过的文档测试（五项上游原有忽略），以及六项原生/WASM 特性检查和无分配 API 负向检查。Rayon 与 SQLite 消费者编译到同一包。原子顺序、unsafe、静态值、TLS token 清单比较只作为评审辅助，不是语义证明。
+
+六份需要缺失 `rand` 开发依赖的集成源码继续保留，不计作执行。Loom 测试源码与配置分支保留，但没有 Loom 提供者，不宣称运行了 Loom 或 Miri。WASM 结果仅为编译检查，不是浏览器线程执行。这些检查不证明穷尽调度，也不证明性能改善。
+
+<a id="maintained-verification"></a>
+
+## 持续验证
+
+运行 `python3 .github/scripts/check-concurrent-collections.py`。基础 CI 调用此门禁，执行上述六项特性构建、分配 API 拒绝、41 项单元、60 项集成、四项并发/Rayon 与 265 项文档测试（五项原始忽略）。临时 manifest 和锁文件不改变根锁或受治理源码字节。缺失 rand 的六项集成、Loom、Miri 和穷尽调度仍明确未验证。

@@ -41,7 +41,7 @@ pub(crate) fn start_current(state: RwSignal<State>) {
     }
 }
 fn start(state: RwSignal<State>, repository: String, path: String) {
-    if state.with_untracked(actions::pending) {
+    if state.with_untracked(|s| !s.session_active() || actions::pending(s)) {
         return;
     }
     let id = api::operation_id();

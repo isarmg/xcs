@@ -1,101 +1,92 @@
-# Foundation functional layout proof
+<a id="foundation-functional-layout-proof"></a>
 
-The 219 foundation packages are organized beneath 12 functional directories.
-This changes source locations only: package names, versions, origin identities,
-licenses and upstream records remain unchanged. The taxonomy and its boundaries
-are documented in [foundation-groups.md](foundation-groups.md).
+# Foundation 职能布局证明
 
-## Independent, additive receipt
+219 个 foundation 包按职能组织到 12 个目录之下。这只改变源码位置：
+包名、版本、来源身份、许可证和上游记录均保持不变。
+分类及其边界见 [foundation-groups.md](foundation-groups.md)。
 
-`compliance/rust-sources.json` binds `foundation_layout_receipt` to the SHA-256 of
-a gzip-compressed JSON receipt under `compliance/source-layout/`. The same ID is
-pinned in `tools/rust-sources/source_layout.py`. The receipt records every old and
-new root, all active and shared-origin owners, the exact predecessor catalog,
-source inventories, stationary owners, external test attribution and unchanged
-historical evidence. Test roots remain at `test/foundation/<package>`.
+<a id="independent-additive-receipt"></a>
 
-The receipt does not rename or recalculate any historical origin, source label,
-rename, internal move, consolidation, benchmark relocation or trimming record.
-It is a separate current-path boundary above those proofs. `src/interface` and
-`src/naming` remain where they were, including their original shared identities.
-There are no compatibility directories, symlinks, duplicated sources or fallback
-archive reads.
+## 独立追加的收据
 
-## Path edits and one exact formatting adjustment
+`compliance/rust-sources.json` 将 `foundation_layout_receipt` 绑定到
+`compliance/source-layout/` 下一个 gzip 压缩 JSON 收据的 SHA-256。
+同一 ID 固定在 `tools/rust-sources/source_layout.py` 中。
+收据记录全部旧根与新根、所有活动所有者与共享来源所有者、精确的前序目录清单、
+源码清单、未移动的所有者、外部测试归属和未改变的历史证据。
+测试根仍为 `test/foundation/<package>`。
 
-One maintained test statement in `test/tools/web-build/unit/main_tests.rs`
-also receives the exact rustfmt-required line breaks around `fixture.0.join(...)`
-after its path becomes longer. The receipt binds those whitespace bytes and the
-validator permits only that exact statement replacement, not general formatting
-or implementation edits.
+该收据不会重命名或重算任何历史来源、源码标签、重命名、内部移动、整合、
+基准迁移或裁剪记录。它是位于这些证明之上的独立当前路径边界。
+`src/interface` 和 `src/naming` 保持原位，包括其原始共享身份。
+不存在兼容目录、符号链接、重复源码或回退到归档的读取。
 
-Every changed source, test or Cargo manifest has its before/after digest and a
-bounded, reversible list of byte replacements. Verification reads the present
-file, authenticates its after digest, reverses the replacements, authenticates
-the before digest, and reproduces the deterministic path transformation. Cargo
-TOML semantics and resolved targets must match after applying the root map.
-Recognized Rust include/module attributes and explicitly reviewed build/runtime
-references use their actual source or manifest base. Unknown changed string
-references are rejected for review; unrelated strings and package-internal
-relative documentation are not blindly rebased.
+<a id="path-edits-and-one-exact-formatting-adjustment"></a>
 
-Older proof readers see a projection of the *current* catalog, not a cached
-predecessor catalog. Only active owner paths and exact reviewed path-edit hashes
-are projected; historical record internals are unchanged. Pinned source proofs
-still reject altered live bytes. Missing live files never fall back to stored
-snapshots. Trimmed sources and retired build scripts must remain absent at the
-new physical owner paths.
+## 路径编辑与一处精确格式调整
 
-## Installation and verification
+`test/tools/web-build/unit/main_tests.rs` 中一条受维护的测试语句，在路径变长后，
+也对 `fixture.0.join(...)` 周围应用了 rustfmt 要求的精确换行。
+收据绑定这些空白字节；验证器只允许这条精确的语句替换，
+不允许一般性格式调整或实现编辑。
 
-Installation uses an explicit `refresh --layout-plan PLAN.json` whose only keys
-are `schema: 1` and the pinned `receipt_id`. It is separate from retirement,
-upgrade, rename, internal move, consolidation and trim operations. Installation
-checks the complete source/test file bijection, modes via independent audit,
-exact current external ownership and every previous identity before recording
-the new catalog. Existing historical receipt bytes are immutable.
+每个发生变化的源码、测试或 Cargo 清单都有修改前/后的摘要，以及范围受限、可逆的
+字节替换列表。验证会读取当前文件、认证修改后摘要、反向应用替换、认证修改前摘要，
+并复现确定性的路径转换。应用根映射后，Cargo TOML 语义和解析后的目标必须匹配。
+已识别的 Rust include/module 属性，以及经过明确审查的构建/运行时引用，使用其真实
+源码或清单基路径。不认识的已修改字符串引用会被拒绝并要求审查；
+不会盲目改写无关字符串和包内相对文档路径。
 
-Normal `manage.py verify --metadata` revalidates the binding and the existing
-proof chains. Authentication is scoped to one exact repository operation. The
-catalog is hashed on entry and exit; full filesystem identity/timestamp stamps
-trigger immediate reauthentication if it changes between helper reads. A
-refresh binds only the exact serialized catalog it validated and wrote. No
-trusted context survives the operation.
+旧证明读取器看到的是*当前*目录清单的投影，而不是缓存的前序目录清单。
+只投影活动所有者路径和经过精确审查的路径编辑哈希；历史记录内部保持不变。
+固定的源码证明仍会拒绝活动源码字节变化。活动文件缺失时绝不回退到存储的快照。
+被裁剪的源码和已退役的构建脚本在新的物理所有者路径下仍必须不存在。
 
-`test/tools/rust-sources/test_source_layout*.py` covers missing, extra, renamed,
-mutated, symlinked and unattributed files; old-root reappearance; lost merged
-owners; frozen evidence and source-label corruption; non-path semantic edits;
-module/include bases; scoped context drift; terminal consolidation routing;
-and grouped source-trim/build-script absence.
+<a id="installation-and-verification"></a>
 
-## Supported post-layout lifecycle
+## 安装与验证
 
-Receipt schema 2 separates `installation_files` from `frozen_evidence`.
-`Cargo.lock` is checked byte-for-byte at installation, then remains governed by
-the normal current catalog rather than being frozen permanently by this layout.
-The pre-existing provenance and proof files remain immutable.
+安装使用显式 `refresh --layout-plan PLAN.json`，计划仅含 `schema: 1` 和固定的
+`receipt_id` 两个键。此操作独立于退役、升级、重命名、内部移动、整合和裁剪。
+安装在写入新目录清单前，检查完整的源码/测试文件一一对应关系、通过独立审计检查
+文件模式，并检查精确的当前外部归属和每个既有身份。现有历史收据字节不可变。
 
-Ordinary refresh remains supported. Existing explicit retirement and internal
-source-file move plans are also supported for standalone, unrenamed,
-unconsolidated, untrimmed, non-proof-pinned mapped owners. New grouped retirement
-entries must preserve the original stable identity, exact historical external
-labels, valid retirement receipt, and absent source/test roots. New grouped
-internal move entries are individually checked by the original internal-move
-validator, their content-addressed IDs, source-file bijection, and the original
-stable owner identity. Repeated internal moves and subsequent retirement are
-covered by actual-manager tests. Neither operation can implicitly introduce an
-external file move or discard source attribution. Moving either to or from a
-file with a reviewed layout path edit is rejected until an explicit descendant
-inverse adapter exists. Authenticated ordinary moved destinations remain readable
-through the current logical inventory; unrelated extra files remain forbidden.
+常规 `manage.py verify --metadata` 会重新验证绑定和已有证明链。
+认证上下文仅限于一次精确的仓库操作。进入和退出时都会对目录清单计算哈希；
+如果辅助读取之间的完整文件系统身份/时间戳标记发生变化，会立即重新认证。
+refresh 仅绑定它实际验证并写入的那份精确序列化目录清单。
+操作结束后不保留任何可信上下文。
 
-Only independently validated new grouped entries are removed when comparing the
-baseline history digest. No pre-layout key can be filtered, removed, rewritten
-or rehashed. Installation still requires the complete exact source/test
-bijection; later ordinary retirement is not confused with a failed installation.
+`test/tools/rust-sources/test_source_layout*.py` 覆盖缺失、多出、改名、变异、
+符号链接及无归属文件；旧根重新出现；合并所有者丢失；冻结证据和源码标签损坏；
+非路径语义编辑；module/include 基路径；限定作用域内的上下文漂移；终端整合路由；
+以及分组后的源码裁剪/构建脚本缺失约束。
 
-Rename, consolidation, upstream upgrade, source trimming, external-file moves,
-and lifecycle changes to shared/chained or fixed-proof owners require a future
-explicit descendant-chain adapter. Preflight rejects these plans with a named
-limitation. The adapter does not claim that all previous lifecycle workflows are
-unchanged, and it never relaxes an older pinned live-source proof to accept one.
+<a id="supported-post-layout-lifecycle"></a>
+
+## 布局调整后支持的生命周期
+
+收据 schema 2 将 `installation_files` 与 `frozen_evidence` 分开。
+`Cargo.lock` 在安装时逐字节检查，此后由正常的当前目录清单约束，
+而不是被本次布局永久冻结。此前已有的来源和证明文件仍不可变。
+
+继续支持常规 refresh。对独立、未重命名、未整合、未裁剪、未被固定证明约束的
+映射所有者，也继续支持现有的显式退役和内部源码文件移动计划。
+新增分组退役条目必须保留原始稳定身份、精确的历史外部标签、有效退役收据，
+并保证源码/测试根不存在。新增分组内部移动条目逐一由原始内部移动验证器、
+按内容寻址的 ID、源码文件一一对应关系和原始稳定所有者身份进行检查。
+真实管理器测试覆盖重复内部移动及其后的退役。两种操作都不能隐式引入外部文件移动，
+也不能丢弃源码归属。以经过审查的布局路径编辑文件为起点或终点的移动，
+在有显式后继反向适配器之前均被拒绝。通过认证的常规移动目标仍可通过当前逻辑清单读取；
+无关额外文件仍被禁止。
+
+比较基线历史摘要时，仅排除经过独立验证的新增分组条目。
+布局调整前的任何键都不能被过滤、移除、重写或重算哈希。
+安装仍要求完整、精确的源码/测试文件一一对应关系；
+不会将后续常规退役误判为安装失败。
+
+重命名、整合、上游升级、源码裁剪、外部文件移动，以及对共享/链式或固定证明所有者的
+生命周期变更，都需要未来显式实现后继链适配器。预检会拒绝这些计划，并指出具体限制。
+本适配器不声称此前所有生命周期工作流均保持不变，也绝不会为了接受某种工作流，
+放宽旧的、固定的活动源码证明。

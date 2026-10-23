@@ -87,7 +87,13 @@ fn accept(model: &mut Model, value: &Value) {
 pub(crate) fn load(state: RwSignal<State>) {
     let Some((epoch, generation)) = state
         .try_update(|s| {
-            if s.management.loading || s.logout_pending || s.logout_unconfirmed {
+            // Never let a pre-retry snapshot resolve the retry outcome fence.
+            // The completion path starts a fresh status read after the POST settles.
+            if s.management.loading
+                || s.management.retrying
+                || s.logout_pending
+                || s.logout_unconfirmed
+            {
                 return None;
             }
             s.management.loading = true;
