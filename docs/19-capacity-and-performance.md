@@ -207,7 +207,7 @@ SMB 共享的容量信息只能返回保守可写预算，还受目录一级规�
 受支持的配置入口是未初始化草稿：由 `zxs-rescue configuration template` 生成，
 在初始化前审查修改上述资源字段，再通过守护进程的本机 `--setup-config ID=/absolute/private-config.json`
 预置及受保护首次初始化选择使用。配置由核心校验，文件权限和磁盘白名单仍须符合
-[救援工具的草稿说明](components/rescue.md#未初始化拓扑配置草稿)。这不是 Web 在线资源配置页。
+[救援工具的草稿说明](components/rescue.md#uninitialized-configuration-drafts)。这不是 Web 在线资源配置页。
 已有池的系统目录及各元数据成员均持有配置锚；不得通过只改系统目录 `config.json` 来宣称完成安全调额，
 也不得删除清单释放名额。现阶段耗尽后的在线调额、离线一致调额流程均未实现，应在部署评估中明确这一限制。
 测试中的配置降低/恢复只验证预算拒绝不会丢失证据，不构成运维调额接口。

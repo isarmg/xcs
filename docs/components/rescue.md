@@ -47,6 +47,8 @@ zxs-rescue --root /srv/zxs/new-system package restore /srv/private-rescue/new-pa
 
 真实二进制回归见 `test/rescue/startup.rs`：命令边界、损失确认、双元数据恢复、跨池包恢复后的字节一致性、拒绝覆盖和拒绝损坏发布证明。
 
+<a id="uninitialized-configuration-drafts"></a>
+
 ## 未初始化拓扑配置草稿
 
 ```sh
