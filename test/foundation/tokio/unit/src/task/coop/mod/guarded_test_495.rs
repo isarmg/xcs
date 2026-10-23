@@ -10,5 +10,5 @@ mod test {
     }
 
     #[cfg(test)]
-include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/tokio/functions/src/task/coop/mod/budgeting_506.rs"));
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../../test/foundation/tokio/functions/src/task/coop/mod/budgeting_506.rs"));
 }

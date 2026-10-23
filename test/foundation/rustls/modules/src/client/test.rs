@@ -48,26 +48,26 @@ mod tests {
     /// Tests that session_ticket(35) extension
     /// is not sent if the client does not support TLS 1.2.
     #[cfg(test)]
-include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/rustls/functions/src/client/test/test_no_session_ticket_request_on_tls_1_3_50.rs"));
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../../test/foundation/rustls/functions/src/client/test/test_no_session_ticket_request_on_tls_1_3_50.rs"));
 
     #[cfg(test)]
-include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/rustls/functions/src/client/test/test_no_renegotiation_scsv_on_tls_1_3_64.rs"));
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../../test/foundation/rustls/functions/src/client/test/test_no_renegotiation_scsv_on_tls_1_3_64.rs"));
 
     #[cfg(test)]
-include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/rustls/functions/src/client/test/test_client_does_not_offer_sha1_80.rs"));
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../../test/foundation/rustls/functions/src/client/test/test_client_does_not_offer_sha1_80.rs"));
 
     #[cfg(test)]
-include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/rustls/functions/src/client/test/test_client_rejects_hrr_with_varied_session_id_101.rs"));
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../../test/foundation/rustls/functions/src/client/test/test_client_rejects_hrr_with_varied_session_id_101.rs"));
 
     #[cfg(test)]
-include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/rustls/functions/src/client/test/test_client_rejects_no_extended_master_secret_extension_when_require_ems_or_fips_139.rs"));
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../../test/foundation/rustls/functions/src/client/test/test_client_rejects_no_extended_master_secret_extension_when_require_ems_or_fips_139.rs"));
 
     #[cfg(test)]
-include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/rustls/functions/src/client/test/cas_extension_in_client_hello_if_server_verifier_requests_it_183.rs"));
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../../test/foundation/rustls/functions/src/client/test/cas_extension_in_client_hello_if_server_verifier_requests_it_183.rs"));
 
     /// Regression test for <https://github.com/seanmonstar/reqwest/issues/2191>
     #[cfg(test)]
-include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/rustls/functions/src/client/test/test_client_with_custom_verifier_can_accept_ecdsa_sha1_signatures_211.rs"));
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../../test/foundation/rustls/functions/src/client/test/test_client_with_custom_verifier_can_accept_ecdsa_sha1_signatures_211.rs"));
 
     #[derive(Debug, Default)]
     struct ExpectSha1EcdsaVerifier {
@@ -114,19 +114,19 @@ include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/rustls/f
     }
 
     #[cfg(test)]
-include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/rustls/functions/src/client/test/test_client_requiring_rpk_rejects_server_that_only_offers_x509_id_by_omission_345.rs"));
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../../test/foundation/rustls/functions/src/client/test/test_client_requiring_rpk_rejects_server_that_only_offers_x509_id_by_omission_345.rs"));
 
     #[cfg(test)]
-include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/rustls/functions/src/client/test/test_client_requiring_rpk_rejects_server_that_only_offers_x509_id_353.rs"));
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../../test/foundation/rustls/functions/src/client/test/test_client_requiring_rpk_rejects_server_that_only_offers_x509_id_353.rs"));
 
     #[cfg(test)]
-include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/rustls/functions/src/client/test/test_client_requiring_rpk_rejects_server_that_only_demands_x509_by_omission_364.rs"));
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../../test/foundation/rustls/functions/src/client/test/test_client_requiring_rpk_rejects_server_that_only_demands_x509_by_omission_364.rs"));
 
     #[cfg(test)]
-include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/rustls/functions/src/client/test/test_client_requiring_rpk_rejects_server_that_only_demands_x509_375.rs"));
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../../test/foundation/rustls/functions/src/client/test/test_client_requiring_rpk_rejects_server_that_only_demands_x509_375.rs"));
 
     #[cfg(test)]
-include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/rustls/functions/src/client/test/test_client_requiring_rpk_accepts_rpk_server_387.rs"));
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../../test/foundation/rustls/functions/src/client/test/test_client_requiring_rpk_accepts_rpk_server_387.rs"));
 
     fn client_requiring_rpk_receives_server_ee(
         encrypted_extensions: ServerExtensions<'_>,
@@ -180,7 +180,7 @@ include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/rustls/f
     }
 
     #[cfg(test)]
-include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/rustls/functions/src/client/test/test_client_rejects_protected_change_cipher_spec_450.rs"));
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../../test/foundation/rustls/functions/src/client/test/test_client_rejects_protected_change_cipher_spec_450.rs"));
 
     fn client_config_for_rpk(key_log: Arc<dyn KeyLog>) -> ClientConfig {
         let mut config = ClientConfig::builder_with_provider(x25519_provider().into())
@@ -365,10 +365,10 @@ include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/rustls/f
 
 // invalid with fips, as we can't offer X25519 separately
 #[cfg(test)]
-include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/rustls/functions/src/client/test/hybrid_kx_component_share_offered_if_supported_separately_689.rs"));
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../../test/foundation/rustls/functions/src/client/test/hybrid_kx_component_share_offered_if_supported_separately_689.rs"));
 
 #[cfg(test)]
-include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/rustls/functions/src/client/test/hybrid_kx_component_share_not_offered_unless_supported_separately_715.rs"));
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../../test/foundation/rustls/functions/src/client/test/hybrid_kx_component_share_not_offered_unless_supported_separately_715.rs"));
 
 fn client_hello_sent_for_config(config: ClientConfig) -> Result<ClientHelloPayload, Error> {
     let mut conn =

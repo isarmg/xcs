@@ -34,8 +34,28 @@ class RustSyntaxMigrationGateTests(unittest.TestCase):
         self.assertEqual(dependencies['rust-syntax']['features'], ['full'])
         for name in ('rust-syntax', 'rust-source-format', 'cpu-feature-detect', 'base64ct'):
             self.assertTrue(Path(dependencies[name]['path']).is_dir())
-        self.assertEqual(dependencies['axum']['features'], ['macros'])
+        self.assertEqual(dependencies['http-routing']['features'], ['macros'])
         self.assertEqual(dependencies['strum']['features'], ['derive'])
+
+    def test_every_dependency_uses_its_current_package_and_library_identity(self):
+        dependencies = self.manifest['dependencies']
+        self.assertNotIn('axum', dependencies)
+        for name, dependency in dependencies.items():
+            with self.subTest(package=name):
+                provider = Path(dependency['path']) / 'Cargo.toml'
+                self.assertTrue(provider.is_file(), str(provider))
+                package = tomllib.loads(provider.read_text())
+                self.assertEqual(package['package']['name'], name)
+                library = package.get('lib', {})
+                self.assertTrue(library or package['package'].get('autolib', True))
+                self.assertEqual(library.get('name', name.replace('-', '_')),
+                                 name.replace('-', '_'))
+                self.assertTrue((provider.parent / library.get('path', 'src/lib.rs')).is_file())
+                self.assertEqual(provider.parent, foundation_path(ROOT, name))
+        fixture = (ROOT / 'test/ci/fixtures/rust-syntax-migration.rs').read_text()
+        for source in (fixture, GATE['BORROWED_HANDLER']):
+            self.assertIn('#[http_routing::debug_handler]', source)
+            self.assertNotIn('axum::', source)
 
     def test_functional_package_library_and_link_identities(self):
         roles = {'rust-syntax': 'rust_syntax',

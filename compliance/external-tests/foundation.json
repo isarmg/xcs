@@ -5,7 +5,7 @@
       "files": [
         {
           "path": "test/foundation/ahash/modules/src/hash_quality_test.rs",
-          "sha256": "81a77eeaeaf4dcb1560207698ecf9ece2b1693e165dd8628f13f382a80836f9e",
+          "sha256": "efe6baa55f6a8743300df612a5ed4546bab11a75e28109dc6cc49c217819c53b",
           "source": "src/foundation/ahash/src/hash_quality_test.rs",
           "source_sha256_before": "ab44750ba3b79097d5da956e138656c88ef802b689044f58c677d0945679333d"
         },
@@ -2054,7 +2054,7 @@
         {
           "origin_directory": "vendor/rust/bindgen-0.72.1",
           "path": "test/foundation/bindgen/modules/codegen/bitfield_unit_tests.rs",
-          "sha256": "b5ceca02f13d0554c5d4d02bc52b921736b5ce4cd59ad4ce0bde91b6e7087300",
+          "sha256": "fa034319050c4b05278b3562c901ad4e8d6365ca3c921ae29e5de9314fcabc3e",
           "source": "src/foundation/bindgen/codegen/bitfield_unit_tests.rs",
           "source_sha256_before": "9915cb19bf37fc1013fc72753bae153f7c249280daec94b25fb461f9936dffa4"
         },
@@ -2192,7 +2192,7 @@
         },
         {
           "path": "test/foundation/blake3/modules/src/test.rs",
-          "sha256": "2ecf55fb40e63196f1ab5822613199795d142b19dc0839220deb82147cc6cae7",
+          "sha256": "4debc6b1453559fafc5d492a235f11aca792f20af6270115088ed51531a54c12",
           "source": "src/foundation/blake3/src/test.rs",
           "source_sha256_before": "cd3b835d00cd4f555aee1441451e63e89d3016c360cf16604844f55cc4e09cf2"
         },
@@ -5214,7 +5214,7 @@
         },
         {
           "path": "test/foundation/fallible-iterator/modules/src/test.rs",
-          "sha256": "01722407beffe812f459f7e19a9c6e0b76a5fd29c60e2fe05655a8578566e1c3",
+          "sha256": "c6eba8ca5ffec42b9ba813b9231169942b3fc2d19872632badaa53125a2f6f2f",
           "source": "src/foundation/fallible-iterator/src/test.rs",
           "source_sha256_before": "507ec94f625d6d1b4dbb957f055efe3486ff553b7b7b4a78019018c791b0bf28"
         }
@@ -8289,7 +8289,7 @@
         {
           "origin_directory": "vendor/rust/hyper-util-0.1.21",
           "path": "test/foundation/http-transport/adapters/unit/src/server/conn/auto/mod/guarded_tests_1135.rs",
-          "sha256": "866582ab4782d0341edaf33e588c89a6403fdc180f89c6f114c49af39b9987a3",
+          "sha256": "f956289c9639b9ebcbce1ce4f5ce183524d866124cb3de94151f8ce65618ab6e",
           "source": "src/foundation/hyper-util/src/server/conn/auto/mod.rs",
           "source_sha256_before": "0f28859d1e7f2b6dd9bb255a07cd6e11d5acc0caf87159ea9217ae5e1b3d67d0"
         },
@@ -10192,7 +10192,7 @@
         },
         {
           "path": "test/foundation/memchr/modules/src/tests/substring/naive.rs",
-          "sha256": "26bda553c85a015c8e31171c876ecfce5af8cb557aa4c597a8ce213772b25d1d",
+          "sha256": "408728da257b2a668b4a12408201464284d82ae94badb724dae307e62bf9ba70",
           "source": "src/foundation/memchr/src/tests/substring/naive.rs",
           "source_sha256_before": "df6f55d165382b8a53762ba4c324926cac13ebc62cde1805f4ce08740b326483"
         },
@@ -12418,7 +12418,7 @@
         },
         {
           "path": "test/foundation/rayon/modules/src/iter/collect/test.rs",
-          "sha256": "5ebdb0bae45e2169bec7e197b1b57c4b7ca3fd5284cc0321b8500af15bb2bbdd",
+          "sha256": "efac22ea5fa52f4eb8a7d7fe92c22dfb5d3a3607c8db012d997df50ae4df24df",
           "source": "src/foundation/rayon/src/iter/collect/test.rs",
           "source_sha256_before": "734e105f777de9d5e12cb103dac3a728d3d8e3a201f4f3f765c026d99d93376f"
         },
@@ -12436,7 +12436,7 @@
         },
         {
           "path": "test/foundation/rayon/modules/src/slice/test.rs",
-          "sha256": "8c2575a74e44b687698f03a29a66f049d85e509ec64707ed30441239059da9e7",
+          "sha256": "6c5352606c5b44652d0d346082a98c2e4f4c6aa4267104fe2e7d525948ef0e29",
           "source": "src/foundation/rayon/src/slice/test.rs",
           "source_sha256_before": "5f38a9552c08a6db0e2a523dfe018992e3590a17f95203722a07ffa6e5405e17"
         },
@@ -12834,7 +12834,7 @@
         },
         {
           "path": "test/foundation/rayon-core/modules/src/broadcast/test.rs",
-          "sha256": "b9ca568bb6c360f0f9d6d07f4dcac4b59b11e46181bca3fad634e8a1d2dc5f9b",
+          "sha256": "5a890d2d6fcdae0248510dcfd3f4a6f5f134432ba94d6918cd2e58a9c42bd285",
           "source": "src/foundation/rayon-core/src/broadcast/test.rs",
           "source_sha256_before": "fe50fc868e67d855a9f71e078b0c3a7780e789652abb4b586accb4ccf035e872"
         },
@@ -12858,13 +12858,13 @@
         },
         {
           "path": "test/foundation/rayon-core/modules/src/test.rs",
-          "sha256": "456b2315b711eb3d1f9cb27f94ba11e0de755b06f6bf30273a9c2764a1a3e59b",
+          "sha256": "5dc1b5b2b41f026df4895cc4f560b4d84a0ee4d1a90902ad19d89b4793ad24b4",
           "source": "src/foundation/rayon-core/src/test.rs",
           "source_sha256_before": "b82d95f84314305ff3268d341f731851e4d33fc895c34219ed8ff08b8d864575"
         },
         {
           "path": "test/foundation/rayon-core/modules/src/thread_pool/test.rs",
-          "sha256": "82706d6a813c4c47166ff28ea8ebd5ca687c0f90d7aaa1a1a76f9b91524b0090",
+          "sha256": "02cdcebb379b203e62e957e0b21fb3d77840a8f106f0357e21a0b62eb9cc1de9",
           "source": "src/foundation/rayon-core/src/thread_pool/test.rs",
           "source_sha256_before": "e9377afa0d5727a9f6874b5abf4589403d8dc8938e4e2c5dc26be4106daa77b9"
         },
@@ -13523,7 +13523,7 @@
         {
           "origin_directory": "vendor/rust/aho-corasick-1.1.5",
           "path": "test/foundation/regex/literal/modules/src/packed/tests.rs",
-          "sha256": "3ea1760023553ee9afd8d67c974d3c43de674d2219786a3fa4062be4aaa4bc29",
+          "sha256": "f60e9511dc88d69901dbfc557c10a7758d6c56e0933a65c0cb5778fbf588f30d",
           "source": "src/foundation/aho-corasick/src/packed/tests.rs",
           "source_sha256_before": "8e2f56eb3890ed3876ecb47d3121996e416563127b6430110d7b516df3f83b4b"
         },
@@ -14769,7 +14769,7 @@
         },
         {
           "path": "test/foundation/rustls/modules/src/client/test.rs",
-          "sha256": "115ab2ebf047575e9df49a6357c2b8a47b4338df4099ef2a4720cb31bf38903f",
+          "sha256": "8503e30c260e73fe39839dcdc850f78ff2ca80f6dacfd23964ee7fd2f5ac8b45",
           "source": "src/foundation/rustls/src/client/test.rs",
           "source_sha256_before": "9c87ffa57d2160fa42f9b9f1c941c3a2b570e0a548033032b659e68fa7ffd93a"
         },
@@ -14787,13 +14787,13 @@
         },
         {
           "path": "test/foundation/rustls/modules/src/server/test.rs",
-          "sha256": "e8b18af3cb0cc551aef188887a123000c6721d4a1fef5a31b9632566c864691b",
+          "sha256": "8fa92943a39fde216785ba555ba94ee08ab4af64a496a9efbf79b50ad2990e39",
           "source": "src/foundation/rustls/src/server/test.rs",
           "source_sha256_before": "8cc4a71aa463829d6b2bd8878e9ca2a4a595e3bcc6983a196e59ee3249dbdf47"
         },
         {
           "path": "test/foundation/rustls/modules/src/test_macros.rs",
-          "sha256": "32df543b18282396ea52b4be14500c1883e2bd54604178edcf34f2c7de3f0949",
+          "sha256": "d84877ee87c4a4231bcc1803650455e99aa139f0eb8e11120c04c8ed61dbc595",
           "source": "src/foundation/rustls/src/test_macros.rs",
           "source_sha256_before": "e5f98aa388375cc195cef7bae2cdba8b33c795ce48e8ff228fbfef153a493c47"
         },
@@ -18821,7 +18821,7 @@
         {
           "origin_directory": "vendor/rust/tokio-1.53.3",
           "path": "test/foundation/tokio/modules/src/runtime/io/driver/uring/tests.rs",
-          "sha256": "e8fa973975e8d851115bf084061e0463613fb8591bdaaf973b76fe40dcfb2301",
+          "sha256": "e8dd4d7747a750b09dd53ea2aeff875883ab80eada40fbbde95b6bb41a2bd0f8",
           "source": "src/foundation/tokio/src/runtime/io/driver/uring/tests.rs",
           "source_sha256_before": "5487462778be3e89ff1dec421c59495986b73d0de3b1614cb311999211e2a4d5"
         },
@@ -20403,14 +20403,14 @@
         {
           "origin_directory": "vendor/rust/tokio-1.53.3",
           "path": "test/foundation/tokio/unit/src/process/mod/guarded_test_1716.rs",
-          "sha256": "0ba632f1ad8c432f77846bd06671eb637fba8698cbef5eb560689b54232a6853",
+          "sha256": "19029e16fcd8bf003cc0818127e784b74368e6f45bf4741e575d256d1ac75bc0",
           "source": "src/foundation/tokio/src/process/mod.rs",
           "source_sha256_before": "656438b88bf7875f7f84707c940e736efa53894f67787a34d5ca9dce2c5ab41c"
         },
         {
           "origin_directory": "vendor/rust/tokio-1.53.3",
           "path": "test/foundation/tokio/unit/src/process/unix/orphan/guarded_test_132.rs",
-          "sha256": "534e988f685ea574582e71c2a259564a6e3e313151bc1027f7137457b31d3e86",
+          "sha256": "9966ee798df9900b7354b52111f960e767b941f673e7308d87cf4ef88d90cb82",
           "source": "src/foundation/tokio/src/process/unix/orphan.rs",
           "source_sha256_before": "85707915169a4b7d9ef28ddcb1da0045c25c3f27a346cb00f984f0bd9c6425fb"
         },
@@ -20424,7 +20424,7 @@
         {
           "origin_directory": "vendor/rust/tokio-1.53.3",
           "path": "test/foundation/tokio/unit/src/process/unix/reap/guarded_test_132.rs",
-          "sha256": "8514e9d09435f1a1815056002f0c2ee587e6571be5711002db5d8d68db937f80",
+          "sha256": "4734ff2368460b2516828280530bce01651c801d1409819c379635e9904e535f",
           "source": "src/foundation/tokio/src/process/unix/reap.rs",
           "source_sha256_before": "2edc77e85753ff4ab992052a951996189b7bd7ed86e95c7da672e6e92a0cdafe"
         },
@@ -20452,35 +20452,35 @@
         {
           "origin_directory": "vendor/rust/tokio-1.53.3",
           "path": "test/foundation/tokio/unit/src/runtime/time/wheel/level/guarded_test_176.rs",
-          "sha256": "d54a03b0213a2947c6c0d2898f8bfe2d63a2ce717bf6247f24967e71fe6ed2f2",
+          "sha256": "5c76690b7fc550baa463247ef3967f7fd100a7ed253a19db31de34ccf627c7dd",
           "source": "src/foundation/tokio/src/runtime/time/wheel/level.rs",
           "source_sha256_before": "99c4cd8368b7a5ec792a0d03b8a159563e41aef096e507abacea153df0602cd8"
         },
         {
           "origin_directory": "vendor/rust/tokio-1.53.3",
           "path": "test/foundation/tokio/unit/src/runtime/time/wheel/mod/guarded_test_305.rs",
-          "sha256": "0b6ba314e8d81f808b1efcd9f7da7e07d153b9fbda63bcafeb693181929c2243",
+          "sha256": "4f58184b54404f1f4e4883c7dbca8aeab46cb86e4836136e27750455d2e2e600",
           "source": "src/foundation/tokio/src/runtime/time/wheel/mod.rs",
           "source_sha256_before": "6e3d2e0a697ae106215f9740c124ba2d1829df2982e760b9caf611417b25c133"
         },
         {
           "origin_directory": "vendor/rust/tokio-1.53.3",
           "path": "test/foundation/tokio/unit/src/runtime/time_alt/wheel/level/guarded_test_179.rs",
-          "sha256": "8eaf8784e29a384c8edae313dd0184f6b3e608b20aa1938eb6108aab22159705",
+          "sha256": "07294a5e7fca011ab6d986efeb0c343993c5e69eea5c57ba16631aa65854aae9",
           "source": "src/foundation/tokio/src/runtime/time_alt/wheel/level.rs",
           "source_sha256_before": "591ff9075f1ded7453a5585895f8f7df8602abecfad6899b5f2102ecd2ddc664"
         },
         {
           "origin_directory": "vendor/rust/tokio-1.53.3",
           "path": "test/foundation/tokio/unit/src/runtime/time_alt/wheel/mod/guarded_test_243.rs",
-          "sha256": "447e11ebddbcbec98f60ed3709996cff64d31b5c82e7f895902117b0f805101e",
+          "sha256": "06ea181f9287d5486739bdbdb09d06cea77f7b259eb18c5ac41aa0d4adcdcde0",
           "source": "src/foundation/tokio/src/runtime/time_alt/wheel/mod.rs",
           "source_sha256_before": "3c7f218c69741fd85d46bbab90a28e6768ea81cfc15f5ea2036699a707f5ea8c"
         },
         {
           "origin_directory": "vendor/rust/tokio-1.53.3",
           "path": "test/foundation/tokio/unit/src/signal/registry/guarded_tests_166.rs",
-          "sha256": "768ae9a8756dc698cdc0dc691ac268e76e942f2427529b88f81e5fc4e2b0904e",
+          "sha256": "369cba4aeb9eccd37daf4e194c704d3945a89a4439c4976401940459167b8fa9",
           "source": "src/foundation/tokio/src/signal/registry.rs",
           "source_sha256_before": "bacfe55dc0de2a8a14f0da9fc273075743ea919390c167fce2195bee462cf686"
         },
@@ -20494,7 +20494,7 @@
         {
           "origin_directory": "vendor/rust/tokio-1.53.3",
           "path": "test/foundation/tokio/unit/src/signal/unix/guarded_tests_508.rs",
-          "sha256": "dcccc72d7a9e5030ec0c413e1b6f63fced5d74a322d4088d7eae269a9ba2ac03",
+          "sha256": "2554182fbe47c6f5abee36b5b307babd0d3b83df77453f57b4c20003d4d341c0",
           "source": "src/foundation/tokio/src/signal/unix.rs",
           "source_sha256_before": "809bc8981b82a663eb781976b910863887d6089ead1fe97cd3c39d454b3cdf5d"
         },
@@ -20508,35 +20508,35 @@
         {
           "origin_directory": "vendor/rust/tokio-1.53.3",
           "path": "test/foundation/tokio/unit/src/sync/mpsc/list/guarded_tests_465.rs",
-          "sha256": "fe3ffdd6e5d33962553345cfbc572a8bec844f83ddab16e99849d6f01fcc96ed",
+          "sha256": "01b430cb255511ff642c7f9c14840f8a928f9857eeb7cf4a124e06ec4b6df0d1",
           "source": "src/foundation/tokio/src/sync/mpsc/list.rs",
           "source_sha256_before": "33d8cd27c12cb7f17d022f4dae0b70aac80957ab6bf3586d09a65a13fd1d1e55"
         },
         {
           "origin_directory": "vendor/rust/tokio-1.53.3",
           "path": "test/foundation/tokio/unit/src/task/coop/mod/guarded_test_495.rs",
-          "sha256": "c6c72b5325f0e6180f72059d7a970212b1acb9c9bd07c64ca324d8dc36a25b14",
+          "sha256": "47f418923e0a60959f44fe613078e7cb75475798796e91fed91d6ccd86c0ba1b",
           "source": "src/foundation/tokio/src/task/coop/mod.rs",
           "source_sha256_before": "923289cf3916bc684271c25607e0aec2c12cdf8c0f4a4eda59c2b04e497c9234"
         },
         {
           "origin_directory": "vendor/rust/tokio-1.53.3",
           "path": "test/foundation/tokio/unit/src/task/local/guarded_tests_1282.rs",
-          "sha256": "055cf063e7e9605fdb4e962fd16b80fda82997acd8e97e7e6ef15880cd8eb087",
+          "sha256": "6f295c83b28d4317085bbad09dcdc33d6f422c2430ab188413b920d51a242e02",
           "source": "src/foundation/tokio/src/task/local.rs",
           "source_sha256_before": "3afd2b6175191ad253778accba8285bb12b6a7003ff8cdfd9f89a47bf08a3306"
         },
         {
           "origin_directory": "vendor/rust/tokio-1.53.3",
           "path": "test/foundation/tokio/unit/src/util/idle_notified_set/guarded_tests_498.rs",
-          "sha256": "288b06d6510df90edaec6fcce2bc8d823a9cadb93301117d684ded38b4df886c",
+          "sha256": "6a732e5883d39323e640354f734b870dd4085464e94e9d11818cde5ab9d999a5",
           "source": "src/foundation/tokio/src/util/idle_notified_set.rs",
           "source_sha256_before": "40d2f92c37ada7160be32e19020e0c58bed911160a7a4e6c8f443f3ee0ebecd6"
         },
         {
           "origin_directory": "vendor/rust/tokio-1.53.3",
           "path": "test/foundation/tokio/unit/src/util/linked_list/guarded_tests_465.rs",
-          "sha256": "9791e00ca11b9e6e3878995d920e2e02385343f19c32bb597fa187acef657dd4",
+          "sha256": "9d7938ae97f7acb8ee3b86b69aaf4bdc00f59e5d220537eb16323648a59707bf",
           "source": "src/foundation/tokio/src/util/linked_list.rs",
           "source_sha256_before": "445479edeba393f90ad419fecb49975f2a5e1c24728af5bfba5a8e88792f025a"
         },
@@ -20816,7 +20816,7 @@
         {
           "origin_directory": "vendor/rust/tokio-util-0.7.20",
           "path": "test/foundation/tokio/adapters/unit/src/either/guarded_tests_215.rs",
-          "sha256": "42db01bda02b780e2991afce3dadc3c01a0156c5222fd47c05437cd0be727499",
+          "sha256": "dfda17846c570f1e600efb0a94a5fd346d4200eb5c13f4aee3d81fa1ddeb13ff",
           "source": "src/foundation/tokio-util/src/either.rs",
           "source_sha256_before": "d1f1e474aebb0680034bdc7a69c60d1d9761988e07fce68a6073c9cf7c4b0ef8"
         },
@@ -20837,14 +20837,14 @@
         {
           "origin_directory": "vendor/rust/tokio-util-0.7.20",
           "path": "test/foundation/tokio/adapters/unit/src/time/wheel/level/guarded_test_181.rs",
-          "sha256": "0f0d818c23de275500ca070e903aed6f29a603034e5525c7827db6dcea65b99d",
+          "sha256": "b1a17586acece52f2bd20f151d2013f2ae91f6d6f98f3ef63cd0e8db83a3d090",
           "source": "src/foundation/tokio-util/src/time/wheel/level.rs",
           "source_sha256_before": "483f38cf43ebd473d59105c40c26fa0ab236b1c44e840a08ac9c3e7ed4b17df7"
         },
         {
           "origin_directory": "vendor/rust/tokio-util-0.7.20",
           "path": "test/foundation/tokio/adapters/unit/src/time/wheel/mod/guarded_test_269.rs",
-          "sha256": "e7476fa3ad4b366c144e52fa478ebad6dc18e94a6c29f531ea225009b25361e2",
+          "sha256": "4055cb5f3fdbdd392bbfdfc48d0c148a580bd6f613d8cc6995392961c429d969",
           "source": "src/foundation/tokio-util/src/time/wheel/mod.rs",
           "source_sha256_before": "5c44779a6a8c1bb9d42de3f0fc78e6075a309e228357021da223ee8b43c33b8f"
         },
@@ -24297,7 +24297,7 @@
         },
         {
           "path": "test/foundation/zerocopy/unit/src/byteorder/guarded_tests_1009.rs",
-          "sha256": "33b4f84a5e58d76d7e05ca9482b08b80b1bb77178b0715a29521055d998b6556",
+          "sha256": "337bf1137a05a598e18f279b55c7a68a20b37110970ff222e210894c7b376918",
           "source": "src/foundation/zerocopy/src/byteorder.rs",
           "source_sha256_before": "a83bfab701c5c661e3cf0c6382155a1f1c189cde70f55d5be5bfaaae6ad3f180"
         },

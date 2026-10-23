@@ -280,6 +280,8 @@ class Layout:
         if self.disk_catalog_stamp != _stamp(catalog_file):
             raise ValueError('layout catalog changed while authenticating')
         self._validate_shape()
+        import source_layout_corrections
+        self.corrections = source_layout_corrections.load(self.root, self, catalog) if catalog is not None else None
         if catalog is not None:
             self.check_current_identity(catalog)
 
@@ -419,6 +421,8 @@ class Layout:
         if not target.is_file() or target.stat().st_size > MAX_FILE_BYTES:
             raise ValueError('missing or oversized live layout file: ' + path)
         data = target.read_bytes()
+        if self.corrections is not None:
+            data = self.corrections.read(path, data)
         if path in self.descendant_files and digest(data) != self.descendant_files[path]:
             raise ValueError('post-layout moved source content differs from authenticated current inventory: ' + path)
         if path in self.edits:
@@ -453,6 +457,8 @@ class Layout:
         return (old + '/',)
 
     def _project_hash(self, path, sha):
+        if self.corrections is not None:
+            sha = self.corrections.project_hash(path, sha)
         edit = self.edits.get(path)
         return edit['before_sha256'] if edit is not None and sha == edit['after_sha256'] else sha
 
@@ -477,6 +483,9 @@ class Layout:
             old = self.historical_path(key); value = deepcopy(owner); value['directory'] = old
             delta = 0
             for row in value['files']:
+                if self.corrections is not None:
+                    delta += self.corrections.delta(row['path'], row['sha256'])
+                    row['sha256'] = self.corrections.project_hash(row['path'], row['sha256'])
                 edit = self.edits.get(row['path'])
                 if edit is not None and row['sha256'] == edit['after_sha256']:
                     row['sha256'] = edit['before_sha256']; delta += edit['after_size'] - edit['before_size']
@@ -490,6 +499,8 @@ class Layout:
     def check_current_identity(self, catalog):
         if catalog.get(KEY) != self.receipt_id:
             raise ValueError('missing or changed layout catalog binding')
+        if self.corrections is not None:
+            self.corrections.validate_catalog(catalog)
         appended_moves = self._check_appended_moves(catalog)
         for field, expected in self.receipt['history_hashes'].items():
             value = catalog.get(field)
@@ -568,6 +579,8 @@ class Layout:
 
     def require_standalone(self, catalog, old):
         row = self.rows[old]
+        if self.corrections is not None and row['destination_directory'] in self.corrections.owners:
+            raise ValueError('corrected external owner lifecycle requires an explicit descendant adapter')
         protected = {'ring', 'libc', 'memchr', 'mio', 'rustc-demangle', 'tokio', 'system-entropy', 'synchronization'}
         if (old.rsplit('/', 1)[-1] in protected or row['merged_packages']
                 or any(p.get('directory') == row['destination_directory'] for p in catalog.get('merges', []))

@@ -365,9 +365,9 @@ fn test_sparse<T: Hasher>(hasher: impl Fn() -> T) {
 }
 
 #[cfg(test)]
-include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/ahash/unit/src/hash_quality_test/fallback_tests_367.rs"));
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../../test/foundation/ahash/unit/src/hash_quality_test/fallback_tests_367.rs"));
 
 ///Basic sanity tests of the cypto properties of aHash.
 #[cfg(all(any(target_arch = "x86", target_arch = "x86_64"), target_feature = "aes", not(miri)))]
 #[cfg(test)]
-include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/ahash/unit/src/hash_quality_test/aes_tests_443.rs"));
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../../test/foundation/ahash/unit/src/hash_quality_test/aes_tests_443.rs"));

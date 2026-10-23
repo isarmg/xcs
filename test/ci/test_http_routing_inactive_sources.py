@@ -18,6 +18,15 @@ class InactiveHttpSources(unittest.TestCase):
         cls.historical = 'src/foundation/http-routing'
         layout = GATE.source_layout.load(ROOT)
         cls.frozen_evidence = tuple(layout.receipt['frozen_evidence'])
+        cls.correction_evidence = set()
+        if layout.corrections is not None:
+            from source_layout_corrections import receipt_path
+            # A marked catalog authenticates the additive corrections too. Copy
+            # their exact live files and targets, not a weakened catalog marker.
+            cls.correction_evidence.add(receipt_path(layout.corrections.receipt_id))
+            for row in layout.corrections.receipt['files']:
+                cls.correction_evidence.add(row['path'])
+                cls.correction_evidence.update(ref['target'] for ref in row['references'])
         with GATE.source_layout.activate(layout):
             cls.original_sources = {
                 relative: GATE.source_layout.read(ROOT, cls.historical + '/' + relative)
@@ -61,7 +70,8 @@ class InactiveHttpSources(unittest.TestCase):
         grouped = self.root / 'grouped'
         catalog = json.loads((ROOT / 'compliance/rust-sources.json').read_text())
         receipt = GATE.source_layout.receipt_path(catalog[GATE.source_layout.KEY])
-        files = ['compliance/rust-sources.json', receipt, *self.frozen_evidence]
+        files = ['compliance/rust-sources.json', receipt, *self.frozen_evidence,
+                 *sorted(self.correction_evidence)]
         owner = 'src/foundation/networking/http-routing'
         files += [owner + '/' + relative for relative in
                   (*GATE.INACTIVE_SOURCES, 'Cargo.toml', 'src/lib.rs', 'src/extract/mod.rs')]

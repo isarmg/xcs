@@ -47,14 +47,14 @@ mod test {
     }
 
     #[cfg(test)]
-include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/tokio/functions/src/process/mod/kills_on_drop_if_specified_1764.rs"));
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../../test/foundation/tokio/functions/src/process/mod/kills_on_drop_if_specified_1764.rs"));
 
     #[cfg(test)]
-include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/tokio/functions/src/process/mod/no_kill_on_drop_by_default_1780.rs"));
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../../test/foundation/tokio/functions/src/process/mod/no_kill_on_drop_by_default_1780.rs"));
 
     #[cfg(test)]
-include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/tokio/functions/src/process/mod/no_kill_if_already_killed_1796.rs"));
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../../test/foundation/tokio/functions/src/process/mod/no_kill_if_already_killed_1796.rs"));
 
     #[cfg(test)]
-include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/tokio/functions/src/process/mod/no_kill_if_reaped_1813.rs"));
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../../test/foundation/tokio/functions/src/process/mod/no_kill_if_reaped_1813.rs"));
 }

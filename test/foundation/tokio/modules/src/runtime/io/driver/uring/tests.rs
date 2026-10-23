@@ -56,4 +56,4 @@ impl Drop for BrokenRing {
 // the buffer it points at, so a failing submission must keep the slot instead of
 // dropping the op and freeing the buffer while it is still in use.
 #[cfg(test)]
-include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/tokio/functions/src/runtime/io/driver/uring/tests/register_op_keeps_entry_on_submit_failure_58.rs"));
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../../test/foundation/tokio/functions/src/runtime/io/driver/uring/tests/register_op_keeps_entry_on_submit_failure_58.rs"));

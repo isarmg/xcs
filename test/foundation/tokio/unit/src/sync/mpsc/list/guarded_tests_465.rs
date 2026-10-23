@@ -7,8 +7,8 @@ mod tests {
     use wasm_bindgen_test::wasm_bindgen_test as test;
 
     #[cfg(test)]
-include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/tokio/functions/src/sync/mpsc/list/wraparound_473.rs"));
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../../test/foundation/tokio/functions/src/sync/mpsc/list/wraparound_473.rs"));
 
     #[cfg(test)]
-include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/tokio/functions/src/sync/mpsc/list/wraparound_unbounded_525.rs"));
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../../test/foundation/tokio/functions/src/sync/mpsc/list/wraparound_unbounded_525.rs"));
 }

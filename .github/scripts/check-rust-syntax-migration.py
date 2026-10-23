@@ -11,6 +11,9 @@ import tempfile
 ROOT = Path(__file__).resolve().parents[2]
 foundation_path = runpy.run_path(str(ROOT / '.github/scripts/foundation_paths.py'))['package_path']
 TARGET = 'x86_64-unknown-linux-gnu'
+BORROWED_HANDLER = ('pub struct State;\nimpl State {\n'
+                    '    #[http_routing::debug_handler]\n'
+                    '    pub async fn borrowed(&self) -> &\'static str { "no" }\n}\n')
 
 
 def run_cargo(work, target_dir, environment, *, tests=False, rejection=None):
@@ -54,7 +57,7 @@ def run_cargo(work, target_dir, environment, *, tests=False, rejection=None):
 def manifest():
     deps = {
         'tracing': ('tracing', []), 'tracing-attributes': ('tracing-attributes', []),
-        'axum': ('axum', ['macros']), 'strum': ('strum', ['derive']),
+        'http-routing': ('http-routing', ['macros']), 'strum': ('strum', ['derive']),
         'rust-syntax': ('rust-syntax', ['full']), 'rust-source-format': ('rust-source-format', []),
         'cpu-feature-detect': ('cpu-feature-detect', []), 'typed-builder': ('typed-builder', []),
         'argon2': ('argon2', []), 'password-hash': ('password-hash', []), 'base64ct': ('base64ct', []),
@@ -97,7 +100,7 @@ def main():
         (work / 'Cargo.toml').write_text(manifest())
         subprocess.run(['cargo', 'generate-lockfile', '--offline', '--manifest-path', str(work / 'Cargo.toml')], cwd=ROOT, env=environment, check=True)
         run_cargo(work, args.target_dir / 'build', environment, tests=True)
-        (work / 'src/lib.rs').write_text('pub struct State;\nimpl State {\n    #[axum::debug_handler]\n    pub async fn borrowed(&self) -> &\'static str { "no" }\n}\n')
+        (work / 'src/lib.rs').write_text(BORROWED_HANDLER)
         run_cargo(work, args.target_dir / 'build', environment, rejection='Handlers must only take owned values')
     print('Syntax migration regression passed: runtime instrumentation, formatting, FnPtr generated SQLite API, typed builders, Argon2 and receiver rejection.')
 

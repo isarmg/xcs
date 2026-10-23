@@ -7,5 +7,5 @@ mod tests {
     //
     // https://github.com/tokio-rs/tokio/pull/5693
     #[cfg(test)]
-include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/tokio/functions/src/util/idle_notified_set/join_set_test_506.rs"));
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../../test/foundation/tokio/functions/src/util/idle_notified_set/join_set_test_506.rs"));
 }

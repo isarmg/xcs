@@ -93,22 +93,22 @@ sort!(par_sort_by, test_par_sort);
 sort!(par_sort_unstable_by, test_par_sort_unstable);
 
 #[cfg(test)]
-include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/rayon/functions/src/slice/test/test_par_sort_stability_95.rs"));
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../../test/foundation/rayon/functions/src/slice/test/test_par_sort_stability_95.rs"));
 
 #[cfg(test)]
-include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/rayon/functions/src/slice/test/test_par_chunks_exact_remainder_129.rs"));
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../../test/foundation/rayon/functions/src/slice/test/test_par_chunks_exact_remainder_129.rs"));
 
 #[cfg(test)]
-include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/rayon/functions/src/slice/test/test_par_chunks_exact_mut_remainder_137.rs"));
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../../test/foundation/rayon/functions/src/slice/test/test_par_chunks_exact_mut_remainder_137.rs"));
 
 #[cfg(test)]
-include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/rayon/functions/src/slice/test/test_par_rchunks_exact_remainder_151.rs"));
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../../test/foundation/rayon/functions/src/slice/test/test_par_rchunks_exact_remainder_151.rs"));
 
 #[cfg(test)]
-include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/rayon/functions/src/slice/test/test_par_rchunks_exact_mut_remainder_159.rs"));
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../../test/foundation/rayon/functions/src/slice/test/test_par_rchunks_exact_mut_remainder_159.rs"));
 
 #[cfg(test)]
-include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/rayon/functions/src/slice/test/slice_chunk_by_173.rs"));
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../../test/foundation/rayon/functions/src/slice/test/slice_chunk_by_173.rs"));
 
 #[cfg(test)]
-include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/rayon/functions/src/slice/test/slice_chunk_by_mut_194.rs"));
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../../test/foundation/rayon/functions/src/slice/test/slice_chunk_by_mut_194.rs"));

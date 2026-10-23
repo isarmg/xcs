@@ -303,7 +303,7 @@ mod tests {
     };
 
     #[cfg(test)]
-include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/zerocopy/functions/src/byteorder/test_const_methods_1313.rs"));
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../../test/foundation/zerocopy/functions/src/byteorder/test_const_methods_1313.rs"));
 
     #[cfg_attr(test, test)]
     #[cfg_attr(kani, kani::proof)]
@@ -368,14 +368,14 @@ include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/zerocopy
     }
 
     #[cfg(test)]
-include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/zerocopy/functions/src/byteorder/test_float_bit_patterns_1387.rs"));
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../../test/foundation/zerocopy/functions/src/byteorder/test_float_bit_patterns_1387.rs"));
 
     #[cfg(test)]
-include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/zerocopy/functions/src/byteorder/test_ops_impls_1381.rs"));
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../../test/foundation/zerocopy/functions/src/byteorder/test_ops_impls_1381.rs"));
 
     #[cfg(test)]
-include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/zerocopy/functions/src/byteorder/test_debug_impl_1580.rs"));
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../../test/foundation/zerocopy/functions/src/byteorder/test_debug_impl_1580.rs"));
 
     #[cfg(test)]
-include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/zerocopy/functions/src/byteorder/test_byteorder_traits_coverage_1589.rs"));
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../../test/foundation/zerocopy/functions/src/byteorder/test_byteorder_traits_coverage_1589.rs"));
 }

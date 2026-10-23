@@ -28,4 +28,4 @@ pub(crate) fn rfind(haystack: &[u8], needle: &[u8]) -> Option<usize> {
 }
 
 #[cfg(test)]
-include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/memchr/unit/src/tests/substring/naive/tests_30.rs"));
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../../test/foundation/memchr/unit/src/tests/substring/naive/tests_30.rs"));

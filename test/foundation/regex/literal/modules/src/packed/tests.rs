@@ -525,7 +525,7 @@ testconfig!(
 );
 
 #[cfg(test)]
-include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/regex/literal/functions/src/packed/tests/search_tests_have_unique_names_527.rs"));
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../../test/foundation/regex/literal/functions/src/packed/tests/search_tests_have_unique_names_527.rs"));
 
 fn run_search_tests<F: FnMut(&SearchTestOwned) -> Option<Vec<Match>>>(
     which: TestCollection,

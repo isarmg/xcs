@@ -24,10 +24,10 @@
 use super::bitfield_unit::__BindgenBitfieldUnit;
 
 #[cfg(test)]
-include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/bindgen/functions/codegen/bitfield_unit_tests/bitfield_unit_get_bit_26.rs"));
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../../test/foundation/bindgen/functions/codegen/bitfield_unit_tests/bitfield_unit_get_bit_26.rs"));
 
 #[cfg(test)]
-include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/bindgen/functions/codegen/bitfield_unit_tests/bitfield_unit_set_bit_48.rs"));
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../../test/foundation/bindgen/functions/codegen/bitfield_unit_tests/bitfield_unit_set_bit_48.rs"));
 
 macro_rules! bitfield_unit_get {
     (

@@ -24,6 +24,7 @@ import benchmark_relocation
 import dependency_edges
 import source_trimming
 import source_layout
+import source_layout_corrections
 
 ROOT = Path(__file__).resolve().parents[2]
 CATALOG = "compliance/rust-sources.json"
@@ -710,10 +711,14 @@ def upgrade_plan(root, previous, plan, records):
     return packages, superseded
 
 
-def refresh(root, retire_plan=None, upgrade_plan_data=None, rename_plan_data=None, move_plan_data=None, consolidate_plan_data=None, relocate_benchmarks=False, trim_plan_data=None, layout_plan_data=None):
+def refresh(root, retire_plan=None, upgrade_plan_data=None, rename_plan_data=None, move_plan_data=None, consolidate_plan_data=None, relocate_benchmarks=False, trim_plan_data=None, layout_plan_data=None, external_path_plan_data=None):
     previous_raw = (root / CATALOG).read_bytes()
     previous = json.loads(previous_raw)
-    if layout_plan_data is not None:
+    if external_path_plan_data is not None:
+        if any(p is not None for p in (retire_plan, upgrade_plan_data, rename_plan_data, move_plan_data, consolidate_plan_data, trim_plan_data, layout_plan_data)) or relocate_benchmarks:
+            raise ValueError('external path correction requires a separate reviewed transition')
+        layout, previous = source_layout_corrections.prepare(root, previous, external_path_plan_data, digest(previous_raw))
+    elif layout_plan_data is not None:
         if any(p is not None for p in (retire_plan, upgrade_plan_data, rename_plan_data, move_plan_data, consolidate_plan_data, trim_plan_data)) or relocate_benchmarks:
             raise ValueError('layout requires a separate reviewed transition')
         layout, previous = source_layout.prepare(root, previous, layout_plan_data, digest(previous_raw))
@@ -865,6 +870,8 @@ def _refresh(root, retire_plan=None, upgrade_plan_data=None, rename_plan_data=No
                    superseded=superseded, superseded_records_sha256=origin_hashes(superseded))
     if source_layout.KEY in previous:
         catalog[source_layout.KEY] = previous[source_layout.KEY]
+    if source_layout_corrections.KEY in previous:
+        catalog[source_layout_corrections.KEY] = previous[source_layout_corrections.KEY]
     if external or external_tests.has_history(previous):
         catalog["initial_test_relocation_sha256"] = source_relocation.RECEIPT_SHA256
     if benchmark_receipt is not None:
@@ -1084,6 +1091,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("command", choices=("refresh", "verify"))
     parser.add_argument("--metadata", action="store_true")
+    parser.add_argument("--external-path-plan", type=Path, help="explicit owner-resolved external test path correction; refresh only")
     parser.add_argument("--layout-plan", type=Path, help="explicit identity-preserving foundation root layout; refresh only")
     parser.add_argument("--trim-plan", type=Path, help="explicit reviewed per-file production source removal; refresh only")
     parser.add_argument("--retire-plan", type=Path, help="explicit reviewed removal plan; refresh only")
@@ -1094,7 +1102,7 @@ def main():
     parser.add_argument("--relocate-benchmarks", action="store_true", help="install the pinned 32-file post-consolidation benchmark relocation; refresh only")
     arguments = parser.parse_args()
     try:
-        if (arguments.layout_plan or arguments.trim_plan or arguments.retire_plan or arguments.upgrade_plan or arguments.rename_plan or arguments.move_plan or arguments.consolidate_plan or arguments.relocate_benchmarks) and arguments.command != "refresh":
+        if (arguments.external_path_plan or arguments.layout_plan or arguments.trim_plan or arguments.retire_plan or arguments.upgrade_plan or arguments.rename_plan or arguments.move_plan or arguments.consolidate_plan or arguments.relocate_benchmarks) and arguments.command != "refresh":
             raise ValueError("--trim-plan, --retire-plan, --upgrade-plan, --rename-plan, --move-plan, --consolidate-plan and --relocate-benchmarks are only accepted by refresh")
         (refresh(ROOT, read_json(arguments.retire_plan) if arguments.retire_plan else None,
                  read_json(arguments.upgrade_plan) if arguments.upgrade_plan else None,
@@ -1103,6 +1111,7 @@ def main():
                  read_json(arguments.consolidate_plan) if arguments.consolidate_plan else None,
                  trim_plan_data=read_json(arguments.trim_plan) if arguments.trim_plan else None,
                  layout_plan_data=read_json(arguments.layout_plan) if arguments.layout_plan else None,
+                 external_path_plan_data=read_json(arguments.external_path_plan) if arguments.external_path_plan else None,
                  **({'relocate_benchmarks': True} if arguments.relocate_benchmarks else {}))
          if arguments.command == "refresh" else verify(ROOT, arguments.metadata))
     except (ValueError, OSError, KeyError, TypeError) as error:

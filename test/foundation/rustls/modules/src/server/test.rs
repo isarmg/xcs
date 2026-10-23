@@ -14,13 +14,13 @@ use crate::msgs::message::{Message, MessagePayload};
 use crate::{CommonState, Error, PeerIncompatible, PeerMisbehaved, ProtocolVersion, Side};
 
 #[cfg(test)]
-include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/rustls/functions/src/server/test/null_compression_required_16.rs"));
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../../test/foundation/rustls/functions/src/server/test/null_compression_required_16.rs"));
 
 #[cfg(test)]
-include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/rustls/functions/src/server/test/server_ignores_sni_with_ip_address_27.rs"));
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../../test/foundation/rustls/functions/src/server/test/server_ignores_sni_with_ip_address_27.rs"));
 
 #[cfg(test)]
-include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/rustls/functions/src/server/test/server_rejects_sni_with_illegal_dns_name_35.rs"));
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../../test/foundation/rustls/functions/src/server/test/server_rejects_sni_with_illegal_dns_name_35.rs"));
 
 fn test_process_client_hello(hello: ClientHelloPayload) -> Result<(), Error> {
     let m = Message {
@@ -68,16 +68,16 @@ mod tests {
     };
 
     #[cfg(test)]
-include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/rustls/functions/src/server/test/test_server_rejects_no_extended_master_secret_extension_when_require_ems_or_fips_91.rs"));
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../../test/foundation/rustls/functions/src/server/test/test_server_rejects_no_extended_master_secret_extension_when_require_ems_or_fips_91.rs"));
 
     #[cfg(test)]
-include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/rustls/functions/src/server/test/server_picks_ffdhe_group_when_clienthello_has_no_ffdhe_group_in_groups_ext_130.rs"));
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../../test/foundation/rustls/functions/src/server/test/server_picks_ffdhe_group_when_clienthello_has_no_ffdhe_group_in_groups_ext_130.rs"));
 
     #[cfg(test)]
-include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/rustls/functions/src/server/test/server_picks_ffdhe_group_when_clienthello_has_no_groups_ext_150.rs"));
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../../test/foundation/rustls/functions/src/server/test/server_picks_ffdhe_group_when_clienthello_has_no_groups_ext_150.rs"));
 
     #[cfg(test)]
-include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/rustls/functions/src/server/test/server_accepts_client_with_no_ecpoints_extension_and_only_ffdhe_cipher_suites_171.rs"));
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../../test/foundation/rustls/functions/src/server/test/server_accepts_client_with_no_ecpoints_extension_and_only_ffdhe_cipher_suites_171.rs"));
 
     fn server_chooses_ffdhe_group_for_client_hello(
         mut conn: ServerConnection,
@@ -100,22 +100,22 @@ include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/rustls/f
     }
 
     #[cfg(test)]
-include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/rustls/functions/src/server/test/test_server_requiring_rpk_client_rejects_x509_client_212.rs"));
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../../test/foundation/rustls/functions/src/server/test/test_server_requiring_rpk_client_rejects_x509_client_212.rs"));
 
     #[cfg(test)]
-include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/rustls/functions/src/server/test/test_rpk_only_server_rejects_x509_only_client_232.rs"));
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../../test/foundation/rustls/functions/src/server/test/test_rpk_only_server_rejects_x509_only_client_232.rs"));
 
     #[cfg(test)]
-include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/rustls/functions/src/server/test/second_client_hello_cannot_withdraw_psk_offer_252.rs"));
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../../test/foundation/rustls/functions/src/server/test/second_client_hello_cannot_withdraw_psk_offer_252.rs"));
 
     #[cfg(test)]
-include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/rustls/functions/src/server/test/second_client_hello_cannot_change_cipher_suite_306.rs"));
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../../test/foundation/rustls/functions/src/server/test/second_client_hello_cannot_change_cipher_suite_306.rs"));
 
     #[cfg(test)]
-include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/rustls/functions/src/server/test/early_data_accepted_for_first_psk_identity_358.rs"));
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../../test/foundation/rustls/functions/src/server/test/early_data_accepted_for_first_psk_identity_358.rs"));
 
     #[cfg(test)]
-include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/rustls/functions/src/server/test/early_data_rejected_for_later_psk_identity_365.rs"));
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../../test/foundation/rustls/functions/src/server/test/early_data_rejected_for_later_psk_identity_365.rs"));
 
     /// Offer a resumable PSK at `index` (preceded by unknown identities) along with an
     /// early data request, returning the selected PSK index and whether early data was accepted.

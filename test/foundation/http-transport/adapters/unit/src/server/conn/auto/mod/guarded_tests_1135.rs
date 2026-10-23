@@ -17,34 +17,34 @@ mod tests {
     const BODY: &[u8] = b"Hello, world!";
 
     #[cfg(test)]
-include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/hyper-util/functions/src/server/conn/auto/mod/configuration_1153.rs"));
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../../test/foundation/http-transport/adapters/functions/src/server/conn/auto/mod/configuration_1153.rs"));
 
     #[cfg(test)]
-include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/hyper-util/functions/src/server/conn/auto/mod/title_case_headers_configuration_1171.rs"));
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../../test/foundation/http-transport/adapters/functions/src/server/conn/auto/mod/title_case_headers_configuration_1171.rs"));
 
     #[cfg(test)]
-include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/hyper-util/functions/src/server/conn/auto/mod/preserve_header_case_configuration_1183.rs"));
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../../test/foundation/http-transport/adapters/functions/src/server/conn/auto/mod/preserve_header_case_configuration_1183.rs"));
 
     #[cfg(test)]
-include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/hyper-util/functions/src/server/conn/auto/mod/http1_1195.rs"));
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../../test/foundation/http-transport/adapters/functions/src/server/conn/auto/mod/http1_1195.rs"));
 
     #[cfg(test)]
-include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/hyper-util/functions/src/server/conn/auto/mod/http2_1211.rs"));
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../../test/foundation/http-transport/adapters/functions/src/server/conn/auto/mod/http2_1211.rs"));
 
     #[cfg(test)]
-include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/hyper-util/functions/src/server/conn/auto/mod/http2_only_1227.rs"));
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../../test/foundation/http-transport/adapters/functions/src/server/conn/auto/mod/http2_only_1227.rs"));
 
     #[cfg(test)]
-include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/hyper-util/functions/src/server/conn/auto/mod/http2_only_fail_if_client_is_http1_1243.rs"));
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../../test/foundation/http-transport/adapters/functions/src/server/conn/auto/mod/http2_only_fail_if_client_is_http1_1243.rs"));
 
     #[cfg(test)]
-include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/hyper-util/functions/src/server/conn/auto/mod/http1_only_1255.rs"));
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../../test/foundation/http-transport/adapters/functions/src/server/conn/auto/mod/http1_only_1255.rs"));
 
     #[cfg(test)]
-include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/hyper-util/functions/src/server/conn/auto/mod/http1_only_fail_if_client_is_http2_1271.rs"));
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../../test/foundation/http-transport/adapters/functions/src/server/conn/auto/mod/http1_only_fail_if_client_is_http2_1271.rs"));
 
     #[cfg(test)]
-include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/hyper-util/functions/src/server/conn/auto/mod/graceful_shutdown_1283.rs"));
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../../test/foundation/http-transport/adapters/functions/src/server/conn/auto/mod/graceful_shutdown_1283.rs"));
 
     async fn connect_h1<B>(addr: SocketAddr) -> client::conn::http1::SendRequest<B>
     where

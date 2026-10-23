@@ -1050,4 +1050,4 @@ fn test_miri_smoketest() {
 // I had to move these tests out of the deprecated guts module, because leaving them there causes
 // an un-silenceable warning: https://github.com/rust-lang/rust/issues/47238
 #[cfg(test)]
-include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/blake3/unit/src/test/guts_tests_1052.rs"));
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../../test/foundation/blake3/unit/src/test/guts_tests_1052.rs"));
