@@ -183,7 +183,8 @@ impl Engine {
             root: self.root.clone(),
             config: self.config.clone(),
             state: self.state.clone(),
-            workspaces: self.workspaces.clone(),
+            // Planning reads only this workspace, with no workspace admission or recovery.
+            workspaces: [(workspace.workspace_id.clone(), workspace.clone())].into(),
             workspace_budget: self.workspace_budget.clone(),
             blocked: self.blocked,
             snapshot: self.snapshot.clone(),
@@ -341,3 +342,7 @@ impl WorkspaceCommitPreparation {
         })
     }
 }
+
+#[cfg(test)]
+#[path = "../../../../test/engine/unit/engine/workspace_commit/tests.rs"]
+mod tests;
