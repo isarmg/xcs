@@ -52060,7 +52060,7 @@
     }
   },
   "external_test_mappings_sha256": {
-    "compliance/external-tests/foundation.json": "4d7fbc72560cf8dbac0f8c7b599a4796dd64b877a59cda99e12110c0491b05d7",
+    "compliance/external-tests/foundation.json": "5d36b7d7f91d47adbfa2636e7987eed5e0f0cf7de24de3fa0a8775c98fad994c",
     "compliance/external-tests/integrated.json": "c6aaba81aa6d0e5e2004cf185de321a4301ddf7a7bc74ddc462cae92db59c4d6",
     "compliance/external-tests/ring.json": "091524345f2f7aa89bd364032bb4813c3268382af75243f41eedcdca888994f9"
   },
@@ -64815,7 +64815,7 @@
       ]
     },
     "src/foundation/data-storage/compression": {
-      "bytes": 131401,
+      "bytes": 131798,
       "directory": "src/foundation/data-storage/compression",
       "file_count": 37,
       "files": [
@@ -64969,7 +64969,7 @@
         {
           "origin_directory": "vendor/rust/flate2-1.1.10",
           "path": "test/foundation/compression/streams/tests/gunzip.rs",
-          "sha256": "b55530cb54f693b1141e56783a4acc0152adee306d8b1ddef40ebabe44baab82",
+          "sha256": "f2a1887f293cc9c71577d31c335418c3eaae9a74ae4f2fb06d61f3d307a7390b",
           "source": "src/foundation/flate2/tests/gunzip.rs",
           "source_sha256_before": "8662f1ccf172cf87b654c2540d7ac309bca1a476f8982c6969b12fe5bacbe50c"
         },

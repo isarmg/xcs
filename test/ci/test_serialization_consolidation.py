@@ -63,6 +63,19 @@ class SerializationConsolidationTests(unittest.TestCase):
             with self.assertRaisesRegex(AssertionError,'toolchain minimum'):
                 GATE['validate_source'](root)
 
+    def test_source_harness_keeps_manifest_relative_test_depth(self):
+        with tempfile.TemporaryDirectory() as directory:
+            stage = Path(directory)
+            package = GATE["source_test_package"](stage, ROOT)
+            self.assertEqual(package, stage / "src/foundation/data-storage/serialization-source-tests")
+            fixture = stage / "test/foundation/data-serialization/core/functions/src/ser/impls/test_format_u8_788.rs"
+            fixture.parent.mkdir(parents=True)
+            fixture.write_text("retained fixture")
+            actual = package / "../../../../test/foundation/data-serialization/core/functions/src/ser/impls/test_format_u8_788.rs"
+            package.mkdir(parents=True)
+            self.assertEqual(actual.resolve(), fixture)
+            self.assertEqual(actual.read_text(), "retained fixture")
+
     def test_ci_registration_is_exactly_once(self):
         commands=json.loads((ROOT/'test/ci/foundation-commands.json').read_text())
         wanted={'tool':'python3','args':['.github/scripts/check-serialization-consolidation.py']}

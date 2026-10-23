@@ -18,6 +18,12 @@ PROFILES = {'core': [], 'alloc': ['alloc'], 'rc': ['alloc', 'rc'],
 TARGETS = ('x86_64-unknown-linux-gnu', 'wasm32-unknown-unknown')
 
 
+def source_test_package(stage, root=ROOT):
+    """Keep manifest-relative includes at the real package depth."""
+    source = foundation_path(root, "data-serialization")
+    return stage / source.relative_to(root).parent / "serialization-source-tests"
+
+
 def manifest(root, features, tests=False):
     data = root / 'src/foundation/data-storage/data-serialization'
     result = ('[package]\nname="serialization-consolidation-probe"\nversion="0.0.0"\n'
@@ -116,7 +122,7 @@ def check(root=ROOT):
     # paths retain their same-depth test layout; no Cargo.lock is written in src.
     with tempfile.TemporaryDirectory(prefix='serialization-source-tests-', dir=root/'target') as directory:
         stage=Path(directory)
-        package=stage/'src/foundation/serialization-source-tests'
+        package=source_test_package(stage, root)
         package.mkdir(parents=True)
         shutil.copytree(root/'test/foundation/data-serialization',stage/'test/foundation/data-serialization')
         main=tomllib.loads((root/'src/foundation/data-storage/data-serialization/Cargo.toml').read_text())
