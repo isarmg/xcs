@@ -29,7 +29,7 @@ fn missing_or_corrupt_selected_snapshot_source_repairs_from_verified_replica() {
     for corrupt in [false, true] {
         let (_temp, root, config) = setup();
         let (engine, _) = reopen(&root);
-        let expected = canonical_json(&engine.state).unwrap();
+        let expected = canonical_json(engine.state()).unwrap();
         drop(engine);
         let source = config.disks.iter().min_by_key(|d| &d.disk_id).unwrap();
         let first = scan(source)
@@ -54,7 +54,7 @@ fn missing_or_corrupt_selected_snapshot_source_repairs_from_verified_replica() {
             std::fs::remove_file(&path).unwrap();
         }
         let (engine, _) = reopen(&root);
-        assert_eq!(canonical_json(&engine.state).unwrap(), expected);
+        assert_eq!(canonical_json(engine.state()).unwrap(), expected);
         assert_eq!(std::fs::read(&path).unwrap(), original);
         drop(engine);
         assert_eq!(reopen(&root).1, 1);
@@ -119,13 +119,13 @@ fn same_length_legacy_payload_changes_invalidate_coverage() {
 fn clean_checkpoint_reopens_decode_one_snapshot_and_preserve_state() {
     let (_temp, root, config) = setup();
     let (engine, full) = reopen(&root);
-    let expected = canonical_json(&engine.state).unwrap();
+    let expected = canonical_json(engine.state()).unwrap();
     assert!(full >= 6);
     assert!(config.disks.iter().all(|d| path(d).exists()));
     drop(engine);
     let (engine, fast) = reopen(&root);
     assert_eq!(fast, 1);
-    assert_eq!(canonical_json(&engine.state).unwrap(), expected);
+    assert_eq!(canonical_json(engine.state()).unwrap(), expected);
 }
 #[test]
 fn added_conflicting_layout_cannot_hide_behind_checkpoint_coverage() {
@@ -278,14 +278,14 @@ fn repeated_same_file_saves_replay_only_checkpoint_and_suffix() {
     ] {
         save_file(&mut engine, &branch, "same.txt", bytes);
     }
-    let expected = canonical_json(&engine.state).unwrap();
+    let expected = canonical_json(engine.state()).unwrap();
     drop(engine);
     let (engine, count) = reopen(&root);
     assert_eq!(
         count, 4,
         "one checkpoint snapshot plus three suffix decisions"
     );
-    assert_eq!(canonical_json(&engine.state).unwrap(), expected);
+    assert_eq!(canonical_json(engine.state()).unwrap(), expected);
     drop(engine);
     assert_eq!(reopen(&root).1, 1);
 }
@@ -423,7 +423,7 @@ fn checkpoint_never_hides_corrupt_journal_prefix() {
 fn checkpoint_survives_system_disk_loss_without_becoming_authority() {
     let (_temp, root, config) = setup();
     let (engine, _) = reopen(&root);
-    let expected = canonical_json(&engine.state).unwrap();
+    let expected = canonical_json(engine.state()).unwrap();
     drop(engine);
     std::fs::remove_dir_all(&root).unwrap();
     let disks = config
@@ -432,14 +432,14 @@ fn checkpoint_survives_system_disk_loss_without_becoming_authority() {
         .map(|d| d.root.clone())
         .collect::<Vec<_>>();
     let engine = Engine::restore_from_disks(&root, &disks).unwrap();
-    assert_eq!(canonical_json(&engine.state).unwrap(), expected);
+    assert_eq!(canonical_json(engine.state()).unwrap(), expected);
 }
 
 #[test]
 fn degraded_open_keeps_full_replay_and_visibility_rules() {
     let (_temp, root, config) = setup();
     let (engine, _) = reopen(&root);
-    let expected = canonical_json(&engine.state).unwrap();
+    let expected = canonical_json(engine.state()).unwrap();
     drop(engine);
     std::fs::rename(
         &config.disks[2].root,
@@ -449,7 +449,7 @@ fn degraded_open_keeps_full_replay_and_visibility_rules() {
     let (engine, count) = reopen(&root);
     assert!(count >= 6);
     assert!(engine.blocked);
-    assert_eq!(canonical_json(&engine.state).unwrap(), expected);
+    assert_eq!(canonical_json(engine.state()).unwrap(), expected);
 }
 
 #[test]
@@ -459,11 +459,11 @@ fn sealed_suffix_replays_only_new_decision_and_refreshes_checkpoint() {
     engine
         .create_repository("newer", "P01", 3, "admin", &new_id("op"))
         .unwrap();
-    let expected = canonical_json(&engine.state).unwrap();
+    let expected = canonical_json(engine.state()).unwrap();
     drop(engine);
     let (engine, count) = reopen(&root);
     assert_eq!(count, 2);
-    assert_eq!(canonical_json(&engine.state).unwrap(), expected);
+    assert_eq!(canonical_json(engine.state()).unwrap(), expected);
     drop(engine);
     assert_eq!(reopen(&root).1, 1);
 }

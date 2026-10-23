@@ -73,7 +73,7 @@ fn large_candidate_uses_bounded_full_revalidation_and_rejects_changes() {
     assert!(proof.entries.is_empty());
     assert_eq!(proof.disks.len(), 3);
     proof.validate(&engine.config, &candidate).unwrap();
-    let mut next = engine.state.clone();
+    let mut next = engine.state().clone();
     next.sequence = engine.next_slot;
     let prepared = candidate
         .versions
@@ -191,7 +191,7 @@ fn held_proof_rejects_disk_seal_replacement_and_candidate_changes() {
 #[test]
 fn detached_decision_rejects_changed_topology_before_journaling() {
     let (_temp, mut engine, candidate) = fixture();
-    let mut next = engine.state.clone();
+    let mut next = engine.state().clone();
     next.sequence = engine.next_slot;
     let result = engine.state.operations[&candidate.operation_id].clone();
     let detached = engine

@@ -30,8 +30,8 @@ fn cache_encoder_rejects_before_accept_and_reopens_cleanly() {
             request_digest: None,
         })
         .unwrap();
-    let before = canonical_json(&engine.state).unwrap();
-    let mut next = engine.state.clone();
+    let before = canonical_json(engine.state()).unwrap();
+    let mut next = engine.state().clone();
     next.sequence = engine.next_slot;
     let file = next.versions.values().next().unwrap().file_id.clone();
     next.file_notes.insert(file, "new note".repeat(100));
@@ -51,7 +51,7 @@ fn cache_encoder_rejects_before_accept_and_reopens_cleanly() {
         .unwrap();
     assert_eq!(error.code(), "RESOURCE_LIMIT");
     assert!(!engine.blocked);
-    assert_eq!(canonical_json(&engine.state).unwrap(), before);
+    assert_eq!(canonical_json(engine.state()).unwrap(), before);
     assert_eq!(
         engine
             .members()
@@ -62,14 +62,14 @@ fn cache_encoder_rejects_before_accept_and_reopens_cleanly() {
     );
     drop(engine);
     let engine = Engine::open(&root).unwrap();
-    assert_eq!(canonical_json(&engine.state).unwrap(), before);
+    assert_eq!(canonical_json(engine.state()).unwrap(), before);
     assert_eq!(
         engine.operation(&result.operation_id).unwrap_err().code(),
         "OPERATION_NOT_FOUND"
     );
     drop(engine);
     let mut engine = Engine::open_for_recovery(&root).unwrap();
-    assert_eq!(canonical_json(&engine.state).unwrap(), before);
+    assert_eq!(canonical_json(engine.state()).unwrap(), before);
     let detached = engine
         .prepare_publication_bounded(next, Vec::new(), result.clone(), MAX_METADATA, MAX_METADATA)
         .unwrap();
@@ -135,7 +135,7 @@ fn payload_cache_rejection_preserves_names_and_retries_installed_payloads() {
             (directory, content, cache, cache_bytes)
         })
         .collect();
-    let before = canonical_json(&engine.state).unwrap();
+    let before = canonical_json(engine.state()).unwrap();
     let original_snapshot = engine.snapshot.clone();
     let original_slot = engine.next_slot;
     let logs: Vec<_> = engine
@@ -143,7 +143,7 @@ fn payload_cache_rejection_preserves_names_and_retries_installed_payloads() {
         .iter()
         .map(|disk| std::fs::read(log_path(disk)).unwrap())
         .collect();
-    let mut next = engine.state.clone();
+    let mut next = engine.state().clone();
     next.sequence = engine.next_slot;
     let source = root.join("unpublished-source");
     std::fs::write(&source, b"replacement bytes").unwrap();
@@ -208,7 +208,7 @@ fn payload_cache_rejection_preserves_names_and_retries_installed_payloads() {
         .unwrap();
     assert_eq!(error.code(), "RESOURCE_LIMIT");
     assert!(!engine.blocked);
-    assert_eq!(canonical_json(&engine.state).unwrap(), before);
+    assert_eq!(canonical_json(engine.state()).unwrap(), before);
     assert_eq!(engine.snapshot, original_snapshot);
     assert_eq!(engine.next_slot, original_slot);
     assert_eq!(
@@ -239,7 +239,7 @@ fn payload_cache_rejection_preserves_names_and_retries_installed_payloads() {
     }
     drop(engine);
     let mut engine = Engine::open(&root).unwrap();
-    assert_eq!(canonical_json(&engine.state).unwrap(), before);
+    assert_eq!(canonical_json(engine.state()).unwrap(), before);
     let detached = engine
         .prepare_publication_bounded(
             next,

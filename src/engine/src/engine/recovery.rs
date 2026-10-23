@@ -204,7 +204,7 @@ impl Engine {
                         next.operations
                             .insert(candidate.operation_id.clone(), publication.result.clone());
                     }
-                    self.state = next;
+                    self.state = std::sync::Arc::new(next);
                 }
                 self.snapshot = Some(candidate.snapshot_hash);
                 continue;
@@ -267,7 +267,7 @@ impl Engine {
                     next.operations
                         .insert(candidate.operation_id.clone(), result);
                 }
-                self.state = next;
+                self.state = std::sync::Arc::new(next);
                 self.snapshot = Some(candidate.snapshot_hash);
             } else if let Some(p) = publication {
                 if p.candidate_hash != hash || p.result.operation_id != candidate.operation_id {
@@ -288,7 +288,7 @@ impl Engine {
                     next.operations
                         .insert(candidate.operation_id.clone(), p.result.clone());
                 }
-                self.state = next;
+                self.state = std::sync::Arc::new(next);
                 self.snapshot = Some(candidate.snapshot_hash);
                 self.blocked = true;
             } else {

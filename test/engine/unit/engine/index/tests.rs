@@ -49,15 +49,13 @@ fn populate(engine: &mut Engine) {
         ("c", 1 << 63),
         ("d", (1 << 63) - 1),
     ] {
-        engine
-            .state
+        std::sync::Arc::make_mut(&mut engine.state)
             .versions
             .insert(id.into(), version(id, "file", seq));
     }
     for n in 0..2000 {
         let id = format!("other_{n}");
-        engine
-            .state
+        std::sync::Arc::make_mut(&mut engine.state)
             .versions
             .insert(id.clone(), version(&id, "unrelated", n));
     }
@@ -102,18 +100,22 @@ fn history_delta_handles_deletes_replacements_and_identity_moves() {
     let temp = tempfile::tempdir().unwrap();
     let mut engine = engine(&temp);
     populate(&mut engine);
-    let previous = engine.state.clone();
-    engine.state.sequence += 1;
-    engine.state.versions.remove("z");
-    engine
-        .state
+    let previous = engine.state().clone();
+    std::sync::Arc::make_mut(&mut engine.state).sequence += 1;
+    std::sync::Arc::make_mut(&mut engine.state)
+        .versions
+        .remove("z");
+    std::sync::Arc::make_mut(&mut engine.state)
         .versions
         .insert("a".into(), version("a", "moved", 2));
-    engine
-        .state
+    std::sync::Arc::make_mut(&mut engine.state)
         .versions
         .insert("new".into(), version("new", "file", 5));
-    engine.state.versions.get_mut("b").unwrap().history_tree_id = "changed".into();
+    std::sync::Arc::make_mut(&mut engine.state)
+        .versions
+        .get_mut("b")
+        .unwrap()
+        .history_tree_id = "changed".into();
     engine.update_index(&previous).unwrap();
     for file in ["file", "moved", "unrelated", "missing"] {
         assert_eq!(engine.indexed_file_history(file), Some(scan(&engine, file)));
@@ -182,10 +184,9 @@ fn typed_history_write_failure_rolls_back_all_projection_rows_and_proof() {
         &path,
         "CREATE TRIGGER fail_history BEFORE INSERT ON file_history_versions BEGIN SELECT RAISE(ABORT,'fail');END;",
     );
-    let previous = engine.state.clone();
-    engine.state.sequence += 1;
-    engine
-        .state
+    let previous = engine.state().clone();
+    std::sync::Arc::make_mut(&mut engine.state).sequence += 1;
+    std::sync::Arc::make_mut(&mut engine.state)
         .versions
         .insert("new".into(), version("new", "file", 1));
     assert!(engine.update_index(&previous).is_err());
@@ -241,10 +242,9 @@ fn successful_delta_does_not_clear_unhealthy_latch() {
         "DELETE FROM file_history_versions WHERE version_id='a'",
     );
     assert!(engine.indexed_file_history("file").is_none());
-    let previous = engine.state.clone();
-    engine.state.sequence += 1;
-    engine
-        .state
+    let previous = engine.state().clone();
+    std::sync::Arc::make_mut(&mut engine.state).sequence += 1;
+    std::sync::Arc::make_mut(&mut engine.state)
         .file_notes
         .insert("file".into(), "changed".into());
     engine.update_index(&previous).unwrap();
@@ -266,8 +266,7 @@ fn actual_history_route_uses_index_only_for_large_selective_stores() {
     assert_eq!(engine.history_query_proof.lock().unwrap().indexed_reads, 0);
     for n in engine.state.versions.len()..HISTORY_INDEX_MIN_VERSIONS {
         let id = format!("large_{n}");
-        engine
-            .state
+        std::sync::Arc::make_mut(&mut engine.state)
             .versions
             .insert(id.clone(), version(&id, "unrelated", n as u64));
     }
@@ -301,7 +300,7 @@ fn measure_history_candidate_latency() {
         let mut engine = engine(&temp);
         for n in 0..count {
             let id = format!("v_{n:08}");
-            engine.state.versions.insert(
+            std::sync::Arc::make_mut(&mut engine.state).versions.insert(
                 id.clone(),
                 version(&id, if n < selected { "file" } else { "other" }, n),
             );
@@ -590,11 +589,11 @@ fn publication_rejects_substituted_marker_view_and_reopen_recovers() {
     assert!(engine.is_read_only());
     assert!(engine.state.operations.contains_key(&operation));
     assert!(!engine.history_query_proof.lock().unwrap().healthy);
-    let published = engine.state.clone();
+    let published = engine.state().clone();
     drop(engine);
     let engine = Engine::open(&root).unwrap();
     assert!(!engine.is_read_only());
-    assert_eq!(engine.state, published);
+    assert_eq!(*engine.state, published);
     assert_eq!(projected_state(&root.join("index.sqlite")), published);
     assert!(engine.history_query_proof.lock().unwrap().healthy);
 }
@@ -613,7 +612,7 @@ fn published_evidence_survives_index_failure_and_reopen_rebuilds() {
         .create_repository("first", "P01", 1, "admin", &new_id("op"))
         .unwrap();
     let path = root.join("index.sqlite");
-    assert_eq!(projected_state(&path), engine.state);
+    assert_eq!(&projected_state(&path), engine.state());
     let baseline = rows(&path);
     sql(
         &path,
@@ -626,17 +625,17 @@ fn published_evidence_survives_index_failure_and_reopen_rebuilds() {
     assert_eq!(error.code, "INDEX_REBUILD_FAILED");
     assert!(engine.is_read_only());
     assert!(engine.state.operations.contains_key(&operation));
-    let published = engine.state.clone();
+    let published = engine.state().clone();
     assert_eq!(rows(&path), baseline);
     drop(engine);
     let engine = Engine::open(&root).unwrap();
     assert!(!engine.is_read_only());
-    assert_eq!(engine.state, published);
+    assert_eq!(*engine.state, published);
     assert_eq!(projected_state(&path), published);
     drop(engine);
     std::fs::remove_file(&path).unwrap();
     let engine = Engine::open(&root).unwrap();
-    assert_eq!(engine.state, published);
+    assert_eq!(*engine.state, published);
     assert_eq!(projected_state(&path), published);
 }
 
@@ -649,7 +648,7 @@ fn startup_rebuilds_a_corrupt_disposable_database_from_durable_evidence() {
             .create_repository("published", "P01", 1, "admin", &new_id("op"))
             .unwrap();
         let root = engine.root.clone();
-        let published = engine.state.clone();
+        let published = engine.state().clone();
         drop(engine);
         let corrupt_bytes = if corrupt_page {
             let mut bytes = std::fs::read(root.join("index.sqlite")).unwrap();
@@ -660,7 +659,7 @@ fn startup_rebuilds_a_corrupt_disposable_database_from_durable_evidence() {
         };
         std::fs::write(root.join("index.sqlite"), &corrupt_bytes).unwrap();
         let recovered = Engine::open(&root).unwrap();
-        assert_eq!(recovered.state, published);
+        assert_eq!(*recovered.state, published);
         assert_eq!(projected_state(&root.join("index.sqlite")), published);
         assert!(recovered.history_query_proof.lock().unwrap().healthy);
         assert!(!recovered.is_read_only());
@@ -694,7 +693,7 @@ fn corrupt_reader_closes_before_immediate_rebuild() {
     assert!(!engine.history_query_proof.lock().unwrap().healthy);
     engine.rebuild_index().unwrap();
     assert_eq!(engine.indexed_file_history("missing"), Some(vec![]));
-    assert_eq!(projected_state(&path), engine.state);
+    assert_eq!(&projected_state(&path), engine.state());
 }
 
 #[test]

@@ -61,28 +61,33 @@ fn file_selection_rejects_missing_heads_without_publication() {
             let (_temporary, mut engine, repo, entry, branch) = fixture();
             match missing {
                 "main_branch" => {
-                    engine.state.branches.remove(&repo.main_branch_id);
+                    std::sync::Arc::make_mut(&mut engine.state)
+                        .branches
+                        .remove(&repo.main_branch_id);
                 }
                 "main_head" => {
                     let head = engine.state.branches[&repo.main_branch_id]
                         .head_commit_id
                         .clone();
-                    engine.state.commits.remove(&head);
+                    std::sync::Arc::make_mut(&mut engine.state)
+                        .commits
+                        .remove(&head);
                 }
                 "file_head" => {
-                    engine
-                        .state
+                    std::sync::Arc::make_mut(&mut engine.state)
                         .branches
                         .get_mut(&branch)
                         .unwrap()
                         .head_commit_id = "missing".into();
                 }
                 "history" => {
-                    engine.state.histories.remove(&repo.history_tree_id);
+                    std::sync::Arc::make_mut(&mut engine.state)
+                        .histories
+                        .remove(&repo.history_tree_id);
                 }
                 _ => unreachable!(),
             }
-            let before = canonical_json(&engine.state).unwrap();
+            let before = canonical_json(engine.state()).unwrap();
             let result = if scoped {
                 engine.select_file_branch_at(
                     &repo.repository_id,
@@ -104,7 +109,7 @@ fn file_selection_rejects_missing_heads_without_publication() {
                 "{missing}/{scoped}: {error}"
             );
             assert_eq!(
-                canonical_json(&engine.state).unwrap(),
+                canonical_json(engine.state()).unwrap(),
                 before,
                 "{missing}/{scoped}"
             );
@@ -118,17 +123,19 @@ fn workspace_missing_head_returns_error_without_creating_workspace() {
     let head = engine.state.branches[&repo.main_branch_id]
         .head_commit_id
         .clone();
-    engine.state.commits.remove(&head);
+    std::sync::Arc::make_mut(&mut engine.state)
+        .commits
+        .remove(&head);
     let shared = std::sync::Mutex::new(engine);
     let mut engine = shared.lock().unwrap();
-    let before = canonical_json(&engine.state).unwrap();
+    let before = canonical_json(engine.state()).unwrap();
     let workspaces = engine.workspaces.len();
     let error = engine
         .create_workspace(&repo.main_branch_id, "admin")
         .unwrap_err();
     assert_eq!(error.code(), "STATE_INVALID");
     assert_eq!(engine.workspaces.len(), workspaces);
-    assert_eq!(canonical_json(&engine.state).unwrap(), before);
+    assert_eq!(canonical_json(engine.state()).unwrap(), before);
     drop(engine);
     assert!(
         shared.lock().is_ok(),
@@ -172,35 +179,41 @@ fn batch_rejects_missing_references_without_publication() {
         };
         match missing {
             "main_branch" => {
-                engine.state.branches.remove(&repo.main_branch_id);
+                std::sync::Arc::make_mut(&mut engine.state)
+                    .branches
+                    .remove(&repo.main_branch_id);
             }
             "main_head" => {
                 let head = engine.state.branches[&repo.main_branch_id]
                     .head_commit_id
                     .clone();
-                engine.state.commits.remove(&head);
+                std::sync::Arc::make_mut(&mut engine.state)
+                    .commits
+                    .remove(&head);
             }
             "scope_commit" => {
-                engine
-                    .state
+                std::sync::Arc::make_mut(&mut engine.state)
                     .directory_branches
                     .get_mut(&branch_id)
                     .unwrap()
                     .commit_id = "missing".into();
             }
             "owner" => {
-                let branch = engine.state.directory_branches.get_mut(&branch_id).unwrap();
+                let branch = std::sync::Arc::make_mut(&mut engine.state)
+                    .directory_branches
+                    .get_mut(&branch_id)
+                    .unwrap();
                 branch.file_contexts.clear();
                 branch.file_branches.clear();
             }
             _ => unreachable!(),
         }
-        let before = canonical_json(&engine.state).unwrap();
+        let before = canonical_json(engine.state()).unwrap();
         let error = engine
             .directory_namespace_batch(&repo.repository_id, &request, "admin", &new_id("op"))
             .unwrap_err();
         assert_eq!(error.code(), "STATE_INVALID", "{missing}");
-        assert_eq!(canonical_json(&engine.state).unwrap(), before, "{missing}");
+        assert_eq!(canonical_json(engine.state()).unwrap(), before, "{missing}");
     }
 }
 
@@ -210,17 +223,21 @@ fn file_node_publication_rejects_missing_main_without_leaking_new_nodes() {
         let (_temporary, mut engine, repo, entry, branch) = fixture();
         match missing {
             "main_branch" => {
-                engine.state.branches.remove(&repo.main_branch_id);
+                std::sync::Arc::make_mut(&mut engine.state)
+                    .branches
+                    .remove(&repo.main_branch_id);
             }
             "main_head" => {
                 let head = engine.state.branches[&repo.main_branch_id]
                     .head_commit_id
                     .clone();
-                engine.state.commits.remove(&head);
+                std::sync::Arc::make_mut(&mut engine.state)
+                    .commits
+                    .remove(&head);
             }
             _ => unreachable!(),
         }
-        let before = canonical_json(&engine.state).unwrap();
+        let before = canonical_json(engine.state()).unwrap();
         let error = engine
             .update_file_node_tags(
                 &entry.file_id,
@@ -236,7 +253,7 @@ fn file_node_publication_rejects_missing_main_without_leaking_new_nodes() {
             )
             .unwrap_err();
         assert_eq!(error.code(), "STATE_INVALID", "{missing}");
-        assert_eq!(canonical_json(&engine.state).unwrap(), before, "{missing}");
+        assert_eq!(canonical_json(engine.state()).unwrap(), before, "{missing}");
     }
 }
 
@@ -245,31 +262,43 @@ fn missing_file_nodes_and_bodies_return_errors_without_publication() {
     for missing in ["node", "body"] {
         let (_temporary, mut engine, _, entry, branch) = fixture();
         let head = if missing == "node" {
-            engine.state.branches.get_mut(&branch).unwrap().file_node_id = Some("missing".into());
+            std::sync::Arc::make_mut(&mut engine.state)
+                .branches
+                .get_mut(&branch)
+                .unwrap()
+                .file_node_id = Some("missing".into());
             "missing".to_owned()
         } else {
             let node = new_id("fnode");
-            engine.state.file_path_nodes.insert(
-                node.clone(),
-                FilePathNode {
-                    node_id: node.clone(),
-                    history_tree_id: engine.state.branches[&branch].history_tree_id.clone(),
-                    file_id: entry.file_id.clone(),
-                    version_id: "missing".into(),
-                    parent_node_ids: vec![entry.version_id],
-                    branch_id: branch.clone(),
-                    path: entry.path.clone(),
-                    previous_path: entry.path,
-                    sequence: engine.state.sequence,
-                    created_at: now(),
-                    operation_id: new_id("op"),
-                    author: "admin".into(),
-                },
-            );
-            engine.state.branches.get_mut(&branch).unwrap().file_node_id = Some(node.clone());
+            let history_tree_id = engine.state.branches[&branch].history_tree_id.clone();
+            let sequence = engine.state.sequence;
+            std::sync::Arc::make_mut(&mut engine.state)
+                .file_path_nodes
+                .insert(
+                    node.clone(),
+                    FilePathNode {
+                        node_id: node.clone(),
+                        history_tree_id,
+                        file_id: entry.file_id.clone(),
+                        version_id: "missing".into(),
+                        parent_node_ids: vec![entry.version_id],
+                        branch_id: branch.clone(),
+                        path: entry.path.clone(),
+                        previous_path: entry.path,
+                        sequence,
+                        created_at: now(),
+                        operation_id: new_id("op"),
+                        author: "admin".into(),
+                    },
+                );
+            std::sync::Arc::make_mut(&mut engine.state)
+                .branches
+                .get_mut(&branch)
+                .unwrap()
+                .file_node_id = Some(node.clone());
             node
         };
-        let before = canonical_json(&engine.state).unwrap();
+        let before = canonical_json(engine.state()).unwrap();
         let error = engine
             .update_file_node_tags(
                 &entry.file_id,
@@ -288,7 +317,7 @@ fn missing_file_nodes_and_bodies_return_errors_without_publication() {
             matches!(error.code(), "STATE_INVALID" | "FILE_NODE_NOT_FOUND"),
             "{missing}: {error}"
         );
-        assert_eq!(canonical_json(&engine.state).unwrap(), before, "{missing}");
+        assert_eq!(canonical_json(engine.state()).unwrap(), before, "{missing}");
         let error = engine
             .create_file_branch_from_node(
                 &entry.file_id,
@@ -308,7 +337,7 @@ fn missing_file_nodes_and_bodies_return_errors_without_publication() {
             }
         );
         assert_eq!(
-            canonical_json(&engine.state).unwrap(),
+            canonical_json(engine.state()).unwrap(),
             before,
             "source/{missing}"
         );
@@ -334,8 +363,12 @@ fn exhausted_branch_generations_reject_metadata_mutations_atomically() {
             "merge_survivor" => &owner,
             _ => &repo.main_branch_id,
         };
-        engine.state.branches.get_mut(saturated).unwrap().generation = u64::MAX;
-        let before = canonical_json(&engine.state).unwrap();
+        std::sync::Arc::make_mut(&mut engine.state)
+            .branches
+            .get_mut(saturated)
+            .unwrap()
+            .generation = u64::MAX;
+        let before = canonical_json(engine.state()).unwrap();
         let operation = new_id("op");
         let result = match action {
             "select" => engine.select_file_branch(&entry.file_id, &draft, "admin", &operation),
@@ -394,7 +427,7 @@ fn exhausted_branch_generations_reject_metadata_mutations_atomically() {
             _ => unreachable!(),
         };
         assert_eq!(result.unwrap_err().code(), "RESOURCE_LIMIT", "{action}");
-        assert_eq!(canonical_json(&engine.state).unwrap(), before, "{action}");
+        assert_eq!(canonical_json(engine.state()).unwrap(), before, "{action}");
     }
 }
 
@@ -403,8 +436,7 @@ fn exhausted_workspace_generations_reject_candidate_without_publication() {
     for saturated_owner in [false, true] {
         let (_temporary, mut engine, repo, entry, _) = fixture();
         let owner = engine.state.file_selections[&entry.file_id].clone();
-        engine
-            .state
+        std::sync::Arc::make_mut(&mut engine.state)
             .branches
             .get_mut(if saturated_owner {
                 &owner
@@ -419,7 +451,7 @@ fn exhausted_workspace_generations_reject_candidate_without_publication() {
         engine
             .stage_bytes(&workspace.workspace_id, &entry.path, b"changed body")
             .unwrap();
-        let before = canonical_json(&engine.state).unwrap();
+        let before = canonical_json(engine.state()).unwrap();
         let error = engine
             .commit_workspace(CommitRequest {
                 workspace_id: workspace.workspace_id,
@@ -433,7 +465,7 @@ fn exhausted_workspace_generations_reject_candidate_without_publication() {
             .unwrap_err();
         assert_eq!(error.code(), "RESOURCE_LIMIT", "owner={saturated_owner}");
         assert_eq!(
-            canonical_json(&engine.state).unwrap(),
+            canonical_json(engine.state()).unwrap(),
             before,
             "owner={saturated_owner}"
         );
@@ -471,16 +503,15 @@ fn exhausted_main_generation_rejects_active_namespace_batch() {
             }),
         }],
     };
-    engine
-        .state
+    std::sync::Arc::make_mut(&mut engine.state)
         .branches
         .get_mut(&repo.main_branch_id)
         .unwrap()
         .generation = u64::MAX;
-    let before = canonical_json(&engine.state).unwrap();
+    let before = canonical_json(engine.state()).unwrap();
     let error = engine
         .directory_namespace_batch(&repo.repository_id, &request, "admin", &new_id("op"))
         .unwrap_err();
     assert_eq!(error.code(), "RESOURCE_LIMIT");
-    assert_eq!(canonical_json(&engine.state).unwrap(), before);
+    assert_eq!(canonical_json(engine.state()).unwrap(), before);
 }

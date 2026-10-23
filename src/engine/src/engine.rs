@@ -30,7 +30,7 @@ use config::{acquire_locks, validate_config};
 pub struct Engine {
     pub(crate) root: PathBuf,
     pub(crate) config: Config,
-    pub(crate) state: State,
+    pub(crate) state: Arc<State>,
     pub(crate) workspaces: BTreeMap<String, Workspace>,
     workspace_budget: workspace_budget::WorkspaceBudget,
     retained_workspace_limits: Option<RetainedWorkspaceLimits>,
@@ -195,7 +195,7 @@ impl Engine {
         let engine = Self {
             root,
             config,
-            state,
+            state: Arc::new(state),
             workspaces: BTreeMap::new(),
             workspace_budget: workspace_budget::WorkspaceBudget::default(),
             retained_workspace_limits: workspace_limits,
@@ -264,10 +264,10 @@ impl Engine {
         let mut engine = Self {
             root,
             config,
-            state: State {
+            state: Arc::new(State {
                 topology_generation: 1,
                 ..State::default()
-            },
+            }),
             workspaces: BTreeMap::new(),
             workspace_budget: workspace_budget::WorkspaceBudget::default(),
             retained_workspace_limits: workspace_limits,
@@ -403,7 +403,7 @@ impl Engine {
         &self.config
     }
     pub fn state(&self) -> &State {
-        &self.state
+        self.state.as_ref()
     }
     pub fn root(&self) -> &Path {
         &self.root
@@ -660,7 +660,9 @@ impl Engine {
             ));
         }
         self.require_write()?;
-        let mut next = self.state.clone();
+        // Published and planning views share only the immutable base. Every
+        // mutation still owns an independent next State until publication.
+        let mut next = self.state.as_ref().clone();
         crate::container_storage::capture_names(&mut next);
         next.sequence = self.next_slot;
         if !kind.starts_with("auth.") {

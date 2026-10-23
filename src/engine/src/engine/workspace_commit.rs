@@ -17,8 +17,9 @@ impl Drop for PreparationAdmission {
 }
 
 /// Private planning view. It exposes no publication or mutation entry point.
-/// One per-engine admission bounds the extra snapshot State clone; payload
-/// workers share this view rather than cloning State per file.
+/// The immutable base State is shared with the live Engine; only mutation
+/// planning clones it. Payload workers share this view rather than cloning
+/// State per file, and one per-engine admission bounds active preparations.
 struct PlanningSnapshot {
     engine: Engine,
 }
@@ -182,7 +183,7 @@ impl Engine {
         let engine = Engine {
             root: self.root.clone(),
             config: self.config.clone(),
-            state: self.state.clone(),
+            state: Arc::clone(&self.state),
             // Planning reads only this workspace, with no workspace admission or recovery.
             workspaces: [(workspace.workspace_id.clone(), workspace.clone())].into(),
             workspace_budget: self.workspace_budget.clone(),

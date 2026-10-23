@@ -68,29 +68,37 @@ fn split_rejects_broken_persisted_identities_without_partial_migration() {
         let prefix = engine.state.commits[&cut].parent_commit_ids[0].clone();
         match corruption {
             "missing_prefix" => {
-                engine.state.commits.remove(&prefix);
+                std::sync::Arc::make_mut(&mut engine.state)
+                    .commits
+                    .remove(&prefix);
             }
             "foreign_prefix" => {
-                engine
-                    .state
+                std::sync::Arc::make_mut(&mut engine.state)
                     .commits
                     .get_mut(&prefix)
                     .unwrap()
                     .history_tree_id = "foreign".into();
             }
             "cyclic_prefix" => {
-                engine
-                    .state
+                std::sync::Arc::make_mut(&mut engine.state)
                     .commits
                     .get_mut(&prefix)
                     .unwrap()
                     .parent_commit_ids = vec![cut.clone()];
             }
             "cut_identity" => {
-                engine.state.commits.get_mut(&cut).unwrap().commit_id = "missing".into();
+                std::sync::Arc::make_mut(&mut engine.state)
+                    .commits
+                    .get_mut(&cut)
+                    .unwrap()
+                    .commit_id = "missing".into();
             }
             "descendant_identity" => {
-                engine.state.commits.get_mut(&last).unwrap().commit_id = "missing".into();
+                std::sync::Arc::make_mut(&mut engine.state)
+                    .commits
+                    .get_mut(&last)
+                    .unwrap()
+                    .commit_id = "missing".into();
             }
             "version_identity" | "version_file" => {
                 let version = engine.state.commits[&cut]
@@ -100,7 +108,10 @@ fn split_rejects_broken_persisted_identities_without_partial_migration() {
                     .unwrap()
                     .version_id
                     .clone();
-                let version = engine.state.versions.get_mut(&version).unwrap();
+                let version = std::sync::Arc::make_mut(&mut engine.state)
+                    .versions
+                    .get_mut(&version)
+                    .unwrap();
                 if corruption == "version_identity" {
                     version.version_id = "missing".into();
                 } else {
@@ -115,8 +126,7 @@ fn split_rejects_broken_persisted_identities_without_partial_migration() {
                     .unwrap()
                     .version_id
                     .clone();
-                let entry = engine
-                    .state
+                let entry = std::sync::Arc::make_mut(&mut engine.state)
                     .commits
                     .get_mut(&last)
                     .unwrap()
@@ -128,8 +138,7 @@ fn split_rejects_broken_persisted_identities_without_partial_migration() {
                 entry.file_id = "missing".into();
             }
             "branch_identity" => {
-                engine
-                    .state
+                std::sync::Arc::make_mut(&mut engine.state)
                     .branches
                     .get_mut(&repo.main_branch_id)
                     .unwrap()
@@ -137,13 +146,13 @@ fn split_rejects_broken_persisted_identities_without_partial_migration() {
             }
             _ => unreachable!(),
         }
-        let before = canonical_json(&engine.state).unwrap();
+        let before = canonical_json(engine.state()).unwrap();
         let error = engine
             .commit_plan(&plan.plan_id, "admin", &new_id("op"))
             .unwrap_err();
         assert_eq!(error.code(), "STATE_INVALID", "{corruption}");
         assert_eq!(
-            canonical_json(&engine.state).unwrap(),
+            canonical_json(engine.state()).unwrap(),
             before,
             "{corruption}"
         );
@@ -184,8 +193,7 @@ fn split_rejects_broken_crossing_merge_endpoints_without_publication() {
             "prefix_commit" => link.target_commit_id = "missing".into(),
             "moved_branch" => link.source_branch_id = "missing".into(),
             "foreign_branch" => {
-                engine
-                    .state
+                std::sync::Arc::make_mut(&mut engine.state)
                     .branches
                     .get_mut(&outside.branch_id)
                     .unwrap()
@@ -197,8 +205,7 @@ fn split_rejects_broken_crossing_merge_endpoints_without_publication() {
                 foreign.commit_id = new_id("commit");
                 foreign.history_tree_id = "foreign".into();
                 link.target_commit_id = foreign.commit_id.clone();
-                engine
-                    .state
+                std::sync::Arc::make_mut(&mut engine.state)
                     .commits
                     .insert(foreign.commit_id.clone(), foreign);
             }
@@ -209,14 +216,16 @@ fn split_rejects_broken_crossing_merge_endpoints_without_publication() {
         if corruption == "link_identity" {
             link.merge_link_id = "missing".into();
         }
-        engine.state.merge_links.insert(key, link);
-        let before = canonical_json(&engine.state).unwrap();
+        std::sync::Arc::make_mut(&mut engine.state)
+            .merge_links
+            .insert(key, link);
+        let before = canonical_json(engine.state()).unwrap();
         let error = engine
             .commit_plan(&plan.plan_id, "admin", &new_id("op"))
             .unwrap_err();
         assert_eq!(error.code(), "STATE_INVALID", "{corruption}");
         assert_eq!(
-            canonical_json(&engine.state).unwrap(),
+            canonical_json(engine.state()).unwrap(),
             before,
             "{corruption}"
         );
@@ -231,26 +240,24 @@ fn split_generation_overflow_does_not_wrap_or_publish_migration() {
             .create_split_plan(&repo.history_tree_id, &cut, "admin")
             .unwrap();
         if counter == "branch" {
-            engine
-                .state
+            std::sync::Arc::make_mut(&mut engine.state)
                 .branches
                 .get_mut(&repo.main_branch_id)
                 .unwrap()
                 .generation = u64::MAX;
         } else {
-            engine
-                .state
+            std::sync::Arc::make_mut(&mut engine.state)
                 .histories
                 .get_mut(&repo.history_tree_id)
                 .unwrap()
                 .generation = u64::MAX;
         }
-        let before = canonical_json(&engine.state).unwrap();
+        let before = canonical_json(engine.state()).unwrap();
         let error = engine
             .commit_plan(&plan.plan_id, "admin", &new_id("op"))
             .unwrap_err();
         assert_eq!(error.code(), "RESOURCE_LIMIT", "{counter}");
-        assert_eq!(canonical_json(&engine.state).unwrap(), before, "{counter}");
+        assert_eq!(canonical_json(engine.state()).unwrap(), before, "{counter}");
         assert_eq!(engine.plan(&plan.plan_id).unwrap().state, "ready");
     }
 }

@@ -144,7 +144,7 @@ fn copy_build_rejects_replacement_after_replica_verification_before_candidate_mu
         .version_id
         .clone();
     let (source, original) = engine.valid_replica(&id).unwrap();
-    let mut candidate = engine.state.clone();
+    let mut candidate = engine.state().clone();
     let before = canonical_json(&candidate).unwrap();
     let mut pending = Vec::new();
     for replacement in [&b"modified"[..], &b"short"[..]] {

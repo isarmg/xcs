@@ -188,7 +188,7 @@ fn recovery_repairs_exact_candidate_and_publication_replicas() {
                     std::fs::write(&target, b"corrupt").unwrap();
                 }
                 let recovered = Engine::open(&root).unwrap();
-                assert_eq!(canonical_json(&recovered.state).unwrap(), expected);
+                assert_eq!(canonical_json(recovered.state()).unwrap(), expected);
                 assert_eq!(std::fs::read(&target).unwrap(), original);
             }
         }
@@ -525,7 +525,7 @@ fn shared_pages_are_repaired_once_per_recovery_and_rechecked_next_time() {
             .unwrap();
     }
     let members = engine.members();
-    let expected = canonical_json(&engine.state).unwrap();
+    let expected = canonical_json(engine.state()).unwrap();
     drop(engine);
 
     let mut references = 0;
@@ -566,7 +566,7 @@ fn shared_pages_are_repaired_once_per_recovery_and_rechecked_next_time() {
         }
         PAGE_REPAIR_COUNT.with(|count| count.set(0));
         let engine = Engine::open(&root).unwrap();
-        assert_eq!(canonical_json(&engine.state).unwrap(), expected);
+        assert_eq!(canonical_json(engine.state()).unwrap(), expected);
         assert_eq!(std::fs::read(&path).unwrap(), original);
         let repairs = PAGE_REPAIR_COUNT.with(|count| count.get());
         assert_eq!(repairs, pages.len());
@@ -611,12 +611,12 @@ fn single_storage_disk_publishes_reopens_rebuilds_index_and_restores_system() {
     let version = engine.list_tree(&repo.main_branch_id).unwrap()[0]
         .version_id
         .clone();
-    let state = canonical_json(&engine.state).unwrap();
+    let state = canonical_json(engine.state()).unwrap();
     drop(engine);
     std::fs::remove_file(root.join("index.sqlite")).unwrap();
     let engine = Engine::open(&root).unwrap();
     assert!(!engine.blocked);
-    assert_eq!(canonical_json(&engine.state).unwrap(), state);
+    assert_eq!(canonical_json(engine.state()).unwrap(), state);
     let mut bytes = Vec::new();
     engine
         .open_content(&version)
@@ -627,7 +627,7 @@ fn single_storage_disk_publishes_reopens_rebuilds_index_and_restores_system() {
     assert_eq!(bytes, b"one durable copy");
     drop(engine);
     let restored = Engine::restore_from_disks(&temp.path().join("new-system"), &[disk]).unwrap();
-    assert_eq!(canonical_json(&restored.state).unwrap(), state);
+    assert_eq!(canonical_json(restored.state()).unwrap(), state);
     let mut bytes = Vec::new();
     restored
         .open_content(&version)
@@ -980,7 +980,7 @@ fn missing_payload_only_replica_preserves_history_but_not_new_copy_admission() {
                         .clone(),
                 );
             }
-            let before = canonical_json(&engine.state).unwrap();
+            let before = canonical_json(engine.state()).unwrap();
             drop(engine);
             // Generate an eligible checkpoint while every replica still exists.
             drop(Engine::open(&root).unwrap());
@@ -1003,7 +1003,7 @@ fn missing_payload_only_replica_preserves_history_but_not_new_copy_admission() {
                     Engine::open(&root)
                 }
                 .unwrap();
-                assert_eq!(canonical_json(&engine.state).unwrap(), before);
+                assert_eq!(canonical_json(engine.state()).unwrap(), before);
                 for (version, expected) in versions.iter().zip([b"old", b"new"]) {
                     let mut bytes = Vec::new();
                     engine
@@ -1048,7 +1048,7 @@ fn missing_payload_only_replica_preserves_history_but_not_new_copy_admission() {
                         .collect::<Vec<_>>(),
                     logs
                 );
-                assert_eq!(canonical_json(&engine.state).unwrap(), before);
+                assert_eq!(canonical_json(engine.state()).unwrap(), before);
                 if empty_root {
                     assert_eq!(std::fs::read_dir(missing).unwrap().count(), 0);
                 } else {

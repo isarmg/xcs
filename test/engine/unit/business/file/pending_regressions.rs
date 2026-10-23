@@ -69,7 +69,11 @@ fn inactive_selected_owner_cannot_receive_main_workspace_writes() {
         let workspace = engine
             .create_workspace(&repo.main_branch_id, "admin")
             .unwrap();
-        engine.state.branches.get_mut(&branch).unwrap().state = state.into();
+        std::sync::Arc::make_mut(&mut engine.state)
+            .branches
+            .get_mut(&branch)
+            .unwrap()
+            .state = state.into();
         let before = engine.state.branches[&branch].head_commit_id.clone();
         assert_eq!(
             engine
@@ -87,13 +91,12 @@ fn inactive_selected_owner_cannot_receive_main_workspace_writes() {
             .find(|entry| entry.kind == "file")
             .unwrap()
             .version_id = new_id("ver");
-        engine
-            .state
+        std::sync::Arc::make_mut(&mut engine.state)
             .commits
             .insert(changed.commit_id.clone(), changed.clone());
         assert_eq!(
             synchronize_directory_edits(
-                &mut engine.state,
+                std::sync::Arc::make_mut(&mut engine.state),
                 &changed.commit_id,
                 &["report.txt".into()],
                 "admin",

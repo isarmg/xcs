@@ -782,8 +782,7 @@ fn split_merge_links_have_local_branch_stubs_and_explicit_crossing_boundaries() 
         author: "alice".into(),
         operation_id: new_id("op"),
     };
-    engine
-        .state
+    std::sync::Arc::make_mut(&mut engine.state)
         .merge_links
         .insert(legacy.merge_link_id.clone(), legacy);
     engine

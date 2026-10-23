@@ -44,7 +44,7 @@ fn snapshot_recovers_disjoint_page_replicas_without_read_repair() {
     let root = engine.root.clone();
     let members = engine.members();
     let hash = engine.snapshot.clone().unwrap();
-    let expected = canonical_json(&engine.state).unwrap();
+    let expected = canonical_json(engine.state()).unwrap();
     let descriptor: Snapshot = load_object(&members[0], "snapshot", &hash).unwrap();
     let pages: std::collections::BTreeSet<_> = descriptor.pages.values().flatten().collect();
     assert!(pages.len() >= 3);
@@ -65,7 +65,7 @@ fn snapshot_recovers_disjoint_page_replicas_without_read_repair() {
     assert!(missing.iter().all(|(path, _)| !path.exists()));
     drop(engine);
     let recovered = Engine::open(&root).unwrap();
-    assert_eq!(canonical_json(&recovered.state).unwrap(), expected);
+    assert_eq!(canonical_json(recovered.state()).unwrap(), expected);
     for (path, bytes) in missing {
         assert_eq!(fs::read(path).unwrap(), bytes);
     }
@@ -91,7 +91,7 @@ fn purged_state_reopens_with_one_damaged_and_one_offline_metadata_member() {
             .unwrap();
         let root = engine.root.clone();
         let members = engine.members();
-        let expected = canonical_json(&engine.state).unwrap();
+        let expected = canonical_json(engine.state()).unwrap();
         let record = scan(&members[0])
             .unwrap()
             .records
@@ -120,7 +120,7 @@ fn purged_state_reopens_with_one_damaged_and_one_offline_metadata_member() {
         fs::rename(&members[2].root, temp.path().join("offline")).unwrap();
         let recovered = Engine::open(&root).unwrap_or_else(|error| panic!("{kind}: {error}"));
         assert!(recovered.is_read_only());
-        assert_eq!(canonical_json(&recovered.state).unwrap(), expected);
+        assert_eq!(canonical_json(recovered.state()).unwrap(), expected);
         assert_eq!(recovered.state.content_states[&old], "PURGED");
         assert_eq!(fs::read(damaged).unwrap(), b"corrupt redundant metadata");
     }

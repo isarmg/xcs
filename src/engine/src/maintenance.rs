@@ -166,7 +166,9 @@ impl Engine {
             &plan,
             false,
         )?;
-        self.state.plans.insert(plan.plan_id.clone(), plan.clone());
+        std::sync::Arc::make_mut(&mut self.state)
+            .plans
+            .insert(plan.plan_id.clone(), plan.clone());
         Ok(plan)
     }
     pub fn cancel_plan(

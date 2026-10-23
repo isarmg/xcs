@@ -770,7 +770,7 @@ impl Engine {
         self.complete_candidate(&candidate, &plan.candidate_hash, &next, Some(publication))?;
         next.operations
             .insert(candidate.operation_id.clone(), result.clone());
-        self.state = next;
+        self.state = std::sync::Arc::new(next);
         self.snapshot = Some(candidate.snapshot_hash);
         self.next_slot = self.next_slot.max(
             candidate

@@ -242,7 +242,7 @@ impl Engine {
             )
             .retryable());
         }
-        let previous = std::mem::replace(&mut self.state, next);
+        let previous = std::mem::replace(&mut self.state, std::sync::Arc::new(next));
         self.snapshot = Some(candidate.snapshot_hash);
         self.update_index(&previous)?;
         self.blocked = false;

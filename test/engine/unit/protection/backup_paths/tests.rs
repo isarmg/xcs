@@ -273,7 +273,7 @@ fn prefix_changes_reuse_verified_payloads_at_capacity_and_failures_are_atomic() 
             .ino(),
         inode
     );
-    let before = canonical_json(&engine.state).unwrap();
+    let before = canonical_json(engine.state()).unwrap();
     for (copies, prefixes, generation, scope, code) in [
         (4, config.clone(), 1, None, "ROUTE_INCOMPLETE"),
         (3, BTreeMap::new(), 1, None, "BACKUP_PREFIX_REQUIRED"),
@@ -296,7 +296,7 @@ fn prefix_changes_reuse_verified_payloads_at_capacity_and_failures_are_atomic() 
                 .code(),
             code
         );
-        assert_eq!(canonical_json(&engine.state).unwrap(), before);
+        assert_eq!(canonical_json(engine.state()).unwrap(), before);
     }
 }
 

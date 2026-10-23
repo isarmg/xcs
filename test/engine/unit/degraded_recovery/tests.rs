@@ -17,7 +17,7 @@ fn fixture_with_history(
         .create_repository("恢复测试", "P01", 3, "alice", &new_id("op"))
         .unwrap();
     if retained > 0 {
-        let mut next = engine.state.clone();
+        let mut next = engine.state().clone();
         next.sequence = engine.next_slot;
         let original = next.commits[&next.histories[&repo.history_tree_id].root_commit_id].clone();
         let mut parent = original.commit_id.clone();
@@ -421,12 +421,12 @@ fn degraded_publication_stays_read_only_when_local_reconciliation_fails() {
             .commit_degraded_recovery(&plan.recovery_id, &plan.digest, "alice", true)
             .unwrap();
         assert!(engine.is_read_only());
-        let expected = engine.state.clone();
+        let expected = engine.state().clone();
         drop(engine);
         fs::remove_dir_all(&obstruction).unwrap();
         let engine = Engine::open(&root).unwrap();
         assert!(!engine.is_read_only());
-        assert_eq!(engine.state, expected);
+        assert_eq!(*engine.state, expected);
         assert_eq!(
             engine.operation(&operation).unwrap().commit_state,
             storage_contract::CommitState::PublishedDegraded

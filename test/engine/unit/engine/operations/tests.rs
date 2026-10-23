@@ -77,8 +77,7 @@ fn operation_read_plan_blocks_purge_until_observation_finishes() {
 fn operation_capture_is_metadata_only_deduplicated_and_cancel_safe() {
     let (_root, mut engine, repo) = fixture();
     let operation = save(&mut engine, &repo.main_branch_id, b"content");
-    let commit = engine
-        .state
+    let commit = std::sync::Arc::make_mut(&mut engine.state)
         .commits
         .get_mut(operation.commit_id.as_ref().unwrap())
         .unwrap();

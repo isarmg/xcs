@@ -53,7 +53,7 @@ fn paged_pending_recovery_repairs_leaf_index_and_root_and_checkpoint_checks_them
         let repo = engine
             .create_repository("history", "P01", 3, "alice", &new_id("op"))
             .unwrap();
-        let mut next = engine.state.clone();
+        let mut next = engine.state().clone();
         next.sequence = engine.next_slot;
         let original = next.commits[&next.histories[&repo.history_tree_id].root_commit_id].clone();
         let mut parent = original.commit_id.clone();
@@ -1526,7 +1526,7 @@ fn tombstoned_storage_identity_is_validated_before_restore_decision() {
                 &source.members(),
             );
             let mut restored = initialize(&temp.path().join(format!("restored-{label}")));
-            let before = canonical_json(&restored.state).unwrap();
+            let before = canonical_json(restored.state()).unwrap();
             let journals = restored
                 .members()
                 .iter()
@@ -1560,7 +1560,7 @@ fn tombstoned_storage_identity_is_validated_before_restore_decision() {
                         .code(),
                     "HISTORY_PACKAGE_INVALID"
                 );
-                assert_eq!(canonical_json(&restored.state).unwrap(), before);
+                assert_eq!(canonical_json(restored.state()).unwrap(), before);
                 assert_eq!(restored.next_slot, next_slot);
                 assert!(!restored.blocked);
                 for (member, journal) in restored.members().iter().zip(journals) {

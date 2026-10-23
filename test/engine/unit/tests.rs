@@ -155,8 +155,7 @@ fn direct_namespace_cannot_write_an_inactive_directory_branch() {
     let fixture = Fixture::new();
     let mut engine = fixture.initialize();
     let repo = repository(&mut engine, 1);
-    engine
-        .state
+    std::sync::Arc::make_mut(&mut engine.state)
         .branches
         .get_mut(&repo.main_branch_id)
         .unwrap()
@@ -3214,7 +3213,7 @@ fn detached_workspace_commit_stale_base_is_definite_retryable_conflict() {
     assert_eq!(busy.code(), "COMMIT_PREPARATION_BUSY");
     assert!(busy.retryable);
     // Simulate an externally invalidated base to retain the final fence test.
-    engine.state.business_generation += 1;
+    std::sync::Arc::make_mut(&mut engine.state).business_generation += 1;
     let error = engine.finish_workspace_commit(prepared).unwrap_err();
     assert_eq!(error.code(), "COMMIT_PREPARATION_STALE");
     assert!(!engine.state.operations.contains_key(&request.operation_id));
@@ -3326,15 +3325,14 @@ fn detached_workspace_commit_checks_actual_source_grants_and_topology() {
         } else {
             let prepared = plan.execute().unwrap();
             if changed == "grant" {
-                let live = engine
-                    .state
+                let live = std::sync::Arc::make_mut(&mut engine.state)
                     .repositories
                     .get_mut(&repo.repository_id)
                     .unwrap();
                 live.grants.manage.clear();
                 live.grants.write.clear();
             } else {
-                engine.state.topology_generation += 1;
+                std::sync::Arc::make_mut(&mut engine.state).topology_generation += 1;
             }
             let error = engine.finish_workspace_commit(prepared).unwrap_err();
             assert_eq!(

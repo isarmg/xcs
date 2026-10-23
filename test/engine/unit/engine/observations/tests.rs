@@ -93,16 +93,19 @@ fn accounting_snapshot_preserves_purge_and_duplicate_route_semantics() {
             request_digest: None,
         })
         .unwrap();
-    for placement in engine.state.placements.values_mut() {
+    for placement in std::sync::Arc::make_mut(&mut engine.state)
+        .placements
+        .values_mut()
+    {
         placement.route_slot_ids.push("P01".into());
     }
     let plan = engine.prepare_disk_observation();
     for disk in plan.status().unwrap() {
         assert_eq!(disk.used_bytes, engine.used_bytes(&disk.slot_id));
     }
-    for version in engine.state.versions.keys() {
-        engine
-            .state
+    let state = std::sync::Arc::make_mut(&mut engine.state);
+    for version in state.versions.keys() {
+        state
             .content_states
             .insert(version.clone(), "PURGED".into());
     }

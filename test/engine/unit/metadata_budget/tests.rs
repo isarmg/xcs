@@ -15,10 +15,10 @@ fn fixture() -> (tempfile::TempDir, Engine, Repository) {
 #[test]
 fn manifest_limit_rejects_before_any_new_payload_or_decision_and_keeps_published_state() {
     let (_temp, mut engine, repo) = fixture();
-    let before = canonical_json(&engine.state).unwrap();
+    let before = canonical_json(engine.state()).unwrap();
     let snapshot = engine.snapshot.clone();
     let next_slot = engine.next_slot;
-    let mut next = engine.state.clone();
+    let mut next = engine.state().clone();
     next.sequence = next_slot;
     // A realistic next tree grows the history while preserving the original snapshot.
     let original = next.commits[&next.branches[&repo.main_branch_id].head_commit_id].clone();
@@ -94,7 +94,7 @@ fn manifest_limit_rejects_before_any_new_payload_or_decision_and_keeps_published
         .persist_with_metadata_limit(next, pending, result.clone(), high - 1)
         .unwrap_err();
     assert_eq!(error.code(), "RESOURCE_LIMIT");
-    assert_eq!(canonical_json(&engine.state).unwrap(), before);
+    assert_eq!(canonical_json(engine.state()).unwrap(), before);
     assert_eq!(engine.snapshot, snapshot);
     assert_eq!(engine.next_slot, next_slot);
     assert!(!engine.blocked);
@@ -288,7 +288,7 @@ fn metadata_only_package_and_purge_tombstone_combinations_are_preflighted() {
     // Exercise multiple content-defined pages without hundreds of disk
     // publications. Only the state shape varies here; proof hashes have
     // fixed width, so the existing real publication supplies exact sizes.
-    let mut wide_state = engine.state.clone();
+    let mut wide_state = engine.state().clone();
     for n in 0u32..600 {
         wide_state.content_states.insert(
             blake3::hash(&n.to_le_bytes()).to_hex().to_string(),
@@ -474,7 +474,7 @@ fn metadata_only_package_and_purge_tombstone_combinations_are_preflighted() {
 #[test]
 fn snapshot_page_and_common_metadata_encoder_reject_one_byte_over_boundary() {
     let (_temp, engine, _repo) = fixture();
-    let state = engine.state.clone();
+    let state = engine.state().clone();
     let mut high = 1usize;
     while store_snapshot_bounded(&[], &state, high).is_err() {
         high *= 2;
