@@ -729,3 +729,41 @@ mod http_boundary_tests;
 
 #[path = "tests/auxiliary_startup.rs"]
 mod auxiliary_startup_tests;
+
+#[tokio::test]
+async fn workspace_capacity_requires_authentication_and_preserves_unsupported_backend() {
+    let root = private_tempdir();
+    let app = application(root.path());
+    let request = Request::builder()
+        .uri("/api/workspaces/capacity")
+        .body(Body::empty())
+        .unwrap();
+    assert_eq!(
+        app.clone().oneshot(request).await.unwrap().status(),
+        StatusCode::UNAUTHORIZED
+    );
+    let (token, _, _) = authenticated(&app).await;
+    for scheme in ["Bearer", "bearer", "BEARER"] {
+        let request = Request::builder()
+            .uri("/api/workspaces/capacity")
+            .header(header::AUTHORIZATION, format!("{scheme} {token}"))
+            .body(Body::empty())
+            .unwrap();
+        assert_eq!(
+            app.clone().oneshot(request).await.unwrap().status(),
+            StatusCode::NOT_IMPLEMENTED
+        );
+    }
+    let request = Request::builder()
+        .uri("/api/workspaces/capacity")
+        .header(
+            header::AUTHORIZATION,
+            format!("Bearer {}", token.to_uppercase()),
+        )
+        .body(Body::empty())
+        .unwrap();
+    assert_eq!(
+        app.oneshot(request).await.unwrap().status(),
+        StatusCode::UNAUTHORIZED
+    );
+}

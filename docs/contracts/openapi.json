@@ -4842,6 +4842,30 @@
           }
         }
       }
+    },
+    "/api/workspaces/capacity": {
+      "get": {
+        "operationId": "workspaceCapacity",
+        "description": "当前已认证用户的工作区保留证据预算；仅管理员可见 global 汇总。终态工作区仍占用容量，不提供自动回收。所有计数与字节数使用 UInt64 十进制字符串。",
+        "responses": {
+          "200": {
+            "description": "当前容量快照，不保证后续写入准入。",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspaceCapacity"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "需要有效会话。"
+          },
+          "501": {
+            "description": "后端不支持此诊断。"
+          }
+        }
+      }
     }
   },
   "components": {
@@ -7627,6 +7651,70 @@
         ],
         "additionalProperties": false,
         "description": "当前分页历史根，位于history-manifest域；候选直接绑定此根摘要。根不带格式代际字段，展开逻辑HistoryManifest不是根的替代身份。"
+      },
+      "CapacityMeasure": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "used",
+          "limit",
+          "remaining"
+        ],
+        "properties": {
+          "used": {
+            "$ref": "#/components/schemas/UInt64"
+          },
+          "limit": {
+            "$ref": "#/components/schemas/UInt64"
+          },
+          "remaining": {
+            "$ref": "#/components/schemas/UInt64"
+          }
+        }
+      },
+      "WorkspaceCapacityScope": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "records",
+          "metadata_bytes"
+        ],
+        "properties": {
+          "records": {
+            "$ref": "#/components/schemas/CapacityMeasure"
+          },
+          "metadata_bytes": {
+            "$ref": "#/components/schemas/CapacityMeasure"
+          }
+        }
+      },
+      "WorkspaceCapacity": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "principal",
+          "warning",
+          "automatic_retirement"
+        ],
+        "properties": {
+          "global": {
+            "$ref": "#/components/schemas/WorkspaceCapacityScope"
+          },
+          "principal": {
+            "$ref": "#/components/schemas/WorkspaceCapacityScope"
+          },
+          "warning": {
+            "type": "string",
+            "enum": [
+              "ok",
+              "near_limit",
+              "exhausted"
+            ]
+          },
+          "automatic_retirement": {
+            "const": false
+          }
+        }
       }
     }
   }

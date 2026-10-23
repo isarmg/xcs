@@ -2777,6 +2777,70 @@
       ],
       "additionalProperties": false,
       "description": "当前分页历史根，位于history-manifest域；候选直接绑定此根摘要。根不带格式代际字段，展开逻辑HistoryManifest不是根的替代身份。"
+    },
+    "CapacityMeasure": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "used",
+        "limit",
+        "remaining"
+      ],
+      "properties": {
+        "used": {
+          "$ref": "#/$defs/UInt64"
+        },
+        "limit": {
+          "$ref": "#/$defs/UInt64"
+        },
+        "remaining": {
+          "$ref": "#/$defs/UInt64"
+        }
+      }
+    },
+    "WorkspaceCapacityScope": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "records",
+        "metadata_bytes"
+      ],
+      "properties": {
+        "records": {
+          "$ref": "#/$defs/CapacityMeasure"
+        },
+        "metadata_bytes": {
+          "$ref": "#/$defs/CapacityMeasure"
+        }
+      }
+    },
+    "WorkspaceCapacity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "principal",
+        "warning",
+        "automatic_retirement"
+      ],
+      "properties": {
+        "global": {
+          "$ref": "#/$defs/WorkspaceCapacityScope"
+        },
+        "principal": {
+          "$ref": "#/$defs/WorkspaceCapacityScope"
+        },
+        "warning": {
+          "type": "string",
+          "enum": [
+            "ok",
+            "near_limit",
+            "exhausted"
+          ]
+        },
+        "automatic_retirement": {
+          "const": false
+        }
+      }
     }
   }
 }

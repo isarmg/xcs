@@ -92,6 +92,7 @@ actions! {
     UploadStatus => "upload_status",
     Version => "version",
     Workspace => "workspace",
+    WorkspaceCapacity => "workspace_capacity",
     WorkspaceAuthorize => "workspace_authorize",
     WorkspaceSelectionAuthorize => "workspace_selection_authorize",
     WriteSession => "write_session",

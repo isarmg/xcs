@@ -1,0 +1,47 @@
+use super::*;
+
+#[test]
+fn registrations_are_unique_and_alias_targets_have_explicit_status() {
+    let mut internal = std::collections::BTreeSet::new();
+    let mut public = std::collections::BTreeSet::new();
+    for &(code, http) in PUBLIC_STATUS {
+        assert!(public.insert(code), "duplicate public code {code}");
+        assert!((400..=599).contains(&http));
+    }
+    for &(source, target) in ALIASES {
+        assert!(internal.insert(source), "duplicate alias {source}");
+        assert!(public.contains(target), "unregistered target {target}");
+        assert_eq!(public_code(source), target);
+    }
+}
+
+#[test]
+fn wire_mapping_preserves_status_retry_and_diagnostic_policy() {
+    for &(code, expected) in PUBLIC_STATUS {
+        let mapped =
+            super::super::wire::error(storage_engine::Error::new(code, "private diagnostic"));
+        assert_eq!(mapped.code, code);
+        assert_eq!(mapped.status, expected, "{code}");
+        assert_eq!(
+            mapped.retryable,
+            (expected >= 500 && expected != 501) || expected == 429
+        );
+        assert_eq!(mapped.message == "private diagnostic", expected != 500);
+    }
+    for &(internal, public) in ALIASES {
+        let mapped = super::super::wire::error(storage_engine::Error::new(internal, "detail"));
+        assert_eq!(mapped.code, public);
+        assert_eq!(mapped.status, status(public));
+    }
+    for (code, expected) in [
+        ("NOT_FOUND", 404),
+        ("WORKSPACE_NOT_FOUND", 404),
+        ("VALIDATION_FAILURE", 400),
+    ] {
+        assert_eq!(status(code), expected);
+        assert_eq!(public_code(code), code);
+    }
+    let mut error = storage_engine::Error::new("VALIDATION_FAILURE", "detail");
+    error.retryable = true;
+    assert!(super::super::wire::error(error).retryable);
+}

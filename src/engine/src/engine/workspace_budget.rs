@@ -29,7 +29,97 @@ fn checked_metadata_charge(actual: usize, reserved: usize) -> Result<u64> {
     Ok(charge as u64)
 }
 
+/// Read-only admission counters. Remaining metadata bytes include lifecycle
+/// reservations, not free disk space; terminal records still consume capacity.
+fn capacity_scope(
+    records: usize,
+    bytes: u64,
+    record_limit: usize,
+    byte_limit: u64,
+) -> WorkspaceCapacityScope {
+    WorkspaceCapacityScope {
+        records: CapacityMeasure {
+            used: records as u64,
+            limit: record_limit as u64,
+            remaining: record_limit.saturating_sub(records) as u64,
+        },
+        metadata_bytes: CapacityMeasure {
+            used: bytes,
+            limit: byte_limit,
+            remaining: byte_limit.saturating_sub(bytes),
+        },
+    }
+}
+
 impl Engine {
+    /// Report retained evidence capacity without enumerating other owners.
+    /// Callers must authorize `include_global` separately (administrator only).
+    /// This is an observation, not a reservation or authorization decision.
+    pub fn workspace_capacity(&self, principal: &str, include_global: bool) -> WorkspaceCapacity {
+        let budget = &self.workspace_budget;
+        let (principal_records, principal_bytes) = budget
+            .principals
+            .get(principal)
+            .copied()
+            .unwrap_or_default();
+        let counters = [
+            (
+                budget.records.len() as u128,
+                self.config.max_retained_workspaces as u128,
+            ),
+            (
+                principal_records as u128,
+                self.config.max_retained_workspaces_per_principal as u128,
+            ),
+            (
+                budget.bytes as u128,
+                self.config.max_retained_workspace_metadata_bytes as u128,
+            ),
+            (
+                principal_bytes as u128,
+                self.config
+                    .max_retained_workspace_metadata_bytes_per_principal as u128,
+            ),
+        ];
+        let pressure = counters
+            .into_iter()
+            .enumerate()
+            .filter(|(index, _)| include_global || index % 2 == 1)
+            .map(|(_, (used, limit))| {
+                if used >= limit {
+                    2
+                } else if used * 5 >= limit * 4 {
+                    1
+                } else {
+                    0
+                }
+            })
+            .fold(0, usize::max);
+        WorkspaceCapacity {
+            global: include_global.then(|| {
+                capacity_scope(
+                    budget.records.len(),
+                    budget.bytes,
+                    self.config.max_retained_workspaces,
+                    self.config.max_retained_workspace_metadata_bytes,
+                )
+            }),
+            principal: capacity_scope(
+                principal_records,
+                principal_bytes,
+                self.config.max_retained_workspaces_per_principal,
+                self.config
+                    .max_retained_workspace_metadata_bytes_per_principal,
+            ),
+            warning: match pressure {
+                2 => CapacityWarning::Exhausted,
+                1 => CapacityWarning::NearLimit,
+                _ => CapacityWarning::Ok,
+            },
+            automatic_retirement: false,
+        }
+    }
+
     /// Reserve lifecycle changes before publication, including the file-context
     /// receipt installed by a first inherited save. IDs are fixed-width; 64
     /// bytes covers every node/branch ID, including its prefix. Preserve larger
@@ -114,20 +204,33 @@ impl Engine {
         let principal_bytes = principal_bytes
             .checked_sub(old_charge)
             .and_then(|bytes| bytes.checked_add(charge));
-        if budget.records.len().saturating_add(added) > self.config.max_retained_workspaces
-            || principal_count.saturating_add(added)
+        let exhausted =
+            if budget.records.len().saturating_add(added) > self.config.max_retained_workspaces {
+                Some("global record count")
+            } else if principal_count.saturating_add(added)
                 > self.config.max_retained_workspaces_per_principal
-            || bytes.is_none_or(|bytes| bytes > self.config.max_retained_workspace_metadata_bytes)
-            || principal_bytes.is_none_or(|bytes| {
+            {
+                Some("principal record count")
+            } else if bytes
+                .is_none_or(|bytes| bytes > self.config.max_retained_workspace_metadata_bytes)
+            {
+                Some("global metadata bytes")
+            } else if principal_bytes.is_none_or(|bytes| {
                 bytes
                     > self
                         .config
                         .max_retained_workspace_metadata_bytes_per_principal
-            })
-        {
+            }) {
+                Some("principal metadata bytes")
+            } else {
+                None
+            };
+        if let Some(dimension) = exhausted {
             return Err(Error::new(
                 "RESOURCE_LIMIT",
-                "retained workspace evidence budget exhausted; existing recovery evidence is preserved",
+                format!(
+                    "retained workspace evidence {dimension} budget exhausted; terminal records still count and recovery evidence is preserved"
+                ),
             ));
         }
         Ok(WorkspaceAdmission {

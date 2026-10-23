@@ -5,86 +5,9 @@ use json_codec::{Value, json};
 use storage_engine::Engine;
 
 pub(super) fn error(error: storage_engine::Error) -> ApiError {
-    let code = match error.code() {
-        "PERMISSION_DENIED" => "FORBIDDEN",
-        "UNAUTHENTICATED" => "UNAUTHORIZED",
-        "FILE_VERSION_CONFLICT" => "FILE_CONFLICT",
-        "BASE_HEAD_MISMATCH" => "HEAD_CONFLICT",
-        "FILE_BUSY" => "FILE_WRITE_BUSY",
-        "FENCING_TOKEN_INVALID" => "FENCED",
-        "FENCING_TOKEN_EXPIRED" => "LEASE_EXPIRED",
-        "RESOURCE_LIMIT" => "RESOURCE_LIMIT_EXCEEDED",
-        "ROUTE_INCOMPLETE" => "BACKUP_ROUTE_INCOMPLETE",
-        "IN_DOUBT" => "COMMIT_IN_DOUBT",
-        "GENERATION_MISMATCH" => "CONFIG_CONFLICT",
-        "STALE_UPLOAD_GENERATION" => "UPLOAD_GENERATION_CONFLICT",
-        other => other,
-    };
-    let status = if code.ends_with("_NOT_FOUND") || code == "NOT_FOUND" {
-        404
-    } else {
-        match code {
-            "UNAUTHORIZED" => 401,
-            "FORBIDDEN" => 403,
-            "CONTENT_PURGED" => 410,
-            "NO_SPACE" => 507,
-            "RESOURCE_LIMIT_EXCEEDED" | "QUOTA_EXCEEDED" => 429,
-            "CONTENT_UNAVAILABLE"
-            | "METADATA_UNAVAILABLE"
-            | "RECOVERY_REQUIRED"
-            | "REPLICA_TARGET_UNAVAILABLE"
-            | "ROUTE_TARGET_UNAVAILABLE"
-            | "COMMIT_IN_DOUBT"
-            | "BACKUP_ROUTE_INCOMPLETE" => 503,
-            "COMMIT_PREPARATION_BUSY"
-            | "COMMIT_PREPARATION_STALE"
-            | "PREPARATION_STALE"
-            | "HEAD_CONFLICT"
-            | "BRANCH_NOT_ACTIVE"
-            | "FENCED"
-            | "LEASE_EXPIRED"
-            | "UPLOAD_GENERATION_CONFLICT"
-            | "FILE_CONFLICT"
-            | "FILE_BRANCH_CONFLICT"
-            | "DIRECTORY_BRANCH_CONFLICT"
-            | "DIRECTORY_ALIAS_CONFLICT"
-            | "BATCH_MAPPING_CONFLICT"
-            | "BATCH_SCOPE_CONFLICT"
-            | "IDEMPOTENCY_KEY_REUSED"
-            | "SPLIT_PLAN_STALE"
-            | "PURGE_BLOCKED_BY_REFERENCE"
-            | "CONTENT_PINNED"
-            | "CONFIG_CONFLICT"
-            | "BRANCH_WRITE_BUSY"
-            | "FILE_WRITE_BUSY"
-            | "NAMESPACE_CONFLICT"
-            | "NAME_COLLISION"
-            | "WORKSPACE_CLOSED"
-            | "PLAN_STALE"
-            | "PLAN_CLOSED"
-            | "TREE_MOVED" => 409,
-            "RESTORE_BACKUP_CONFLICT" => 409,
-            "DIRECTORY_BRANCH_INCOMPLETE" | "DIRECTORY_SCOPE_REQUIRED" => 409,
-            "DIRECTORY_HISTORY_SPLIT_UNSUPPORTED" | "FILE_NODE_HISTORY_SPLIT_UNSUPPORTED" => 400,
-            "IO_ERROR"
-            | "STATE_INVALID"
-            | "INTERNAL_ERROR"
-            | "OBJECT_CORRUPT"
-            | "LOG_CORRUPT"
-            | "PUBLICATION_INVALID" => 500,
-            "OPERATION_UNSUPPORTED" | "PLAN_UNSUPPORTED" => 501,
-            _ => 400,
-        }
-    };
-    if matches!(
-        code,
-        "IO_ERROR"
-            | "STATE_INVALID"
-            | "INTERNAL_ERROR"
-            | "OBJECT_CORRUPT"
-            | "LOG_CORRUPT"
-            | "PUBLICATION_INVALID"
-    ) {
+    let code = super::error_registry::public_code(error.code());
+    let status = super::error_registry::status(code);
+    if status == 500 {
         tracing::error!(%error,"storage operation failed");
         ApiError::new(
             status,

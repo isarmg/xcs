@@ -588,3 +588,43 @@ async fn storage_retry_rechecks_a_session_revoked_while_waiting_for_auth() {
     assert_eq!(slots.available_permits(), 1);
     assert_eq!(probe.calls.load(std::sync::atomic::Ordering::SeqCst), 0);
 }
+
+#[test]
+fn bearer_scheme_is_case_insensitive_without_normalizing_credentials() {
+    for scheme in ["Bearer", "bearer", "BEARER", "bEaReR"] {
+        let mut headers = HeaderMap::new();
+        headers.insert(
+            header::AUTHORIZATION,
+            HeaderValue::from_str(&format!("{scheme} AbC-_123")).unwrap(),
+        );
+        assert_eq!(request_token(&headers).unwrap(), ("AbC-_123".into(), false));
+    }
+    for value in [
+        "Bearer",
+        "Bearer ",
+        " Bearer token",
+        "Basic token",
+        "Bearer  token",
+        "Bearer token extra",
+        "Bearer token\t",
+        "Bearer\ttoken",
+    ] {
+        let mut headers = HeaderMap::new();
+        headers.insert(header::AUTHORIZATION, HeaderValue::from_str(value).unwrap());
+        assert_eq!(
+            request_token(&headers).unwrap_err().status,
+            401,
+            "{value:?}"
+        );
+    }
+    let mut headers = HeaderMap::new();
+    headers.append(
+        header::AUTHORIZATION,
+        HeaderValue::from_static("Bearer token"),
+    );
+    headers.append(
+        header::AUTHORIZATION,
+        HeaderValue::from_static("bearer token"),
+    );
+    assert_eq!(request_token(&headers).unwrap_err().status, 401);
+}

@@ -316,3 +316,146 @@ fn zero_byte_generations_consume_retained_entry_budget_without_extra_artifacts()
     );
     assert_eq!(names(), before);
 }
+
+// Assert the public wire representation as well as the typed observations.
+fn capacity_report(engine: &Engine, principal: &str, include_global: bool) -> json_codec::Value {
+    json_codec::to_value(engine.workspace_capacity(principal, include_global)).unwrap()
+}
+
+#[test]
+fn capacity_reports_retained_lifecycle_counts_and_only_selected_principal() {
+    let mut f = Fixture::new();
+    f.config.max_retained_workspaces = 10;
+    f.config.max_retained_workspaces_per_principal = 5;
+    let mut e = f.initialize();
+    let repo = repository(&mut e, 1);
+    assert_eq!(capacity_report(&e, "admin", true)["warning"], "ok");
+    // Both successful commits and aborted sessions remain charged.
+    save(&mut e, &repo.main_branch_id, "saved.txt", b"saved");
+    for _ in 0..3 {
+        let w = e.create_workspace(&repo.main_branch_id, "admin").unwrap();
+        e.abort_workspace(&w.workspace_id, "admin").unwrap();
+    }
+    let report = capacity_report(&e, "admin", true);
+    assert_eq!(report["global"]["records"]["used"], "4");
+    assert_eq!(report["principal"]["records"]["remaining"], "1");
+    assert_eq!(report["warning"], "near_limit");
+    assert_eq!(report["automatic_retirement"], false);
+    let unknown = capacity_report(&e, "unrelated-user", true);
+    assert_eq!(unknown["principal"]["records"]["used"], "0");
+    assert_eq!(unknown["principal"]["metadata_bytes"]["used"], "0");
+    assert_eq!(unknown["warning"], "ok");
+    assert!(
+        !canonical_json(&unknown)
+            .unwrap()
+            .windows(5)
+            .any(|w| w == b"admin")
+    );
+    let charged = e.retained_workspace_metadata_bytes();
+    assert_eq!(
+        report["global"]["metadata_bytes"]["used"],
+        charged.to_string()
+    );
+    drop(e);
+    let mut e = Engine::open(&f.root).unwrap();
+    assert_eq!(capacity_report(&e, "admin", true), report);
+    let w = e.create_workspace(&repo.main_branch_id, "admin").unwrap();
+    e.abort_workspace(&w.workspace_id, "admin").unwrap();
+    assert_eq!(capacity_report(&e, "admin", true)["warning"], "exhausted");
+    assert_eq!(
+        capacity_report(&e, "admin", true)["principal"]["records"]["remaining"],
+        "0"
+    );
+    let before = capacity_report(&e, "admin", true);
+    let error = e
+        .create_workspace(&repo.main_branch_id, "admin")
+        .unwrap_err();
+    assert_eq!(error.code(), "RESOURCE_LIMIT");
+    assert!(error.to_string().contains("principal record count"));
+    assert_eq!(capacity_report(&e, "admin", true), before);
+}
+
+#[test]
+fn capacity_metadata_warning_boundaries_are_exact_and_overflow_safe() {
+    let f = Fixture::new();
+    let mut e = f.initialize();
+    let repo = repository(&mut e, 1);
+    e.create_workspace(&repo.main_branch_id, "admin").unwrap();
+    let used = e.retained_workspace_metadata_bytes();
+    e.config.max_retained_workspace_metadata_bytes = used * 5 / 4 + 1;
+    assert_eq!(capacity_report(&e, "admin", true)["warning"], "ok");
+    e.config.max_retained_workspace_metadata_bytes = used * 5 / 4;
+    assert_eq!(capacity_report(&e, "admin", true)["warning"], "near_limit");
+    e.config.max_retained_workspace_metadata_bytes = used;
+    assert_eq!(capacity_report(&e, "admin", true)["warning"], "exhausted");
+    e.config.max_retained_workspace_metadata_bytes = u64::MAX;
+    e.config.max_retained_workspace_metadata_bytes_per_principal = used;
+    assert_eq!(capacity_report(&e, "admin", true)["warning"], "exhausted");
+    assert_eq!(capacity_report(&e, "unrelated-user", true)["warning"], "ok");
+    e.config.max_retained_workspace_metadata_bytes_per_principal = u64::MAX;
+    assert_eq!(capacity_report(&e, "admin", true)["warning"], "ok");
+}
+
+#[test]
+fn principal_capacity_does_not_disclose_global_pressure() {
+    let f = Fixture::new();
+    let mut e = f.initialize();
+    let repo = repository(&mut e, 1);
+    e.create_workspace(&repo.main_branch_id, "admin").unwrap();
+    e.config.max_retained_workspaces = 1;
+    let own = capacity_report(&e, "unrelated-user", false);
+    assert!(own.get("global").is_none());
+    assert_eq!(own["warning"], "ok");
+    assert_eq!(
+        capacity_report(&e, "unrelated-user", true)["warning"],
+        "exhausted"
+    );
+}
+
+#[test]
+fn admission_errors_identify_each_exhausted_dimension_without_changing_evidence() {
+    for dimension in [
+        "global record count",
+        "principal record count",
+        "global metadata bytes",
+        "principal metadata bytes",
+    ] {
+        let f = Fixture::new();
+        let mut e = f.initialize();
+        let repo = repository(&mut e, 1);
+        let w = e.create_workspace(&repo.main_branch_id, "admin").unwrap();
+        e.abort_workspace(&w.workspace_id, "admin").unwrap();
+        let used = e.retained_workspace_metadata_bytes();
+        match dimension {
+            "global record count" => e.config.max_retained_workspaces = 1,
+            "principal record count" => e.config.max_retained_workspaces_per_principal = 1,
+            "global metadata bytes" => e.config.max_retained_workspace_metadata_bytes = used,
+            _ => e.config.max_retained_workspace_metadata_bytes_per_principal = used,
+        }
+        let before = capacity_report(&e, "admin", true);
+        let manifest_before = canonical_json(e.workspaces.get(&w.workspace_id).unwrap()).unwrap();
+        let error = e
+            .create_workspace(&repo.main_branch_id, "admin")
+            .unwrap_err();
+        assert_eq!(error.code(), "RESOURCE_LIMIT");
+        assert!(error.to_string().contains(dimension), "{error}");
+        assert_eq!(capacity_report(&e, "admin", true), before);
+        assert_eq!(
+            canonical_json(e.workspaces.get(&w.workspace_id).unwrap()).unwrap(),
+            manifest_before
+        );
+        e.assert_workspace_budget_consistent();
+    }
+}
+
+#[test]
+fn typed_capacity_projection_has_no_global_scope_for_ordinary_callers() {
+    let mut f = Fixture::new();
+    f.config.disks.truncate(1);
+    let e = f.initialize();
+    let report = e.workspace_capacity("admin", false);
+    assert_eq!(report.global, None);
+    assert_eq!(report.principal.records.used, 0);
+    assert_eq!(report.warning, CapacityWarning::Ok);
+    assert!(!report.automatic_retirement);
+}

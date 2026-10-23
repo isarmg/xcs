@@ -1068,6 +1068,27 @@
           ]
         }
       }
+    },
+    {
+      "name": "workspace-capacity-private",
+      "schema": "WorkspaceCapacity",
+      "layer": "schema",
+      "value": {
+        "principal": {
+          "records": {
+            "used": "0",
+            "limit": "18446744073709551615",
+            "remaining": "18446744073709551615"
+          },
+          "metadata_bytes": {
+            "used": "0",
+            "limit": "18446744073709551615",
+            "remaining": "18446744073709551615"
+          }
+        },
+        "warning": "ok",
+        "automatic_retirement": false
+      }
     }
   ],
   "negative": [
@@ -3616,6 +3637,134 @@
             }
           ]
         }
+      }
+    },
+    {
+      "name": "workspace-capacity-numeric-count",
+      "schema": "WorkspaceCapacity",
+      "layer": "schema",
+      "value": {
+        "principal": {
+          "records": {
+            "used": 1,
+            "limit": "18446744073709551615",
+            "remaining": "18446744073709551615"
+          },
+          "metadata_bytes": {
+            "used": 1,
+            "limit": "18446744073709551615",
+            "remaining": "18446744073709551615"
+          }
+        },
+        "warning": "ok",
+        "automatic_retirement": false
+      }
+    },
+    {
+      "name": "workspace-capacity-noncanonical-count",
+      "schema": "WorkspaceCapacity",
+      "layer": "schema",
+      "value": {
+        "principal": {
+          "records": {
+            "used": "01",
+            "limit": "18446744073709551615",
+            "remaining": "18446744073709551615"
+          },
+          "metadata_bytes": {
+            "used": "01",
+            "limit": "18446744073709551615",
+            "remaining": "18446744073709551615"
+          }
+        },
+        "warning": "ok",
+        "automatic_retirement": false
+      }
+    },
+    {
+      "name": "workspace-capacity-unknown-field",
+      "schema": "WorkspaceCapacity",
+      "layer": "schema",
+      "value": {
+        "principal": {
+          "records": {
+            "used": "0",
+            "limit": "18446744073709551615",
+            "remaining": "18446744073709551615"
+          },
+          "metadata_bytes": {
+            "used": "0",
+            "limit": "18446744073709551615",
+            "remaining": "18446744073709551615"
+          },
+          "owner": "other"
+        },
+        "warning": "ok",
+        "automatic_retirement": false
+      }
+    },
+    {
+      "name": "workspace-capacity-unknown-warning",
+      "schema": "WorkspaceCapacity",
+      "layer": "schema",
+      "value": {
+        "principal": {
+          "records": {
+            "used": "0",
+            "limit": "18446744073709551615",
+            "remaining": "18446744073709551615"
+          },
+          "metadata_bytes": {
+            "used": "0",
+            "limit": "18446744073709551615",
+            "remaining": "18446744073709551615"
+          }
+        },
+        "warning": "unknown",
+        "automatic_retirement": false
+      }
+    },
+    {
+      "name": "workspace-capacity-invalid-global",
+      "schema": "WorkspaceCapacity",
+      "layer": "schema",
+      "value": {
+        "principal": {
+          "records": {
+            "used": "0",
+            "limit": "18446744073709551615",
+            "remaining": "18446744073709551615"
+          },
+          "metadata_bytes": {
+            "used": "0",
+            "limit": "18446744073709551615",
+            "remaining": "18446744073709551615"
+          }
+        },
+        "warning": "ok",
+        "automatic_retirement": false,
+        "global": null
+      }
+    },
+    {
+      "name": "workspace-capacity-invalid-automatic_retirement",
+      "schema": "WorkspaceCapacity",
+      "layer": "schema",
+      "value": {
+        "principal": {
+          "records": {
+            "used": "0",
+            "limit": "18446744073709551615",
+            "remaining": "18446744073709551615"
+          },
+          "metadata_bytes": {
+            "used": "0",
+            "limit": "18446744073709551615",
+            "remaining": "18446744073709551615"
+          }
+        },
+        "warning": "ok",
+        "automatic_retirement": true
       }
     }
   ],

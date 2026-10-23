@@ -3956,3 +3956,77 @@ async fn directory_scope_initialization_accepts_root_but_requires_a_string_path(
     assert_eq!(initialized["state"], "completed");
     assert!(initialized["result"]["directory_branch_id"].is_string());
 }
+
+#[tokio::test]
+async fn workspace_capacity_is_live_and_principal_scoped() {
+    let root = tempfile::tempdir().unwrap();
+    let mut config = Config::development([
+        root.path().join("d1"),
+        root.path().join("d2"),
+        root.path().join("d3"),
+    ]);
+    config.max_retained_workspaces = 1;
+    config.max_retained_workspaces_per_principal = 1;
+    let app = configured_application(root.path(), config);
+    let path = "/api/workspaces/capacity";
+    assert_eq!(
+        send(&app, None, "GET", path, None).await.0,
+        StatusCode::UNAUTHORIZED
+    );
+    let admin = login(&app, "admin", "integration-test-password").await;
+    success(&app, &admin, "POST", "/api/admin/accounts", Some(json!({"username":"capacity-reader","password":"reader-test-password","admin":false,"repositories":[],"disabled":false}))).await;
+    let reader = login(&app, "capacity-reader", "reader-test-password").await;
+    let repo = success(&app, &admin, "POST", "/api/repositories", Some(json!({"name":"Capacity","primary_slot_id":"P01","target_copies":1,"operation_id":new_id("op")}))).await;
+    success(
+        &app,
+        &admin,
+        "POST",
+        "/api/workspaces",
+        Some(json!({"branch_id":repo["main_branch_id"]})),
+    )
+    .await;
+    let administrator = success(&app, &admin, "GET", path, None).await;
+    assert_eq!(administrator["global"]["records"]["used"], "1");
+    assert_eq!(administrator["warning"], "exhausted");
+    let own = success(&app, &reader, "GET", path, None).await;
+    assert!(own.get("global").is_none());
+    assert_eq!(own["principal"]["records"]["used"], "0");
+    assert_eq!(own["warning"], "ok");
+    assert_eq!(own["automatic_retirement"], false);
+    assert!(json_codec::from_value::<storage_contract::WorkspaceCapacity>(own).is_ok());
+    // Client-supplied role or principal selectors never elevate this read.
+    let own = success(
+        &app,
+        &reader,
+        "GET",
+        "/api/workspaces/capacity?admin=true&principal=admin",
+        None,
+    )
+    .await;
+    assert!(own.get("global").is_none());
+    assert_eq!(own["principal"]["records"]["used"], "0");
+    success(&app, &admin, "POST", "/api/admin/accounts", Some(json!({"username":"capacity-admin","password":"delegate-test-password","admin":true,"repositories":[],"disabled":false}))).await;
+    let delegate = login(&app, "capacity-admin", "delegate-test-password").await;
+    assert!(
+        success(&app, &delegate, "GET", path, None)
+            .await
+            .get("global")
+            .is_some()
+    );
+    success(&app, &admin, "POST", "/api/admin/accounts", Some(json!({"username":"capacity-admin","password":null,"admin":false,"repositories":[],"disabled":false}))).await;
+    let (status, downgraded) = send(&app, Some(&delegate), "GET", path, None).await;
+    assert!(status == StatusCode::OK || status == StatusCode::UNAUTHORIZED);
+    assert!(downgraded.get("global").is_none());
+    let delegate = login(&app, "capacity-admin", "delegate-test-password").await;
+    assert!(
+        success(&app, &delegate, "GET", path, None)
+            .await
+            .get("global")
+            .is_none()
+    );
+    success(&app, &admin, "POST", "/api/admin/accounts", Some(json!({"username":"capacity-reader","password":null,"admin":false,"repositories":[],"disabled":true}))).await;
+    assert_eq!(
+        send(&app, Some(&reader), "GET", path, None).await.0,
+        StatusCode::UNAUTHORIZED
+    );
+}

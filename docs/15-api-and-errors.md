@@ -301,3 +301,18 @@ HTTP 状态描述本次调用，operation 的终态描述原业务请求，二�
 ---
 
 [文档目录](README.md) · [上一章：身份、权限与运行隔离](14-security-and-permissions.md) · [下一章：Web 与内部管理命令行界面](16-client-interfaces.md)
+
+### 工作区保留证据容量诊断
+
+`GET /api/workspaces/capacity` 要求当前有效会话，返回 `WorkspaceCapacity`：
+
+- `principal` 仅统计当前授权身份的保留记录和元数据预留量；`records` 与 `metadata_bytes` 各包含 `used`、`limit`、`remaining`，全部为规范 UInt64 十进制字符串。
+- `global` 只向管理员返回；普通用户的 `warning` 也只按本人预算计算，不泄漏全池压力。请求参数不能选择其他身份或提升权限。
+- `warning` 为 `ok`、`near_limit`（至少一个可见预算达到 80%）或 `exhausted`。`remaining` 下限为零。
+- `automatic_retirement` 固定为 `false`。提交、终止及过期记录仍占用保留证据预算；本接口不删除证据、不修改预算，也不承诺下一次写入一定获准。后端不支持时返回 501。
+
+### 引擎错误到 HTTP 的现行映射登记
+
+服务器集中登记现有内部错误别名与公开 HTTP 状态，并测试别名唯一性、目标状态登记、重试语义和 500 诊断遮蔽。`RESOURCE_LIMIT → RESOURCE_LIMIT_EXCEEDED` 等转换是边界适配，不意味着每个内部错误码均为公共契约。未列入显式状态表的码仍保留原有 400 兼容行为，`NOT_FOUND` 与 `_NOT_FOUND` 后缀仍映射 404；这不是全量内部错误码白名单，也尚未形成全仓新增错误码穷尽门禁。
+
+HTTP Bearer 的认证方案名按 ASCII 不区分大小写；令牌保持原始大小写和字节。重复 Authorization、空令牌及额外空白字段仍被拒绝，不改变 Cookie/CSRF 或原生 SMB 凭据策略。

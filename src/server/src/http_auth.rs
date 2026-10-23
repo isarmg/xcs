@@ -246,13 +246,16 @@ fn request_token(headers: &HeaderMap) -> Result<(String, bool), ApiError> {
             return Err(ApiError::unauthorized());
         }
         let value = value.to_str().map_err(|_| ApiError::unauthorized())?;
-        return Ok((
-            value
-                .strip_prefix("Bearer ")
-                .ok_or_else(ApiError::unauthorized)?
-                .to_owned(),
-            false,
-        ));
+        let (scheme, token) = value.split_once(' ').ok_or_else(ApiError::unauthorized)?;
+        // Only the scheme is case-insensitive. Never normalize credentials or
+        // accept an empty token, extra fields, or a duplicate Authorization.
+        if !scheme.eq_ignore_ascii_case("Bearer")
+            || token.is_empty()
+            || token.bytes().any(|byte| byte.is_ascii_whitespace())
+        {
+            return Err(ApiError::unauthorized());
+        }
+        return Ok((token.to_owned(), false));
     }
     if headers.get_all(header::COOKIE).iter().count() != 1 {
         return Err(ApiError::unauthorized());

@@ -517,22 +517,51 @@ pub fn router(
 ) -> Result<Router, ApiError> {
     config.validate()?;
     let spool_budget = config.open_http_spool();
-    let telemetry = telemetry::Telemetry::start(
-        backend.clone(),
-        &config
-            .spool_dir
-            .parent()
-            .ok_or_else(|| ApiError::invalid("spool directory requires a parent"))?
-            .join("telemetry-cache"),
-    )?;
-    let auth = Arc::new(Mutex::new(auth));
-    backend.start_management(auth.clone());
-    let backend = Arc::new(AuthorizedBackend {
-        backend,
-        auth: auth.clone(),
-    });
-    router_shared(backend, auth, config, telemetry, spool_budget)
+    let runtime = ManagementRuntime::start(backend, auth, &config)?;
+    router_shared(
+        runtime.backend,
+        runtime.auth,
+        config,
+        runtime.telemetry,
+        spool_budget,
+    )
 }
+
+/// Common initialization for embedded routers and the network server. Callers
+/// validate first; serve binds HTTP before starting background management work.
+struct ManagementRuntime {
+    backend: Arc<dyn Backend>,
+    auth: Arc<Mutex<AuthStore>>,
+    telemetry: Arc<telemetry::Telemetry>,
+}
+impl ManagementRuntime {
+    fn start(
+        backend: Arc<dyn Backend>,
+        auth: AuthStore,
+        config: &ServerConfig,
+    ) -> Result<Self, ApiError> {
+        let telemetry = telemetry::Telemetry::start(
+            backend.clone(),
+            &config
+                .spool_dir
+                .parent()
+                .ok_or_else(|| ApiError::invalid("spool directory requires a parent"))?
+                .join("telemetry-cache"),
+        )?;
+        let auth = Arc::new(Mutex::new(auth));
+        backend.start_management(auth.clone());
+        let backend = Arc::new(AuthorizedBackend {
+            backend,
+            auth: auth.clone(),
+        });
+        Ok(Self {
+            backend,
+            auth,
+            telemetry,
+        })
+    }
+}
+
 fn router_shared(
     backend: Arc<dyn Backend>,
     auth: Arc<Mutex<AuthStore>>,
@@ -540,7 +569,6 @@ fn router_shared(
     telemetry: Arc<telemetry::Telemetry>,
     spool_budget: Option<Arc<spool_budget::SpoolBudget>>,
 ) -> Result<Router, ApiError> {
-    config.validate()?;
     let static_etags = config.web_dir.as_ref().and_then(|root| {
         match web_assets::static_etags(root) {
             Ok(etags) => Some(etags),
@@ -622,6 +650,7 @@ fn router_shared(
         .route("/api/branches/{branch}/write-sessions", post(write_session))
         .route("/api/branches/{branch}/archive", post(archive))
         .route("/api/workspaces", post(workspace))
+        .route("/api/workspaces/capacity", get(workspace_capacity))
         .route("/api/workspaces/{workspace}", get(workspace_info))
         .route(
             "/api/workspaces/{workspace}/files/{item}/content",
@@ -715,20 +744,11 @@ pub async fn serve(
     config.validate()?;
     let spool_budget = config.open_http_spool();
     let listener = tokio::net::TcpListener::bind(config.listen).await?;
-    let telemetry = telemetry::Telemetry::start(
-        backend.clone(),
-        &config
-            .spool_dir
-            .parent()
-            .ok_or_else(|| ApiError::invalid("spool directory requires a parent"))?
-            .join("telemetry-cache"),
-    )?;
-    let auth = Arc::new(Mutex::new(auth));
-    backend.start_management(auth.clone());
-    let backend: Arc<dyn Backend> = Arc::new(AuthorizedBackend {
+    let ManagementRuntime {
         backend,
-        auth: auth.clone(),
-    });
+        auth,
+        telemetry,
+    } = ManagementRuntime::start(backend, auth, &config)?;
     // Keep optional bridge setup isolated from management lifecycle failures.
     let smb = config.smb.clone();
     let smb_max_file_bytes = config.max_upload_bytes;
@@ -1133,6 +1153,19 @@ async fn management_status(State(state): State<AppState>) -> Json<Value> {
         }}),
     )
 }
+async fn workspace_capacity(
+    State(state): State<AppState>,
+    http_routing::Extension(identity): http_routing::Extension<Identity>,
+) -> Result<Json<Value>, ApiError> {
+    management_call(
+        state,
+        identity,
+        crate::BackendAction::WorkspaceCapacity,
+        json!({}),
+    )
+    .await
+}
+
 async fn storage_status(
     State(state): State<AppState>,
     http_routing::Extension(identity): http_routing::Extension<Identity>,
