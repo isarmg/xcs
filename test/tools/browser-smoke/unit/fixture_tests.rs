@@ -39,3 +39,21 @@ fn fixture_requires_explicit_initialization() {
     assert!(seed_files(&temporary).is_err());
     assert!(!temporary.path().join("pool/config.json").exists());
 }
+
+#[test]
+fn management_fixture_publishes_explicit_authority_that_survives_reopen() {
+    let temporary = tempfile::tempdir().unwrap();
+    let password = "fixture-admin-password";
+    initialize_management(&temporary, password).unwrap();
+    let pool = temporary.path().join("pool");
+    assert!(!pool.join("auth.json").exists());
+    assert!(pool.join("management-authority.json").is_file());
+    assert!(pool.join("management/management-auth.json").is_file());
+    let (backend, mut auth) =
+        storage_server::management::open_service(&pool, &pool.join("management")).unwrap();
+    assert!(auth.login(PRINCIPAL, password).is_ok());
+    drop(backend);
+    drop(auth);
+    seed_files(&temporary).unwrap();
+    assert!(initialize_management(&temporary, password).is_err());
+}

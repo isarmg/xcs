@@ -7,6 +7,73 @@ const PRINCIPAL: &str = "smoke-admin";
 const FILE: &str = "browser-smoke.txt";
 const PAYLOADS: [&str; 2] = ["first real version\n", "second real version: 测试\n"];
 
+/// Use the same explicit authority publication as production setup. A pool
+/// credential snapshot alone is deliberately insufficient for daemon startup.
+pub(super) fn initialize_management(temporary: &tempfile::TempDir, password: &str) -> Result<()> {
+    use super::{File, OpenOptions, OpenOptionsExt, Write, fs, wait_for};
+    use std::{
+        collections::BTreeMap,
+        os::unix::fs::DirBuilderExt,
+        sync::{Arc, Mutex},
+    };
+    use storage_server::Backend;
+
+    let root = temporary.path();
+    let pool = root.join("pool");
+    let management = pool.join("management");
+    fs::DirBuilder::new().mode(0o700).create(&pool)?;
+    fs::DirBuilder::new().mode(0o700).create(&management)?;
+    let mut entropy = [0u8; 32];
+    File::open("/dev/urandom")?.read_exact(&mut entropy)?;
+    let key: String = entropy.iter().map(|b| format!("{b:02x}")).collect();
+    OpenOptions::new()
+        .create_new(true)
+        .write(true)
+        .mode(0o600)
+        .open(management.join("bootstrap.key"))?
+        .write_all(key.as_bytes())?;
+    let mut disks = BTreeMap::new();
+    for slot in ["P01", "B01", "C01"] {
+        let path = root.join(slot);
+        fs::DirBuilder::new().mode(0o700).create(&path)?;
+        disks.insert(slot.to_owned(), path);
+    }
+    let (backend, auth) =
+        storage_server::management::open_service_with_disks(&pool, &management, disks, true)?;
+    let auth = Arc::new(Mutex::new(auth));
+    backend.start_management(auth.clone());
+    wait_for("fixture initial storage discovery", || {
+        if backend.management_status()["recovering"] == false {
+            Ok(())
+        } else {
+            Err("fixture discovery still running".into())
+        }
+    })?;
+    backend.setup_operation(
+        "initialize",
+        json_codec::json!({"disk_ids":["P01","B01","C01"],"mode":"development",
+            "username":PRINCIPAL,"password":password}),
+        Some(&key),
+        None,
+    )?;
+    wait_for("fixture explicit management initialization", || {
+        let status = backend.management_status();
+        if status["state"] == "ready" && status["recovering"] == false {
+            Ok(())
+        } else {
+            Err("fixture management not ready".into())
+        }
+    })?;
+    drop(backend);
+    drop(auth);
+    // Background observation can briefly retain the engine after its public
+    // handle is dropped. Reopening verifies durable state and lock release.
+    drop(wait_for("fixture initialization lock release", || {
+        Ok(Engine::open(&pool)?)
+    })?);
+    Ok(())
+}
+
 pub(super) fn seed_files(temporary: &tempfile::TempDir) -> Result<()> {
     let pool = temporary.path().join("pool");
     let mut engine = Engine::open(&pool)?;

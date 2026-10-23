@@ -7,10 +7,7 @@ use std::{
     fs::{self, File, OpenOptions},
     io::{Read, Write},
     net::{TcpListener, TcpStream},
-    os::unix::{
-        fs::{DirBuilderExt, OpenOptionsExt},
-        process::CommandExt,
-    },
+    os::unix::{fs::OpenOptionsExt, process::CommandExt},
     path::{Path, PathBuf},
     process::{Child, Command, Stdio},
     thread,
@@ -430,23 +427,7 @@ fn run() -> Result<()> {
     let mut entropy = [0u8; 24];
     File::open("/dev/urandom")?.read_exact(&mut entropy)?;
     let password: String = entropy.iter().map(|b| format!("{b:02x}")).collect();
-    let disks: Vec<_> = ["P01", "B01", "C01"]
-        .iter()
-        .map(|name| root.join(name))
-        .collect();
-    for disk in &disks {
-        fs::DirBuilder::new().mode(0o700).create(disk)?;
-    }
-    // Test-only initialization: no product setup or transfer command dispatcher.
-    let engine =
-        storage_engine::Engine::initialize(&pool, storage_engine::Config::development(disks))?;
-    let backend = std::sync::Arc::new(storage_server::engine_backend::EngineBackend::new(engine));
-    backend.protect_auth(storage_server::auth::AuthStore::initialize(
-        &pool,
-        "smoke-admin",
-        &password,
-    )?)?;
-    drop(backend);
+    fixture::initialize_management(&temp, &password)?;
     seed_files(&temp)?;
     let server_port = port()?;
     let driver_port = port()?;
@@ -462,12 +443,17 @@ fn run() -> Result<()> {
         &server_log,
     )?;
     let result = (|| -> Result<()> {
-        wait_for("loopback ZXS server", || {
-            let (status, _) = http(server_port, "GET", "/", None)?;
-            if status == 200 {
+        wait_for("persisted fixture authority and storage", || {
+            let (status, bytes) = http(server_port, "GET", "/api/management/status", None)?;
+            let value: Value = json_codec::from_slice(&bytes)?;
+            if status == 200
+                && value["authentication"] == "ready"
+                && value["storage"]["state"] == "ready"
+                && value["storage"]["recovering"] == false
+            {
                 Ok(())
             } else {
-                Err(format!("HTTP {status}").into())
+                Err(format!("fixture management not ready: HTTP {status}: {value}").into())
             }
         })?;
         let driver = env::var_os("CHROMEDRIVER").unwrap_or_else(|| "chromedriver".into());
