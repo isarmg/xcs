@@ -3,10 +3,10 @@
 use data_serialization::Deserialize;
 use json_codec::Value;
 use schema_validation::{
+    Draft, Validator,
     canonical::{
         self, CanonicalSchema, CanonicalizationError, CanonicalizeOptions, Satisfiability,
     },
-    Draft, Validator,
 };
 
 fn run_case(case: CanonicalCase) {
@@ -120,7 +120,8 @@ fn run_case(case: CanonicalCase) {
     }
     if let Some(expected) = case.satisfiable {
         assert_eq!(
-            satisfiable, expected,
+            satisfiable,
+            expected,
             "case `{}`: satisfiability() = {:?}, expected satisfiable = {expected}\n  form = {form}",
             case.description,
             canonical.satisfiability(),
@@ -319,7 +320,7 @@ impl CanonicalCase {
 #[test]
 fn canonical_fixture_suite() {
     let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join(
-        "../../../test/foundation/schema-validation/upstream/jsonschema/tests/canonical-suite",
+        "../../../../test/foundation/schema-validation/upstream/jsonschema/tests/canonical-suite",
     );
     let mut files: Vec<_> = std::fs::read_dir(root)
         .unwrap()

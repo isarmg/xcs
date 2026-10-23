@@ -20,6 +20,12 @@
 - Rustdoc 示例仍在文档中。生产资源、生产生成宏和已有导出的下游代码生成 API 不因名字中含 `test` 而移动或删除。
 - 未具备开发依赖、原本未启用的上游测试不因目录变化自动成为活动测试目标，也不能记为通过。
 
+### 运行时夹具路径回归
+
+`test/ci/test_manifest_runtime_paths.py` 按当前来源目录和根工作区的实际 manifest 所有权检查显式 `[[test]]`、`[[bench]]` 入口，并与 `test/ci/fixtures/manifest-runtime-paths.json` 中已审阅的有限清单比对。辅助检查只识别基于 `CARGO_MANIFEST_DIR` 的静态 `concat!` 字符串和 `Path::new`／`PathBuf::from` 后接字面量 `.join()` 两种形式；不分析嵌套模块、隐式目标或动态 Rust 表达式，也不代替编译与运行验收。
+
+模式验证组件另检查真实包及隔离镜像均能找到 canonical-suite 的 31 份 JSON、1509 个用例，并保留 Rust 测试内的相同计数断言。目录和计数检查通过不表示这些用例已执行；实际结果仍由 `check-schema-validation.py` 报告。
+
 ## 来源与完整性
 
 `compliance/external-tests/` 将外置材料关联回原来源目录，并记录精确文件集合和当前哈希。包内源码与包外测试共同构成当前来源覆盖；移动测试不是减少源码或降低运行内存。
