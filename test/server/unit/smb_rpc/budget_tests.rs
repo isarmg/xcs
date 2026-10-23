@@ -1,5 +1,40 @@
 use super::*;
 
+#[test]
+fn fifo_inventory_lock_is_rejected_without_stranding_smb_startup() {
+    use std::os::unix::fs::OpenOptionsExt;
+    use std::time::Duration;
+
+    let root = crate::tests::private_tempdir();
+    let lock_path = root.path().join(".budget.lock");
+    rustix::fs::mkfifoat(
+        rustix::fs::CWD,
+        &lock_path,
+        rustix::fs::Mode::from_raw_mode(0o600),
+    )
+    .unwrap();
+    let path = root.path().to_owned();
+    let (sent, received) = std::sync::mpsc::channel();
+    let worker = std::thread::spawn(move || {
+        sent.send(Budget::recover(&path, SpoolLimits::default()).is_err())
+            .unwrap();
+    });
+    let immediate = received.recv_timeout(Duration::from_secs(1));
+    // Release an unsafe open on regression, without letting the test hang.
+    let counterpart = fs::OpenOptions::new()
+        .read(true)
+        .write(true)
+        .custom_flags(rustix::fs::OFlags::NONBLOCK.bits() as i32)
+        .open(&lock_path)
+        .unwrap();
+    if immediate.is_err() {
+        assert!(received.recv_timeout(Duration::from_secs(2)).unwrap());
+    }
+    worker.join().unwrap();
+    drop(counterpart);
+    assert_eq!(immediate, Ok(true), "SMB startup blocked on a FIFO");
+}
+
 fn limits(account: u64, total: u64) -> SpoolLimits {
     SpoolLimits {
         bytes_per_account: account,
@@ -33,7 +68,7 @@ fn total(budget: &Budget) -> u64 {
 }
 #[test]
 fn retained_descriptor_ceiling_survives_disconnect_and_restart() {
-    let root = tempfile::tempdir().unwrap();
+    let root = crate::tests::private_tempdir();
     let limit = OVERHEAD + 100;
     let budget = Budget::recover(root.path(), limits(limit, 2 * limit)).unwrap();
     let lease = reserve(&budget, "alice", "copy", 100).unwrap();
@@ -52,7 +87,7 @@ fn retained_descriptor_ceiling_survives_disconnect_and_restart() {
 }
 #[test]
 fn successful_cleanup_releases_capacity_but_failed_cleanup_does_not() {
-    let root = tempfile::tempdir().unwrap();
+    let root = crate::tests::private_tempdir();
     let limit = OVERHEAD + 100;
     let budget = Budget::recover(root.path(), limits(limit, limit)).unwrap();
     let lease = reserve(&budget, "alice", "copy", 100).unwrap();
@@ -63,7 +98,7 @@ fn successful_cleanup_releases_capacity_but_failed_cleanup_does_not() {
     assert_eq!(total(&budget), limit);
     assert!(root.path().join("copy.budget.json").exists());
     // A separate clean lease demonstrates the normal Close path.
-    let clean = tempfile::tempdir().unwrap();
+    let clean = crate::tests::private_tempdir();
     let budget = Budget::recover(clean.path(), limits(limit, limit)).unwrap();
     let lease = reserve(&budget, "alice", "copy", 100).unwrap();
     fs::write(&lease.source, b"one").unwrap();
@@ -74,7 +109,7 @@ fn successful_cleanup_releases_capacity_but_failed_cleanup_does_not() {
 }
 #[test]
 fn global_account_and_recovery_admission_precede_payload_expansion() {
-    let root = tempfile::tempdir().unwrap();
+    let root = crate::tests::private_tempdir();
     let limit = OVERHEAD + 100;
     let budget = Budget::recover(root.path(), limits(limit, 2 * limit)).unwrap();
     assert!(
@@ -90,7 +125,7 @@ fn global_account_and_recovery_admission_precede_payload_expansion() {
 }
 #[test]
 fn orphan_bytes_charge_every_account_without_deletion() {
-    let root = tempfile::tempdir().unwrap();
+    let root = crate::tests::private_tempdir();
     fs::write(root.path().join("legacy"), b"unknown").unwrap();
     let budget = Budget::recover(root.path(), limits(OVERHEAD + 100, 3 * OVERHEAD)).unwrap();
     assert!(reserve(&budget, "alice", "new", 0).is_err());
@@ -99,7 +134,7 @@ fn orphan_bytes_charge_every_account_without_deletion() {
 }
 #[test]
 fn ceiling_checks_happen_before_write_and_metadata_corruption_fails_closed() {
-    let root = tempfile::tempdir().unwrap();
+    let root = crate::tests::private_tempdir();
     let budget = Budget::recover(root.path(), limits(OVERHEAD + 100, OVERHEAD + 100)).unwrap();
     let lease = reserve(&budget, "alice", "copy", 100).unwrap();
     assert!(lease.before_write_available(101, 0, u64::MAX).is_err());
@@ -115,7 +150,7 @@ fn ceiling_checks_happen_before_write_and_metadata_corruption_fails_closed() {
 
 #[test]
 fn concurrent_admission_cannot_overbook_a_single_account() {
-    let root = tempfile::tempdir().unwrap();
+    let root = crate::tests::private_tempdir();
     let one = OVERHEAD + 1;
     let budget = Budget::recover(root.path(), limits(2 * one, 8 * one)).unwrap();
     let barrier = Arc::new(std::sync::Barrier::new(8));
@@ -144,7 +179,7 @@ fn concurrent_admission_cannot_overbook_a_single_account() {
 
 #[test]
 fn tiny_open_reserves_current_extent_not_static_maximum_and_growth_is_durable() {
-    let root = tempfile::tempdir().unwrap();
+    let root = crate::tests::private_tempdir();
     let limit = 2 * OVERHEAD + 20;
     let budget = Budget::recover(root.path(), limits(limit, limit)).unwrap();
     let lease = budget
@@ -187,7 +222,7 @@ fn tiny_open_reserves_current_extent_not_static_maximum_and_growth_is_durable() 
 
 #[test]
 fn failed_growth_record_keeps_data_and_blocks_new_admission() {
-    let root = tempfile::tempdir().unwrap();
+    let root = crate::tests::private_tempdir();
     let budget = Budget::recover(root.path(), limits(4 * OVERHEAD, 4 * OVERHEAD)).unwrap();
     let lease = budget
         .reserve_available("alice", &root.path().join("copy"), 3, 100, u64::MAX)

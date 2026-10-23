@@ -5,10 +5,11 @@
 //! upload success. Unknown files and uncertain I/O never earn free capacity.
 use crate::{ApiError, lock, uploads::UploadRecord};
 use data_serialization::{Deserialize, Serialize};
+use platform_io::fs_safety::{AdvisoryLock, EntryName, PrivateDirectory, RelativePath};
 use std::{
     collections::BTreeMap,
     fs::{self, OpenOptions},
-    io::{Read, Write},
+    io::Write,
     path::{Path, PathBuf},
     sync::{Arc, Mutex},
 };
@@ -163,22 +164,16 @@ pub(crate) struct SpoolBudget {
     root: PathBuf,
     limits: SpoolLimits,
     ledger: Mutex<Ledger>,
-    _directory_lock: fs::File,
+    _directory_lock: AdvisoryLock,
 }
 
 fn valid_name(name: &str) -> bool {
     !name.is_empty() && !name.starts_with('.') && !name.contains(['/', '\\'])
 }
 fn metadata<T: data_serialization::de::DeserializeOwned>(path: &Path) -> Option<T> {
-    let mut bytes = Vec::new();
-    fs::File::open(path)
-        .ok()?
-        .take(MAX_METADATA + 1)
-        .read_to_end(&mut bytes)
-        .ok()?;
-    if bytes.len() as u64 > MAX_METADATA {
-        return None;
-    }
+    let directory = PrivateDirectory::open_trusted(path.parent()?).ok()?;
+    let name = EntryName::new(path.file_name()?).ok()?;
+    let bytes = directory.read_bounded(&name, MAX_METADATA as usize).ok()?;
     storage_contract::decode_strict(&bytes).ok()
 }
 fn charge_bytes(bytes: u64) -> Result<u64, ApiError> {
@@ -207,23 +202,17 @@ fn set_owner(
 impl SpoolBudget {
     pub(crate) fn recover(root: &Path, limits: SpoolLimits) -> Result<Arc<Self>, ApiError> {
         limits.validate()?;
-        let mut options = OpenOptions::new();
-        options.create(true).truncate(false).write(true);
-        #[cfg(unix)]
-        {
-            use std::os::unix::fs::OpenOptionsExt;
-            options
-                .mode(0o600)
-                .custom_flags(rustix::fs::OFlags::NOFOLLOW.bits() as i32);
-        }
-        let directory_lock = options
-            .open(root.join(".budget.lock"))
-            .map_err(ApiError::io)?;
-        rustix::fs::flock(
-            &directory_lock,
-            rustix::fs::FlockOperation::NonBlockingLockExclusive,
+        let directory = PrivateDirectory::open_trusted(root).map_err(crate::upload_fs_error)?;
+        let directory_lock = AdvisoryLock::acquire(
+            &directory,
+            &RelativePath::new(".budget.lock").map_err(crate::upload_fs_error)?,
         )
-        .map_err(|_| invalid_state("HTTP spool is already owned by another server"))?;
+        .map_err(|error| match error {
+            platform_io::fs_safety::Error::AlreadyLocked(_) => {
+                invalid_state("HTTP spool is already owned by another server")
+            }
+            error => crate::upload_fs_error(error),
+        })?;
         let mut files = BTreeMap::new();
         let mut owners = BTreeMap::new();
         let mut covered_metadata = BTreeMap::new();

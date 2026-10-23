@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
 """Exercise explicit event/lock capabilities and real SQLite/reactive consumers."""
+if not __debug__:
+    raise RuntimeError('Validation requires assertions; do not use Python optimization (-O/-OO or PYTHONOPTIMIZE).')
+
 import json
 import os
 import re

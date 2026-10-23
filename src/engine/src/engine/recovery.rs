@@ -7,6 +7,54 @@ use crate::{disk::*, journal::*, *};
 use std::collections::{BTreeMap, BTreeSet};
 
 impl Engine {
+    /// A surviving full publication barrier can disprove an empty or truncated
+    /// journal, but cannot authorize inventing the missing decision history.
+    /// Check before any recovery repair or disposable-index rebuild can write.
+    fn reject_unjournaled_publications(
+        &self,
+        online: &[DiskConfig],
+        journaled: &BTreeSet<&str>,
+    ) -> Result<()> {
+        for disk in online {
+            let directory = disk.root.join("metadata/publication-seals");
+            match std::fs::symlink_metadata(&directory) {
+                Err(error) if error.kind() == std::io::ErrorKind::NotFound => continue,
+                Err(error) => return Err(error.into()),
+                Ok(_) => {
+                    existing_private_dir(&directory)?;
+                }
+            }
+            for entry in std::fs::read_dir(&directory)? {
+                let entry = entry?;
+                let name = entry.file_name();
+                let Some(hash) = name.to_str().and_then(|name| name.strip_suffix(".json")) else {
+                    // An unfinished atomic-write temporary is not a seal.
+                    continue;
+                };
+                if journaled.contains(hash) {
+                    continue;
+                }
+                let seal: PublicationSeal = read_json(&entry.path())?;
+                let candidate: Candidate = verified_object(online, "candidate", hash)?;
+                self.verify_candidate_membership(&candidate)?;
+                let publication: Publication =
+                    verified_object(online, "publication", &seal.publication_hash)?;
+                verify_publication_seal(&candidate, &publication, &seal)?;
+                if candidate.pool_id != self.config.pool_id {
+                    return Err(Error::new(
+                        "PUBLICATION_INVALID",
+                        "publication seal belongs to another pool",
+                    ));
+                }
+                return Err(Error::new(
+                    "RECOVERY_REQUIRED",
+                    "journal history omits a sealed publication; restore the missing journal evidence before recovery",
+                ));
+            }
+        }
+        Ok(())
+    }
+
     /// Read the complete exact candidate-bound object closure across replicas.
     /// A damaged preferred member must not hide healthy metadata dependencies.
     pub(crate) fn load_bound_snapshot(&self, hash: &str) -> Result<State> {
@@ -61,6 +109,20 @@ impl Engine {
                 "online service requires a majority of the configured metadata members; use offline recovery",
             ));
         }
+        let journaled = records
+            .values()
+            .flat_map(|candidates| {
+                candidates
+                    .iter()
+                    .filter(|(_, records)| {
+                        records.iter().any(|(_, record)| {
+                            matches!(record.record_type.as_str(), "ACCEPT" | "PUBLICATION")
+                        })
+                    })
+                    .map(|(hash, _)| hash.as_str())
+            })
+            .collect();
+        self.reject_unjournaled_publications(&online, &journaled)?;
         let checkpoint = if online.len() == members.len() && !torn_tail {
             super::recovery_checkpoint::load(self, &prefixes, &records).filter(|c| {
                 records

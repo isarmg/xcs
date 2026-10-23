@@ -178,11 +178,7 @@ impl Engine {
         let admission = PreparationAdmission(self.commit_preparation.clone());
         // Duplicate the existing open-file descriptions: they keep this pool's
         // process locks alive even if the original Engine is dropped meanwhile.
-        let locks = self
-            ._locks
-            .iter()
-            .map(File::try_clone)
-            .collect::<std::io::Result<Vec<_>>>()?;
+        let locks = self.retain_writer_locks()?;
         let engine = Engine {
             root: self.root.clone(),
             config: self.config.clone(),

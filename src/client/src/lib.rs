@@ -3,6 +3,8 @@ use data_serialization::{Deserialize, Serialize};
 use json_codec::{Value, json};
 use std::time::Duration;
 
+#[cfg(target_os = "linux")]
+mod download_target;
 mod response;
 mod transfer;
 use response::decode;

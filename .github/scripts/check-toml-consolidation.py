@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
 """Check the maintained TOML capability boundaries and real consumers offline."""
+if not __debug__:
+    raise RuntimeError('Validation requires assertions; do not use Python optimization (-O/-OO or PYTHONOPTIMIZE).')
+
 import argparse
 import json
 import re

@@ -1,10 +1,13 @@
 //! Streaming transfer and atomic publication of verified immutable downloads.
 use super::{Client, Error, response::decode, segment};
+#[cfg(target_os = "linux")]
 use futures::StreamExt;
 use json_codec::Value;
 use std::path::Path;
 use tokio::adapters::io::ReaderStream;
-use tokio::io::{AsyncRead, AsyncReadExt, AsyncSeekExt, AsyncWriteExt};
+#[cfg(target_os = "linux")]
+use tokio::io::AsyncWriteExt;
+use tokio::io::{AsyncRead, AsyncReadExt, AsyncSeekExt};
 
 // Match the hashing pass's maximum read size without reserving a large body
 // buffer for tiny files. Clamp before converting to usize (including on wasm).
@@ -153,15 +156,10 @@ impl Client {
         Ok(PreparedUpload { request })
     }
     /// Publish only a complete verified file, without replacing any existing
-    /// destination. The temporary path owns cleanup on errors and cancellation.
+    /// destination. Staging owns cleanup on errors and cancellation.
+    #[cfg(target_os = "linux")]
     pub async fn download_file(&self, version: &str, target: &Path) -> Result<(), Error> {
-        if tokio::fs::try_exists(target).await? {
-            return Err(std::io::Error::new(
-                std::io::ErrorKind::AlreadyExists,
-                "download destination already exists",
-            )
-            .into());
-        }
+        let selected_target = super::download_target::Target::open(target)?;
         let response = self
             .builder(
                 reqwest::Method::GET,
@@ -193,17 +191,7 @@ impl Client {
         let expected_length = response
             .content_length()
             .ok_or_else(|| Error::Response("missing file length".into()))?;
-        let parent = target
-            .parent()
-            .filter(|path| !path.as_os_str().is_empty())
-            .unwrap_or_else(|| Path::new("."));
-        if target.file_name().is_none() {
-            return Err(Error::Response("invalid download target".into()));
-        }
-        let (temporary, cleanup) = tempfile::Builder::new()
-            .prefix(".zxs-download-")
-            .tempfile_in(parent)?
-            .into_parts();
+        let (temporary, cleanup) = selected_target.stage()?;
         let mut file = tokio::fs::File::from_std(temporary);
         let mut length = 0u64;
         let mut hash = blake3::Hasher::new();
@@ -228,17 +216,19 @@ impl Client {
         drop(file);
         // No empty reservation file is exposed. Publication is an indivisible
         // no-replace operation, so a concurrent creator always keeps its file.
-        cleanup
-            .persist_noclobber(target)
-            .map_err(|error| error.error)?;
-        #[cfg(unix)]
-        {
-            let parent = parent.to_owned();
-            tokio::task::spawn_blocking(move || std::fs::File::open(parent)?.sync_all())
-                .await
-                .map_err(|error| Error::Response(error.to_string()))??;
-        }
+        tokio::task::spawn_blocking(move || cleanup.publish())
+            .await
+            .map_err(|error| Error::Response(error.to_string()))??;
         Ok(())
+    }
+    /// Verified publication has no weaker pathname-based compatibility mode.
+    #[cfg(not(target_os = "linux"))]
+    pub async fn download_file(&self, _version: &str, _target: &Path) -> Result<(), Error> {
+        Err(std::io::Error::new(
+            std::io::ErrorKind::Unsupported,
+            "verified native downloads require Linux descriptor-backed publication",
+        )
+        .into())
     }
 }
 

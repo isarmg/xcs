@@ -348,3 +348,42 @@ fn typed_navigation_preserves_unknown_password_and_reload_fences() {
         }
     });
 }
+
+#[test]
+fn expired_password_change_session_closes_business_admission_without_losing_recovery() {
+    let mut state = State {
+        authenticated: true,
+        password_change: PasswordChangeState::Pending,
+        ..Default::default()
+    };
+    state.files.slot = "P01".into();
+    state
+        .files
+        .operations
+        .push(json!({"operation_id":"original","state":"in_doubt"}));
+    reject_password_change(
+        &mut state,
+        &api::Error {
+            status: 401,
+            code: "UNAUTHORIZED".into(),
+            message: "Session expired".into(),
+            retryable: false,
+            request_id: Some("req_expired_password".into()),
+        },
+    );
+    assert!(!state.authenticated);
+    assert!(!state.session_active());
+    assert!(state.password_change_blocked());
+    assert_eq!(session_view(&state).phase, SessionPhase::Anonymous);
+    assert_eq!(state.password_change, PasswordChangeState::Idle);
+    assert_eq!(state.files.slot, "P01");
+    assert_eq!(state.files.operations[0]["operation_id"], "original");
+    assert!(
+        state.reload_blocked(),
+        "unresolved file receipts remain fenced"
+    );
+    assert_eq!(
+        state.password_failure.unwrap().request_id.as_deref(),
+        Some("req_expired_password")
+    );
+}

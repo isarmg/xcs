@@ -101,6 +101,12 @@ pub(crate) fn sync_dir(path: &Path) -> Result<()> {
     Ok(())
 }
 pub(crate) fn open_regular(path: &Path) -> Result<File> {
+    open_optional_regular(path)?
+        .ok_or_else(|| std::io::Error::from(std::io::ErrorKind::NotFound).into())
+}
+/// Only an absent leaf below an opened, safe parent means no file. A missing
+/// or linked parent and every other I/O failure must remain an error.
+pub(crate) fn open_optional_regular(path: &Path) -> Result<Option<File>> {
     let path = absolute_path(path)?;
     let parent = path
         .parent()
@@ -111,7 +117,15 @@ pub(crate) fn open_regular(path: &Path) -> Result<File> {
             .ok_or_else(|| Error::new("UNSAFE_PATH", "missing file name"))?,
     )
     .map_err(fs_error)?;
-    root.open_file(&name, false).map_err(fs_error)
+    match root.open_file(&name, false) {
+        Ok(file) => Ok(Some(file)),
+        Err(platform_io::fs_safety::Error::Io(error))
+            if error.kind() == std::io::ErrorKind::NotFound =>
+        {
+            Ok(None)
+        }
+        Err(error) => Err(fs_error(error)),
+    }
 }
 /// Open a journal relative to its verified parent, without following a leaf symlink.
 pub(crate) fn open_append_regular(path: &Path) -> Result<File> {
@@ -268,6 +282,7 @@ fn full_copy_to_path(
         max_bytes,
         expected,
     )
+    .map(|(size, hash, checksums, _file)| (size, hash, checksums))
 }
 
 pub(crate) fn full_copy_held(
@@ -276,7 +291,7 @@ pub(crate) fn full_copy_held(
     destination_name: &EntryName,
     chunk_bytes: u32,
     max_bytes: u64,
-) -> Result<(u64, String, ChecksumManifest)> {
+) -> Result<(u64, String, ChecksumManifest, File)> {
     full_copy_checked(
         source,
         directory,
@@ -294,7 +309,7 @@ fn full_copy_checked(
     chunk_bytes: u32,
     max_bytes: u64,
     expected: Option<&FileVersion>,
-) -> Result<(u64, String, ChecksumManifest)> {
+) -> Result<(u64, String, ChecksumManifest, File)> {
     let temporary = format!(".zxs-full-{}", new_id("req"));
     let mut target = File::from(
         rustix::fs::openat(
@@ -383,7 +398,7 @@ fn full_copy_checked(
             rustix::fs::AtFlags::empty(),
         );
     }
-    result
+    result.map(|(size, hash, checksums)| (size, hash, checksums, target))
 }
 pub(crate) fn verify_payload(directory: &Path, version: &FileVersion) -> Result<()> {
     verify_payload_held(directory, version).map(|_| ())

@@ -43,6 +43,7 @@ GUIDES = {
                      'docs/architecture/command-line-reference/builder/README.md',
                      'docs/architecture/command-line-reference/lexer/README.md'),
     'command-derive': ('docs/architecture/command-line-reference/derive/README.md',),
+    'uuid': ('docs/architecture/uuid-format-validation.md',),
     'error-definition': ('docs/architecture/error-definition-naming.md',),
     'error-definition-macros': ('docs/architecture/error-definition-naming.md',),
     'regex': ('docs/architecture/pattern-matching.md',),

@@ -6,6 +6,7 @@
 use super::*;
 use crate::SpoolLimits;
 use data_serialization::{Deserialize, Serialize};
+use platform_io::fs_safety::{AdvisoryLock, EntryName, PrivateDirectory, RelativePath};
 
 const OVERHEAD: u64 = 64 * 1024;
 const RECORD_LIMIT: u64 = 16 * 1024;
@@ -96,7 +97,7 @@ pub(super) struct Budget {
     root: PathBuf,
     limits: SpoolLimits,
     ledger: Mutex<Ledger>,
-    _lock: File,
+    _lock: AdvisoryLock,
 }
 pub(super) struct Lease {
     budget: Arc<Budget>,
@@ -128,17 +129,14 @@ impl Budget {
                 "SMB spool limits require account >= 65536, total >= account, and positive recovery reserve",
             ));
         }
-        use std::os::unix::fs::OpenOptionsExt;
-        let lock = fs::OpenOptions::new()
-            .create(true)
-            .truncate(false)
-            .write(true)
-            .mode(0o600)
-            .custom_flags(rustix::fs::OFlags::NOFOLLOW.bits() as i32)
-            .open(root.join(".budget.lock"))
-            .map_err(ApiError::io)?;
-        rustix::fs::flock(&lock, rustix::fs::FlockOperation::NonBlockingLockExclusive)
-            .map_err(|_| invalid("SMB spool already has an owner"))?;
+        let directory = PrivateDirectory::open_trusted(root)
+            .map_err(|_| invalid("SMB spool directory is unsafe"))?;
+        let lock = AdvisoryLock::acquire(
+            &directory,
+            &RelativePath::new(".budget.lock")
+                .map_err(|_| invalid("SMB spool lock name is invalid"))?,
+        )
+        .map_err(|_| invalid("SMB spool lock is unsafe or already has an owner"))?;
         let mut inventory = BTreeMap::new();
         for entry in fs::read_dir(root).map_err(ApiError::io)? {
             let entry = entry.map_err(ApiError::io)?;
@@ -161,7 +159,11 @@ impl Budget {
             if *size > RECORD_LIMIT {
                 return Err(invalid("SMB budget record is too large"));
             }
-            let bytes = fs::read(path).map_err(ApiError::io)?;
+            let name = EntryName::new(path.file_name().unwrap())
+                .map_err(|_| invalid("SMB budget filename is invalid"))?;
+            let bytes = directory
+                .read_bounded(&name, RECORD_LIMIT as usize)
+                .map_err(|_| invalid("SMB budget record is unsafe or unavailable"))?;
             let owner: Owner = storage_contract::decode_strict(&bytes)
                 .map_err(|_| invalid("SMB budget record is invalid"))?;
             if !source_name(&owner.source)

@@ -1037,3 +1037,36 @@ fn authenticated_restore_does_not_require_bootstrap_authorization() {
         .unwrap();
     assert!(published);
 }
+
+#[test]
+fn offline_engine_failures_preserve_http_outcome_and_retry_classification() {
+    for (internal, public, status) in [
+        ("IO_ERROR", "IO_ERROR", 500),
+        ("DURABILITY_UNKNOWN", "DURABILITY_UNKNOWN", 500),
+        ("NO_SPACE", "NO_SPACE", 507),
+        ("IN_DOUBT", "COMMIT_IN_DOUBT", 503),
+        ("METADATA_UNAVAILABLE", "METADATA_UNAVAILABLE", 503),
+        ("RECOVERY_REQUIRED", "RECOVERY_REQUIRED", 503),
+        ("RESOURCE_LIMIT", "RESOURCE_LIMIT_EXCEEDED", 429),
+        ("PERMISSION_DENIED", "FORBIDDEN", 403),
+        ("HEAD_CONFLICT", "HEAD_CONFLICT", 409),
+        ("INVALID_CONFIG", "INVALID_CONFIG", 400),
+    ] {
+        let mapped = engine_error(storage_engine::Error::new(
+            internal,
+            "private /srv/zxs/disk/config.json diagnostic",
+        ));
+        assert_eq!(mapped.code, public);
+        assert_eq!(mapped.status, status, "{internal}");
+        assert_eq!(mapped.retryable, status >= 500 || status == 429);
+        assert_eq!(
+            storage_contract::client_protocol::mutation_outcome_unknown(mapped.status),
+            status >= 500,
+            "{internal} must not make uncertain storage writes look rejected"
+        );
+        assert!(!mapped.message.contains("/srv/zxs"));
+    }
+    assert!(
+        engine_error(storage_engine::Error::new("STORAGE_BUSY", "private").retryable()).retryable
+    );
+}

@@ -157,3 +157,95 @@ fn csr_components_preserve_props_children_and_transparent_views() {
     });
     assert_eq!(*calls.lock().unwrap(), ["Ada", "transparent", "children"]);
 }
+
+#[slot]
+struct GenericSlot<'a, T: std::ops::Deref<Target = str> = String, const N: usize = 2>
+where
+    T: Clone,
+{
+    value: &'a T::Target,
+    labels: [&'a str; N],
+}
+
+#[test]
+fn slots_preserve_generic_declarations_bounds_and_defaults() {
+    let value = String::from("slot");
+    let slot: GenericSlot<'_> = GenericSlot::builder()
+        .value(value.as_str())
+        .labels(["first", "second"])
+        .build();
+    let slots: Vec<GenericSlot<'_>> = slot.into();
+    assert_eq!(slots[0].value, "slot");
+    assert_eq!(slots[0].labels, ["first", "second"]);
+
+    let value = "borrowed";
+    let slot = GenericSlot::<&str, 1>::builder()
+        .value(value)
+        .labels(["only"])
+        .build();
+    assert_eq!(slot.value, "borrowed");
+}
+
+mod namespaced_slots {
+    use web_interface::prelude::*;
+
+    #[slot]
+    pub struct NamedSlot {
+        #[prop(into)]
+        value: String,
+    }
+}
+
+#[test]
+fn qualified_slot_tags_use_the_struct_name_for_the_default_property() {
+    use std::sync::{Arc, Mutex};
+
+    #[component]
+    fn SlotConsumer(
+        named_slot: namespaced_slots::NamedSlot,
+        captured: Arc<Mutex<String>>,
+    ) -> impl IntoView {
+        *captured.lock().unwrap() = named_slot.value;
+    }
+
+    let captured = Arc::new(Mutex::new(String::new()));
+    Owner::new().with(|| {
+        let _view = view! {
+            <SlotConsumer captured=captured.clone()>
+                <namespaced_slots::NamedSlot slot value="qualified"/>
+            </SlotConsumer>
+        };
+    });
+    assert_eq!(*captured.lock().unwrap(), "qualified");
+}
+
+#[slot]
+struct TypedSlot<T> {
+    #[prop(optional)]
+    marker: std::marker::PhantomData<T>,
+    #[prop(default = std::any::type_name::<T>())]
+    type_name: &'static str,
+}
+
+#[test]
+fn explicit_slot_generic_arguments_reach_the_builder() {
+    use std::sync::{Arc, Mutex};
+
+    #[component]
+    fn TypedSlotConsumer<T: Send + Sync + 'static>(
+        typed_slot: TypedSlot<T>,
+        captured: Arc<Mutex<String>>,
+    ) -> impl IntoView {
+        *captured.lock().unwrap() = typed_slot.type_name.to_owned();
+    }
+
+    let captured = Arc::new(Mutex::new(String::new()));
+    Owner::new().with(|| {
+        let _view = view! {
+            <TypedSlotConsumer captured=captured.clone()>
+                <TypedSlot<u8> slot/>
+            </TypedSlotConsumer>
+        };
+    });
+    assert_eq!(*captured.lock().unwrap(), "u8");
+}

@@ -49,22 +49,14 @@ repository = "uuid-rs/uuid"
 status = "actively-developed"
 
 [features]
-atomic = []
-borsh = []
+# Only integrations with retained providers are exposed. Original feature
+# declarations and inactive implementations remain in the provenance/source material.
 default = ["std"]
 js = ["dep:wasm-bindgen", "dep:js-sys"]
-macro-diagnostics = []
-md5 = []
 rng = ["dep:system-entropy"]
-rng-system-entropy = ["rng", "dep:system-entropy"]
 serialization = ["dep:data-serialization"]
-sha1 = []
 std = ["wasm-bindgen?/std", "js-sys?/std"]
-v1 = ["atomic"]
-v3 = ["md5"]
 v4 = ["rng"]
-v5 = ["sha1"]
-v6 = ["atomic"]
 v7 = ["rng"]
 v8 = []
 

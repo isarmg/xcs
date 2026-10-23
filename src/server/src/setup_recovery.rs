@@ -958,11 +958,10 @@ fn private_file(path: &Path, create: bool) -> Result<File, ApiError> {
 }
 fn engine_error(error: storage_engine::Error) -> ApiError {
     // Core errors can contain local paths. Keep HTTP diagnostics bounded and
-    // do not accidentally expose private filesystem or credential information.
-    ApiError::conflict(
-        &error.code,
-        "offline storage operation could not complete safely",
-    )
+    // private without presenting uncertain storage writes as definite conflicts.
+    let mut mapped = crate::engine_backend::error(error);
+    mapped.message = "offline storage operation could not complete safely".into();
+    mapped
 }
 
 #[cfg(test)]

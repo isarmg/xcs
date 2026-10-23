@@ -10,6 +10,9 @@ Optionally prove selected Rust code/data equivalence against a pre-pruning commi
 Alternate Linux amd64 libcs are preservation scope, not validated product ABIs.
 Accepting their build-script target gate is not a musl/ohos/uclibc build/runtime test.
 """
+if not __debug__:
+    raise RuntimeError('Validation requires assertions; do not use Python optimization (-O/-OO or PYTHONOPTIMIZE).')
+
 import argparse
 import hashlib
 import io

@@ -5,7 +5,7 @@
       "files": [
         {
           "path": "test/interface/integration/component_props.rs",
-          "sha256": "6838d7550cfed01cf29e1d1cf8f0e40f48648ef9039810aa9527a1ff33cb685c",
+          "sha256": "9f12b98e45741516c4d05ce51cf5038dcd217e6e8bba8856c7633991134340ab",
           "source": "src/interface/tests/component_props.rs",
           "source_sha256_before": "b0680d33bc7a9c61bdb77acd995caee1e1b4b3b691c0f5a58d7de4aaa37b890c"
         },
@@ -221,7 +221,7 @@
         },
         {
           "path": "test/tools/web-bindings/unit/main_tests.rs",
-          "sha256": "88116580bfce93c0496753a1b1fa6705104cd657347337f35fb33053df8035fe",
+          "sha256": "2a8f9ebb3b4094827455ffbc9b274054a9b1e7e6c26b6da571f4b8666cd99f5f",
           "source": "tools/web-bindings/src/main.rs",
           "source_sha256_before": "841654e8e75c3e3585e5a8f103f2b94a5bdce8ac15ff5284db71c68bc6909df8"
         }

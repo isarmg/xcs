@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
 """Exercise the owned calendar capability and actual serialization/tracing consumers."""
+if not __debug__:
+    raise RuntimeError('Validation requires assertions; do not use Python optimization (-O/-OO or PYTHONOPTIMIZE).')
+
 import argparse
 import json
 from pathlib import Path

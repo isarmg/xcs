@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
 """Check URL capabilities without workspace feature unification, then real consumers."""
+if not __debug__:
+    raise RuntimeError('Validation requires assertions; do not use Python optimization (-O/-OO or PYTHONOPTIMIZE).')
+
 import json, os, pathlib, re, shutil, subprocess, tempfile
 import runpy
 

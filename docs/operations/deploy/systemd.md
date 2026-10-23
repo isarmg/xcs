@@ -15,12 +15,12 @@
 
 ## 可选 Samba 本机桥接
 
-必须先完成 [Samba 模块构建和实际加载验收](../../components/smb.md)。可在单元 override 中重置 `ExecStart=`，加入实际受信任进程 UID 和显式的非管理员账户映射，例如：
+必须先完成 [Samba 模块构建和实际加载验收](../../components/smb.md)。可在单元 override 中重置 `ExecStart=`，保留现有盘位、初始化方案及其他启动参数，再加入实际受信任进程 UID 和显式的非管理员账户映射。例如以下单盘配置：
 
 ```ini
 [Service]
 ExecStart=
-ExecStart=/opt/zxs/bin/zxs --root /var/lib/zxs/state --management-root /var/lib/zxs/management --listen 127.0.0.1:7400 --external-origin https://zxs.example.com --web-dir /opt/zxs/web --smb-socket /run/zxs/smb.sock --smb-peer-uid 0 --smb-user SambaAlice=alice
+ExecStart=/opt/zxs/bin/zxs --root /var/lib/zxs/state --management-root /var/lib/zxs/management --listen 127.0.0.1:7400 --external-origin https://zxs.example.com --web-dir /opt/zxs/web --setup-disk P01=/srv/zxs/disks/P01 --smb-socket /run/zxs/smb.sock --smb-peer-uid 0 --smb-user SambaAlice=alice
 ```
 
 示例的 `0` 只适用于确认桥接在 Samba 可信 root 进程身份下连接的部署。该连接时机必须在目标 Samba 验证，不能放宽 socket 权限来适应未认证的进程。`/run/zxs` 及 socket 分别维持 `0700`、`0600`，映射用户仍需当前账户准入和仓库授权。共享仓库拆分、恢复后必须显式重新绑定，不能自动接入迁移后的历史域。

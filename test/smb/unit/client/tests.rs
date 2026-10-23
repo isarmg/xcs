@@ -562,3 +562,20 @@ fn malformed_open_result_closes_descriptor_and_disconnects_every_clone() {
         );
     }
 }
+
+#[test]
+fn portable_name_and_path_rejections_are_invalid_input_not_io_failures() {
+    // These are the concrete codes emitted by name-policy and forwarded by
+    // the server. Keep malformed SMB names distinguishable from disk errors.
+    for code in [
+        "NAME_INVALID_CHARACTER",
+        "NAME_RESERVED",
+        "NAME_NOT_NORMALIZED",
+        "PATH_INVALID",
+    ] {
+        assert_eq!(remote_errno(code), libc::EINVAL, "{code}");
+    }
+    assert_eq!(remote_errno("NAME_TOO_LONG"), libc::ENAMETOOLONG);
+    assert_eq!(remote_errno("PATH_TOO_DEEP"), libc::ENAMETOOLONG);
+    assert_eq!(remote_errno("CHECKSUM_MISMATCH"), libc::EIO);
+}

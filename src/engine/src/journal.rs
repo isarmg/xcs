@@ -69,14 +69,13 @@ pub(crate) fn scan(d: &DiskConfig) -> Result<Scan> {
     #[cfg(test)]
     SCAN_COUNT.with(|count| count.set(count.get() + 1));
     let path = log_path(d);
-    if !path.exists() {
+    let Some(mut file) = open_optional_regular(&path)? else {
         return Ok(Scan {
             records: Vec::new(),
             valid_bytes: 0,
             torn_tail: false,
         });
-    }
-    let mut file = open_regular(&path)?;
+    };
     let mut out = Scan {
         records: Vec::new(),
         valid_bytes: 0,

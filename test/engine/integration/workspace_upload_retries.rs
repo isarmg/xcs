@@ -224,3 +224,200 @@ fn same_generation_retry_revalidates_held_target_before_acknowledging() {
         );
     }
 }
+
+#[test]
+fn detached_upload_keeps_writer_locks_until_cancelled() {
+    for execute in [false, true] {
+        let temporary = tempfile::tempdir().unwrap();
+        let root = temporary.path().join("system");
+        let primary = temporary.path().join("primary");
+        let mut engine = Engine::initialize(
+            &root,
+            Config::development([
+                primary.clone(),
+                temporary.path().join("backup"),
+                temporary.path().join("tertiary"),
+            ]),
+        )
+        .unwrap();
+        let repo = engine
+            .create_repository("Detached upload", "P01", 1, "admin", &new_id("op"))
+            .unwrap();
+        let workspace = engine
+            .create_workspace(&repo.main_branch_id, "admin")
+            .unwrap();
+        let source = temporary.path().join("source");
+        fs::write(&source, b"data").unwrap();
+        let preparation = engine
+            .prepare_upload(&workspace.workspace_id, &new_id("entry"), "a", &source, 1)
+            .unwrap();
+        drop(engine);
+        if execute {
+            let prepared = preparation.execute().unwrap();
+            assert_eq!(
+                Engine::open(&root)
+                    .err()
+                    .map(|error| error.code().to_owned()),
+                Some("WRITER_ALREADY_ACTIVE".into()),
+                "prepared upload still owns scratch bytes and its workspace admission"
+            );
+            drop(prepared);
+        } else {
+            assert_eq!(
+                Engine::open(&root)
+                    .err()
+                    .map(|error| error.code().to_owned()),
+                Some("WRITER_ALREADY_ACTIVE".into()),
+                "detached upload can still write to this pool"
+            );
+            drop(preparation);
+        }
+        let reopened = Engine::open(&root).unwrap();
+        assert!(
+            reopened
+                .workspace(&workspace.workspace_id)
+                .unwrap()
+                .files
+                .is_empty()
+        );
+        let data = primary
+            .join("staging/workspaces")
+            .join(&workspace.workspace_id);
+        assert!(fs::read_dir(data).unwrap().all(|entry| {
+            entry
+                .unwrap()
+                .path()
+                .extension()
+                .is_none_or(|extension| extension != "prepared" && extension != "full")
+        }));
+    }
+}
+
+#[test]
+fn first_upload_revalidates_prepared_bytes_before_acknowledging() {
+    for replace in [false, true] {
+        let temporary = tempfile::tempdir().unwrap();
+        let root = temporary.path().join("system");
+        let primary = temporary.path().join("primary");
+        let mut engine = Engine::initialize(&root, Config::development([primary.clone()])).unwrap();
+        let repo = engine
+            .create_repository("Prepared upload", "P01", 1, "admin", &new_id("op"))
+            .unwrap();
+        let workspace = engine
+            .create_workspace(&repo.main_branch_id, "admin")
+            .unwrap();
+        let item = new_id("entry");
+        let source = temporary.path().join("source");
+        fs::write(&source, b"data").unwrap();
+        let prepared = engine
+            .prepare_upload(&workspace.workspace_id, &item, "a", &source, 1)
+            .unwrap()
+            .execute()
+            .unwrap();
+        let directory = primary
+            .join("staging/workspaces")
+            .join(&workspace.workspace_id);
+        let scratch = fs::read_dir(&directory)
+            .unwrap()
+            .map(|entry| entry.unwrap().path())
+            .find(|path| {
+                path.extension()
+                    .is_some_and(|extension| extension == "prepared")
+            })
+            .unwrap();
+        if replace {
+            fs::rename(&scratch, temporary.path().join("held-preparation")).unwrap();
+            fs::write(&scratch, b"data").unwrap();
+        } else {
+            corrupt_retained_bytes(&scratch);
+        }
+        assert_eq!(
+            engine
+                .finish_upload(prepared)
+                .err()
+                .map(|error| error.code().to_owned()),
+            Some("CHECKSUM_MISMATCH".into())
+        );
+        assert!(
+            engine
+                .workspace(&workspace.workspace_id)
+                .unwrap()
+                .files
+                .is_empty()
+        );
+        assert!(!directory.join(format!("{item}-1.full")).exists());
+        assert!(
+            !scratch.exists(),
+            "rejected preparation must release scratch quota"
+        );
+        let retried = engine
+            .stage_upload(&workspace.workspace_id, &item, "a", &source, 1)
+            .unwrap();
+        assert_eq!(fs::read(retried.source_path).unwrap(), b"data");
+    }
+}
+
+#[test]
+fn interrupted_copy_temporaries_consume_workspace_bytes_and_generation_slots() {
+    for count_limit in [false, true] {
+        let temporary = tempfile::tempdir().unwrap();
+        let root = temporary.path().join("system");
+        let primary = temporary.path().join("primary");
+        let mut config = Config::development([primary.clone()]);
+        config.max_file_bytes = 4;
+        config.max_workspace_bytes = if count_limit { 8 } else { 4 };
+        config.max_entries = if count_limit { 1 } else { 8 };
+        let mut engine = Engine::initialize(&root, config).unwrap();
+        let repo = engine
+            .create_repository("Interrupted upload", "P01", 1, "admin", &new_id("op"))
+            .unwrap();
+        let workspace = engine
+            .create_workspace(&repo.main_branch_id, "admin")
+            .unwrap();
+        let directory = primary
+            .join("staging/workspaces")
+            .join(&workspace.workspace_id);
+        let crash = directory.join(format!(".zxs-full-{}", new_id("req")));
+        fs::write(&crash, b"old!").unwrap();
+        // Similar names and temporaries outside this workspace are not its
+        // retained upload evidence; admission must not recursively charge them.
+        let unrelated = directory.join(format!(".zxs-fullish-{}", new_id("req")));
+        let outside = primary
+            .join("staging")
+            .join(format!(".zxs-full-{}", new_id("req")));
+        fs::write(&unrelated, b"unrelated data").unwrap();
+        fs::write(&outside, b"another workspace's data").unwrap();
+        for reopen in [false, true] {
+            if reopen {
+                drop(engine);
+                engine = Engine::open(&root).unwrap();
+            }
+            assert_eq!(
+                engine
+                    .stage_bytes(&workspace.workspace_id, "a", b"data")
+                    .unwrap_err()
+                    .code(),
+                "RESOURCE_LIMIT",
+                "interrupted copies consume the {} budget",
+                if count_limit { "generation" } else { "byte" },
+            );
+            assert_eq!(fs::read(&crash).unwrap(), b"old!");
+            assert!(
+                engine
+                    .workspace(&workspace.workspace_id)
+                    .unwrap()
+                    .files
+                    .is_empty()
+            );
+        }
+        // Explicit fixture cleanup releases capacity; engine admission never
+        // deletes retained evidence on the user's behalf.
+        fs::remove_file(&crash).unwrap();
+        let staged = engine
+            .stage_bytes(&workspace.workspace_id, "a", b"data")
+            .unwrap();
+        assert_eq!(fs::read(staged.source_path).unwrap(), b"data");
+        assert_eq!(fs::read(unrelated).unwrap(), b"unrelated data");
+        assert_eq!(fs::read(outside).unwrap(), b"another workspace's data");
+    }
+}

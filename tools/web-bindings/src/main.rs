@@ -1,5 +1,6 @@
 //! Derived from wasm-bindgen-cli 0.2.129's wasm_bindgen module and binary.
-//! Upstream copyright/license material and exact source mapping: ../PROVENANCE.json.
+//! Exact source mapping: compliance/provenance/packages/zxs-bindgen-0.2.129/PROVENANCE.json.
+//! Upstream licenses: compliance/licenses/upstream/zxs-bindgen-0.2.129/.
 //! ZXS only generates browser bindings; test servers and other targets are absent.
 use anyhow::{bail, Result};
 use command_line::{Parser, ValueEnum};
@@ -25,8 +26,21 @@ struct Args {
         help = "Generate JavaScript without TypeScript declarations"
     )]
     no_typescript: bool,
-    #[arg(long, value_name = "NAME")]
+    #[arg(long, value_name = "NAME", value_parser = output_name)]
     out_name: String,
+}
+
+fn output_name(value: &str) -> std::result::Result<String, String> {
+    // The upstream generator joins this stem into output paths and embeds it
+    // in a quoted JavaScript URL. A path or script fragment is not a name.
+    if value.is_empty()
+        || !value
+            .bytes()
+            .all(|byte| byte.is_ascii_alphanumeric() || matches!(byte, b'_' | b'-'))
+    {
+        return Err("output name must contain only ASCII letters, digits, '_' or '-'".into());
+    }
+    Ok(value.to_owned())
 }
 
 fn run<I, T>(arguments: I) -> Result<()>

@@ -11,6 +11,18 @@
 
 //! Generate and parse universally unique identifiers (UUIDs).
 //!
+//! # Maintained integration scope
+//!
+//! This source component exposes `std`, `js`, `rng`, `serialization`, `v4`, `v7`,
+//! and `v8` (with `std` enabled by default). Native generation uses
+//! `system-entropy`; browser WebAssembly generation requires `js`.
+//! The upstream overview retained below also describes integrations that are
+//! not available in this component. In particular, `v1`, `v3`, `v5`, `v6`,
+//! `borsh`, `atomic`, `md5`, `sha1`, `macro-diagnostics`, and
+//! `rng-system-entropy` are not Cargo features here. Use `serialization`, not
+//! the upstream `serde` feature name; the other upstream-only integration
+//! features are likewise not exposed.
+//!
 //! Here's an example of a UUID:
 //!
 //! ```text

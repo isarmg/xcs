@@ -218,6 +218,46 @@ fn sidecar_only_crash_remains_charged_and_rebuilds_without_a_payload() {
     assert_eq!(total(&budget), METADATA_ALLOWANCE);
 }
 
+#[test]
+fn fifo_inventory_lock_is_rejected_without_blocking_management_startup() {
+    use std::os::unix::fs::OpenOptionsExt;
+    use std::time::Duration;
+
+    let root = private_tempdir();
+    let lock_path = root.path().join(".budget.lock");
+    rustix::fs::mkfifoat(
+        rustix::fs::CWD,
+        &lock_path,
+        rustix::fs::Mode::from_raw_mode(0o600),
+    )
+    .unwrap();
+    let path = root.path().to_owned();
+    let (sent, received) = std::sync::mpsc::channel();
+    let worker = std::thread::spawn(move || {
+        let result = SpoolBudget::recover(&path, limits(METADATA_ALLOWANCE, METADATA_ALLOWANCE));
+        sent.send(result.is_err()).unwrap();
+    });
+    let immediate = received.recv_timeout(Duration::from_secs(1));
+    // Unblock an unsafe write-only open on regression so the test does not
+    // strand a native thread. The fixed reader never needs this counterpart.
+    let counterpart = fs::OpenOptions::new()
+        .read(true)
+        .write(true)
+        .custom_flags(rustix::fs::OFlags::NONBLOCK.bits() as i32)
+        .open(&lock_path)
+        .unwrap();
+    if immediate.is_err() {
+        assert!(received.recv_timeout(Duration::from_secs(2)).unwrap());
+    }
+    worker.join().unwrap();
+    drop(counterpart);
+    assert_eq!(
+        immediate,
+        Ok(true),
+        "optional spool startup blocked on a FIFO"
+    );
+}
+
 fn private_tempdir() -> tempfile::TempDir {
     use std::os::unix::fs::PermissionsExt;
     let directory = tempfile::tempdir().unwrap();

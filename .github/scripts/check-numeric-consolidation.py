@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
 """Check feature-isolated numeric consumers without mutating production manifests."""
+if not __debug__:
+    raise RuntimeError('Validation requires assertions; do not use Python optimization (-O/-OO or PYTHONOPTIMIZE).')
+
 from pathlib import Path
 import json
 import os

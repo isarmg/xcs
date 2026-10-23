@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
 """Validate HTTP/1 transport/adapters, real duplex IO and native/WASM capabilities."""
+if not __debug__:
+    raise RuntimeError('Validation requires assertions; do not use Python optimization (-O/-OO or PYTHONOPTIMIZE).')
+
 import json
 import os
 from pathlib import Path
@@ -7,6 +10,7 @@ import re
 import shutil
 import tomllib
 import subprocess
+import sys
 import tempfile
 import runpy
 
@@ -15,7 +19,19 @@ foundation_path = runpy.run_path(str(ROOT / '.github/scripts/foundation_paths.py
 FEATURES=((),('client','http1'),('server','http1'),('adapters',),('service-adapter',),('adapter-client',),('client-pool',),('client-proxy',),('tokio',),('client-legacy','http1','tokio'),('adapter-server',),('server-auto','tokio'),('server-graceful','http1','tokio'),('full',),('rt-tracing-exec-force',))
 NATIVE_ONLY={'tokio','client-legacy','full','rt-tracing-exec-force'}
 def run(work,*args,negative=False,env=None):
-    result=subprocess.run(['cargo',*args,'--color','never','--offline'],cwd=work,text=True,capture_output=True,timeout=600,env=env)
+    try:
+        result=subprocess.run(['cargo',*args,'--color','never','--offline'],cwd=work,text=True,capture_output=True,timeout=600,env=env)
+    except subprocess.TimeoutExpired as error:
+        print(f'HTTP transport Cargo command timed out after {error.timeout}s in {work}', file=sys.stderr, flush=True)
+        # TimeoutExpired may carry bytes even when text=True. Preserve Cargo's
+        # lock waits, compilation progress and test output before re-raising;
+        # otherwise an ordinary timeout traceback discards all captured clues.
+        for label, output in (('stdout', error.stdout), ('stderr', error.stderr)):
+            if output:
+                if isinstance(output, bytes):
+                    output = output.decode('utf-8', errors='replace')
+                print(f'--- captured Cargo {label} ---\n{output}', file=sys.stderr, flush=True)
+        raise
     if negative:
         assert result.returncode and 'with feature `http2`' in result.stderr and '`http-transport` does not have that feature' in result.stderr,result.stderr
     else:

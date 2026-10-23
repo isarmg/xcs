@@ -77,6 +77,8 @@ fn uncertain_directory_sync_retains_bytes_and_blocks_fresh_admission_until_inven
 fn interrupted_upload_retains_and_checks_its_persisted_prefix() {
     let dir = private_tempdir();
     fs::write(dir.path().join("data"), b"original partial").unwrap();
+    use std::os::unix::fs::PermissionsExt;
+    fs::set_permissions(dir.path().join("data"), fs::Permissions::from_mode(0o600)).unwrap();
     let record = UploadRecord {
         workspace_id: "ws".into(),
         item_id: "item".into(),
@@ -168,6 +170,56 @@ fn replaced_http_payload_or_parent_cannot_be_submitted() {
                 .is_err()
         );
     }
+}
+
+#[test]
+fn upload_progress_and_retry_prefix_reject_links_without_reading_targets() {
+    use std::os::unix::fs::{PermissionsExt, symlink};
+
+    let dir = private_tempdir();
+    let outside = private_tempdir();
+    let record = UploadRecord {
+        workspace_id: "ws".into(),
+        item_id: "item".into(),
+        principal: "alice".into(),
+        path: "file".into(),
+        generation: 1,
+        logical_size: 8,
+        content_hash: Some(blake3::hash(b"original").to_hex().to_string()),
+        persisted_bytes: 8,
+        persisted_hash: blake3::hash(b"original").to_hex().to_string(),
+        state: "incomplete".into(),
+        data_file: "data".into(),
+    };
+    persist(outside.path(), &record).unwrap();
+    fs::write(outside.path().join("data"), b"original").unwrap();
+    fs::set_permissions(
+        outside.path().join("data"),
+        fs::Permissions::from_mode(0o600),
+    )
+    .unwrap();
+    let progress_name = format!("{}.json", key("ws", "item"));
+    for hard_link in [false, true] {
+        for name in [&progress_name, "data"] {
+            if hard_link {
+                fs::hard_link(outside.path().join(name), dir.path().join(name)).unwrap();
+            } else {
+                symlink(outside.path().join(name), dir.path().join(name)).unwrap();
+            }
+        }
+        assert_eq!(load(dir.path(), "ws", "item").err().unwrap().status, 500);
+        assert_eq!(
+            ExistingPrefix::open(dir.path(), &record)
+                .err()
+                .unwrap()
+                .status,
+            500
+        );
+        fs::remove_file(dir.path().join(&progress_name)).unwrap();
+        fs::remove_file(dir.path().join("data")).unwrap();
+    }
+    assert_eq!(fs::read(outside.path().join("data")).unwrap(), b"original");
+    assert!(load(dir.path(), "ws", "item").unwrap().is_none());
 }
 
 fn private_tempdir() -> tempfile::TempDir {

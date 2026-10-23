@@ -10,3 +10,5 @@ bash .github/scripts/rust-build-tool.sh wasm-bindgen
 ```
 
 这是 ZXS 自维护的编译辅助代码；版本字符串保持 `wasm-bindgen 0.2.129`，以匹配 Web crate 的 schema 版本。它不是上游三个通用命令的完整替代品。
+
+`--out-name NAME` 只接受非空 ASCII 字母、数字、下划线和连字符；默认从输入名推导时也经过同一校验。不接受目录分隔符、点段、引号或脚本字符，避免输出越界和生成 JavaScript 中的名称拼接注入。

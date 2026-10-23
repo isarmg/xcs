@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
 """Verify the project-owned tracing facade, collectors, and typed JSON output."""
+if not __debug__:
+    raise RuntimeError('Validation requires assertions; do not use Python optimization (-O/-OO or PYTHONOPTIMIZE).')
+
 import argparse
 import json
 import os

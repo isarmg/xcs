@@ -1,6 +1,149 @@
 use super::*;
 
 #[test]
+fn recovery_rejects_lost_published_journals_before_rewriting_projection() {
+    for disks in [1, 3] {
+        for damage in ["missing", "empty", "prefix"] {
+            let temp = tempfile::tempdir().unwrap();
+            let root = temp.path().join("system");
+            let mut engine = Engine::initialize(
+                &root,
+                Config::development((0..disks).map(|i| temp.path().join(format!("disk-{i}")))),
+            )
+            .unwrap();
+            engine
+                .create_repository("first", "P01", 1, "admin", &new_id("op"))
+                .unwrap();
+            let members = engine.members();
+            let prefix: Vec<_> = members
+                .iter()
+                .map(|disk| std::fs::read(log_path(disk)).unwrap())
+                .collect();
+            let operation = new_id("op");
+            engine
+                .create_repository("second", "P01", 1, "admin", &operation)
+                .unwrap();
+            let complete: Vec<_> = members
+                .iter()
+                .map(|disk| std::fs::read(log_path(disk)).unwrap())
+                .collect();
+            drop(engine);
+            let projection = std::fs::read(root.join("index.sqlite")).unwrap();
+            for (disk, prefix) in members.iter().zip(&prefix) {
+                match damage {
+                    "missing" => std::fs::remove_file(log_path(disk)).unwrap(),
+                    "empty" => std::fs::write(log_path(disk), []).unwrap(),
+                    _ => std::fs::write(log_path(disk), prefix).unwrap(),
+                }
+            }
+            for readonly in [false, true] {
+                let opened = if readonly {
+                    Engine::open_for_recovery(&root)
+                } else {
+                    Engine::open(&root)
+                };
+                assert_eq!(
+                    opened.err().map(|error| error.code().to_owned()),
+                    Some("RECOVERY_REQUIRED".into()),
+                    "{disks} disks, {damage}, readonly={readonly}"
+                );
+                assert_eq!(
+                    std::fs::read(root.join("index.sqlite")).unwrap(),
+                    projection
+                );
+                for (disk, prefix) in members.iter().zip(&prefix) {
+                    match damage {
+                        "missing" => assert!(!log_path(disk).exists()),
+                        "empty" => assert!(std::fs::read(log_path(disk)).unwrap().is_empty()),
+                        _ => assert_eq!(&std::fs::read(log_path(disk)).unwrap(), prefix),
+                    }
+                }
+            }
+            // Restoring the exact missing evidence, not inferring a replacement
+            // history from objects, makes the unchanged publication recoverable.
+            for (disk, bytes) in members.iter().zip(complete) {
+                std::fs::write(log_path(disk), bytes).unwrap();
+            }
+            let reopened = Engine::open(&root).unwrap();
+            assert_eq!(reopened.state.repositories.len(), 2);
+            assert!(reopened.operation(&operation).is_ok());
+        }
+    }
+}
+
+#[test]
+fn recovery_allows_new_empty_pools_and_unpublished_preparation_artifacts() {
+    for fault in [None, Some("after_payloads"), Some("after_prepare_1")] {
+        let temp = tempfile::tempdir().unwrap();
+        let root = temp.path().join("system");
+        let mut engine =
+            Engine::initialize(&root, Config::development([temp.path().join("primary")])).unwrap();
+        if let Some(fault) = fault {
+            engine.inject_fault_once(fault);
+            assert!(
+                engine
+                    .create_repository("unpublished", "P01", 1, "admin", &new_id("op"))
+                    .is_err()
+            );
+            assert!(
+                !list_object_hashes(&engine.members()[0], "snapshot")
+                    .unwrap()
+                    .is_empty()
+            );
+        }
+        drop(engine);
+        let mut reopened = Engine::open(&root).unwrap();
+        assert!(reopened.state.repositories.is_empty());
+        reopened
+            .create_repository("published", "P01", 1, "admin", &new_id("op"))
+            .unwrap();
+    }
+}
+
+#[test]
+fn recovery_rejects_dangling_journal_paths_instead_of_an_empty_history() {
+    use std::os::unix::fs::symlink;
+
+    for replace_parent in [false, true] {
+        let temp = tempfile::tempdir().unwrap();
+        let root = temp.path().join("system");
+        let mut engine =
+            Engine::initialize(&root, Config::development([temp.path().join("primary")])).unwrap();
+        let operation = new_id("op");
+        engine
+            .create_repository("repo", "P01", 1, "admin", &operation)
+            .unwrap();
+        let journal = log_path(&engine.members()[0]);
+        let journal_bytes = std::fs::read(&journal).unwrap();
+        let target = if replace_parent {
+            journal.parent().unwrap().to_path_buf()
+        } else {
+            journal.clone()
+        };
+        drop(engine);
+        let saved = temp.path().join("saved-journal");
+        let missing = temp.path().join("does-not-exist");
+        std::fs::rename(&target, &saved).unwrap();
+        symlink(&missing, &target).unwrap();
+        assert_eq!(
+            Engine::open(&root)
+                .err()
+                .map(|error| error.code().to_owned()),
+            Some("UNSAFE_PATH".into()),
+            "an unsafe journal cannot be interpreted as a never-written pool"
+        );
+        assert!(!missing.exists());
+        assert_eq!(std::fs::read_link(&target).unwrap(), missing);
+        std::fs::remove_file(&target).unwrap();
+        std::fs::rename(&saved, &target).unwrap();
+        assert_eq!(std::fs::read(&journal).unwrap(), journal_bytes);
+        let reopened = Engine::open(&root).unwrap();
+        assert_eq!(reopened.state.repositories.len(), 1);
+        assert!(reopened.operation(&operation).is_ok());
+    }
+}
+
+#[test]
 fn recovery_repairs_exact_candidate_and_publication_replicas() {
     for interrupted in [false, true] {
         for kind in ["candidate", "publication"] {

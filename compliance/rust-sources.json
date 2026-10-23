@@ -52061,7 +52061,7 @@
   },
   "external_test_mappings_sha256": {
     "compliance/external-tests/foundation.json": "b22624c89c7d07e0d0cd047854991e0610e28530b2980f92c9361f1b6e6ba868",
-    "compliance/external-tests/integrated.json": "c6aaba81aa6d0e5e2004cf185de321a4301ddf7a7bc74ddc462cae92db59c4d6",
+    "compliance/external-tests/integrated.json": "84d86b0aaad135967a016ffc90f2d3d4613a1810906a3dfb19ca1cddc317de55",
     "compliance/external-tests/ring.json": "091524345f2f7aa89bd364032bb4813c3268382af75243f41eedcdca888994f9"
   },
   "external_tests": {
@@ -78282,13 +78282,13 @@
       ]
     },
     "src/interface": {
-      "bytes": 45082,
+      "bytes": 47479,
       "directory": "src/interface",
       "file_count": 15,
       "files": [
         {
           "path": "test/interface/integration/component_props.rs",
-          "sha256": "6838d7550cfed01cf29e1d1cf8f0e40f48648ef9039810aa9527a1ff33cb685c",
+          "sha256": "9f12b98e45741516c4d05ce51cf5038dcd217e6e8bba8856c7633991134340ab",
           "source": "src/interface/tests/component_props.rs",
           "source_sha256_before": "b0680d33bc7a9c61bdb77acd995caee1e1b4b3b691c0f5a58d7de4aaa37b890c"
         },
@@ -78489,7 +78489,7 @@
       ]
     },
     "tools/web-bindings": {
-      "bytes": 13340,
+      "bytes": 14361,
       "directory": "tools/web-bindings",
       "file_count": 4,
       "files": [
@@ -78513,7 +78513,7 @@
         },
         {
           "path": "test/tools/web-bindings/unit/main_tests.rs",
-          "sha256": "88116580bfce93c0496753a1b1fa6705104cd657347337f35fb33053df8035fe",
+          "sha256": "2a8f9ebb3b4094827455ffbc9b274054a9b1e7e6c26b6da571f4b8666cd99f5f",
           "source": "tools/web-bindings/src/main.rs",
           "source_sha256_before": "841654e8e75c3e3585e5a8f103f2b94a5bdce8ac15ff5284db71c68bc6909df8"
         }
@@ -78624,7 +78624,7 @@
     "src/foundation/core-types/numeric/Cargo.toml": "55d1c627c0f7fbcc20bbff076bb14a5ac46d643e29eafd7416a237da9e3595c8",
     "src/foundation/core-types/rustc-hash/Cargo.toml": "4596fed3afbdfeb30e2353b1a71e4f35243c3d555d2d1740731452242f06832e",
     "src/foundation/core-types/typenum/Cargo.toml": "1a98b727c26ac558aca3a0cc154f677c62b65a65382f65cbc84b2b1c0721e7f6",
-    "src/foundation/core-types/uuid/Cargo.toml": "2b761dee7723a5a052243d5171d8bf5504fd833d69330586450c5f37940611d1",
+    "src/foundation/core-types/uuid/Cargo.toml": "52e9d7f7665a0767379978640ff5ec00bb2f5c7420fd0fa599b6811ee28bb9a7",
     "src/foundation/core-types/zmij/Cargo.toml": "f72802e2b6ae8f9848c5ea9ca8620a12524820e5e276742f2daa2e01d8d682af",
     "src/foundation/cryptography/argon2/Cargo.toml": "ab0586f3f575b9e57fcd55a229ccbf8c1176beee200cbda0691d62f49ceea535",
     "src/foundation/cryptography/base64ct/Cargo.toml": "51bbf6bee2c213daf7dcbcec58006a0f78493edbbaf3945f8ffb987b73bbdb9f",
@@ -78899,10 +78899,10 @@
         "src/memo.rs": "9ac1857a33a83f73eafb576895ce02f3d0c0898ca869ae8741747fa281a01539",
         "src/prop_options.rs": "020bb41625d3e026d2963e3c1c6eda87a16f3b968fb5c5380411e9c838f35424",
         "src/slice.rs": "496a010eedcb7f8c4b74a9aed209f2ff5c435d3efba6f9d3d877864eb18fc943",
-        "src/slot.rs": "49ea36d20dcc5e92cc62547d2cfca2fd541e52909c608d1bd848756b78d13af5",
+        "src/slot.rs": "c2539c36b261d01ed6e9c34990a237c0e4c30b7372d8dcbc90450a13b297d337",
         "src/view/component_builder.rs": "2cb6a02c28818b01533485afc2431d210cbf1784b5bff25315d4a870737acf5c",
         "src/view/mod.rs": "bfdf3d476685542b5a5b4438e4077562dd4e53baa44ac35a238a2b6db9d0826b",
-        "src/view/slot_helper.rs": "09aef49e24e87d876ef884c911dcef068b809d2d0756ca23e2f7da7b5fa90203",
+        "src/view/slot_helper.rs": "f5dc7ff103b83fad59f61f6fa0e4e5bbe0e280f89beba63d10bf47c8c6d45caa",
         "src/view/utils.rs": "4341268b1fe90e265706be1e6e9d3a3cbd748b86df562b1a56306b7ff737fff8",
         "src/view_source.rs": "ed741a25dcdc421ede6900d03f82de4067b14b8a18f0843855e8a6a1762776c5"
       },
@@ -80152,7 +80152,7 @@
         "src/sqlite/connection/collation.rs": "f4d6f4783804e52f71e6dcdab5c9e680f8e44d03afb64f51ee1552b8e6341299",
         "src/sqlite/connection/describe.rs": "4245e6b8bce8fec1764529ecca126870e84ee8d3fe0340e0fa4149236e72896d",
         "src/sqlite/connection/deserialize.rs": "fd133b892b08b6e7f33f97754fc13122ef3600fc1063206dcdae2b604c96dec2",
-        "src/sqlite/connection/establish.rs": "07384fade06d342080028056c6bf5250790c97807e010e475467b0212edff520",
+        "src/sqlite/connection/establish.rs": "d8bac82d207a3f0f65eaae75fe8cfcb7474037877dc0455392281c741daed9f8",
         "src/sqlite/connection/execute.rs": "58849036c872583ae78626e6fec8cb8836204447ac1cff3b9e5e11117583314d",
         "src/sqlite/connection/executor.rs": "1584255c5671b195a494f638b5f70734072de48c52a740e4e8593002245ed461",
         "src/sqlite/connection/explain.rs": "d6c6363d31ba76c937d105b3a3be2fdadf22fd8f76e579b6e8c2ea46cf00b743",
@@ -80178,7 +80178,7 @@
         "src/sqlite/statement/handle.rs": "5df0e3ea553ee078d3e135da244b7f399b0141efa4bf0d29ab69aef14b75b1bb",
         "src/sqlite/statement/mod.rs": "820fada55ca2ba949f10ccb61c4164c42dd305523523e4f797e88fb8fde7972c",
         "src/sqlite/statement/unlock_notify.rs": "2ae2f66a9f0147c7de8f19315ebc68c29a39b339056c932f592b3b7db40a750c",
-        "src/sqlite/statement/virtual.rs": "76fea7f01053bc5de7190c358be31413c09a6985c9643f8ff9652c8ead8db15a",
+        "src/sqlite/statement/virtual.rs": "d32a4032b20439b0cb21d4f065aabfa13f109b136b9cdeca358e7e0a0bd2d5e5",
         "src/sqlite/transaction.rs": "79b70d93fba4f5d60925aa86486947bb35221a0b972dadddf6045cf2717d4283",
         "src/sqlite/type_info.rs": "ea513859988b5ff00d57b048c3df8921f5f47fda205fe860c1eb8f326282ff2d",
         "src/sqlite/types/bool.rs": "7c8910c09c08c2337d100ac9b84f999d856473ec9a94eb536be0ff4682f0216e",
@@ -80275,7 +80275,7 @@
         "src/sqlite/connection/collation.rs": "f4d6f4783804e52f71e6dcdab5c9e680f8e44d03afb64f51ee1552b8e6341299",
         "src/sqlite/connection/describe.rs": "4245e6b8bce8fec1764529ecca126870e84ee8d3fe0340e0fa4149236e72896d",
         "src/sqlite/connection/deserialize.rs": "fd133b892b08b6e7f33f97754fc13122ef3600fc1063206dcdae2b604c96dec2",
-        "src/sqlite/connection/establish.rs": "07384fade06d342080028056c6bf5250790c97807e010e475467b0212edff520",
+        "src/sqlite/connection/establish.rs": "d8bac82d207a3f0f65eaae75fe8cfcb7474037877dc0455392281c741daed9f8",
         "src/sqlite/connection/execute.rs": "58849036c872583ae78626e6fec8cb8836204447ac1cff3b9e5e11117583314d",
         "src/sqlite/connection/executor.rs": "1584255c5671b195a494f638b5f70734072de48c52a740e4e8593002245ed461",
         "src/sqlite/connection/explain.rs": "d6c6363d31ba76c937d105b3a3be2fdadf22fd8f76e579b6e8c2ea46cf00b743",
@@ -80301,7 +80301,7 @@
         "src/sqlite/statement/handle.rs": "5df0e3ea553ee078d3e135da244b7f399b0141efa4bf0d29ab69aef14b75b1bb",
         "src/sqlite/statement/mod.rs": "820fada55ca2ba949f10ccb61c4164c42dd305523523e4f797e88fb8fde7972c",
         "src/sqlite/statement/unlock_notify.rs": "2ae2f66a9f0147c7de8f19315ebc68c29a39b339056c932f592b3b7db40a750c",
-        "src/sqlite/statement/virtual.rs": "76fea7f01053bc5de7190c358be31413c09a6985c9643f8ff9652c8ead8db15a",
+        "src/sqlite/statement/virtual.rs": "d32a4032b20439b0cb21d4f065aabfa13f109b136b9cdeca358e7e0a0bd2d5e5",
         "src/sqlite/transaction.rs": "79b70d93fba4f5d60925aa86486947bb35221a0b972dadddf6045cf2717d4283",
         "src/sqlite/type_info.rs": "ea513859988b5ff00d57b048c3df8921f5f47fda205fe860c1eb8f326282ff2d",
         "src/sqlite/types/bool.rs": "7c8910c09c08c2337d100ac9b84f999d856473ec9a94eb536be0ff4682f0216e",
@@ -93207,19 +93207,19 @@
       "description": "A library to generate and parse UUIDs.",
       "directory": "src/foundation/core-types/uuid",
       "files_sha256": {
-        "Cargo.toml": "2b761dee7723a5a052243d5171d8bf5504fd833d69330586450c5f37940611d1",
+        "Cargo.toml": "52e9d7f7665a0767379978640ff5ec00bb2f5c7420fd0fa599b6811ee28bb9a7",
         "src/builder.rs": "d332dbf9380bd6275f8c416758a8971db875ce2a661440c8e476cc6f827736c9",
         "src/error.rs": "bb2156d5924cbd8957ffeed4506edcc66b4a325e22f1e0456ef9bc45facfb0f2",
         "src/external.rs": "a371663c5ff5d99066199e2219e97425c785929626b469d31966ad1a50dc4b99",
         "src/external/borsh_support.rs": "87003a6fd6d64115ef46cf64009910f2152f46bf36e013523915abc278f3f80a",
         "src/external/serialization_support.rs": "15125330cabe78f4c1a34ccfd33e2bde48f21b50af9aa64a953b31b3504cdffc",
         "src/fmt.rs": "c40722d14c71ca87c319c2579a2ac543400d8a7335b5ca45f290c964dbe5e786",
-        "src/lib.rs": "f350835a9dcfe28dcc84369444e30d3e5f584bba57212e60e3530a0aadaaaa2e",
+        "src/lib.rs": "e5ebcfc128b4feed41120aa7fd4368208380e97d591b8ce9171d2a8dc841ff29",
         "src/macros.rs": "44183cc3dccd3a0766eb6e869ea8d75a553d0a5403ea6d812371581c91e1f5af",
         "src/md5.rs": "316d65b760ffa58beb6aa678be24359eb21a744e9e143bc99c11fe1907659245",
         "src/non_nil.rs": "c4124d9832c72cf9c38911d777b32d1a26a08e2730dfe32f1182c3cd321b742f",
         "src/parser.rs": "cf1c9d427f1147a84f6eb0bc4705a3cf535c603130f33c3b4464fac72428ae8a",
-        "src/rng.rs": "26333ba5727fd9ddef8bd93d1ee141d04d6bce54a5240cb47085d9fb15de226d",
+        "src/rng.rs": "39cb5af2f8b73a29cf31df53e86aa10501df74b190f6c8f8d9ebb1c990726471",
         "src/sha1.rs": "e1a9657e11f1ed1ede33c0655f9c2641059b7c24f17be4ac425c930cc216e019",
         "src/timestamp.rs": "31cfd3704c405f13ad2006dded43c6166ead284a5dc07881912897b2ef380c48",
         "src/v1.rs": "7a472345fa0e00bb82a18e0a838a1e507370d280f1ed6288e4fe4fef08c67f3b",
@@ -95111,7 +95111,7 @@
         "src/sqlite/connection/collation.rs": "f4d6f4783804e52f71e6dcdab5c9e680f8e44d03afb64f51ee1552b8e6341299",
         "src/sqlite/connection/describe.rs": "4245e6b8bce8fec1764529ecca126870e84ee8d3fe0340e0fa4149236e72896d",
         "src/sqlite/connection/deserialize.rs": "fd133b892b08b6e7f33f97754fc13122ef3600fc1063206dcdae2b604c96dec2",
-        "src/sqlite/connection/establish.rs": "07384fade06d342080028056c6bf5250790c97807e010e475467b0212edff520",
+        "src/sqlite/connection/establish.rs": "d8bac82d207a3f0f65eaae75fe8cfcb7474037877dc0455392281c741daed9f8",
         "src/sqlite/connection/execute.rs": "58849036c872583ae78626e6fec8cb8836204447ac1cff3b9e5e11117583314d",
         "src/sqlite/connection/executor.rs": "1584255c5671b195a494f638b5f70734072de48c52a740e4e8593002245ed461",
         "src/sqlite/connection/explain.rs": "d6c6363d31ba76c937d105b3a3be2fdadf22fd8f76e579b6e8c2ea46cf00b743",
@@ -95137,7 +95137,7 @@
         "src/sqlite/statement/handle.rs": "5df0e3ea553ee078d3e135da244b7f399b0141efa4bf0d29ab69aef14b75b1bb",
         "src/sqlite/statement/mod.rs": "820fada55ca2ba949f10ccb61c4164c42dd305523523e4f797e88fb8fde7972c",
         "src/sqlite/statement/unlock_notify.rs": "2ae2f66a9f0147c7de8f19315ebc68c29a39b339056c932f592b3b7db40a750c",
-        "src/sqlite/statement/virtual.rs": "76fea7f01053bc5de7190c358be31413c09a6985c9643f8ff9652c8ead8db15a",
+        "src/sqlite/statement/virtual.rs": "d32a4032b20439b0cb21d4f065aabfa13f109b136b9cdeca358e7e0a0bd2d5e5",
         "src/sqlite/transaction.rs": "79b70d93fba4f5d60925aa86486947bb35221a0b972dadddf6045cf2717d4283",
         "src/sqlite/type_info.rs": "ea513859988b5ff00d57b048c3df8921f5f47fda205fe860c1eb8f326282ff2d",
         "src/sqlite/types/bool.rs": "7c8910c09c08c2337d100ac9b84f999d856473ec9a94eb536be0ff4682f0216e",
@@ -101222,10 +101222,10 @@
         "src/memo.rs": "9ac1857a33a83f73eafb576895ce02f3d0c0898ca869ae8741747fa281a01539",
         "src/prop_options.rs": "020bb41625d3e026d2963e3c1c6eda87a16f3b968fb5c5380411e9c838f35424",
         "src/slice.rs": "496a010eedcb7f8c4b74a9aed209f2ff5c435d3efba6f9d3d877864eb18fc943",
-        "src/slot.rs": "49ea36d20dcc5e92cc62547d2cfca2fd541e52909c608d1bd848756b78d13af5",
+        "src/slot.rs": "c2539c36b261d01ed6e9c34990a237c0e4c30b7372d8dcbc90450a13b297d337",
         "src/view/component_builder.rs": "2cb6a02c28818b01533485afc2431d210cbf1784b5bff25315d4a870737acf5c",
         "src/view/mod.rs": "bfdf3d476685542b5a5b4438e4077562dd4e53baa44ac35a238a2b6db9d0826b",
-        "src/view/slot_helper.rs": "09aef49e24e87d876ef884c911dcef068b809d2d0756ca23e2f7da7b5fa90203",
+        "src/view/slot_helper.rs": "f5dc7ff103b83fad59f61f6fa0e4e5bbe0e280f89beba63d10bf47c8c6d45caa",
         "src/view/utils.rs": "4341268b1fe90e265706be1e6e9d3a3cbd748b86df562b1a56306b7ff737fff8",
         "src/view_source.rs": "ed741a25dcdc421ede6900d03f82de4067b14b8a18f0843855e8a6a1762776c5"
       },
@@ -101256,7 +101256,7 @@
       "directory": "tools/web-bindings",
       "files_sha256": {
         "Cargo.toml": "e5e2a35c6707369e5fe2b9299f6609af20dc3cb14cb107110960f96b7a11a700",
-        "src/main.rs": "94d5fac4f2626c50e7e945aa3ce25beee3e621f6146b5bcabac3f11184bab058"
+        "src/main.rs": "dae1d3d6e9fd6e48073795cbbd570465d1fa3f574d1f6b541bdb9ea1eae4816d"
       },
       "license": "MIT OR Apache-2.0",
       "license_materials": [

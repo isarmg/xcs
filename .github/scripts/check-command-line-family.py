@@ -1,6 +1,9 @@
 #!/usr/bin/env python3
 """Validate command-line identities and executable consumer contracts offline."""
 
+if not __debug__:
+    raise RuntimeError('Validation requires assertions; do not use Python optimization (-O/-OO or PYTHONOPTIMIZE).')
+
 import argparse
 import json
 import os

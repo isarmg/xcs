@@ -83,3 +83,7 @@ JSON、UUID、regexp、离线元数据、序列化、位向量及 IP 地址类�
 SQLite 范围门禁构建真实消费者并拒绝删除的 API/特性。保留 regexp 测试使用不依赖运行时的 futures 执行器和隔离内存库，无隐式 SQLx 夹具。第一方测试覆盖超时、回滚、savepoint、Unicode 行诊断、语句缓存容量/驱逐、清空及池关闭。不操作用户数据库。
 
 SQLite ABI 符号、`_sqlx_savepoint_*` SQL 标识及 `file:sqlx-in-memory-*` 连接 URI 有意保留，它们是原生/SQL 标识，不是 Cargo 包名。诊断工作线程使用 `sqlite-worker-*`，无活动 `SQLX_*` 环境选择器。
+
+## 外部字符串边界
+
+准备 SQL 在执行任何前缀语句前拒绝 NUL，避免 SQLite 提前终止解析后留下不消耗输入的尾段。文件名也在 URI 编码之前拒绝 NUL；`immutable` 或 VFS 参数不能让 `%00` 绕过检查并打开截断后的其他路径。显式 `file:` URI 的有效路径/查询部分还拒绝会被 SQLite 解码为 NUL 的 `%00`，VFS 名称拒绝内嵌 NUL。普通字面 `%00` 文件名、URI `%2500`、被忽略的片段及内存库保持原语义。

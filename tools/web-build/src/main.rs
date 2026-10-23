@@ -276,6 +276,21 @@ fn source_inventory(root: &Path) -> Result<BTreeMap<String, String>> {
     Ok(inventory)
 }
 fn input_type(path: &Path) -> Result<fs::FileType> {
+    // Checking only the final component follows links hidden in configured
+    // source-directory parents (for example src/web -> an external checkout).
+    // Keep the builder's boundary identical to the release receipt verifier.
+    for parent in path.ancestors().skip(1) {
+        if parent.as_os_str().is_empty() {
+            continue;
+        }
+        let kind = fs::symlink_metadata(parent)?.file_type();
+        if kind.is_symlink() {
+            bail!("symbolic links are not build inputs: {}", parent.display());
+        }
+        if !kind.is_dir() {
+            bail!("expected build input directory: {}", parent.display());
+        }
+    }
     let kind = fs::symlink_metadata(path)?.file_type();
     if kind.is_symlink() {
         bail!("symbolic links are not build inputs: {}", path.display());
@@ -322,15 +337,19 @@ fn inventory_tree(
     }
     for entry in fs::read_dir(directory)? {
         let path = entry?.path();
+        let relative = path.strip_prefix(root)?;
+        let mut parts = Vec::new();
+        for part in relative {
+            let name = part.to_str().context("non-UTF-8 build input path")?;
+            if name.contains(['\\', ':']) || name.chars().any(char::is_control) {
+                bail!("unsafe build input path: {}", relative.display());
+            }
+            parts.push(name);
+        }
         if input_type(&path)?.is_dir() {
             inventory_tree(root, &path, output)?;
         } else {
-            output.insert(
-                path.strip_prefix(root)?
-                    .to_string_lossy()
-                    .replace('\\', "/"),
-                sha256_hex(read_input(&path)?),
-            );
+            output.insert(parts.join("/"), sha256_hex(read_input(&path)?));
         }
     }
     Ok(())

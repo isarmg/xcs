@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
 """Compile capability boundaries and execute native terminal/CLI/logging consumers."""
+if not __debug__:
+    raise RuntimeError('Validation requires assertions; do not use Python optimization (-O/-OO or PYTHONOPTIMIZE).')
+
 from pathlib import Path
 import json, os, re, subprocess, tempfile
 import runpy

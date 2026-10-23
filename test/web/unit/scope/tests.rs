@@ -120,3 +120,22 @@ fn detail_rename_has_no_path_only_namespace_fallback() {
     assert!(!mutation.contains("NamespaceAction::Rename"));
     assert!(!inline.contains("RenameEntry"));
 }
+
+#[test]
+fn tag_input_labels_do_not_also_label_action_buttons() {
+    // Source-level HTML structure guard, not a substitute for browser focus tests.
+    let source = include_str!("../../../../src/web/src/files/tags/view.rs");
+    let labels = source.split("<label ").skip(1).collect::<Vec<_>>();
+    assert!(!labels.is_empty());
+    for label in labels {
+        let (contents, _) = label.split_once("</label>").expect("label must close");
+        assert!(
+            contents.contains("<input "),
+            "the tag field must remain labeled"
+        );
+        assert!(
+            !contents.contains("<button "),
+            "an action button cannot share the input's label"
+        );
+    }
+}

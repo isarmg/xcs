@@ -83,7 +83,7 @@ mod imp {
     use super::*;
 
     #[cfg(all(not (feature = "js"),not (feature = "rng-system-entropy")))]
-    compile_error!("to use `uuid` on `wasm32-unknown-unknown`, specify a source of randomness using one of the `js`, `rng-system-entropy`, or `rng-rand` features");
+    compile_error!("to generate random UUIDs on `wasm32-unknown-unknown`, enable the `js` feature");
 
     // Using `rand`
 

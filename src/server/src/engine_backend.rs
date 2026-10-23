@@ -14,8 +14,9 @@ mod file_manager;
 mod operations;
 mod read_projection;
 mod wire;
+pub(crate) use wire::error;
 use wire::{
-    branch_wire, content_wire, current_entry_source, encode, error, field, keys, operation,
+    branch_wire, content_wire, current_entry_source, encode, field, keys, operation,
     operation_wire, pending_entry_source, sanitized,
 };
 

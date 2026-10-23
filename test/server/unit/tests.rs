@@ -612,6 +612,15 @@ async fn successful_new_generation_preserves_old_bytes_and_retry_reuses_its_file
 
 #[tokio::test]
 async fn disconnected_upload_keeps_its_claim_until_publication_and_status_are_durable() {
+    upload_publication_keeps_its_claim(true).await;
+}
+
+#[tokio::test]
+async fn upload_publication_timeout_reports_an_unknown_outcome_until_status_is_durable() {
+    upload_publication_keeps_its_claim(false).await;
+}
+
+async fn upload_publication_keeps_its_claim(disconnect: bool) {
     struct BlockingUpload {
         delegate: TestBackend,
         started: Mutex<Option<tokio::sync::oneshot::Sender<()>>>,
@@ -661,6 +670,11 @@ async fn disconnected_upload_keeps_its_claim_until_publication_and_status_are_du
     let (started, started_rx) = tokio::sync::oneshot::channel();
     let gate = Arc::new((Mutex::new(false), std::sync::Condvar::new()));
     let release = Release(gate.clone());
+    let mut config = ServerConfig::loopback(root.path());
+    if !disconnect {
+        config.http_transfer_limits.total_timeout = Duration::from_secs(3);
+        config.http_transfer_limits.idle_timeout = Duration::from_secs(3);
+    }
     let app = router(
         Arc::new(BlockingUpload {
             delegate: TestBackend {
@@ -670,7 +684,7 @@ async fn disconnected_upload_keeps_its_claim_until_publication_and_status_are_du
             gate,
         }),
         auth,
-        ServerConfig::loopback(root.path()),
+        config,
     )
     .unwrap();
     let (token, _, _) = authenticated(&app).await;
@@ -692,8 +706,13 @@ async fn disconnected_upload_keeps_its_claim_until_publication_and_status_are_du
         .await
         .unwrap()
         .unwrap();
-    pending.abort();
-    assert!(pending.await.unwrap_err().is_cancelled());
+    let timed_out = if disconnect {
+        pending.abort();
+        assert!(pending.await.unwrap_err().is_cancelled());
+        None
+    } else {
+        Some(pending.await.unwrap().unwrap())
+    };
     let retry = app.clone().oneshot(request()).await.unwrap();
     assert_eq!(retry.status(), StatusCode::CONFLICT);
     let error: Value = json_codec::from_slice(
@@ -719,6 +738,27 @@ async fn disconnected_upload_keeps_its_claim_until_publication_and_status_are_du
     })
     .await
     .unwrap();
+    if let Some(response) = timed_out {
+        // The backend has now completed despite the earlier HTTP timeout.
+        // It is therefore not a definite client-side rejection (4xx).
+        assert_eq!(response.status(), StatusCode::SERVICE_UNAVAILABLE);
+        assert!(storage_contract::client_protocol::mutation_outcome_unknown(
+            response.status().as_u16()
+        ));
+        let body: Value = json_codec::from_slice(
+            &http_routing::body::to_bytes(response.into_body(), 8192)
+                .await
+                .unwrap(),
+        )
+        .unwrap();
+        assert_eq!(body["error"]["code"], "TRANSFER_TIMEOUT");
+        assert!(
+            body["error"]["message"]
+                .as_str()
+                .unwrap()
+                .contains("status")
+        );
+    }
 }
 
 #[path = "tests/spool_budget.rs"]

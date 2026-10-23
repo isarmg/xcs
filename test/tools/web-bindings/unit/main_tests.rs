@@ -65,3 +65,43 @@ fn help_and_version_do_not_require_a_wasm_input() {
     assert!(run(["wasm-bindgen", "--version"]).is_ok());
     assert!(run(["wasm-bindgen", "--help"]).is_ok());
 }
+
+#[test]
+fn output_name_cannot_escape_the_directory_or_change_generated_javascript() {
+    for name in ["zxs", "web-app_2", "0"] {
+        assert!(output_name(name).is_ok(), "{name:?}");
+    }
+    for name in [
+        "",
+        ".",
+        "..",
+        "../escaped",
+        "/absolute",
+        "nested/file",
+        "nested\\file",
+        "C:stream",
+        "bad'url",
+        "bad\"url",
+        "bad\nurl",
+        "app.js",
+    ] {
+        // Argument parsing fails before any Wasm input is read or generated
+        // output can be written, including for a nonexistent source file.
+        let error = run([
+            "wasm-bindgen",
+            "--target",
+            "web",
+            "--no-typescript",
+            "--out-name",
+            name,
+            "--out-dir",
+            "out",
+            "nonexistent-input.wasm",
+        ])
+        .unwrap_err();
+        assert!(
+            error.to_string().contains("output name must contain"),
+            "{name:?}: {error}"
+        );
+    }
+}

@@ -4,7 +4,7 @@ use data_serialization::Serialize;
 use json_codec::{Value, json};
 use storage_engine::Engine;
 
-pub(super) fn error(error: storage_engine::Error) -> ApiError {
+pub(crate) fn error(error: storage_engine::Error) -> ApiError {
     let code = super::error_registry::public_code(error.code());
     let status = super::error_registry::status(code);
     if status == 500 {

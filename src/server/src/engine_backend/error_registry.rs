@@ -65,6 +65,8 @@ pub(super) const PUBLIC_STATUS: &[(&str, u16)] = &[
     ("DIRECTORY_HISTORY_SPLIT_UNSUPPORTED", 400),
     ("FILE_NODE_HISTORY_SPLIT_UNSUPPORTED", 400),
     ("IO_ERROR", 500),
+    // Publication occurred; durability is unknown and I/O diagnostics stay private.
+    ("DURABILITY_UNKNOWN", 500),
     ("STATE_INVALID", 500),
     ("INTERNAL_ERROR", 500),
     ("OBJECT_CORRUPT", 500),

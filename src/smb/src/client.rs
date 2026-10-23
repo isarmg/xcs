@@ -58,9 +58,15 @@ fn remote_errno(code: &str) -> i32 {
         | "OPERATION_UNSUPPORTED"
         | "UNSUPPORTED_OPERATION"
         | "FORMAT_UNSUPPORTED" => libc::ENOTSUP,
-        "INVALID_REQUEST" | "INVALID_NAME" | "INVALID_PATH" | "INVALID_MOVE" | "NAME_INVALID" => {
-            libc::EINVAL
-        }
+        "INVALID_REQUEST"
+        | "INVALID_NAME"
+        | "INVALID_PATH"
+        | "INVALID_MOVE"
+        | "NAME_INVALID"
+        | "NAME_INVALID_CHARACTER"
+        | "NAME_RESERVED"
+        | "NAME_NOT_NORMALIZED"
+        | "PATH_INVALID" => libc::EINVAL,
         "SMB_REBIND_REQUIRED" | "TREE_MOVED" | "BRANCH_ARCHIVED" => libc::ESTALE,
         "FILE_VERSION_CONFLICT"
         | "FILE_CONFLICT"

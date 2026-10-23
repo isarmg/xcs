@@ -20,15 +20,22 @@ pub(crate) fn slot_to_tokens(
     disable_inert_html: bool,
     errors: &mut Errors,
 ) -> rust_syntax::Result<()> {
+    let Some(component_path) = full_path_from_tag_name(node.name(), errors) else {
+        return Ok(());
+    };
     let name = slot.key.to_string();
     let name = name.trim();
-    let name = convert_to_snake_case(if name.starts_with("slot:") {
-        name.replacen("slot:", "", 1)
+    let name = convert_to_snake_case(if let Some(name) = name.strip_prefix("slot:") {
+        name.to_owned()
     } else {
-        node.name().to_string()
+        component_path
+            .path
+            .segments
+            .last()
+            .expect("a slot path has a struct name")
+            .ident
+            .to_string()
     });
-
-    let component_path = full_path_from_tag_name(node.name(), errors);
 
     let Some(parent_slots) = parent_slots else {
         errors.push(rust_syntax::Error::new_spanned(
@@ -187,9 +194,12 @@ pub(crate) fn slot_to_tokens(
         .build()
     };
 
+    let generics = &node.open_tag.generics;
+    let generics = generics.lt_token.is_some().then(|| quote! { ::#generics });
+
     let slot = quote_spanned! {node.span()=>
         {
-            let slot = #component_path::builder()
+            let slot = #component_path #generics::builder()
                 #(#props)*
                 #(#slots)*
                 #children

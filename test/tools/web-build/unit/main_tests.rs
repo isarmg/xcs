@@ -226,3 +226,46 @@ fn gzip_assets_are_reproducible_and_roundtrip() {
         assert_eq!(restored, bytes);
     }
 }
+
+#[cfg(unix)]
+#[test]
+fn inputs_reject_symbolic_links_in_ancestors() {
+    use std::os::unix::fs::symlink;
+    let fixture = Fixture::new();
+    let source = fixture.0.join("source/nested");
+    let destination = fixture.0.join("output");
+    fs::create_dir_all(&source).unwrap();
+    fs::create_dir(&destination).unwrap();
+    fs::write(source.join("file.css"), "body {}").unwrap();
+    let linked = fixture.0.join("linked");
+    symlink(fixture.0.join("source"), &linked).unwrap();
+    assert!(read_input(&linked.join("nested/file.css")).is_err());
+    assert!(inventory_tree(&fixture.0, &linked.join("nested"), &mut BTreeMap::new()).is_err());
+    assert!(copy_tree(&linked.join("nested"), &destination).is_err());
+    assert!(fs::read_dir(destination).unwrap().next().is_none());
+}
+
+#[cfg(unix)]
+#[test]
+fn inventory_rejects_lossy_and_alternate_path_spellings() {
+    use std::{ffi::OsString, os::unix::ffi::OsStringExt};
+    for name in [
+        OsString::from_vec(b"invalid-\xff.css".to_vec()),
+        OsString::from("nested\\file.css"),
+        OsString::from("file:stream"),
+        OsString::from("file\n.css"),
+    ] {
+        let fixture = Fixture::new();
+        fs::write(fixture.0.join(&name), "body {}").unwrap();
+        assert!(
+            inventory_tree(&fixture.0, &fixture.0, &mut BTreeMap::new()).is_err(),
+            "{name:?}"
+        );
+        fs::remove_file(fixture.0.join(&name)).unwrap();
+        fs::create_dir(fixture.0.join(&name)).unwrap();
+        assert!(
+            inventory_tree(&fixture.0, &fixture.0, &mut BTreeMap::new()).is_err(),
+            "empty directory {name:?}"
+        );
+    }
+}

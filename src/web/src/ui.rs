@@ -439,6 +439,9 @@ fn reject_unconfirmed_password_change(state: &mut State) {
     );
 }
 fn reject_password_change(state: &mut State, error: &api::Error) {
+    if error.status == 401 {
+        state.authenticated = false;
+    }
     if state.password_unknown() || error.mutation_outcome_unknown() {
         state.password_change = PasswordChangeState::Unknown;
     } else {

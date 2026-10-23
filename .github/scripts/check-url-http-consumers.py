@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
 """Compile real routing/proxy consumers without pulling Unicode into byte/form paths."""
+if not __debug__:
+    raise RuntimeError('Validation requires assertions; do not use Python optimization (-O/-OO or PYTHONOPTIMIZE).')
+
 import json,os,pathlib,subprocess,tempfile
 import runpy
 

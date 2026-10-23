@@ -63,6 +63,13 @@ impl VirtualStatement {
             ));
         }
 
+        // SQLite stops parsing at a NUL even when given an explicit length.
+        // Reject the entire input before executing any prefix; otherwise the
+        // remaining NUL tail makes prepare() loop without consuming a byte.
+        if query.as_bytes().contains(&0) {
+            return Err(err_protocol!("query contains nul bytes"));
+        }
+
         Ok(Self {
             persistent,
             tail: Bytes::from(String::from(query)),

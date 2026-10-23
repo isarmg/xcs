@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
 """Run preserved SQLite tests and compiler boundaries without changing root inputs."""
+if not __debug__:
+    raise RuntimeError('Validation requires assertions; do not use Python optimization (-O/-OO or PYTHONOPTIMIZE).')
+
 import hashlib
 import json
 from pathlib import Path
@@ -134,7 +137,9 @@ def check(root):
                                                      "missing_nul_and_non_utf8_filenames_fail_without_creating_files",
                                                      "parsed_memory_options_share_only_the_selected_database",
                                                      "parsed_percent_filename_and_query_options_reopen_readonly",
-                                                     "direct_parser_preserves_paths_percent_form_options_and_errors"))
+                                                     "direct_parser_preserves_paths_percent_form_options_and_errors",
+                                                     "prepared_queries_reject_nul_before_execution",
+                                                     "nul_filenames_are_rejected_before_uri_encoding"))
             execute(cargo_command("test", package_manifest, target, "--lib", "--features", "sqlite-bundled,url"), root,
                     minimum_tests=12, required_tests=("typed_url_conversion_preserves_retained_sqlite_options",))
             execute(cargo_command("test", package_manifest, target, "--lib", "--all-features"), root,

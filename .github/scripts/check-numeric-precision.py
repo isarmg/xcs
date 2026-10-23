@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
 """Exercise optional JSON numeric consumers, without directly enabling numeric."""
+if not __debug__:
+    raise RuntimeError('Validation requires assertions; do not use Python optimization (-O/-OO or PYTHONOPTIMIZE).')
+
 from pathlib import Path
 import json
 import os

@@ -53,6 +53,9 @@ fn retained_upload_usage(directory: &OpenAt2Root) -> Result<(u64, usize)> {
         if path
             .extension()
             .is_some_and(|ext| ext == "full" || ext == "prepared")
+            // A crash during full_copy_held can leave its unpublished copy
+            // temporary behind. It still consumes this workspace's capacity.
+            || entry.file_name().to_bytes().starts_with(b".zxs-full-")
         {
             generations = generations.checked_add(1).ok_or_else(|| {
                 Error::new("RESOURCE_LIMIT", "retained generation count overflow")
@@ -104,6 +107,7 @@ pub struct UploadPreparation {
     max_workspace_bytes: u64,
     chunk_bytes: u32,
     claim: UploadPreparationClaim,
+    _locks: Vec<std::fs::File>,
 }
 
 pub struct PreparedUpload {
@@ -111,7 +115,7 @@ pub struct PreparedUpload {
     size: u64,
     hash: String,
     scratch: Option<std::path::PathBuf>,
-    retained: Option<VerifiedUploadReplay>,
+    verified: Option<VerifiedUploadFile>,
 }
 
 #[derive(PartialEq, Eq)]
@@ -138,7 +142,7 @@ impl UploadFileStamp {
         })
     }
 }
-struct VerifiedUploadReplay {
+struct VerifiedUploadFile {
     file: std::fs::File,
     stamp: UploadFileStamp,
 }
@@ -165,7 +169,7 @@ impl UploadPreparation {
             .map_err(preparation_fs_error)
     }
 
-    fn verify_retained(&self, size: u64, hash: &str) -> Result<VerifiedUploadReplay> {
+    fn verify_retained(&self, size: u64, hash: &str) -> Result<VerifiedUploadFile> {
         let file = self.retained_file()?;
         let stamp = UploadFileStamp::of(&file)?;
         let actual = upload_fingerprint_file(file.try_clone()?, self.max_file_bytes)?;
@@ -175,7 +179,7 @@ impl UploadPreparation {
                 "retained upload generation no longer matches its receipt",
             ));
         }
-        Ok(VerifiedUploadReplay { file, stamp })
+        Ok(VerifiedUploadFile { file, stamp })
     }
 
     fn verify_content(&self, size: u64, hash: &str) -> Result<()> {
@@ -223,7 +227,7 @@ impl UploadPreparation {
                 size,
                 hash,
                 scratch: None,
-                retained: Some(retained),
+                verified: Some(retained),
             });
         }
         if self.existing {
@@ -246,7 +250,7 @@ impl UploadPreparation {
                 size: incoming.0,
                 hash: incoming.1,
                 scratch: None,
-                retained: Some(retained),
+                verified: Some(retained),
             });
         }
         let scratch = self
@@ -257,11 +261,11 @@ impl UploadPreparation {
             size: 0,
             hash: String::new(),
             scratch: Some(scratch.clone()),
-            retained: None,
+            verified: None,
         };
         let scratch_name = EntryName::new(scratch.file_name().expect("scratch filename"))
             .map_err(preparation_fs_error)?;
-        let (size, hash, _) = full_copy_held(
+        let (size, hash, _, file) = full_copy_held(
             prepared.plan.source.try_clone()?,
             &prepared.plan.directory_handle,
             &scratch_name,
@@ -271,6 +275,10 @@ impl UploadPreparation {
         prepared.plan.verify_content(size, &hash)?;
         prepared.size = size;
         prepared.hash = hash;
+        prepared.verified = Some(VerifiedUploadFile {
+            stamp: UploadFileStamp::of(&file)?,
+            file,
+        });
         Ok(prepared)
     }
 }
@@ -758,6 +766,7 @@ impl Engine {
             max_workspace_bytes: self.config.max_workspace_bytes,
             chunk_bytes: self.config.checksum_chunk_bytes,
             claim,
+            _locks: self.retain_writer_locks()?,
         })
     }
 
@@ -796,14 +805,28 @@ impl Engine {
                 "workspace data directory identity changed during preparation",
             ));
         }
-        if let Some(retained) = &prepared.retained
-            && (UploadFileStamp::of(&retained.file)? != retained.stamp
-                || UploadFileStamp::of(&plan.retained_file()?)? != retained.stamp)
-        {
-            return Err(Error::new(
-                "CHECKSUM_MISMATCH",
-                "retained upload generation changed during preparation",
-            ));
+        if let Some(verified) = &prepared.verified {
+            let current = if let Some(scratch) = &prepared.scratch {
+                let relative =
+                    RelativePath::new(Path::new(scratch.file_name().expect("scratch filename")))
+                        .map_err(preparation_fs_error)?;
+                plan.directory_handle
+                    .open_file(&relative, false)
+                    .map_err(preparation_fs_error)?
+            } else {
+                plan.retained_file()?
+            };
+            // The single-pass copy retains the inode it wrote. Validate both
+            // that handle and its pathname before publishing its receipt;
+            // readonly permissions alone do not prove unchanged contents.
+            if UploadFileStamp::of(&verified.file)? != verified.stamp
+                || UploadFileStamp::of(&current)? != verified.stamp
+            {
+                return Err(Error::new(
+                    "CHECKSUM_MISMATCH",
+                    "upload generation changed during preparation",
+                ));
+            }
         }
         if let Some(old) = plan
             .previous

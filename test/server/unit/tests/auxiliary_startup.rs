@@ -21,7 +21,13 @@ async fn json(response: Response) -> Value {
 
 #[tokio::test]
 async fn unavailable_http_spool_isolates_only_upload_staging() {
-    for failure in ["occupied", "occupied_parent", "locked", "invalid_inventory"] {
+    for failure in [
+        "occupied",
+        "occupied_parent",
+        "locked",
+        "fifo_lock",
+        "invalid_inventory",
+    ] {
         let root = crate::tests::private_tempdir();
         let mut config = ServerConfig::loopback(root.path());
         let _owner = match failure {
@@ -44,6 +50,16 @@ async fn unavailable_http_spool_isolates_only_upload_staging() {
                     )
                     .unwrap(),
                 )
+            }
+            "fifo_lock" => {
+                config.prepare_spool().unwrap();
+                rustix::fs::mkfifoat(
+                    rustix::fs::CWD,
+                    config.spool_dir.join(".budget.lock"),
+                    rustix::fs::Mode::from_raw_mode(0o600),
+                )
+                .unwrap();
+                None
             }
             _ => {
                 std::fs::create_dir_all(config.spool_dir.join("unexpected-directory")).unwrap();

@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
 """Build and execute real Linux C/C++/assembler consumers of the internal cc."""
+if not __debug__:
+    raise RuntimeError('Validation requires assertions; do not use Python optimization (-O/-OO or PYTHONOPTIMIZE).')
+
 from pathlib import Path
 import base64
 import gzip

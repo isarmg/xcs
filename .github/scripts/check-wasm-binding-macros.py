@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
 """Exercise the actual host proc macro, target runtime, and removed API boundary."""
+if not __debug__:
+    raise RuntimeError('Validation requires assertions; do not use Python optimization (-O/-OO or PYTHONOPTIMIZE).')
+
 from pathlib import Path
 import os, shutil, subprocess, tempfile, tomllib
 import runpy

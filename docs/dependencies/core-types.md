@@ -124,7 +124,7 @@
 
 ## uuid
 
-[当前源码 / API](../../src/foundation/core-types/uuid/src/lib.rs) · [Cargo 清单](../../src/foundation/core-types/uuid/Cargo.toml)
+[当前源码 / API](../../src/foundation/core-types/uuid/src/lib.rs) · [Cargo 清单](../../src/foundation/core-types/uuid/Cargo.toml) · [当前维护说明](../../docs/architecture/uuid-format-validation.md)
 
 | 上游来源身份 | 使用文档 | 许可与来源 |
 | --- | --- | --- |

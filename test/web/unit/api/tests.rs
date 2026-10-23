@@ -91,3 +91,81 @@ fn beginning_logout_invalidates_pending_login_without_losing_revocation_credenti
     });
     clear_session();
 }
+
+fn session_response() -> Value {
+    json!({"token":"new-token","csrf_token":"new-csrf","principal":"reader","admin":false})
+}
+
+#[test]
+fn malformed_authentication_success_cannot_install_or_restore_a_session() {
+    let original = Credentials {
+        token: Some("existing-token".into()),
+        csrf: Some("existing-csrf".into()),
+        generation: 10,
+    };
+    let mut invalid = vec![Value::Null, json!({}), json!({"token":"new-token"})];
+    for field in ["principal", "csrf_token", "admin"] {
+        for replacement in [Value::Null, json!(""), json!(42)] {
+            let mut response = session_response();
+            response[field] = replacement;
+            invalid.push(response);
+        }
+    }
+    for value in invalid {
+        for login in [false, true] {
+            CREDENTIALS.with(|saved| *saved.borrow_mut() = original.clone());
+            let result = if login {
+                accept_login(original.generation, value.clone())
+            } else {
+                accept_restore(original.generation, value.clone())
+            };
+            let error =
+                result.expect_err("incomplete identities must not open the authenticated UI");
+            assert_eq!(error.code, "INVALID_SESSION");
+            assert_eq!(error.status, 200);
+            CREDENTIALS.with(|saved| {
+                let saved = saved.borrow();
+                assert_eq!(saved.generation, original.generation);
+                assert_eq!(saved.token, original.token);
+                assert_eq!(saved.csrf, original.csrf);
+            });
+        }
+    }
+    for token in [Value::Null, json!(""), json!(42)] {
+        let mut value = session_response();
+        value["token"] = token;
+        assert_eq!(
+            accept_login(original.generation, value).unwrap_err().code,
+            "INVALID_SESSION"
+        );
+    }
+    clear_session();
+}
+
+#[test]
+fn validated_session_restoration_requires_the_original_credential_generation() {
+    CREDENTIALS.with(|saved| *saved.borrow_mut() = Credentials::default());
+    let mut response = session_response();
+    response.as_object_mut().unwrap().remove("token");
+    assert!(accept_restore(0, response.clone()).is_ok());
+    CREDENTIALS.with(|saved| {
+        let saved = saved.borrow();
+        assert!(
+            saved.token.is_none(),
+            "restoration uses the HTTP-only cookie"
+        );
+        assert_eq!(saved.csrf.as_deref(), Some("new-csrf"));
+    });
+    assert!(accept_login(0, session_response()).is_ok());
+    assert_eq!(
+        accept_restore(0, response).unwrap_err().code,
+        "SESSION_CHANGED"
+    );
+    CREDENTIALS.with(|saved| {
+        let saved = saved.borrow();
+        assert_eq!(saved.generation, 1);
+        assert_eq!(saved.token.as_deref(), Some("new-token"));
+        assert_eq!(saved.csrf.as_deref(), Some("new-csrf"));
+    });
+    clear_session();
+}

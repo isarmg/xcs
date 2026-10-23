@@ -59,7 +59,8 @@ impl Model {
             body,
         } = self;
 
-        let (_, generics, where_clause) = body.generics.split_for_impl();
+        let declaration_generics = &body.generics;
+        let (impl_generics, generics, where_clause) = body.generics.split_for_impl();
 
         let prop_builder_fields = prop_builder_fields(vis, props)?;
         let prop_docs = generate_prop_docs(props)?;
@@ -72,11 +73,11 @@ impl Model {
             #prop_docs
             #[derive(::web_interface::typed_builder_macro::TypedBuilder)]
             #[builder(doc, crate_module_path=::web_interface::typed_builder)]
-            #vis struct #name #generics #where_clause {
+            #vis struct #name #declaration_generics #where_clause {
                 #prop_builder_fields
             }
 
-            impl #generics From<#name #generics> for Vec<#name #generics> #where_clause {
+            impl #impl_generics From<#name #generics> for Vec<#name #generics> #where_clause {
                 fn from(value: #name #generics) -> Self {
                     vec![value]
                 }

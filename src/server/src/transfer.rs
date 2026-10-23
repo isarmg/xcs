@@ -23,7 +23,10 @@ use json_codec::{Value, json};
 use std::{
     io::{Read, Seek, SeekFrom},
     path::Path,
-    sync::Arc,
+    sync::{
+        Arc,
+        atomic::{AtomicBool, Ordering},
+    },
 };
 
 pub(crate) async fn upload_status(
@@ -94,6 +97,11 @@ struct UploadAdmission {
     _claim: uploads::Claim,
 }
 
+struct UploadDeadline {
+    at: tokio::time::Instant,
+    publication_admitted: AtomicBool,
+}
+
 async fn persist_upload(
     root: &Path,
     record: &uploads::UploadRecord,
@@ -120,13 +128,26 @@ pub(crate) async fn upload(
     request: Request,
 ) -> Result<Json<Value>, ApiError> {
     state.http_spool()?;
-    let deadline = tokio::time::Instant::now() + state.config.http_transfer_limits.total_timeout;
+    let deadline = UploadDeadline {
+        at: tokio::time::Instant::now() + state.config.http_transfer_limits.total_timeout,
+        publication_admitted: AtomicBool::new(false),
+    };
     tokio::time::timeout_at(
-        deadline,
-        upload_inner(state, identity, workspace, item, query, request, deadline),
+        deadline.at,
+        upload_inner(state, identity, workspace, item, query, request, &deadline),
     )
     .await
-    .map_err(|_| timeout_error())?
+    .map_err(|_| {
+        if deadline.publication_admitted.load(Ordering::Acquire) {
+            ApiError::new(
+                503,
+                "TRANSFER_TIMEOUT",
+                "upload publication may have completed; check upload status before retrying",
+            )
+        } else {
+            timeout_error()
+        }
+    })?
 }
 
 async fn upload_inner(
@@ -136,7 +157,7 @@ async fn upload_inner(
     item: String,
     query: UploadQuery,
     request: Request,
-    deadline: tokio::time::Instant,
+    deadline: &UploadDeadline,
 ) -> Result<Json<Value>, ApiError> {
     let _permit = state.upload_slots.acquire(&identity.principal)?;
     let key = uploads::key(&workspace, &item);
@@ -328,7 +349,7 @@ async fn upload_inner(
     let mut last_persisted = 0u64;
     let mut hash = blake3::Hasher::new();
     let idle = state.config.http_transfer_limits.idle_timeout;
-    let mut idle_deadline = (tokio::time::Instant::now() + idle).min(deadline);
+    let mut idle_deadline = (tokio::time::Instant::now() + idle).min(deadline.at);
     loop {
         // Ready empty frames must not starve the timer or extend idle time.
         let next = if tokio::time::Instant::now() >= idle_deadline {
@@ -367,7 +388,7 @@ async fn upload_inner(
             tokio::task::yield_now().await;
             continue;
         }
-        idle_deadline = (tokio::time::Instant::now() + idle).min(deadline);
+        idle_deadline = (tokio::time::Instant::now() + idle).min(deadline.at);
         length = length
             .checked_add(chunk.len() as u64)
             .ok_or_else(|| ApiError::invalid("upload length overflow"))?;
@@ -448,6 +469,9 @@ async fn upload_inner(
     let ws = workspace.clone();
     let item_id = item.clone();
     let logical_path = query.path;
+    // Once admitted, blocking publication can outlive the HTTP deadline, even
+    // while still queued. A timeout can no longer promise a rejected mutation.
+    deadline.publication_admitted.store(true, Ordering::Release);
     let staged = tokio::task::spawn_blocking(move || {
         // A disconnected HTTP request cannot cancel a running blocking task.
         // Keep its admission slot and per-item claim with publication itself,

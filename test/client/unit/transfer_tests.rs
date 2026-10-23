@@ -508,3 +508,48 @@ async fn upload_preserves_symlinks_to_regular_files_and_rejects_devices() {
         Err(Error::Response(message)) if message.contains("regular file"))
     );
 }
+
+#[cfg(unix)]
+#[tokio::test]
+async fn download_publication_and_cleanup_stay_with_the_selected_parent() {
+    let content = b"the complete immutable version";
+    let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
+    let client = Client::connect(&format!("http://{}", listener.local_addr().unwrap())).unwrap();
+    let (release, wait) = oneshot::channel();
+    let server = tokio::spawn(async move {
+        let (mut stream, _) = listener.accept().await.unwrap();
+        request_headers(&mut stream).await;
+        stream.write_all(&content_headers(content)).await.unwrap();
+        stream.write_all(&content[..4]).await.unwrap();
+        wait.await.unwrap();
+        stream.write_all(&content[4..]).await.unwrap();
+    });
+    let directory = tempfile::tempdir().unwrap();
+    let parent = directory.path().join("selected");
+    let moved = directory.path().join("original");
+    std::fs::create_dir(&parent).unwrap();
+    let target = parent.join("file");
+    let download = tokio::spawn(async move { client.download_file("version_test", &target).await });
+    let staging = tokio::time::timeout(std::time::Duration::from_secs(5), async {
+        loop {
+            if let Some(entry) = std::fs::read_dir(&parent).unwrap().next() {
+                break entry.unwrap().file_name();
+            }
+            tokio::task::yield_now().await;
+        }
+    })
+    .await
+    .expect("download never created its staging entry");
+    std::fs::rename(&parent, &moved).unwrap();
+    std::fs::create_dir(&parent).unwrap();
+    std::fs::write(parent.join(staging), b"unverified replacement").unwrap();
+    release.send(()).unwrap();
+    download.await.unwrap().unwrap();
+    assert!(
+        !parent.join("file").exists(),
+        "publication followed a replaced parent"
+    );
+    assert_eq!(std::fs::read(moved.join("file")).unwrap(), content);
+    assert_eq!(std::fs::read_dir(moved).unwrap().count(), 1);
+    server.await.unwrap();
+}

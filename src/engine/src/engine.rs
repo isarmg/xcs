@@ -81,6 +81,16 @@ pub(crate) enum MutationPlan {
 }
 
 impl Engine {
+    /// Detached filesystem work must keep the same OS lock descriptions alive
+    /// until completion or cancellation, even if its original Engine is dropped.
+    pub(crate) fn retain_writer_locks(&self) -> Result<Vec<File>> {
+        Ok(self
+            ._locks
+            .iter()
+            .map(File::try_clone)
+            .collect::<std::io::Result<Vec<_>>>()?)
+    }
+
     /// Validate a candidate without creating directories, opening disks or
     /// acquiring writer locks. Filesystem identity is checked when opening it.
     pub fn validate_configuration(config: &Config) -> Result<()> {

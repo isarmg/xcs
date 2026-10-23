@@ -50,6 +50,17 @@ impl EstablishParams {
             })?
             .to_owned();
 
+        // Check the original path before URI encoding can hide a NUL as %00.
+        // SQLite decodes that escape back to a terminator and would otherwise
+        // open a different, truncated filename.
+        if filename.as_bytes().contains(&0) {
+            return Err(io::Error::new(
+                io::ErrorKind::InvalidData,
+                "filename passed to SQLite must not contain nul bytes",
+            )
+            .into());
+        }
+
         // Set common flags we expect to have in sqlite
         let mut flags = SQLITE_OPEN_URI;
 
@@ -102,6 +113,18 @@ impl EstablishParams {
             filename = url_encoding::form::Serializer::for_suffix(filename, filename_len)
                 .extend_pairs(query_params)
                 .finish();
+        }
+
+        // sqlite3ParseUri also truncates percent-decoded NULs in explicit
+        // file: paths and option names/values (including an encoded vfs).
+        // It ignores fragments and does not decode ordinary filenames.
+        let uri = filename.split_once('#').map_or(filename.as_str(), |(uri, _)| uri);
+        if uri.starts_with("file:") && uri.contains("%00") {
+            return Err(io::Error::new(
+                io::ErrorKind::InvalidData,
+                "SQLite URI must not contain percent-encoded nul bytes",
+            )
+            .into());
         }
 
         let filename = CString::new(filename).map_err(|_| {

@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
 """Check routing/kernel identity, pure WASM boundaries, macros and response behavior."""
+if not __debug__:
+    raise RuntimeError('Validation requires assertions; do not use Python optimization (-O/-OO or PYTHONOPTIMIZE).')
+
 import hashlib
 import json
 import os

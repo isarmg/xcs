@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
 """Check schema capability boundaries and retained real canonical assertions offline."""
+if not __debug__:
+    raise RuntimeError('Validation requires assertions; do not use Python optimization (-O/-OO or PYTHONOPTIMIZE).')
+
 import json
 import os
 from pathlib import Path

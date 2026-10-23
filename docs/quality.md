@@ -37,3 +37,5 @@ Clippy 和编译门禁经由 [Cargo 诊断包装器](../.github/scripts/check-ru
 ## 敏感依赖维护
 
 密码学与 TLS 改动同时核对[常数时间原语](security/constant-time.md)、[证书信任](security/tls-trust.md)及[测试证书约束](security/TLS_TEST_FIXTURES.md)。编译与功能回归不构成常数时间机器码证明，也不替代证书来源或实际客户端验证。
+
+包含断言式验收条件的维护 Python 门禁在执行前拒绝 `-O`、`-OO` 和 `PYTHONOPTIMIZE` 优化模式，不能在断言被移除后报告通过。动态回归核对当前全部这类验证入口；性能报告比较器使用显式校验，不依赖 Python 断言是否启用。

@@ -386,17 +386,38 @@ pub async fn login(username: &str, password: &str) -> Result<Value, Error> {
         Some(json!({"username":username,"password":password})),
     )
     .await?;
+    accept_login(generation, result)
+}
+
+fn validate_session(value: &Value) -> Result<(), Error> {
+    if ["principal", "csrf_token"]
+        .into_iter()
+        .all(|field| value[field].as_str().is_some_and(|value| !value.is_empty()))
+        && value["admin"].is_boolean()
+    {
+        Ok(())
+    } else {
+        Err(invalid_session())
+    }
+}
+
+fn invalid_session() -> Error {
+    error(
+        "INVALID_SESSION",
+        t(
+            "认证响应未确认完整的会话，请重试登录。",
+            "The authentication response did not confirm a complete session. Try signing in again.",
+        ),
+    )
+    .with_status(200)
+}
+
+fn accept_login(generation: u64, result: Value) -> Result<Value, Error> {
+    validate_session(&result)?;
     let token = result["token"]
         .as_str()
-        .ok_or_else(|| {
-            error(
-                "INVALID_SESSION",
-                t(
-                    "登录响应缺少会话令牌",
-                    "The login response has no session token",
-                ),
-            )
-        })?
+        .filter(|token| !token.is_empty())
+        .ok_or_else(invalid_session)?
         .to_owned();
     let accepted = CREDENTIALS.with(|saved| {
         saved.borrow_mut().replace_if_current(
@@ -414,13 +435,24 @@ pub async fn login(username: &str, password: &str) -> Result<Value, Error> {
 pub async fn restore() -> Result<Value, Error> {
     let generation = CREDENTIALS.with(|saved| saved.borrow().generation);
     let value = request("GET", "/api/auth/me", None).await?;
-    CREDENTIALS.with(|saved| {
+    accept_restore(generation, value)
+}
+
+fn accept_restore(generation: u64, value: Value) -> Result<Value, Error> {
+    validate_session(&value)?;
+    let accepted = CREDENTIALS.with(|saved| {
         let mut saved = saved.borrow_mut();
-        if saved.generation == generation {
-            saved.csrf = value["csrf_token"].as_str().map(str::to_owned);
+        if saved.generation != generation {
+            return false;
         }
+        saved.csrf = value["csrf_token"].as_str().map(str::to_owned);
+        true
     });
-    Ok(value)
+    if accepted {
+        Ok(value)
+    } else {
+        Err(session_changed())
+    }
 }
 
 #[cfg(test)]

@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
 """Exercise runtime/adapter boundaries without touching the product lockfile."""
+if not __debug__:
+    raise RuntimeError('Validation requires assertions; do not use Python optimization (-O/-OO or PYTHONOPTIMIZE).')
+
 import json
 import os
 from pathlib import Path

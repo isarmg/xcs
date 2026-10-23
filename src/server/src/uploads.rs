@@ -1,6 +1,7 @@
 //! Durable full-upload staging. Interrupted uploads remain attributable and queryable.
 use crate::ApiError;
 use data_serialization::{Deserialize, Serialize};
+use platform_io::fs_safety::{EntryName, PrivateDirectory};
 use std::{
     fs,
     io::{Read, Seek, Write},
@@ -37,22 +38,11 @@ pub(crate) fn load(
     workspace: &str,
     item: &str,
 ) -> Result<Option<UploadRecord>, ApiError> {
-    let path = root.join(format!("{}.json", key(workspace, item)));
-    match fs::File::open(path) {
-        Ok(file) => {
-            let mut bytes = Vec::new();
-            // The spool is private, but a damaged file must still not force an
-            // unbounded allocation before the metadata size is checked.
-            file.take(16385)
-                .read_to_end(&mut bytes)
-                .map_err(ApiError::io)?;
-            if bytes.len() > 16384 {
-                return Err(ApiError::new(
-                    500,
-                    "UPLOAD_STATE_INVALID",
-                    "invalid upload state",
-                ));
-            }
+    let directory = PrivateDirectory::open_trusted(root).map_err(crate::upload_fs_error)?;
+    let name =
+        EntryName::new(format!("{}.json", key(workspace, item))).map_err(crate::upload_fs_error)?;
+    match directory.read_bounded(&name, 16384) {
+        Ok(bytes) => {
             let record = storage_contract::decode_strict::<UploadRecord>(&bytes)
                 .map_err(|_| ApiError::new(500, "UPLOAD_STATE_INVALID", "invalid upload state"))?;
             if record.workspace_id != workspace
@@ -83,8 +73,12 @@ pub(crate) fn load(
             }
             Ok(Some(record))
         }
-        Err(error) if error.kind() == std::io::ErrorKind::NotFound => Ok(None),
-        Err(error) => Err(ApiError::io(error)),
+        Err(platform_io::fs_safety::Error::Io(error))
+            if error.kind() == std::io::ErrorKind::NotFound =>
+        {
+            Ok(None)
+        }
+        Err(error) => Err(crate::upload_fs_error(error)),
     }
 }
 /// Every filesystem task shares this owner. Cancellation cannot settle its
@@ -254,7 +248,11 @@ pub(crate) struct ExistingPrefix {
 }
 impl ExistingPrefix {
     pub fn open(root: &Path, record: &UploadRecord) -> Result<Option<Self>, ApiError> {
-        let file = fs::File::open(root.join(&record.data_file)).map_err(ApiError::io)?;
+        let directory = PrivateDirectory::open_trusted(root).map_err(crate::upload_fs_error)?;
+        let name = EntryName::new(&record.data_file).map_err(crate::upload_fs_error)?;
+        let file = directory
+            .open_payload(&name, false)
+            .map_err(crate::upload_fs_error)?;
         let length = file.metadata().map_err(ApiError::io)?.len();
         if length < record.persisted_bytes || length > record.logical_size {
             return Err(ApiError::new(
