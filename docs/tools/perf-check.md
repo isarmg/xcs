@@ -8,16 +8,16 @@
 
 ## 重现方式
 
-使用仓库指定的 Rust 1.99 工具链：
+使用仓库指定的 Rust 工具链；baseline.json 是按相同条件另行生成的基线：
 
 ```sh
 cargo run --locked -p perf-check -- 64 > current.json
-python3 tools/perf-check/compare.py tools/perf-check/results/baseline-92cd662.json current.json --require-incremental
+python3 tools/perf-check/compare.py baseline.json current.json --require-incremental
 ```
 
 位置参数为保留的单文件保存次数（4—4096），默认 64。比较时保持次数、依赖锁文件、构建配置、机器和文件系统条件一致。较大规模可选 64、256、1024，但需预留较多时间和空间：历史元数据仍保留，启动恢复仍扫描持久证据。计时包含 fsync，对共享机器负载、缓存冷热和文件系统实现高度敏感，有意不作为通过/失败门禁。
 
-重现历史基线时，将提交 `92cd662` 归档到新的临时目录，再把提交 `728358018330027e67a4db5d389d32b42cc0c192` 的 `tools/perf-check`（改名前测试工具）复制到该归档。不要对旧 crate 路径使用改名后的工具。以历史锁文件及构建配置，针对基线 crate 运行其 manifest；不得替换当前工作副本或跨版本复制模拟池。每份报告来自新初始化的池。UUID 和时间戳会变化，因此元数据字节数用于描述，不是逐字节黄金夹具。
+比较前后实现时，应在隔离检出中使用各自匹配的工具与锁文件，为每次运行建立新池，不替换当前工作副本或跨版本复制模拟池。输入规模和环境须一致；报告随 CI 产物或独立测量归档保存，不把单次计时作为产品性能承诺。
 
 <a id="workload-and-checks"></a>
 

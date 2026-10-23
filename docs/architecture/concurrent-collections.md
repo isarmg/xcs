@@ -2,7 +2,7 @@
 
 # 并发集合
 
-`src/foundation/concurrency/concurrent-collections` 是一个 Rust 包，公开 `utilities`、`epoch`、`queue`、`deque` 四个明确命名空间，替代独立的 Crossbeam 工具、回收、队列与工作窃取包。Rayon 和 SQLite 访问层使用同一包，不经过兼容别名。
+`src/foundation/concurrency/concurrent-collections` 是一个 Rust 包，公开 `utilities`、`epoch`、`queue`、`deque` 四个明确命名空间。Rayon 和 SQLite 访问层使用同一包，不经过兼容别名。
 
 - 无特性：`no_std` 工具原子、退避与缓存行填充。
 - `alloc`：存在指针原子时提供 epoch 回收与分配型队列。
@@ -22,12 +22,10 @@
 
 ## 验证与限制
 
-隔离候选执行 41 项保留单元测试、60 项可独立运行的保留集成测试、四项附加 Rayon/队列/析构/窃取检查、265 项通过的文档测试（五项上游原有忽略），以及六项原生/WASM 特性检查和无分配 API 负向检查。Rayon 与 SQLite 消费者编译到同一包。原子顺序、unsafe、静态值、TLS token 清单比较只作为评审辅助，不是语义证明。
-
 六份需要缺失 `rand` 开发依赖的集成源码继续保留，不计作执行。Loom 测试源码与配置分支保留，但没有 Loom 提供者，不宣称运行了 Loom 或 Miri。WASM 结果仅为编译检查，不是浏览器线程执行。这些检查不证明穷尽调度，也不证明性能改善。
 
 <a id="maintained-verification"></a>
 
 ## 持续验证
 
-运行 `python3 .github/scripts/check-concurrent-collections.py`。基础 CI 调用此门禁，执行上述六项特性构建、分配 API 拒绝、41 项单元、60 项集成、四项并发/Rayon 与 265 项文档测试（五项原始忽略）。临时 manifest 和锁文件不改变根锁或受治理源码字节。缺失 rand 的六项集成、Loom、Miri 和穷尽调度仍明确未验证。
+运行 `python3 .github/scripts/check-concurrent-collections.py`。基础 CI 调用此门禁，执行原生/WASM 特性构建、分配 API 拒绝、保留单元/集成/文档测试，以及并发、Rayon、析构和窃取回归。临时 manifest 和锁文件不改变根锁或受治理源码字节。缺失 rand 的六项集成、Loom、Miri 和穷尽调度仍明确未验证。

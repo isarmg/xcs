@@ -97,9 +97,9 @@ def document(root, catalog, policy):
                 usage.append(f"{resolution['profile']}@{resolution['target']}: {'+'.join(value['roles'])}; features={','.join(value['features']) or '(none)'}")
         lines.append('| ' + ' | '.join(map(cell, [f"{path} ({package['name']}@{package['version']})",
                                                        '; '.join(consumers.get(path, [])) or '工作区入口/显式验证成员', '; '.join(usage)])) + ' |')
-    lines += ['', '## 合并来源身份', '', '| 上游身份 | 当前实现目录 | 决策 |', '| --- | --- | --- |']
+    lines += ['', '## 合并来源身份', '', '| 上游身份 | 当前实现目录 |', '| --- | --- |']
     for merge in sorted(catalog.get('merges', []), key=lambda item: item['origin_directory']):
-        lines.append('| ' + ' | '.join(map(cell, [f"{merge['upstream']['name']}@{merge['upstream']['version']}", merge['directory'], merge.get('changes', '')])) + ' |')
+        lines.append('| ' + ' | '.join(map(cell, [f"{merge['upstream']['name']}@{merge['upstream']['version']}", merge['directory']])) + ' |')
     lines += ['', '## 锁文件与构建矩阵边界', '',
               '- 根 `Cargo.lock`：唯一活动产品/工具工作区，全部依赖为本地 path。',
               '- `.github/security-tools/cargo-audit-0.22.2.lock`：固定外部安全审计工具的安装闭包，受独立安装校验管理。',

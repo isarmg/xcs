@@ -30,6 +30,8 @@
 
 来源目录另将 `sqlite-pool-validation` 记录为非生产、编译用途 profile，以 `platform-io` 为根且仅启用 `sqlite-pool`，对应可选平台测试。原生池通知仍需要 `parking`；它既不是默认产品依赖，也不是可退役的无用包。特性专用元数据与默认 profile 独立解析，闭包记录请求特性集合。
 
+`?NNN` / `$NNN` 参数要求完整 ASCII 十进制及溢出检查，拒绝零、非法后缀和超范围序号；保留前导零、重复/重排参数及缺参为 NULL，并继续检查缺参之后的参数。直接连接、URL 和连接池各有实际 SQLite 回归。
+
 直接工作线程测试保留内存隔离/共享、绝对/相对文件名、字面 Unicode/百分号/查询字符、URI 选项编码、事务/savepoint/回滚、错误及显式关闭。非 UTF-8 文件名仍在打开原生连接前返回既有 `InvalidData`，不静默扩大文件名契约。
 
 JSON、UUID、regexp、离线元数据、序列化、位向量及 IP 地址类型均显式启用。`sqlite-deserialize`、`sqlite-load-extension`、`sqlite-preupdate-hook`、`sqlite-unlock-notify` 保留能力开关。`sqlite-unbundled` 使用真实系统 SQLite 头与库，不是第二个驱动。整合不恢复 PostgreSQL、MySQL、migration、通用 Any 驱动或运行时/TLS 选择器。

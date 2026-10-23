@@ -137,7 +137,7 @@
 
 ## 8.6 盘格式与规范编码
 
-当前唯一盘格式采用以下约束；[第 23 章](23-delivery-and-decisions.md)要求在实际使用前交付与其一致的机器可读 schema 和固定测试向量。文档中的简写 ID 只用于说明。实际 ID 为实体前缀、下划线及 32 位小写十六进制随机值；前缀固定为 pool/repo/history/topology/placement/br/commit/link/tree/entry/file/ver/payload/rep/plan/ws/tx/op/disk/lease/session/recovery/req。随机值来自密码学安全随机源，创建时仍检查唯一性；已登记ID不重新生成。用户指定的slot_id另用稳定ASCII标识（如P01/B01），限定字母开头、后接字母数字或下划线/连字符、最多64字节；大小写不敏感唯一，改展示名不改其引用身份。
+当前唯一盘格式采用以下约束；对应机器可读 schema、固定测试向量及未覆盖范围见[契约附件](contracts/README.md)。文档中的简写 ID 只用于说明。实际 ID 为实体前缀、下划线及 32 位小写十六进制随机值；前缀固定为 pool/repo/history/topology/placement/br/commit/link/tree/entry/file/ver/payload/rep/plan/ws/tx/op/disk/lease/session/recovery/req。随机值来自密码学安全随机源，创建时仍检查唯一性；已登记ID不重新生成。用户指定的slot_id另用稳定ASCII标识（如P01/B01），限定字母开头、后接字母数字或下划线/连字符、最多64字节；大小写不敏感唯一，改展示名不改其引用身份。
 
 | 项目 | 规范要求 |
 | --- | --- |

@@ -44,20 +44,7 @@ manifest 合并实现所需许可义务，各来源记录仍保留独立许可�
 
 可运行的原始语法/字面单元套件仍接入实际生产模块。项目 `test/regex-family/retained_regressions.rs` 适配器运行既有高层回归、替换及 fuzz 回归，不改变断言或提供假辅助实现。
 
-完整自动机单元框架仍需要缺失的真实 `quickcheck`、`bstr` 及声明中的 `env_logger` 测试依赖；上游 TOML 汇总套件需要缺失的 `regex-test`。这些是不可运行套件，不是通过的测试，源码继续保留。上游原有昂贵 fuzz 忽略项仍明确忽略，并非本次新增压制。移除了缺失 `doc_comment` 的 README 引入，Rust API 示例仍直接供 rustdoc 使用。
-
-<a id="recorded-verification-for-this-isolated-consolidation"></a>
-
-### 本次隔离整合记录的验证
-
-- 147 项语法单元和 163 项字面单元通过。
-- 52 项高层上游回归通过；原忽略的 `fuzz1` 单独运行并通过，共 53 项。
-- 17 项原 `matchers` 单元与四项直接消费者行为通过，覆盖流式匹配、fancy 反向引用/后向断言、schema 转换和 tracing 字段过滤。
-- 845 项 API 文档测试通过；七份上游原有说明片段保持忽略。
-- 42 种原生与 14 种 WASM 特性配置通过，包含全部保留单项特性、全特性及无分配 DFA 搜索。
-- 八项正/负 API 边界探针与五项已删除特性拒绝探针通过。
-
-这些记录不表示不可用的 quickcheck/regex-test 已执行。既有 nightly 语法基准保留在 `src/foundation/text-unicode/regex/benches/syntax.rs`，稳定工具链下明确不注册，不静默丢弃或称为通过。
+完整自动机单元框架仍需要缺失的真实 `quickcheck`、`bstr` 及声明中的 `env_logger` 测试依赖；上游 TOML 汇总套件需要缺失的 `regex-test`。这些是不可运行套件，不是通过的测试，源码继续保留。上游昂贵 fuzz 用例的默认忽略状态保持明确，门禁可显式执行相关回归；Rust API 示例直接供 rustdoc 使用。
 
 <a id="maintained-verification"></a>
 

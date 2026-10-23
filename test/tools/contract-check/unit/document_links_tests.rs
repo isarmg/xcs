@@ -37,7 +37,8 @@ fn excludes_only_generated_output_in_declared_evidence_directories() {
         "test/evidence/run/seed.rs",
         "test/evidence/run/helper.py",
         "test/evidence/run/check.sh",
-        "docs/validation/evidence/README.md",
+        "docs/tools/contract-check.md",
+        "compliance/validation/foundation/proof.json",
     ] {
         assert!(!generated(Path::new(path)), "{path}");
     }

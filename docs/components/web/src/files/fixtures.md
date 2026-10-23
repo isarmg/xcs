@@ -2,7 +2,7 @@
 
 # 发布收据回归测试数据
 
-这些完整 API 响应由现有 `storage-server` HTTP Engine 测试于 2026-10-19 从合成的临时三盘 Engine 测试池中捕获：
+这些完整 API 响应来自 `storage-server` HTTP Engine 的合成临时三盘测试池：
 
 - `damage_after_normal_publication_keeps_original_target_met_in_save_wire`
 - `recovered_permanent_loss_returns_degraded_save_wire_with_frozen_unavailable_slots`

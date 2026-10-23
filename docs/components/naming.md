@@ -6,9 +6,7 @@
 
 Unicode 数据来自 Unicode Consortium 的 16.0.0 UCD（https://www.unicode.org/Public/16.0.0/ucd/），适用 Unicode 数据许可：https://www.unicode.org/license.txt 。NFC 实现从 `unicode-normalization` 0.1.24 直接合入 `src/naming/src/unicode/` 私有模块，与命名策略共同编译；原始包身份、许可证和合并映射保留在[统一来源清单](../THIRD_PARTY_RUST_SOURCES.md)，不再保留独立规范化包。
 
-内部 `unicode::nfc_casefold` 将 NFC、固定映射大小写折叠、再次 NFC 合为迭代器流水线，省去原先两份完整中间字符串；命名策略、固定数据和已持久化键的字节形式保持一致。纯 ASCII 键直接执行固定的 ASCII 小写映射；其他键预留最终输出容量，并对 ASCII 字符跳过 Unicode 表二分查找。组合字符序列仍按 Unicode 规范缓冲，名称和路径预算仍由本 crate 校验。`test/naming/unit/key_tests.rs` 对所有 Unicode 标量、全部折叠表项及相邻组合字符验证与原实现一致；可用 `cargo run -p name-policy --example key_profile --release --locked --offline` 重复测量运行时间。
-
-2026-10-20 在 Ryzen 5 3550H、Rust 1.99.0 的本地 release 测量中，每组执行 60,000 次查找，交替测量旧实现和新实现 5 轮并取中位数。两次完整运行得到的新/旧耗时比分别为：ASCII `0.006 / 0.009`，多语言 `0.707 / 0.714`，组合字符 `1.101 / 0.956`。共享构建负载影响绝对耗时；组合字符组有一次慢约 10%，没有稳定加速结论。这些是本地命名微测量，不能代表整个存储系统或其他平台性能；省去完整中间字符串的结构变化仍需保留必要的组合序列缓冲。
+内部 `unicode::nfc_casefold` 将 NFC、固定映射大小写折叠、再次 NFC 合为迭代器流水线，不创建完整中间字符串，持久化键字节形式由固定命名规则决定。纯 ASCII 键直接执行固定的 ASCII 小写映射；其他键预留最终输出容量，并对 ASCII 字符跳过 Unicode 表二分查找。组合字符序列仍按 Unicode 规范缓冲，名称和路径预算仍由本 crate 校验。`test/naming/unit/key_tests.rs` 对所有 Unicode 标量、全部折叠表项及相邻组合字符验证与原实现一致；可用 `cargo run -p name-policy --example key_profile --release --locked --offline` 重复测量运行时间。
 
 源文件 SHA-256：
 

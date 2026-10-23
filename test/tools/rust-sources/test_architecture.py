@@ -1,5 +1,6 @@
 """Consumer index must distinguish declaration edges from selected closures."""
 import importlib.util
+from copy import deepcopy
 from pathlib import Path
 import tempfile
 import unittest
@@ -10,6 +11,27 @@ SPEC.loader.exec_module(architecture)
 
 
 class ConsumerEdges(unittest.TestCase):
+    def test_merged_source_index_keeps_identity_without_reprinting_history(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / 'Cargo.toml').write_text('[workspace]\nmembers = []\n', encoding='utf-8')
+            catalog = {
+                'packages': {}, 'resolutions': [],
+                'merges': [{
+                    'directory': 'src/foundation/current-owner',
+                    'origin_directory': 'vendor/original-1.0',
+                    'name': 'current-owner', 'version': '1.0',
+                    'upstream': {'name': 'original', 'version': '1.0'},
+                    'changes': '2026-10-20 implementation review: docs/reports/old-review.md',
+                }],
+            }
+            original = deepcopy(catalog)
+            document = architecture.document(root, catalog, {'profiles': []})
+            self.assertIn('| original@1.0 | src/foundation/current-owner |', document)
+            self.assertNotIn('2026-10-20 implementation review', document)
+            self.assertNotIn('docs/reports/', document)
+            self.assertEqual(catalog, original, 'rendering must not rewrite provenance')
+
     def test_generated_product_roles_use_the_current_rescue_entrypoint(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)

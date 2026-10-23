@@ -1,6 +1,6 @@
 # ZXS 验证体系
 
-详细目录与来源约束见[测试结构](architecture/test-layout.md)，迁移核对见[测试分离记录](reports/test-layout-20261021.md)。
+详细目录与来源约束见[测试结构](architecture/test-layout.md)。
 
 测试实现统一位于仓库根 `test/`，按原组件和测试类型组织；通过原 Cargo 包的测试入口访问业务实现，不建立重复业务规则，也不为了外置单元测试扩大生产 API。
 
@@ -18,21 +18,13 @@
 | `test/smb-vfs/unit/asynchronous/` | 真实 SDK 事件库下的异步完成和取消生命期 |
 | `test/interface/integration/` | CSR 状态与生命周期 |
 | `tools/contract-check/` | schema、OpenAPI、固定样例和补充语义检查 |
-| `evidence/` | 入库的验证说明与检查代码；执行生成的日志、JSON 和截图仅在本机保留，不保存凭据 |
+| `test/evidence/` | 保留探针的源代码与固定输入，使用限制见[探针操作](validation/evidence.md) |
 | `../test/tools/contract-check/gitignore.rs` | 临时 Git 仓库中的目录忽略策略回归，保护源码和固定样例，排除运行生成物 |
 
-执行命令、环境和当前限制集中在 [实现报告](reports/implementation.md)。核心的故障注入只能由可信进程调用，不提供远程故障开关。临时目录模拟盘不作为三个物理设备或断电持久性证明。
+## 执行与结果
 
-`evidence/` 中 README 的执行结论及测试程序保留在 Git；原始日志、截图、请求记录、构建收据与结果 JSON 均由测试生成，可通过独立归档共享。固定的测试输入与所属测试一起放在根 `test/` 的组件子目录，不能因文件较小就把生成结果当作固定样例。文档检查单独报告未生成的验证附件，缺少源码、检查程序或公开契约仍报错。
+执行入口见[CI](ci.md)、[浏览器冒烟](tools/browser-smoke.md)及[发行验收清单](validation/release-checklist.md)。结果须绑定实际提交、构建产物、输入和环境，失败、取消、跳过与未执行不能记为通过。
 
-第 22 章是完整产品验收清单。当前测试没有逐一覆盖所有用例；真实 Btrfs 故障、SMB 跨平台应用完整矩阵和平台设备测试须分别补齐。已执行的 SDK、官方客户端及浏览器用例与这些待验收项分别记录。
+日志、截图、请求记录及结果 JSON 保存到 CI 产物或独立验收归档，不写成仓库中的历史报告。固定测试输入与测试源码一起维护；校验所需的不可变来源材料保存在 compliance，不因清理文档而删除。
 
-2026-10-19 全项目维护性优化的阅读范围、具体问题、源文件摘要和集成验证见[检查记录](validation/evidence/maintainability.md)及[逻辑与模块梳理](reports/code-review-20261019.md)。浏览器检查使用当前候选的实际 WASM，额外改变共享几何 token 验证多页同步，不用逐页重复声明尺寸；登录保持独立。
-
-2026-10-19 最新分支与批量文件操作的核心恢复、HTTP、Unix 描述符、Web 和本地服务证据见[分支实现记录](reports/branch-system-implementation.md)及[验收材料](validation/evidence/branch-operations.md)。文档图示检查与这些业务验证分别记录。
-
-历史 JavaScript 探针的完整分类、显式夹具配置及静态 CI 门禁见[证据索引](validation/evidence.md)。当前生产浏览器验收由 [browser-smoke](tools/browser-smoke.md) 单独维护；历史脚本语法通过不替代实际浏览器运行。
-
-## 历史附件路径说明
-
-[2026-10-20 SMB 审查](validation/evidence/smb/review-2026-10-20.md)中的三条 `tests/evidence/smb/review-2026-10-20/` 链接引用当时生成的 `sdk-build.txt`、`validation.txt` 和 `repeated-tests.txt`，不是当前测试源码。当前测试根目录为 `test/`，但本源码检出也没有对应的 `test/evidence/` 日志；仅替换目录名不会恢复附件。保留报告与迁移原件的历史路径，不伪造日志或宣称已重新验收。需要原始输出时使用当次独立归档；需要当前结果时按 [SMB SDK 验证入口](components/smb.md)重新运行并另记证据。契约检查将此类缺失生成附件单列，不放宽源码链接要求。
+核心故障注入仅用于可信测试进程，不提供远程故障开关。真实 Btrfs、设备故障、断电及 SMB 客户端矩阵必须在经授权的一次性环境另行验收；临时目录模拟盘、编译和浏览器冒烟不能替代这些结果。完整产品验收要求见[第 22 章](22-acceptance.md)。

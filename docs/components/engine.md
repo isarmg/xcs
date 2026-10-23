@@ -16,7 +16,7 @@
 | `business/namespace.rs` | 唯一的路径校验、父目录约束、命名空间改动与工作区冲突规则 |
 | `business/ancestry.rs` | 基于子节点索引的提交后代查询，供拆分与历史包校验复用 |
 | `journal.rs` / `metadata_budget.rs` | 哈希对象、日志帧、证明与实际序列化大小限制 |
-| `container_storage.rs` | 普通版本文件、真实容器改名、继承引用缓存及旧空 stub 的安全兼容清理 |
+| `container_storage.rs` | 普通版本文件、真实容器改名、继承引用缓存与格式准入 |
 | `historical_save.rs` / `maintenance.rs` | 历史另存分支、计划、清理与历史拆分 |
 | `history_package.rs` | 可独立校验、导出、恢复的完整历史包 |
 | `repair.rs` / `degraded_recovery.rs` | 修复原始候选与显式永久丢失恢复 |
@@ -28,9 +28,9 @@
 
 恢复读取 candidate/publication 时逐份验证日志绑定的精确摘要，不因首份对象缺失或损坏就忽略健康副本。仅用验证通过的对象修复安全的普通文件或缺失目标；所有副本失效时停止，不用多数票替代摘要，也不覆盖符号链接或硬链接目标。
 
-SQLite、容器 container.json 及当前名称是可重建投影，不能替代发布记录和不可变证明。新建分支不生成 pending-branches/*.pending，也不为 legacy 来源创建空容器；只安全清理旧零字节单链接 stub。活动文件分支、工作区和读租约固定正文；目录只固定选中及尚未完成分支的当前 head，不永久固定旧子树。
+SQLite、容器 container.json 及当前名称是可重建投影，不能替代发布记录和不可变证明。新建分支不生成占位文件；检测到 legacy 或 pending-branches 旧容器结构时返回 `FORMAT_UNSUPPORTED`，不删除或迁移原材料。活动文件分支、工作区和读租约固定正文；目录只固定选中及尚未完成分支的当前 head，不永久固定旧子树。
 
-读取继承冻结父版本，范围编辑保留父未改字节；零字节或同摘要首写仍建立独立版本。历史另存只为 staged 文件生成 FULL。Branch/Commit 空映射及新增目录 map 省略序列化，旧规范字节和 FULL 证明保持。语义、目录子树与默认视图见[分支说明](../reports/lazy-branches-20261019.md)。
+读取继承冻结父版本，范围编辑保留父未改字节；零字节或同摘要首写仍建立独立版本。历史另存只为 staged 文件生成 FULL。Branch/Commit 空映射及新增目录 map 省略序列化，旧规范字节和 FULL 证明保持。语义、目录子树与默认视图见[分支说明](../design/branch-system-logic.md)。
 
 ## 共享规则与扩展位置
 

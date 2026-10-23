@@ -27,9 +27,7 @@ CARGO_INCREMENTAL=0 cargo test -p contract-check \
 
 校验器不启动服务或访问数据盘，不能证明协议端点、三盘持久性、模型或真实平台已经验收。HTTP/文件引用解析特性在 `jsonschema` 依赖中关闭；OpenAPI 包内只允许可解析的本地 `$ref`。
 
-已在移植时对同一份文档核对：原校验器与 Rust 工具均通过 2 份 schema、6 条 OpenAPI 路径、31 个字段/语义向量、3 个规范编码向量、2 个校验清单向量、5 个严格 JSON 拒绝样例和当时的 489 条本地链接。后续文档链接数随实际内容变化，不固定计数以掩盖新增或删除。
-
-本轮待写入分支的新增向量与执行结果单独保存在[契约记录](../validation/evidence/inherited-branches/contract.md)，旧计数保持其历史范围。
+检查数量由当前输入决定，不固定旧报告计数。
 
 依赖来源与许可：
 

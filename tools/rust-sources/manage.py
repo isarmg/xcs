@@ -906,7 +906,8 @@ def cell(value):
 def document(catalog, policy):
     lines = ["# Rust 第三方源码来源与使用清单", "",
              "本仓库只有根 Git 仓库、根 Cargo workspace 与根 Cargo.lock。活动 Rust 依赖全部通过仓库内 path 连接；基础实现位于 src/foundation，界面内核与命名规范化实现分别整合进 src/interface 与 src/naming。没有独立第三方工作区或独立锁文件。", "",
-             "foundation 的 219 个包按职能归入 12 个分类目录，分类不减少包数量，也不改变 Cargo 名称、版本或上游身份；分类边界见 docs/architecture/foundation-groups.md。独立布局收据记录精确旧根到新根映射及可逆路径改写，原始测试、重命名、合并、裁剪等历史收据保持原样。精确来源及原始逐文件摘要见 compliance/provenance/origins.json；当前源码逐文件摘要、单锁文件及各目标闭包见 compliance/rust-sources.json；法律材料统一见 compliance/NOTICE.md 和 compliance/licenses。集中管理不改变各上游许可，也不把改造代码全部重新许可为根项目许可。", "",
+             "基础库按职责分类，目录边界见 [基础库分组](architecture/foundation-groups.md)。精确来源及原始逐文件摘要见 [原始来源清单](../compliance/provenance/origins.json)；当前源码逐文件摘要、单锁文件及各目标闭包见 [来源账本](../compliance/rust-sources.json)；法律材料统一见 [NOTICE](../compliance/NOTICE.md) 和 compliance/licenses。集中管理不改变各上游许可，也不把改造代码全部重新许可为根项目许可。", "",
+             "本仓库中的第三方实现是经过本地定制、裁剪或合并的维护版本，并非未经修改的上游发布包。逐项修改说明保留在来源账本的 packages / merges 条目，当前文件摘要与原始摘要分别登记；以下仅列当前来源身份、位置、许可和使用边界，不重复维护过程记录。", "",
              "runtime 是统一工作区特性图中 normal 边可达的运行候选；compile 包括 build/proc-macro 子图及维护工具。Cargo 先统一整个 workspace 的 features，再从各登记入口遍历；直接 dev 边虽被跳过，其他成员或开发依赖启用的特性仍可能间接扩大 normal/build 可达集合。这是保守可达超集，不是精确单入口运行时闭包或最终链接证明，不能单独据此判定源码可删除。元数据也不替代实际浏览器/SMB 验收或安全审计。每个活动源码身份必须至少进入一个受支持入口/目标的保守超集，移除身份仍须显式退役并保留来源证据。工具链及既有 Samba/SQLite/系统 SDK 管理边界保持独立。", "",
              "修改后显式执行 `python3 tools/rust-sources/manage.py refresh`，审查源码、来源清单与文档差异，再执行 `python3 tools/rust-sources/manage.py verify --metadata`；verify 不接受新哈希。删除依赖必须另提供经复核的 `refresh --retire-plan PLAN.json`，保存已移除实现的最后源码摘要及原因；普通 refresh 拒绝意外丢失目录或改写退役记录。原始身份与法律材料继续保存，不因退役而删除。原始发布包重建工具只向仓库外独立复核目录输出，不覆盖活动源码。", "",
              "同目录上游升级必须追加新的原始发布包及集中材料，并使用经复核的 `refresh --upgrade-plan PLAN.json`。计划 schema 为 1，packages 每项包含 directory、与上次活动记录完全相同的 package、successor_origin_directory、reason 及非空 source_prefixes（例如 `[\"src/\"]`）。升级时逐文件校验这些完整前缀下的源码与新发布包完全一致，不能仅提升版本号；路径清单、缺失、新增和内容差异均拒绝。schema 4 的 superseded 以旧 origin_directory 为键，保留原 package、后继来源、原因和已校验前缀，superseded_records_sha256 固定其摘要。连续升级保留不可改写的直接后继链，最终指向同目录的当前身份或显式退役记录。升级后有意的本地源码修改仍需常规 refresh，不改写上游原始收据。", "",
@@ -920,7 +921,7 @@ def document(catalog, policy):
         if profile.get("features"):
             purpose += "；非产品默认，显式验证特性：" + ", ".join(profile["features"])
         lines.append("| " + " | ".join(map(cell, [profile.get("id", "workspace"), purpose, ", ".join(profile["targets"])])) + " |")
-    lines += ["", "## 逐项来源、许可与改造", "", "| 原始身份 | 当前组件 / 位置 | 许可材料 | 用途与闭包 | 修改及合并 |", "| --- | --- | --- | --- | --- |"]
+    lines += ["", "## 当前源码来源与许可", "", "| 原始身份 | 当前组件 / 位置 | 许可材料 | 用途与闭包 |", "| --- | --- | --- | --- |"]
     for key, package in sorted(catalog["packages"].items()):
         upstream = package["upstream"]
         roles, consumers = set(), set()
@@ -931,35 +932,13 @@ def document(catalog, policy):
         use = "+".join(sorted(roles)) or "保留超集"
         legal = ", ".join(package.get("license_materials", [])) or "原始发布包未提供独立许可资料；查中央来源记录的待复核状态"
         origin = f"{upstream['name']}@{upstream['version']}；{upstream['archive_url']}；SHA256 {upstream['archive_sha256']}"
-        lines.append("| " + " | ".join(map(cell, [origin, f"{package['name']}@{package['version']}；{key}", f"{package.get('license', '见原始声明')}；{legal}", f"{use}；{', '.join(sorted(consumers))}", f"{package.get('status', '已整合')}；{package.get('changes', '')}；{package.get('merged_into', '')}"])) + " |")
+        lines.append("| " + " | ".join(map(cell, [origin, f"{package['name']}@{package['version']}；{key}", f"{package.get('license', '见原始声明')}；{legal}", f"{use}；{', '.join(sorted(consumers))}"])) + " |")
     lines += ["", "## 已合并的上游实现", "", "这些实现保留来源身份与当前文件摘要，已经没有独立 Cargo 包或独立工作区。", ""]
     for merged in catalog.get("merges", []):
         upstream = merged["upstream"]
         usage = [f"{item.get('profile', 'workspace')}@{item['target']} ({'+'.join(item['packages'][merged['directory']]['roles'])})"
                  for item in catalog["resolutions"] if merged["directory"] in item["packages"]]
-        lines.append(f"- `{upstream['name']}@{upstream['version']}` → `{merged['directory']}`；{merged.get('changes', '')}；实际闭包：{', '.join(usage) or '未选中'}；法律材料：{', '.join(merged.get('license_materials', []))}。")
-    lines += ["", "## 已升级替换的历史来源", "",
-              "以下旧发布包已在同一源码目录由后继身份替换，不再作为当前实现参与公告扫描。完整旧活动记录、原始摘要及法律材料保留，不能把历史来源伪装成当前源码或反复改写升级链。当前活动及合并实现仍全部扫描，不设公告豁免。", "",
-              "| 原始身份 | 源码目录 | 直接后继来源 | 升级原因 | 导入校验前缀 |", "| --- | --- | --- | --- | --- |"]
-    for _, receipt in sorted(catalog.get("superseded", {}).items()):
-        package = receipt["package"]
-        upstream = package["upstream"]
-        external = receipt.get("external_tests", {})
-        reason = receipt["reason"]
-        if external:
-            reason += f"；已归档并移除旧版本外置测试 {external['file_count']} 文件 / {external['bytes']} 字节"
-        lines.append("| " + " | ".join(map(cell, [f"{upstream['name']}@{upstream['version']}", package["directory"],
-                     receipt["successor_origin_directory"], reason, ", ".join(receipt["source_prefixes"])])) + " |")
-    lines += ["", "## 已移除的非目标平台与可选实现", "",
-              "以下实现已从活动源码及依赖声明中移除，不参与构建或当前依赖公告扫描。最后源码摘要、移除原因与原始来源仍在 JSON retired 中，原始材料继续保留。重新引入必须经过显式来源登记，不能悄悄恢复目录。", "",
-              "| 原始身份 | 原目录 | 移除原因 | 最后文件数 / 字节 |", "| --- | --- | --- | --- |"]
-    for relative, package in sorted(catalog.get("retired", {}).items()):
-        upstream, retired = package["upstream"], package["retirement"]
-        external = retired.get("external_tests", {})
-        total_files = retired["file_count"] + external.get("file_count", 0)
-        total_bytes = retired["bytes"] + external.get("bytes", 0)
-        lines.append("| " + " | ".join(map(cell, [f"{upstream['name']}@{upstream['version']}", relative,
-                     retired["reason"], f"{total_files} / {total_bytes}"])) + " |")
+        lines.append(f"- `{upstream['name']}@{upstream['version']}` → `{merged['directory']}`；实际闭包：{', '.join(usage) or '未选中'}；法律材料：{', '.join(merged.get('license_materials', []))}。")
     external = catalog.get("external_tests", {})
     external_count = sum(item["file_count"] for item in external.values())
     external_bytes = sum(item["bytes"] for item in external.values())
@@ -971,31 +950,11 @@ def document(catalog, policy):
     lines += ["", "## 根测试目录的来源核算", "",
               f"包内当前文件 {production_count} 个，另有 {len(external)} 个归属目录登记的外置测试文件 {external_count} 个、{external_bytes} 字节；当前来源文件总计 {production_count + external_count} 个。测试从源码目录迁移至 test/，不是删除、裁剪或空间优化，仍完整计入来源覆盖、许可及安全审计。", "",
               "JSON external_tests 按原包目录和原始身份登记精确根目录、原路径、当前路径及逐文件摘要；external_test_mappings_sha256 固定当前映射文档。refresh 先验证外置清单，不能静默吞入新增文件或因目录迁移缩减来源核算。独立说明见 docs/EXTERNAL_TEST_SOURCES.md。", ""]
-    if catalog.get('renames'):
-        lines += ["", "## 已登记的职责命名迁移", "",
-                  "当前名称与目录通过显式 rename-plan 迁移；原始身份、旧源码清单及测试来源标签保持不变。重命名不是删除来源。", "",
-                  "| 原始身份 | 原目录 | 当前目录 | 当前名称 | 原因 |", "| --- | --- | --- | --- | --- |"]
-        for old, record in sorted(catalog['renames'].items()):
-            lines.append("| " + " | ".join(map(cell, [f"{record['package']['upstream']['name']}@{record['package']['upstream']['version']}", old, record['destination_directory'],
-                         record['destination_name'], record['reason']])) + " |")
-    if catalog.get('source_moves'):
-        lines += ["", "## 已登记的内部文件迁移", "",
-                  "内部文件和外置测试路径通过显式 move-plan 一一迁移；包名、目录、版本及原始来源标签不变。连续迁移追加内容寻址收据，不改写旧命名收据。", "",
-                  "| 源码目录 | 生产路径数 | 测试路径数 | 原因 | 收据 |", "| --- | --- | --- | --- | --- |"]
-        for key, record in sorted(catalog['source_moves'].items()):
-            lines.append("| " + " | ".join(map(cell, [record['directory'], len(record['file_moves']), len(record['external_file_moves']), record['reason'], key])) + " |")
+    lines += ["", "## 完整来源证据", "",
+              "已替换或移除的来源不属于当前实现清单，也不参与当前依赖公告扫描；原始身份、法律材料和最后文件摘要仍必须保留。来源账本的 superseded / retired 保存这些证据，renames / source_moves / consolidations 保存名称、路径及合并的可核验关系。它们是完整性门禁的输入，不是当前功能或行为等价证明。当前活动及合并实现仍全部扫描，不设公告豁免；重新引入来源必须显式登记。", ""]
     if catalog.get(benchmark_relocation.KEY):
         lines += ["## 外置保留基准源码", "",
-                  "32 个未启用的历史基准文件已逐字节移至 test；独立追加凭据保留原始来源和合并证据。未运行历史基准，也未启用基准目标。详见 [迁移说明](BENCHMARK_SOURCE_RELOCATION.md)。", ""]
-    if catalog.get('consolidations'):
-        lines += ["", "## 已登记的多来源实现合并", "",
-                  "显式 consolidate-plan 保留各原始身份、版本、许可证、迁移前清单与独立测试来源。生产文件可经审阅合入同一实现；这不是逐字节保留或行为等价证明。外置测试逐一验证可逆改动，原始证据不变。", "",
-                  "| 当前实现 | 原始来源 | 外置测试数 | 收据 |", "| --- | --- | --- | --- |"]
-        for key, record in sorted(catalog['consolidations'].items()):
-            for item in record['inputs']:
-                upstream = item['package']['upstream']
-                lines.append("| " + " | ".join(map(cell, [record['destination_directory'],
-                    f"{upstream['name']}@{upstream['version']}", len((item['external_tests'] or {}).get('files', [])), key])) + " |")
+                  "保留基准源码位于 test，来源身份及文件摘要受独立凭据校验；存在源码不表示已启用或已运行基准目标。详见 [基准来源与维护边界](BENCHMARK_SOURCE_RELOCATION.md)。", ""]
     lines += ["", "## 完整性、安全与验收", "",
               f"共 {len(catalog['packages'])} 个活动源码树、{len(catalog.get('retired', {}))} 个已移除来源、{len(catalog.get('superseded', {}))} 个已升级替换来源，{len(catalog['resolutions'])} 个入口/目标解析组合。原始 archive SHA-256 和原始逐文件摘要独立保留；当前修改、裁剪及合并后的文件另存摘要，不再声称其逐字节等同上游发布包。合并记录见 JSON merges，法律复核状态见 compliance/NOTICE.md。", "",
               "`.cargo/config.toml` 默认离线，并用空 registry 兜底拒绝遗漏的 registry 边。CI 检查所有活动 manifest 的本地路径、全部特性转发、单锁文件、工作区/嵌套 Git 边界、中央原始材料及空 Cargo home 的目标闭包。保留源码必须至少进入一个登记入口的保守可达超集；该记录不证明每个入口实际编译或链接了这些源码。安全门禁扫描全部保留和合并实现的原始身份；已移除实现单列历史记录，本地路径或改名不形成豁免。安全扫描、构建、真实浏览器、真实 Samba SDK 和物理盘故障验证分别提供证据。", ""]

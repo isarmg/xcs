@@ -1,36 +1,37 @@
-# 架构实现专题
+# 架构参考
 
-[文档目录](../README.md) · [架构决策](../adr/README.md)
+[文档目录](../README.md) · [组件说明](../components/README.md)
 
-这些页面解释当前代码的实现边界与优化，不替代编号规范。维护正文以中文为主，保留代码标识、术语和证据引用；新读者可先阅读写入流程，再按源码研究专题。工程维护规则统一见[第 20 章](../20-engineering.md)，专题不另立冲突的规范。
+这里解释当前实现及其边界，不重复维护改进计划、阶段总结或验收流水。行为规范见编号章节，工程规则见[第 20 章](../20-engineering.md)。
 
-- [源码命名迁移与来源架构](source-naming.md)：活动身份、原始来源与互操作边界；配套[职责命名规范](../NAMING.md)。
-- [Foundation 按职能整合方案](foundation-package-consolidation.md)：包数口径、分批合并候选、技术边界与验收标准。
-- [Foundation 职能目录](foundation-groups.md)：219 个包的 12 类父目录、路径维护及来源保护边界。
-- [Foundation CI 分组](foundation-ci.md)：职责分组、单次覆盖、平台准备和 Release 验证屏障。
-- [稳定浏览器响应式边界](reactive-browser-runtime.md)：保留实际 CSR 与客户端模板路径，拒绝无实现的功能开关。
-- [任务执行器契约](task-dispatch.md)：支持的后端、全局初始化、线程局部任务及失败语义。
-- [HTTP 请求体整合](../components/http-body.md)：单包请求体接口、可选工具与通道边界。
-- [并发集合整合](concurrent-collections.md)：队列、工作窃取、内存回收与特性边界。
-- [SQLite 访问层整合](sqlite-access.md)：查询引擎、驱动与 facade 合并边界、可选能力及原始来源。
-- [TOML 职能组件](../components/toml.md)：能力隔离、编辑语义、保留测试和原始来源。
-- [一次写入的完整流程](write-flow.md)：规划、准备、决定、发布和失败边界。
-- [分离工作区准备](detached-workspace-commits.md)：引擎锁、冻结基线、取消和校验凭据。
-- [写入准入](detached-write-admission.md)：准备期间允许和阻止的并发行为。
-- [恢复检查点](verified-recovery-checkpoints.md)：校验与回放条件。
-- [历史增长优化](history-growth-optimization.md)：分页与历史成本。
-- [文件列表投影与键控行](file-list-projections.md)：不可变列表快照、排序与筛选缓存、事件时读取及 DOM 验证边界。
-- [优化状态](optimization-status.md)：已实现项与仍存在的限制。
+## 存储与界面
 
-描述实现时链接实际代码；测量和检查结果保留执行时点，进入 [reports](../reports/README.md) 或对应测试证据目录。未经执行的设备实验保持待验证。
+- [写入流程](write-flow.md)：规划、准备、决定、发布和失败边界。
+- [工作区提交准备](detached-workspace-commits.md)与[写入准入](detached-write-admission.md)：引擎锁、冻结基线、取消和验证。
+- [恢复检查点](verified-recovery-checkpoints.md)：权威证据、修复义务与回放条件。
+- [快照与历史规模](history-growth-optimization.md)：分页、缓存与增长限制。
+- [读取投影](read-projections.md)：请求上下文、复杂度与冻结响应。
+- [文件列表投影](file-list-projections.md)：不可变快照、键控行与事件安全。
+- [浏览器响应式运行时](reactive-browser-runtime.md)：CSR、客户端模板与生命周期。
+- [组件与插槽属性](view-prop-parser.md)：选项语法与诊断。
 
-- [数值 trait 与值类型](numeric.md)：显式启用的算术能力与保留的上游身份。
-- [模式匹配能力与维护验证](pattern-matching.md)
+## 基础能力
 
-- [读取投影与请求内上下文](read-projections.md)：目录读取的复杂度边界与冻结响应保证。
-- [Tracing 埋点与采集](../components/tracing.md)：显式能力、直接 JSON 字段、来源与保留验证。
-- [Unicode 数据职责包](unicode-data-families.md)：能力边界、来源与验证范围。
-- [URL 与编码职责包](url-encoding.md)：能力边界、来源与验证范围。
-- [压缩与校验整合](compression.md)：能力边界、来源与验证范围。
+- [任务调度](task-dispatch.md) · [并发集合](concurrent-collections.md)
+- [SQLite](sqlite-access.md) · [压缩](compression.md) · [Schema 验证](schema-validation.md)
+- [数值](numeric.md) · [日期时间](date-time.md) · [UUID 语法](uuid-format-validation.md)
+- [模式匹配](pattern-matching.md) · [Unicode 数据](unicode-data-families.md) · [URL 编码](url-encoding.md)
+- [表单浮点格式](form-float-formatting.md) · [错误定义](error-definition-naming.md) · [终端样式](terminal-style.md)
+- [原生 C 工具链](native-c-toolchain.md) · [C 表达式解析](binding-expression-parser.md)
 
-- [组件与插槽属性语法](view-prop-parser.md)：共享选项解析、诊断语义与构建依赖边界。
+HTTP、序列化、密码学和其他公共库见[组件目录](../components/README.md)。
+
+## 工程结构
+
+- [Foundation 职能与包边界](foundation-groups.md)
+- [自动生成的消费者与特性索引](foundation-consumers.md)
+- [源码身份与来源边界](source-naming.md)
+- [测试布局](test-layout.md)
+- [Foundation CI](foundation-ci.md)
+
+原始上游文档、许可证及来源证明由集中合规材料管理，不能用本文替代或改写。

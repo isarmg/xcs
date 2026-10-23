@@ -11,6 +11,7 @@
 | [平台](platform.md) | Linux 文件系统、数据库与凭据基础设施 |
 | [引擎](engine.md) | 存储、版本、分支、备份与恢复 |
 | [服务端](server.md) | HTTP API、会话与本机桥接 |
+| [日常管理](daily-management-coverage.md) | 当前管理页面、端点及操作边界 |
 | [客户端](client.md) | 运维客户端的 HTTP 与完整性校验 |
 | [离线救援](rescue.md) | 明确隔离的核验、恢复和历史包命令行工具 |
 | [Web 产品界面](web.md) | 浏览器用户操作与 WASM 构建 |
@@ -19,4 +20,4 @@
 
 业务契约的唯一机器可读入口见 [contracts](../contracts/README.md)；Rust 类型位于 `src/contract/`。过程宏由 `src/macros/` 编译，原始许可与来源见 [集中通知](../../compliance/NOTICE.md)。基础实现的逐项来源、许可和当前路径见 [Rust 来源清单](../THIRD_PARTY_RUST_SOURCES.md)。
 
-基础异步库的能力与来源边界见 [Futures](futures.md)。
+基础组件的能力与依赖边界见[基础能力目录](../architecture/foundation-groups.md)；具体参考包括 [Futures](futures.md)、[密码学核心](cryptographic-core.md)、[数据序列化](data-serialization.md)、[HTTP 传输](http-transport.md)和 [TOML](toml.md)。

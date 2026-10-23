@@ -1,6 +1,6 @@
 # ZXS SMB 桥接
 
-本目录包含 `smb-protocol` 本机协议与 `smb-vfs` Rust 模块。已重新使用官方 Samba 4.23.0 编译 SDK 并验证 VFS。2026-10-18 的文档另报告过加载 `smbd` 和官方客户端 SMB3.11 文件往返，但其原始日志不在当前 checkout，本轮未重新验证该运行时结果。当前可复核记录、历史声明与未测范围见[验证记录](../validation/evidence/smb.md)。这不是跨平台应用、生产认证配置或故障恢复矩阵全部通过的声明。
+本目录包含 `smb-protocol` 本机协议与 `smb-vfs` Rust 模块，目标 ABI 固定为官方 Samba 4.23.0 SDK。Samba/smbd 提供网络服务，ZXS 通过受保护的本机 RPC 执行授权和存储操作。编译、单元测试与真实客户端互操作须分别验证。
 
 ## 目录与职责
 
@@ -89,7 +89,7 @@ CARGO_INCREMENTAL=0 cargo build --locked --offline \
 
 构建需要 libclang。`build.rs` 检查源码 `VERSION` 和 `source3/include/vfs.h` 的接口版本，然后从 `includes.h`、`smbd/smbd.h`、`smbd/globals.h` 生成实际 ABI。不同 configure 的额外 include/define 参数必须来自对应 SDK；缺失时构建失败，不能换成猜测的类型定义。
 
-模块文件生成在 `target/native/release/libsmb_vfs.so`，按目标 SDK 的模块路径提供 `zxs.so`。2026-10-20 前一轮 SDK 配置快照（本次关闭生命周期修改之前）的 release 文件 SHA-256：`c72636bbdb5aa31b8b217f7b503828447edeb7fa4b85663dcae9f011c8eadce2`（不是当前源码或跨平台/跨 SDK 配置的固定产物摘要）。SDK 测试还需要链接配置对应的 tevent/talloc 库。
+模块文件生成在 `target/native/release/libsmb_vfs.so`，按目标 SDK 的模块路径提供 `zxs.so`。SDK 测试还需要链接该配置对应的 tevent/talloc 库。
 
 共享配置的基本形状如下。模块参数使用独立键，不能用逗号拼进 `vfs objects`：
 
@@ -113,23 +113,23 @@ CARGO_INCREMENTAL=0 cargo build --locked --offline \
     follow symlinks = no
 ```
 
-`path` 只能是专用空目录，不能指向版本目录、数据盘根或工作区。历史文档报告测试目录保持为空、配置通过 `testparm`，但当前缺少其原始日志，本轮未重跑；当时 loopback、guest Unix UID 为 root 的测试设置用于验证受限非管理员 ZXS 映射，不是生产认证模板，也不能证明普通 Unix 用户切换时的连接权限。生产用户认证、SMB 最低版本、签名、加密及可信 UID 的完整链路仍须单独验收。
+`path` 只能是专用空目录，不能指向版本目录、数据盘根或工作区。上线前使用 `testparm` 检查配置，并验证生产用户认证、SMB 最低版本、签名、加密和可信 UID 链路。不要为了消除浏览权限警告而放宽核心 socket 或私有目录权限。
 
 ## 验证范围
 
-此前报告的测试快照（不代表本次关闭生命周期修改已重跑真实 SDK）：
+```sh
+cargo test --locked --offline -p smb-protocol
+cargo test --locked --offline -p storage-server smb_rpc::tests
+bash .github/scripts/smb-sdk.sh
+```
 
-- 协议与客户端测试 6 项：实际 Unix socket SCM_RIGHTS 转交及 CLOEXEC、超长帧头拒绝、远端错误保留 code/operation_id 并映射文件系统 errno，以及非法帧后拒绝遗留成功响应、发送失败使所有 clone 断开、业务错误后连接仍可用。
-- 服务端桥接测试包括：真实开发模式三盘核心的完整保存与旧版本读、实际发布后丢回执并重试、同文件跨会话锁与 close 保存、不同文件交错发布、命名空间局部锁与仅大小写替换、丢回执后的新字节保留、外部改动拒绝覆盖并保留暂存、任务取消清理，以及已开读句柄的实时撤权。
-- SDK 真实库测试 7 项：共享根绝对路径隔离、失败查询保留调用者文件名、异步等待不阻塞宿主事件循环、取消后不触碰已释放宿主状态、锁失败或保存失败仍关闭已移除句柄，以及输入空值/长度检查与异步结果越界拒绝。历史 SMB 服务实测记录中的 4 项是当时的测试快照；本轮只重新执行 SDK 单元测试，未重启 `smbd`。
-- 历史文档报告的官方客户端（原始日志当前不可用，本轮未重跑）：`SMB3_11`、模块加载、新文件 83 字节保存并成功 CLOSE、3407872 字节往返比对、43 字节原子覆盖、仅大小写改名及不区分大小写再打开。子目录创建与子文件另在扩展测试执行；原始批次当前不在 checkout，不能当作本轮可复核证据。
-- 测试命令：`cargo test --locked --offline -p smb-protocol`；`cargo test --locked --offline -p storage-server smb_rpc::tests`。环境隔离禁止 Unix socket 时需在具备对应能力的测试环境运行，不能将该限制写成测试通过。
+协议与客户端测试检查真实 Unix socket SCM_RIGHTS、CLOEXEC、帧限制、业务错误、失败后的全克隆断开及拒绝遗留响应。服务端桥接测试检查完整保存、旧版本读取、未知发布结果、路径锁、交错发布、命名空间事务、暂存保留、取消与实时撤权。环境禁止 Unix socket 时，应在具备相应能力的环境运行，不能把未执行写成通过。
 
-关闭生命周期回归源码位于 `test/server/unit/smb_rpc/close_tests.rs`：实际 Unix RPC 和真实开发核心共用 VFS 的描述符关闭策略，覆盖上传拒绝、未决操作、工作区清理失败、丢失已发布回执和锁中毒；检查原字节/恢复记录、同连接及另一连接重新写打开、无关句柄继续保存、终结 handle 不再重提交。该链路不加载 Samba，不能替代固定 SDK ABI 和真实客户端验收。
+`test/server/unit/smb_rpc/close_tests.rs` 复用 VFS 描述符关闭策略，通过实际 Unix RPC 和开发核心检查上传拒绝、未决操作、工作区清理失败、丢回执、锁中毒及句柄终结。此链路不加载 Samba，不能替代固定 SDK ABI 或真实客户端验收。
 
-尚未执行：真实客户端 write-through/FLUSH、Windows/macOS/移动端应用保存与临时文件多句柄矩阵、断网重连、故障注入、真实设备掉电及多账户认证部署。文件存在活动写句柄时，覆盖该路径的命名空间变更会拒绝，不能将已测的关闭后改名解释为所有编辑器保存模式均可用。当前未完整建模文件系统时间戳，剩余空间报告仍来自宿主文件系统，不能当作保护路由可用容量。
+上线前另行验证真实客户端 write-through/FLUSH、不同系统/编辑器的临时文件与多句柄保存、断网重连、故障注入、真实设备断电和多账户部署。活动写句柄覆盖的路径拒绝命名空间变更，关闭后改名成功不代表所有编辑器保存模式可用。文件系统时间戳未完整建模；剩余空间来自宿主文件系统，不等于保护路由可用容量。
 
-历史文档报告 `testparm` 在私有目录 `0700` 上产生建议 `0755` 的浏览警告，同时共享列目录成功，并称未为消除警告放宽核心私有 socket 或目录权限；这些原始日志当前不可复核。2026-10-20 本轮仅构建 SDK/模块和执行单元测试，没有启动 `smbd`、安装系统服务或公开网络端口。
+## 未确认写入恢复
 
 恢复时先查询 `*.work.json` 记录的 `operation_id`：若已发布，保留原发布结果；若未决或查询结果未知，先恢复/核对核心事务，不重新上传或提交原请求。`published` 仅描述最后核对的操作结果，不保证暂存 FD 当前所有字节都已发布；丢回执后它也可能尚未反映实际发布。`descriptor_changes_unconfirmed: true` 表示可写 FD 交出后，仍可能存在尚未收到 `Dirty` 通知的修改；即使 `published: true` 且 `dirty: false`，也必须保留并核对暂存文件，不能据此删除或自动提交后续字节。管理员可先导出完整暂存文件，再决定如何恢复或放弃对应工作区。当前没有自动重新挂接旧 SMB 句柄的能力。
 
@@ -155,7 +155,7 @@ bash .github/scripts/smb-sdk.sh
 
 - 官方目标源码：<https://github.com/samba-team/samba/tree/samba-4.23.0>
 - VFS 头：<https://github.com/samba-team/samba/blob/samba-4.23.0/source3/include/vfs.h>
-- 本次核查的该头 SHA-256：`854fcd3d14cabc918de6aea755d1af8935ab8d2a4cf5a4d4c17a1e9f06744356`。
+- 固定目标头 SHA-256：`854fcd3d14cabc918de6aea755d1af8935ab8d2a4cf5a4d4c17a1e9f06744356`。
 - tevent 接口：<https://github.com/samba-team/samba/blob/samba-4.23.0/lib/tevent/tevent.h>
 - bindgen：<https://github.com/rust-lang/rust-bindgen>。
 

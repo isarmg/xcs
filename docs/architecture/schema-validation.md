@@ -23,9 +23,9 @@ URL 编码依赖可选，只由 reference/validator 能力启用其 `std` 边；
 
 <a id="retained-evidence"></a>
 
-## 保留证据
+## 验证与来源
 
-38 份内置 metaschema JSON 均保持原始字节与标准标识。退役四个原包目录之前，必须通过受保护整合收据保留原始 manifest、许可证和历史；仅构造源码不证明已完成退役。
+内置 metaschema JSON 保持原始字节与标准标识；原始 manifest、许可证和来源证明由集中合规材料管理。
 
 原始外置测试逐字节保存在 `test/foundation/schema-validation/upstream`。自写运行器在 `test/schema-validation`，与归属明确的历史材料分开。规范集成目标保留原 `run_case` 断言，仅用普通运行器替换不可用的注册宏；执行 31 份 JSON 夹具并断言共 1,509 个用例，不使用空实现或弱化断言。原宏依赖的单元/集成套件作为来源材料保留，不宣称专项门禁完整执行了这些套件。
 

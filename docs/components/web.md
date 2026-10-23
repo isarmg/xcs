@@ -93,4 +93,4 @@ cargo test --locked --offline -p web-app -p web-interface -p view-macros
 
 `ZXS_WEB_BINDGEN` 指定 CLI 路径，`ZXS_WEB_TARGET_DIR` 指定浏览器 target 目录。默认输出 `build/web`，包含 WASM、生成绑定与通用启动模块、CSS、字体、确定性 gzip 和 `build-manifest.json`。服务使用 `--web-dir /absolute/path/build/web` 提供资源；运行标记为 `data-zxs-runtime="web-interface"` 与 `data-zxs-ready="true"`，需验证 WASM MIME、gzip、ETag、nosniff 与 CSP。
 
-当前父版本继承与首次写入的实际 WASM 验证见[继承分支验收](../validation/evidence/inherited-branches/web-README.md)；公共间距的验证见[间距修正验收](../validation/evidence/spacing-correction.md)，此前全项目重构记录见[维护性优化验收](../validation/evidence/maintainability.md)。早期文件管理功能验证保留在[Web 验收证据](../validation/evidence/web.md)，整体边界见[实现报告](../reports/implementation.md)。构建成功不能替代真实浏览器、实际 Samba、物理盘故障或发行验收；开发目录模拟盘也不构成物理冗余证据。
+构建成功不能替代真实浏览器、实际 Samba、物理盘故障或发行验收；开发目录模拟盘不构成物理冗余证据。浏览器验收应检查会话恢复、分支继承/首次写入、元数据冲突与未知结果、窄屏布局和公共样式。

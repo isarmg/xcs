@@ -2,8 +2,7 @@
 
 # 压缩基础组件
 
-`compression` 包将四个 Cargo 包整合为一个功能组件，使这一组件族减少了三个包。
-这不代表已经测得运行时、二进制体积或内存性能方面的提升。
+`compression` 提供 Adler-32、DEFLATE、zlib 和 gzip 能力，消费者按需选择特性。
 
 <a id="capabilities-and-boundaries"></a>
 
@@ -29,10 +28,7 @@
 - `serialization` 通过真实的数据序列化提供方加入现有的编解码器状态适配器，
   并启用 alloc 和 derive；该功能仍为可选项。
 
-在已审查的产品依赖图中，只有 tools/web-build 使用 flate2。其 gzip 资源写入器
-现已显式启用 streams、SIMD 和运行时检测。不再保留旧 Cargo 包别名。
-现有压缩算法和 DEFLATE/zlib/gzip 传输格式保持不变；这次调整是结构整合，
-既不是新编解码器，也不是密码学校验和的替代方案。
+`tools/web-build` 的 gzip 资源写入器显式启用 streams、SIMD 和运行时检测。Adler-32 不是密码学校验和。
 
 <a id="streaming-contracts"></a>
 
@@ -41,33 +37,27 @@
 read 包装器可能读取超出压缩流末尾的字节；bufread 包装器会保留缓冲区中的剩余字节。
 单成员 gzip 解码器在第一个成员结束后停止；MultiGzDecoder 处理串联的多个成员。
 调用方仍须完成写入器的收尾，并遵守底层已消耗/已写入计数。
-限制输出大小的编解码便捷 API 仍可用于不可信输入。本次没有新增保证，声称所有
-原始 DEFLATE/zlib 流适配器都以相同方式诊断截断；保留的上游行为与回归约定分别测试。
+限制输出大小的编解码便捷 API 仍可用于不可信输入。不同 DEFLATE/zlib 流适配器不保证以相同方式诊断截断，应分别遵守其 API 与回归约定。
 
 <a id="removed-unsupported-surfaces"></a>
 
-## 已移除的不受支持接口
+## 不支持的接口
 
-原生 zlib/C 后端开关此前在仓库中没有提供方，现已连同旧的后端选择/兼容性开关
-一并移除。编译器内部使用的 rustc-dep-of-std 和不稳定的 alloc_io 选择也已移除。
+不提供原生 zlib/C 后端、旧后端选择开关、rustc-dep-of-std 或不稳定的 alloc_io。
 Rust 后端不宣称支持仅适用于原生后端的窗口大小、字典和压缩级别调整 API。
 Nightly AVX512、NEON 和 WASM-SIMD 模块不在保留的 Linux amd64/WASM 标量
-支持范围内。整合收据记录了四个完整移除实现文件的原始精确字节、哈希和移除理由；
-其原始许可证和上游身份均未移除。
+支持范围内。
 
 <a id="origins-and-immutable-attribution"></a>
 
-## 来源与不可变归属记录
+## 来源
 
 - flate2 1.1.10: https://github.com/rust-lang/flate2-rs
 - miniz_oxide 0.9.1: https://github.com/Frommi/miniz_oxide/tree/master/miniz_oxide
 - adler2 2.0.1: https://github.com/oyvindln/adler2
 - simd-adler32 0.3.10: https://github.com/mcountryman/simd-adler32
 
-所有原始清单、上游文档和法律材料继续受 compliance/provenance 管理。
-按内容寻址的源码整合收据为每个输入保留独立归属，包括编解码器此前的源码移动。
-37 个外部文件均记录了精确的来源/源码哈希，以及范围受限、可逆的迁移编辑。
-未启用的 Adler 基准按原始字节保留为源码历史，不将其列为已执行的覆盖。
+原始清单、上游文档、许可证及实现归属由集中合规材料管理。
 
 <a id="maintained-validation-and-explicit-gaps"></a>
 
@@ -93,15 +83,4 @@ rand/quickcheck 提供方。这些外部测试文件按原始字节保留且未�
 这些缺口不计为通过的测试。持续维护的确定性约定测试补充了缺失的上游覆盖，
 但不冒充其替代品。
 
-<a id="receiving-tree-integration-checks"></a>
-
-## 接收代码树的集成检查
-
-接收代码树的验证还检查整个受维护工作区的格式、server/client/admin 原生构建、
-严格 Clippy 和文档约定。三个轻量级消费方回归检查会检查生成的序列化测试框架清单，
-确认本地路径存在、包身份匹配且功能受支持，并验证发布构建器显式选择的压缩能力。
-这些检查可防止改名后的包只在旧测试框架中仍然存在，不能替代上述编译器和运行时检查。
-
-两种标量 Adler 实现仍有意分开：串行内核与四路内核在小/大缓冲区上的取舍不同。
-结构整合不意味着应强制所有调用方使用同一个内核。
-现有分派方式和规范校验和语义保持不变。
+两种标量 Adler 实现有意分开：串行内核与四路内核适合不同的缓冲区范围。消费者无需强制共用同一内核。

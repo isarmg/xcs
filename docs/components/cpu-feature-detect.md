@@ -2,7 +2,7 @@
 
 # CPU 特性检测
 
-`cpu-feature-detect` 提供带缓存的运行时 CPU 特性检查，无需 `std`。Rust crate 标识为 `cpu_feature_detect`。它保留整合前实现的 CPU 和操作系统状态检查；重命名不会在全局启用更强的目标指令。
+`cpu-feature-detect` 提供带缓存的运行时 CPU 特性检查，无需 `std`。Rust crate 标识为 `cpu_feature_detect`。检查 CPU 和操作系统状态，不会在全局启用更强的目标指令。
 
 ```rust
 #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]

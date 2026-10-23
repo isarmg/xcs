@@ -111,12 +111,7 @@ fn source_export_checks_without_generated_evidence_and_still_rejects_broken_sour
             )
             .is_file()
     );
-    assert!(
-        fixture
-            .0
-            .join("docs/validation/evidence/merge-tags-backup.md")
-            .is_file()
-    );
+    assert!(fixture.0.join("docs/tools/contract-check.md").is_file());
     assert!(
         fixture
             .0
@@ -135,6 +130,13 @@ fn source_export_checks_without_generated_evidence_and_still_rejects_broken_sour
             .join("test/evidence/lazy-branches/browser-result.json")
             .exists()
     );
+    // Exercise optional local output with a self-contained fixture, rather
+    // than requiring historical reports in maintained documentation.
+    fs::write(
+        fixture.0.join("docs/generated-output-regression.md"),
+        "[Local output](../test/evidence/source-export/output.json)\n",
+    )
+    .unwrap();
     let result = Command::new(env!("CARGO_BIN_EXE_contract-check"))
         .arg("--root")
         .arg(&fixture.0)

@@ -1,6 +1,6 @@
 # 验证报告模板
 
-[总目录](../../README.md) · [验收用例](../22-acceptance.md) · [交付与状态](../23-delivery-and-decisions.md#s23-05)
+[总目录](../../README.md) · [验收用例](../22-acceptance.md) · [发行前检查](../23-delivery-and-decisions.md#s23-05)
 
 本文件是空白模板，不是通过报告。每次验证另存独立报告；未执行的项目保持“未执行”，不得填入预期值作为实测值。
 

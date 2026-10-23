@@ -2,7 +2,7 @@
 
 当前业务入口为 Web 和 SMB。服务端使用 `zxs` 提供业务 API、Web 静态资源和本地 Samba 桥接；Samba VFS 模块单独按固定 SDK 构建。
 
-首次发行前须逐项完成[首发准备与验收清单](validation/first-release-readiness.md)，明确区分自动门禁、目标环境实测和仍未关闭的发行阻断项。
+每次发行前须逐项核对[发行验收清单](validation/release-checklist.md)，明确区分自动门禁、目标环境实测和仍未关闭的发行阻断项。
 
 ## 触发与验证
 
@@ -16,7 +16,7 @@
 
 ## 发布文件
 
-- `zxs-VERSION-x86_64-unknown-linux-gnu.tar.gz`：Linux x86_64 的直接守护进程 `zxs` 和最小离线救援工具 `zxs-rescue`。迁移分支中的旧管理入口不进入发布包；发布前须通过 Web 初始化和日常管理替代验收。
+- `zxs-VERSION-x86_64-unknown-linux-gnu.tar.gz`：Linux x86_64 的直接守护进程 `zxs` 和最小离线救援工具 `zxs-rescue`。发布前须通过 Web 初始化和日常管理替代验收。
 - `web-interface-VERSION.tar.gz`：`public/` 中的正式 Web 静态目录，包括 WASM、绑定文件、所需法律文件及 `build-manifest.json`；完整资料置于旁边，不进入静态资源目录。
 - `INSTALL.md`、`BUILD.txt`、`SHA256SUMS`：安装与重建说明、源码提交及构建工具记录、全部其他资产的摘要。
 

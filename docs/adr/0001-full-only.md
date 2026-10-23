@@ -1,6 +1,6 @@
 # ADR 0001：完整版本与固定保护路由
 
-状态：当前设计，整理自已有规范。
+状态：当前设计。
 
 ## 背景与选择
 
@@ -12,4 +12,4 @@
 
 ## 依据
 
-[盘格式](../08-full-storage-and-disk-format.md)、[备份拓扑](../09-backup-topology.md)、[写入语义](../11-write-semantics.md)、[关键取舍](../23-delivery-and-decisions.md#s23-02)。真实设备验证状态见[交付边界](../23-delivery-and-decisions.md#s23-03)。
+[盘格式](../08-full-storage-and-disk-format.md)、[备份拓扑](../09-backup-topology.md)、[写入语义](../11-write-semantics.md)、[关键取舍](../23-delivery-and-decisions.md#s23-02)。真实设备使用限制见[当前限制](../23-delivery-and-decisions.md#s23-03)。

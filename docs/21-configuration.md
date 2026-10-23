@@ -17,7 +17,7 @@
 
 ## 21.1 配置示例
 
-以下 TOML 定义完整目标配置，不是现有进程直接读取的配置或可直接部署的 smb.conf。当前引擎读取严格 JSON `Config`；产品首次初始化通过 Web 受保护引导，操作员先在守护进程 `--setup-disk ID=/absolute/path` 白名单中配置本机可信盘位。此流程不挂载、分区或格式化设备。下述目标配置字段不表示 Web 已提供任意 Config 编辑器。实际已接受字段和限制见[服务端说明](components/server.md)与[实现报告](reports/implementation.md)。
+以下 TOML 定义完整目标配置，不是现有进程直接读取的配置或可直接部署的 smb.conf。当前引擎读取严格 JSON `Config`；产品首次初始化通过 Web 受保护引导，操作员先在守护进程 `--setup-disk ID=/absolute/path` 白名单中配置本机可信盘位。此流程不挂载、分区或格式化设备。下述目标配置字段不表示 Web 已提供任意 Config 编辑器。实际接受的字段和限制见[服务端说明](components/server.md)、[救援配置草稿](components/rescue.md#uninitialized-configuration-drafts)及[当前限制](23-delivery-and-decisions.md#s23-03)。
 
 Samba 配置由经版本验收的部署模板另行生成。设备清单通过登记工具产生，不在示例中填写真实设备路径。
 
@@ -340,7 +340,7 @@ queue_warning_seconds = 30
 
 减少运行额度只限制新增准入，已有占用超限时显示超额并停止增长，不删除工作数据。修改告警值不改变决定状态；修改份数、成员或绑定也不能通过热更新生效。动态配置验证失败保留上一份有效运行配置，持久业务状态不变。
 
-[配置约束附件](contracts/config-constraints.schema.json)校验最关键的协议断言、资源上限与告警参数；它是完整 TOML 的受检投影，不覆盖全部设备和业务状态。完整部署配置 schema、拓扑交叉校验以及真实启动器仍须在 P0/P1 补齐，不能把投影校验当作部署成功。
+[配置约束附件](contracts/config-constraints.schema.json)校验最关键的协议断言、资源上限与告警参数；它是完整 TOML 的受检投影，不覆盖全部设备和业务状态。该投影不能替代当前 JSON 配置的核心校验、拓扑交叉校验或实际启动检查，不能把投影校验当作部署成功。
 
 
 ### HTTP 暂存的可执行配置入口

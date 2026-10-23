@@ -1,5 +1,5 @@
 //! Policy regression: local data must stay out of Git while real sources and
-//! reviewed evidence remain visible. Use a disposable repository, never the
+//! maintained documents remain visible. Use a disposable repository, never the
 //! user's index or global ignore configuration.
 use std::{
     fs,
@@ -173,8 +173,8 @@ fn ignore_generated_data_without_hiding_sources_or_fixed_fixtures() {
         "test/fixtures/index.sqlite",
         "test/fixtures/archive.zip",
         "src/engine/fixtures/zxs-data/state.json",
-        "docs/validation/evidence/run.md",
-        "docs/validation/evidence/run/nested/review.md",
+        "docs/tools/contract-check.md",
+        "compliance/validation/foundation/proof.json",
         "test/evidence/run/check.mjs",
         "test/evidence/run/seed.rs",
         "test/evidence/run/helper.py",

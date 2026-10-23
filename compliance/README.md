@@ -19,7 +19,7 @@
 | [`provenance/document-migration.json`](provenance/document-migration.json) | 原始文档和元数据路径到中央路径的映射及迁移前 SHA-256 |
 | `provenance/packages/` | 原始发布清单、原始子锁文件、发布校验和、VCS 身份及上游 CI 元数据；仅作溯源，不是工作区或构建入口 |
 | `provenance/merged-components/` | 被合并组件的原始清单与入口，保存合并前的证据 |
-| `provenance/pre-monorepo/` | 本次整体目录改造之前的来源收据和关键构建输入快照 |
+| `provenance/pre-monorepo/` | 固定来源收据和关键构建输入快照 |
 | `provenance/shared/` | 原先共享的上游身份、补充通知收据和补丁记录 |
 | [`../docs/upstream/`](../docs/upstream/) | 原始上游说明文档，保持归档字节，历史路径不表示当前目录 |
 
@@ -33,12 +33,16 @@
 - `drain_filter_polyfill@0.1.3`（`9dc585f3eec048bfc3faf8656e07c4a19273c38f`）：已退役。原消费者改用标准库 `retain`，当前根锁文件和活动依赖图不再包含此包；历史来源与通知记录仍保留。退役不等于补齐了历史许可资料。
 - `erased@0.1.2`（`60eebad28ab2578a6322199099b8a07035438008`）：仍为活动 Web 依赖。实际链路为 `web-app → web-interface → view-renderer → erased`，渲染器在类型擦除容器中使用 `ErasedBox`；因此不能仅凭集中通知已打包就将 Web 发行的许可资料复核标为完成。
 
-2026-10-23 重新获取了 `erased` 的[官方 0.1.2 发布包](https://static.crates.io/crates/erased/erased-0.1.2.crate)，其 SHA-256 为 `a1731451909bde27714eacba19c2566362a7f35224f52b153d3f42cf60f72472`，与不可变来源收据一致；并核对了[固定提交的完整 Git 文件树](https://github.com/JonathanBrouwer/erased/tree/60eebad28ab2578a6322199099b8a07035438008)。两者均没有独立许可／版权文件，发布清单仅声明 MIT 和作者名单。作者字段不应被改写成未经上游确认的版权年份或版权通知。
+`erased` 的[官方 0.1.2 发布包](https://static.crates.io/crates/erased/erased-0.1.2.crate)，其 SHA-256 为 `a1731451909bde27714eacba19c2566362a7f35224f52b153d3f42cf60f72472`，与不可变来源收据一致；对应[固定提交的完整 Git 文件树](https://github.com/JonathanBrouwer/erased/tree/60eebad28ab2578a6322199099b8a07035438008)。发布包与固定文件树均没有独立许可／版权文件，发布清单仅声明 MIT 和作者名单。作者字段不应被改写成未经上游确认的版权年份或版权通知。
 
-公开首发前，`erased` 应保留为需人工决定的许可资料复核项，而非自动通过项。可执行的关闭路径是：取得适用于该版本的上游许可与版权通知，记录权威来源及哈希并追加中央材料；或者由负责发行的人员完成独立许可复核并记录依据。若选择替换依赖，应另行进行独立设计、功能与内存安全回归、显式退役和来源校验，不能为了清除清单而删除来源或直接改写许可。本段记录技术证据和待办，不作法律保证。
+公开分发前，`erased` 应保留为需人工决定的许可资料复核项，而非自动通过项。可执行的关闭路径是：取得适用于该版本的上游许可与版权通知，记录权威来源及哈希并追加中央材料；或者由负责发行的人员完成独立许可复核并记录依据。若选择替换依赖，应另行进行独立设计、功能与内存安全回归、显式退役和来源校验，不能为了清除清单而删除来源或直接改写许可。本段记录技术证据和待办，不作法律保证。
 
 原始说明见 [`provenance/shared/vendor/rust-notices/provenance.json`](provenance/shared/vendor/rust-notices/provenance.json)。发布材料必须携带本目录中的实际许可、版权和通知，并如实列出尚未关闭事项；许可证声明本身不构成维护状态、安全审计或性能验收证据。
 
 ## 安全补丁升级
 
-同一路径的真实上游升级通过显式升级计划导入；当前清单中的 `superseded` 保存被替换活动包的完整收据和新来源关系。历史来源与中央材料保持不可变，活动审计只匹配实际保留的版本。首次应用见 [2026-10 emSign TLS 安全更新](../docs/security/TLS_EMSIGN_2026.md)。
+同一路径的真实上游升级通过显式升级计划导入；当前清单中的 `superseded` 保存被替换活动包的完整收据和新来源关系。历史来源与中央材料保持不可变，活动审计只匹配实际保留的版本。TLS 组件的当前要求见 [TLS 信任维护](../docs/security/tls-trust.md)。
+
+## 来源验证输入
+
+`validation/` 保存源码及测试夹具转换的机器可读校验输入，包括平台裁剪和日期时间夹具证明。它们参与完整性核对，须保留原始字节；不作为当前测试已通过的记录，也不能替代当前代码回归。一般评审、改进日志和单次测试输出不放入本目录。

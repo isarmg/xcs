@@ -263,85 +263,85 @@ flowchart TD
 
 ## 合并来源身份
 
-| 上游身份 | 当前实现目录 | 决策 |
-| --- | --- | --- |
-| unicode-normalization@0.1.24 | src/naming | 将 NFC→固定映射→NFC 迭代流水线整合进 ZXS 命名组件；保留 Unicode 表和规范化算法；详见 docs/components/naming.md；独立包已删除，算法与业务组件合并。；本地 lint 兼容性整理：Hangul 整除判断使用 is_multiple_of，Option 传播使用 ?，assigned 范围使用 matches!；命名/规范化算法与行为保持原有语义，当前字节由本清单独立记录。 |
-| adler2@2.0.1 | src/foundation/data-storage/compression | Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 |
-| aho-corasick@1.1.5 | src/foundation/text-unicode/regex | Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 2026-10-20：移除不可达条件实现并修复稳定工具链编译诊断；当前逐文件摘要记录本地实现差异。 |
-| anstream@1.0.0 | src/foundation/tooling/terminal-style | Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 2026-10-20：裁剪不支持平台与缺失后端的依赖/feature边；移除不可达条件实现并修复稳定工具链编译诊断；当前逐文件摘要记录本地实现差异。 清理独立演示：移除 2 个独立示例程序及专属输入（5013 字节）；保留文档编译、真实测试及性能基准输入。 2026-10-21：实际消费者标准库整合与依赖去重；详见 docs/reports/foundation-sqlite-cloud-20261021.md，原始身份和法律材料保留。 |
-| anstyle-parse@1.0.0 | src/foundation/tooling/terminal-style | Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 清理独立演示：移除 1 个独立示例程序及专属输入（1961 字节）；保留文档编译、真实测试及性能基准输入。 |
-| anstyle-query@1.1.5 | src/foundation/tooling/terminal-style | Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 2026-10-20：裁剪不支持平台与缺失后端的依赖/feature边；当前逐文件摘要记录本地实现差异。 清理独立演示：移除 1 个独立示例程序及专属输入（835 字节）；保留文档编译、真实测试及性能基准输入。 |
-| atomic-waker@1.1.2 | src/foundation/networking/http-transport | Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 2026-10-20：裁剪不支持平台与缺失后端的依赖/feature边；移除不可达条件实现并修复稳定工具链编译诊断；当前逐文件摘要记录本地实现差异。 |
-| axum-core@0.5.6 | src/foundation/networking/http-routing | Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 |
-| block-buffer@0.12.1 | src/foundation/cryptography/cryptographic-core | Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 |
-| cexpr@0.6.0 | src/foundation/tooling/bindgen | Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 |
-| clap_builder@4.6.7 | src/foundation/tooling/command-line | Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 |
-| clap_lex@1.1.1 | src/foundation/tooling/command-line | Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 |
-| colorchoice@1.0.5 | src/foundation/tooling/terminal-style | Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 |
-| crossbeam-deque@0.8.8 | src/foundation/concurrency/concurrent-collections | Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 |
-| crossbeam-epoch@0.9.21 | src/foundation/concurrency/concurrent-collections | Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 2026-10-20：裁剪不支持平台与缺失后端的依赖/feature边；当前逐文件摘要记录本地实现差异。 |
-| crossbeam-queue@0.3.14 | src/foundation/concurrency/concurrent-collections | Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 |
-| crypto-common@0.2.2 | src/foundation/cryptography/cryptographic-core | Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 2026-10-20：裁剪不支持平台与缺失后端的依赖/feature边；移除不可达条件实现并修复稳定工具链编译诊断；当前逐文件摘要记录本地实现差异。 |
-| deranged@0.5.9 | src/foundation/core-types/date-time | Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 2026-10-20：裁剪不支持平台与缺失后端的依赖/feature边；移除不可达条件实现并修复稳定工具链编译诊断；当前逐文件摘要记录本地实现差异。 |
-| digest@0.10.7 | src/foundation/cryptography/blake2 | Adapt fixed-output buffering, conditional reset, runtime variable-output traits/wrapper and std::io::Write to the shared hybrid-array digest traits. Preserve original digest source identity, licenses and advisory coverage; no cryptographic compression code imported. Exact source mapping: docs/components/crypto-consolidation.md. |
-| env_filter@2.0.0 | src/foundation/diagnostics/logging | Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。；保留上游全部过滤/解析用例与错误预期，将仅比较字符串的 snapbox 断言改为标准 assert_eq，离线测试不恢复上游测试框架依赖。 |
-| event-listener@5.4.2 | src/foundation/concurrency/async-notification | Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 2026-10-20：裁剪不支持平台与缺失后端的依赖/feature边；移除不可达条件实现并修复稳定工具链编译诊断；当前逐文件摘要记录本地实现差异。 清理独立演示：移除 1 个独立示例程序及专属输入（4930 字节）；保留文档编译、真实测试及性能基准输入。 |
-| event-listener-strategy@0.5.4 | src/foundation/concurrency/async-notification | Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 2026-10-20：裁剪不支持平台与缺失后端的依赖/feature边；当前逐文件摘要记录本地实现差异。 |
-| form_urlencoded@1.2.2 | src/foundation/networking/url-encoding | Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 |
-| futures-channel@0.3.34 | src/foundation/concurrency/futures | Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 |
-| futures-core@0.3.34 | src/foundation/concurrency/futures | Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 2026-10-20：裁剪不支持平台与缺失后端的依赖/feature边；移除不可达条件实现并修复稳定工具链编译诊断；当前逐文件摘要记录本地实现差异。 |
-| futures-executor@0.3.34 | src/foundation/concurrency/futures | Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 |
-| futures-io@0.3.34 | src/foundation/concurrency/futures | Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 |
-| futures-sink@0.3.34 | src/foundation/concurrency/futures | Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 |
-| futures-task@0.3.34 | src/foundation/concurrency/futures | Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 |
-| futures-util@0.3.34 | src/foundation/concurrency/futures | Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 2026-10-20：裁剪不支持平台与缺失后端的依赖/feature边；移除不可达条件实现并修复稳定工具链编译诊断；当前逐文件摘要记录本地实现差异。 |
-| http-body-util@0.1.5 | src/foundation/networking/http-body | Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 |
-| hyper-util@0.1.21 | src/foundation/networking/http-transport | Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 2026-10-20：移除不可达条件实现并修复稳定工具链编译诊断；当前逐文件摘要记录本地实现差异。 清理独立演示：移除 4 个独立示例程序及专属输入（8043 字节）；保留文档编译、真实测试及性能基准输入。 |
-| icu_normalizer_data@2.3.0 | src/foundation/text-unicode/unicode-normalizer | Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 |
-| icu_properties_data@2.3.0 | src/foundation/text-unicode/unicode-properties | Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 |
-| idna@1.1.0 | src/foundation/networking/url-encoding | Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 |
-| idna_adapter@1.2.2 | src/foundation/networking/url-encoding | Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 2026-10-20：移除不可达条件实现并修复稳定工具链编译诊断；当前逐文件摘要记录本地实现差异。 2026-10-20：将 ICU 弃用数值属性访问替换为等价位映射，全部 Unicode 标量对照相等；旧语料历史数据版本差异单独记录。 |
-| jsonschema-regex@0.58.6 | src/foundation/data-storage/schema-validation | Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 |
-| jsonschema-value@0.58.6 | src/foundation/data-storage/schema-validation | Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 |
-| lock_api@0.4.14 | src/foundation/concurrency/synchronization | Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 2026-10-20：移除不可达条件实现并修复稳定工具链编译诊断；当前逐文件摘要记录本地实现差异。 |
-| matchers@0.2.0 | src/foundation/diagnostics/tracing | Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 |
-| miniz_oxide@0.9.1 | src/foundation/data-storage/compression | Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 |
-| num@0.4.3 | src/foundation/core-types/numeric | Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 |
-| num-bigint@0.4.8 | src/foundation/core-types/numeric | Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 |
-| num-complex@0.4.6 | src/foundation/core-types/numeric | Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 |
-| num-conv@0.2.2 | src/foundation/core-types/date-time | Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 |
-| num-integer@0.1.47 | src/foundation/core-types/numeric | Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 2026-10-20：移除不可达条件实现并修复稳定工具链编译诊断；当前逐文件摘要记录本地实现差异。 |
-| num-iter@0.1.46 | src/foundation/core-types/numeric | Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 2026-10-20：移除不可达条件实现并修复稳定工具链编译诊断；当前逐文件摘要记录本地实现差异。 |
-| num-rational@0.4.2 | src/foundation/core-types/numeric | Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 2026-10-20：移除不可达条件实现并修复稳定工具链编译诊断；当前逐文件摘要记录本地实现差异。 |
-| parking_lot@0.12.5 | src/foundation/concurrency/synchronization | Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 2026-10-20：裁剪不支持平台与缺失后端的依赖/feature边；当前逐文件摘要记录本地实现差异。 |
-| percent-encoding@2.3.2 | src/foundation/networking/url-encoding | Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 |
-| powerfmt@0.2.1 | src/foundation/core-types/date-time | Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 |
-| referencing@0.58.6 | src/foundation/data-storage/schema-validation | Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 |
-| regex-automata@0.4.18 | src/foundation/text-unicode/regex | Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 2026-10-20：移除不可达条件实现并修复稳定工具链编译诊断；当前逐文件摘要记录本地实现差异。 |
-| regex-syntax@0.8.11 | src/foundation/text-unicode/regex | Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 |
-| serde_core@1.0.229 | src/foundation/data-storage/data-serialization | Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。；本地 path/WASM 构建兼容修复：OsStr/OsString 导入复用实现已有的 std 与 unix/windows 条件，保留 API 与平台实现边界。 |
-| serde_path_to_error@0.1.20 | src/foundation/data-storage/data-serialization | Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 |
-| serde_spanned@0.6.9 | src/foundation/data-storage/toml | Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 |
-| simd-adler32@0.3.10 | src/foundation/data-storage/compression | Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 2026-10-20：移除不可达条件实现并修复稳定工具链编译诊断；当前逐文件摘要记录本地实现差异。 |
-| sqlx-core@0.9.0 | src/foundation/data-storage/sqlite-access | Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 2026-10-20：裁剪不支持平台与缺失后端的依赖/feature边；移除不可达条件实现并修复稳定工具链编译诊断；当前逐文件摘要记录本地实现差异。 2026-10-21：SQLite 专用收窄；完整移除 Migrator/Any/跨运行时/TLS/TOML 配置 API、实现与休眠边；分离行诊断和查询计划日志，保持池、事务、查询及 SQLite 文件格式。 |
-| sqlx-sqlite@0.9.0 | src/foundation/data-storage/sqlite-access | Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 2026-10-20：裁剪不支持平台与缺失后端的依赖/feature边；移除不可达条件实现并修复稳定工具链编译诊断；当前逐文件摘要记录本地实现差异。 2026-10-20：移除不再使用的 libsqlite3-sys/vcpkg feature 请求；Linux SQLite 功能与库发现方式保持不变。 2026-10-21：SQLite 专用收窄；完整移除 Migrator/Any/跨运行时/TLS/TOML 配置 API、实现与休眠边；分离行诊断和查询计划日志，保持池、事务、查询及 SQLite 文件格式。 |
-| strsim@0.11.1 | src/foundation/tooling/command-line | Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 |
-| time-core@0.1.9 | src/foundation/core-types/date-time | Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 |
-| tokio-util@0.7.20 | src/foundation/concurrency/tokio | Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 2026-10-20：移除不可达条件实现并修复稳定工具链编译诊断；当前逐文件摘要记录本地实现差异。 |
-| toml_datetime@0.6.11 | src/foundation/data-storage/toml | Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 |
-| toml_edit@0.22.27 | src/foundation/data-storage/toml | Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 清理独立演示：移除 1 个独立示例程序及专属输入（8038 字节）；保留文档编译、真实测试及性能基准输入。 2026-10-21：移除未使用且缺边的终端 parser debug/trace 表面；迁移真实 TOML 消费者，删除 trace 包装、结果探针、日志实现与未用可选特性，保留解析/错误/partial-input 合约。 |
-| toml_write@0.1.2 | src/foundation/data-storage/toml | Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 |
-| tower-layer@0.3.3 | src/foundation/networking/service-stack | Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 |
-| tower-service@0.3.3 | src/foundation/networking/service-stack | Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 |
-| tracing-core@0.1.36 | src/foundation/diagnostics/tracing | Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 2026-10-20：裁剪不支持平台与缺失后端的依赖/feature边；移除不可达条件实现并修复稳定工具链编译诊断；当前逐文件摘要记录本地实现差异。 |
-| tracing-log@0.2.0 | src/foundation/diagnostics/tracing | Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 2026-10-20：移除不可达条件实现并修复稳定工具链编译诊断；当前逐文件摘要记录本地实现差异。 |
-| tracing-subscriber@0.3.23 | src/foundation/diagnostics/tracing | Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 2026-10-20：裁剪不支持平台与缺失后端的依赖/feature边；移除不可达条件实现并修复稳定工具链编译诊断；当前逐文件摘要记录本地实现差异。 |
-| try-lock@0.2.5 | src/foundation/networking/http-transport | Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。；本地 path 构建兼容修复：四处 Locked 返回类型显式标注借用生命周期，保留 deny(warnings)。 |
-| utf8parse@0.2.2 | src/foundation/tooling/terminal-style | Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 |
-| want@0.3.2 | src/foundation/networking/http-transport | Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 |
-| wasm-bindgen-macro-support@0.2.129 | src/foundation/web-runtime/wasm-binding-macros | Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 |
-| leptos_hot_reload@0.8.7 | src/macros | Leptos 族内部 path 依赖、本地 workspace 边界；部分包以 pastey 替代停止维护的 paste；逐文件差异见 compliance/provenance/shared/vendor/web/dependencies/patches.json；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。；仅保留 value_to_string、span_to_stable_id 与组件节点判定，合并至 src/macros/src/view_source.rs；删除未被项目消费的文件扫描、视图 diff 和浏览器热补丁实现。；撤销 typed MathML 输出分支并给出明确编译诊断，保持 inert HTML/SVG 与自定义元素路径。 |
-| leptos@0.8.19 | src/interface | Leptos CSR 内核整合进共享界面，统一生命周期及 ForSnapshot 键控快照更新；删除未声明 islands/tracing/nightly/shadow-dom 死分支、空模块、无效构建探测及未使用直接依赖；常规 DOM Portal 保留，use_shadow=true 显式拒绝；详见 docs/components/interface.md；独立包已删除，算法与业务组件合并。；退出等待与未确认退出期间关闭新的业务写入和内容交付准入，保留凭据仅供撤销重试；界面 children/View/attribute interceptor 迁移到 CSR 模板 hydration 约束，删除通用 SSR 代理与仅用于服务端输出的 view marker。；同步撤销未使用 MathML 转发入口，保留现有 DOM、字体、几何、事件和浏览器兼容路径。 |
+| 上游身份 | 当前实现目录 |
+| --- | --- |
+| unicode-normalization@0.1.24 | src/naming |
+| adler2@2.0.1 | src/foundation/data-storage/compression |
+| aho-corasick@1.1.5 | src/foundation/text-unicode/regex |
+| anstream@1.0.0 | src/foundation/tooling/terminal-style |
+| anstyle-parse@1.0.0 | src/foundation/tooling/terminal-style |
+| anstyle-query@1.1.5 | src/foundation/tooling/terminal-style |
+| atomic-waker@1.1.2 | src/foundation/networking/http-transport |
+| axum-core@0.5.6 | src/foundation/networking/http-routing |
+| block-buffer@0.12.1 | src/foundation/cryptography/cryptographic-core |
+| cexpr@0.6.0 | src/foundation/tooling/bindgen |
+| clap_builder@4.6.7 | src/foundation/tooling/command-line |
+| clap_lex@1.1.1 | src/foundation/tooling/command-line |
+| colorchoice@1.0.5 | src/foundation/tooling/terminal-style |
+| crossbeam-deque@0.8.8 | src/foundation/concurrency/concurrent-collections |
+| crossbeam-epoch@0.9.21 | src/foundation/concurrency/concurrent-collections |
+| crossbeam-queue@0.3.14 | src/foundation/concurrency/concurrent-collections |
+| crypto-common@0.2.2 | src/foundation/cryptography/cryptographic-core |
+| deranged@0.5.9 | src/foundation/core-types/date-time |
+| digest@0.10.7 | src/foundation/cryptography/blake2 |
+| env_filter@2.0.0 | src/foundation/diagnostics/logging |
+| event-listener@5.4.2 | src/foundation/concurrency/async-notification |
+| event-listener-strategy@0.5.4 | src/foundation/concurrency/async-notification |
+| form_urlencoded@1.2.2 | src/foundation/networking/url-encoding |
+| futures-channel@0.3.34 | src/foundation/concurrency/futures |
+| futures-core@0.3.34 | src/foundation/concurrency/futures |
+| futures-executor@0.3.34 | src/foundation/concurrency/futures |
+| futures-io@0.3.34 | src/foundation/concurrency/futures |
+| futures-sink@0.3.34 | src/foundation/concurrency/futures |
+| futures-task@0.3.34 | src/foundation/concurrency/futures |
+| futures-util@0.3.34 | src/foundation/concurrency/futures |
+| http-body-util@0.1.5 | src/foundation/networking/http-body |
+| hyper-util@0.1.21 | src/foundation/networking/http-transport |
+| icu_normalizer_data@2.3.0 | src/foundation/text-unicode/unicode-normalizer |
+| icu_properties_data@2.3.0 | src/foundation/text-unicode/unicode-properties |
+| idna@1.1.0 | src/foundation/networking/url-encoding |
+| idna_adapter@1.2.2 | src/foundation/networking/url-encoding |
+| jsonschema-regex@0.58.6 | src/foundation/data-storage/schema-validation |
+| jsonschema-value@0.58.6 | src/foundation/data-storage/schema-validation |
+| lock_api@0.4.14 | src/foundation/concurrency/synchronization |
+| matchers@0.2.0 | src/foundation/diagnostics/tracing |
+| miniz_oxide@0.9.1 | src/foundation/data-storage/compression |
+| num@0.4.3 | src/foundation/core-types/numeric |
+| num-bigint@0.4.8 | src/foundation/core-types/numeric |
+| num-complex@0.4.6 | src/foundation/core-types/numeric |
+| num-conv@0.2.2 | src/foundation/core-types/date-time |
+| num-integer@0.1.47 | src/foundation/core-types/numeric |
+| num-iter@0.1.46 | src/foundation/core-types/numeric |
+| num-rational@0.4.2 | src/foundation/core-types/numeric |
+| parking_lot@0.12.5 | src/foundation/concurrency/synchronization |
+| percent-encoding@2.3.2 | src/foundation/networking/url-encoding |
+| powerfmt@0.2.1 | src/foundation/core-types/date-time |
+| referencing@0.58.6 | src/foundation/data-storage/schema-validation |
+| regex-automata@0.4.18 | src/foundation/text-unicode/regex |
+| regex-syntax@0.8.11 | src/foundation/text-unicode/regex |
+| serde_core@1.0.229 | src/foundation/data-storage/data-serialization |
+| serde_path_to_error@0.1.20 | src/foundation/data-storage/data-serialization |
+| serde_spanned@0.6.9 | src/foundation/data-storage/toml |
+| simd-adler32@0.3.10 | src/foundation/data-storage/compression |
+| sqlx-core@0.9.0 | src/foundation/data-storage/sqlite-access |
+| sqlx-sqlite@0.9.0 | src/foundation/data-storage/sqlite-access |
+| strsim@0.11.1 | src/foundation/tooling/command-line |
+| time-core@0.1.9 | src/foundation/core-types/date-time |
+| tokio-util@0.7.20 | src/foundation/concurrency/tokio |
+| toml_datetime@0.6.11 | src/foundation/data-storage/toml |
+| toml_edit@0.22.27 | src/foundation/data-storage/toml |
+| toml_write@0.1.2 | src/foundation/data-storage/toml |
+| tower-layer@0.3.3 | src/foundation/networking/service-stack |
+| tower-service@0.3.3 | src/foundation/networking/service-stack |
+| tracing-core@0.1.36 | src/foundation/diagnostics/tracing |
+| tracing-log@0.2.0 | src/foundation/diagnostics/tracing |
+| tracing-subscriber@0.3.23 | src/foundation/diagnostics/tracing |
+| try-lock@0.2.5 | src/foundation/networking/http-transport |
+| utf8parse@0.2.2 | src/foundation/tooling/terminal-style |
+| want@0.3.2 | src/foundation/networking/http-transport |
+| wasm-bindgen-macro-support@0.2.129 | src/foundation/web-runtime/wasm-binding-macros |
+| leptos_hot_reload@0.8.7 | src/macros |
+| leptos@0.8.19 | src/interface |
 
 ## 锁文件与构建矩阵边界
 

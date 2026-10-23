@@ -17,16 +17,16 @@ GNU/Clang 发现、显式编译器/归档器覆盖、编译器包装器、编译
 
 <a id="removed-capability"></a>
 
-## 已移除能力
+## 不支持的能力
 
-`find-msvc-tools` 在工作区内除 `cc` 外没有消费者。Windows registry、COM、Visual Studio / Windows SDK 发现、MASM 分派与 MSVC 归档器发现已移除。不支持的编译目标明确失败，不回退为 Linux 宿主机编译器。
+不支持 Windows registry、COM、Visual Studio / Windows SDK、MASM 和 MSVC 归档器发现。不支持的编译目标明确失败，不回退为 Linux 宿主编译器。
 
-没有保留的消费者启用 cc 的 `parallel` 特性。原声明本就不可用，因为实现引用已不存在的 jobserver 包。未使用的 parallel/jobserver 特性、可选 libc 依赖边、模块声明及活动实现分支已移除，而非重新引入依赖。八份原始 `src/parallel/` 文件仍逐字节原样保留，不能到达，也不参与编译。物理退役这些历史源码仍等待单独审阅的通用来源机制：现有工具允许整个包退役，不支持这些局部删除。不得伪造合并或放松源码删除检查。C 编译仍串行，与变更前所有保留消费者一致；Cargo 仍可正常调度独立包。
+不提供 `parallel` / jobserver 特性；C 编译串行，Cargo 仍可调度独立包。未启用的原始 parallel 源码仅作来源材料，不参与编译，也不能作为可用能力。
 
 <a id="preservation-and-regression"></a>
 
 ## 保留与回归
 
-最后版本的完整 `find-msvc-tools` 源码和外置测试保存在固定退役归档中，由历史来源验证器检查。原始上游身份、元数据、文档与许可证不变。专用化前完整 cc 源码和外置测试位于 `compliance/cc-1.8.0-specialization.json.gz`；原生工具链检查验证固定摘要、逐文件哈希和仍在仓库中的许可证字节。
+原始实现、文档与许可证由集中合规材料管理。
 
 `python3 .github/scripts/check-native-c-toolchain.py` 属于 `foundation-platform` 分片。它验证真实原生 BLAKE3 已知答案，使用带空格的参数及路径编译 C/C++/GNU 汇编并链接执行，检查支持/不支持的编译器参数，拒绝不支持的目标与已删除 Cargo 特性。Rust 构建使用共享严格诊断检查器。它还运行 cc 保留的单元测试和文档测试，检查显式 CC/CFLAGS 覆盖、长编译器 stderr 行的完整转发，并固定不可达 parallel 源码字节。这不是 Samba SDK 或 WASM C 编译器测试；后两者必须使用实际配置的 SDK 或 Clang 工具链。

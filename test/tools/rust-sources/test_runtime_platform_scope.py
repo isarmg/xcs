@@ -9,7 +9,7 @@ from historical_test_sources import historical_reader
 import source_layout
 
 ROOT = Path(__file__).resolve().parents[3]
-PROOF = ROOT / 'docs/validation/evidence/foundation/linux-amd64-runtime-final-20261020.json'
+PROOF = ROOT / 'compliance/validation/foundation/linux-amd64-runtime-final-20261020.json'
 
 
 class RuntimePlatformScope(unittest.TestCase):

@@ -2,7 +2,7 @@
 
 # 数值基础组件
 
-`numeric` 聚合基础数值 trait 与可选数学值类型，替代原七个 num 系列 Cargo 包，但不替代其上游身份。各来源的许可证和归属由整合收据及不可变来源材料独立记录。
+`numeric` 聚合基础数值 trait 与可选数学值类型。各来源的许可证和归属由集中合规材料独立管理。
 
 <a id="boundaries"></a>
 
@@ -23,13 +23,13 @@
 
 ## 消费者
 
-`atoi` 使用基础 trait。原 deranged 的有界整数实现现由 `date-time` 内部维护，不再作为独立 numeric 消费者登记。`fraction` 使用 collection 接口，其 `with-bigint` 特性启用 bigint 与 std。schema 值/验证实现使用基础 trait，仅在任意精度模式启用 bigint；当前归属见 [schema-validation](schema-validation.md)。绝对外部 crate 路径用于区别消费者内部已有的 `numeric` 模块。
+日期有界整数由 `date-time` 内部维护。`fraction` 使用 collection 接口，其 `with-bigint` 特性启用 bigint 与 std。schema 值/验证实现使用基础 trait，仅在任意精度模式启用 bigint；当前归属见 [schema-validation](schema-validation.md)。绝对外部 crate 路径用于区别消费者内部已有的 `numeric` 模块。
 
 <a id="removed-unsupported-surfaces"></a>
 
-## 移除的不支持接口
+## 不支持的接口
 
-原 manifest 声明了 libm、rand、arbitrary、quickcheck、rkyv、bytecheck、bytemuck 集成，却没有真实提供者；这些能力不在产品解析图中。现不再声明不可用特性，也不引入空壳提供者或永远为假的特性。四份完整的提供者专用实现经审阅来源归档流程逐字节保存，保留源码中的对应内联实现移除。普通 `no_std` float-core、整数/有理数/复数、大整数及真实序列化保留。无操作的 i128 兼容特性删除；i128 与此前一样无条件支持。
+不提供 libm、rand、arbitrary、quickcheck、rkyv、bytecheck、bytemuck 集成，不引入空壳提供者或无效特性。普通 `no_std` float-core、整数/有理数/复数、大整数及真实序列化可用；i128 无条件支持。
 
 <a id="origins"></a>
 
@@ -47,11 +47,9 @@
 
 <a id="validation-and-integration-status"></a>
 
-## 验证与集成状态
+## 验证
 
-维护的 CI 门禁检查迁移单元测试、显式接入的上游集成测试、真实消费者编译及最小原生/WASM 特性矩阵。减少六个 Cargo 包属于结构变化，不是基准测试结论。
-
-整合收据通过精确 `input_history` 记录绑定此前 num-bigint 序列化文件移动。原收据不变，当前包清单独立接受来源验证。
+维护的 CI 门禁检查迁移单元测试、显式接入的上游集成测试、真实消费者编译及最小原生/WASM 特性矩阵。编译与行为测试不是性能基准。
 
 精度消费者门禁独立检查 schema 值/验证能力的特性转发及九项精确值回归，包含超出 u64 的整数、有理数分子/分母、multipleOf，以及 1e400、1e-400 指数。
 

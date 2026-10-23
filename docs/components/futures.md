@@ -1,10 +1,10 @@
 # Futures：异步值、流与任务原语
 
-[组件目录](README.md) · [基础包整合计划](../architecture/foundation-package-consolidation.md) · [来源清单](../THIRD_PARTY_RUST_SOURCES.md)
+[组件目录](README.md) · [基础能力](../architecture/foundation-groups.md) · [来源清单](../THIRD_PARTY_RUST_SOURCES.md)
 
 ## 编译边界
 
-`src/foundation/concurrency/futures` 将同源的 facade、core、channel、executor、io、sink、task、util 八个运行时库整合为一个库包。`futures-macro` 仍是独立宿主过程宏目标；它不依赖运行时库，因此不会引入过程宏与目标代码的依赖环。`futures-intrusive` 不属于此次合并。
+`src/foundation/concurrency/futures` 提供 future、stream、channel、executor、io、sink、task 和 util 能力。`futures-macro` 仍是独立宿主过程宏目标；它不依赖运行时库，因此不会引入过程宏与目标代码的依赖环。`futures-intrusive` 是独立组件。
 
 名称保留有明确语义的 `futures`，不引入品牌前缀、版本化目录、旧包别名或兼容壳。公共 API 按 `future`、`stream`、`sink`、`task`、`io`、`channel`、`executor` 划分。内部 `traits`、`task_support`、`sink_trait`、`io_traits` 保存实现边界而非重新复制算法。
 
@@ -20,18 +20,14 @@
 - `executor` 开启本地 std 执行器；`thread-pool` 另外开启线程池。WASM 构建通过并不代表浏览器提供原生线程池运行能力。
 - 默认能力保留完整 facade 的常用接口。各消费者均设置 `default-features = false` 并按原依赖的实际能力显式转移，包括可选依赖的 feature 转发，避免把某个消费者的需求扩大到所有基础 trait 消费者。
 
-已删除无人使用且缺失真实 provider 的 futures 0.1 / tokio-io `compat`、`io-compat` API，而不是将旧依赖重新引入或把错误藏在空 feature 中。四个移除实现文件的原始字节、摘要及原因存于整合凭据。`bilock` 仍要求显式 `unstable`，其余保留 feature 的完整联合须可编译。
+不支持 futures 0.1 / tokio-io 的 `compat`、`io-compat` API；对应原始源码由合规凭据保留。`bilock` 仍要求显式 `unstable`，其余保留 feature 的完整联合须可编译。
 
 ## 验证与已知覆盖边界
 
 维护门禁 `.github/scripts/check-futures-consolidation.py` 覆盖 Linux amd64 与 WASM 的最小 feature 矩阵、真实编译依赖图、缺失能力的编译失败、重命名依赖下的宏展开、完整 feature 联合，以及 storage-client/server、platform-io 和浏览器 web-interface 消费者。
 
-保留并运行已接入的 8 个单元测试、29 个可独立运行的上游 integration target 和库 doctest。另有 35 个上游文件明确登记为未启用：其中包含共享 feature 辅助文件、已放弃的旧兼容测试，以及依赖未保留 futures-test、pin-project、static_assertions 或 assert_matches 的测试。它们的原始断言和来源均保留；门禁不提供伪造 provider、不替换为无效断言，也不把这些文件计为通过。历史 disabled 测试辅助和 nightly benchmark 同样保留但不声称执行过。
-
-所有测试位于 `test/foundation/futures` 的原用途目录，来自其他组件的外置测试另按 channel/executor/task/util 保持独立来源。上游历史辅助代码的原路径与内容转移记录由来源凭据认证。门禁使用一次性测试清单，不给产品增加 dev provider 或第二套提交的 Cargo 工作区/锁文件。
+门禁运行已接入的单元、集成和文档测试。依赖不可用 futures-test、pin-project、static_assertions 或 assert_matches 的用例、旧兼容测试及 nightly benchmark 不计为执行。原始断言和来源保存在 `test/foundation/futures`，外置来源按 channel/executor/task/util 分类。测试使用临时清单，不增加产品开发依赖或第二套提交的锁文件。
 
 ## 来源与许可
 
 八个来源均为 futures-rs 0.3.34，分别保留自己的 MIT/Apache-2.0 许可、上游包标识、原始摘要和外置测试来源。集中许可位于 `compliance/licenses/upstream/futures*-0.3.34`，原文档位于 `docs/upstream/futures*-0.3.34`。合并的是维护与编译边界，不是删除来源或声称这些实现全部原创。
-
-包数量由 8 降至 1 不直接等于运行性能提升；性能判断仍需相同场景的测量。

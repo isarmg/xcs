@@ -34,6 +34,18 @@ HTTP 监听地址必须是回环地址。对外部署由同机反向代理终止
 
 `--max-upload-bytes` 设置单次完整上传上限，默认 1073741824 字节；实际公开上限取它与存储池 `max_file_bytes` 的较小值。HTTP 上传和读取各自默认全局 8 个、每账户 2 个活动操作，支持显式配置，见[传输准入与期限](#http-transfer-limits)；密码验证最多并发 4 个。引擎工作区数量、字节数、过期时间等限制来自初始化 JSON 配置。发布仍经互斥锁串行执行，上传、读取及工作区提交的部分准备在锁外完成，详见[写入流程](../architecture/write-flow.md)；未提供吞吐量保证。
 
+## 初始化与故障启动
+
+`zxs --root SYSTEM_STATE --management-root SYSTEM_MANAGEMENT --web-dir WEB_ROOT` 直接提供 Web/API，不分发管理子命令。系统盘管理目录与数据成员分离，HTTP 先监听，再打开数据引擎；数据故障不自动初始化、清空池、放宽授权或接受损失。systemd 不要求数据成员挂载成功，也不创建、挂载或格式化设备；Samba/smbd 是独立网络服务。
+
+本机管理员可重复设置 `--setup-disk ID=/absolute/existing/root` 批准初始化磁盘，或使用 `--setup-config ID=/absolute/private-file` 提供配置预设。浏览器只能选择批准的 ID，并审查绑定摘要，不能提交任意系统路径或 Config JSON。预设文件须由服务账号拥有、为单链接普通文件且权限为 0400/0600，所有磁盘仍须在白名单中。
+
+初始化需要管理目录中预置的私有 `bootstrap.key`：权限 0600、恰好 64 个十六进制字节、无换行，从 mtime 起 30 分钟有效。daemon 不自动生成或日志输出引导密钥。仅本地开发测试可显式设置 `--allow-development-setup` 使用目录模拟盘；生产默认拒绝，模拟盘不证明设备独立性或断电安全。
+
+初始管理员与存储初始化绑定同一 setup intent；只允许补全可证明发生在权威建立前的中断，不提供通用密码重置。缺少可信权威快照且无绑定 setup intent 的孤立旧池，或已有权威标记但凭据缺失/损坏时，均不得自动创建管理员。
+
+日常管理接口及页面对应见[管理参考](daily-management-coverage.md)，离线恢复及配置草稿见[救援工具](rescue.md)。
+
 ## 认证与授权
 
 `POST /api/auth/login` 接受 `{"username":"admin","password":"..."}`，返回内存使用的 Bearer token、`csrf_token`、账号和到期时间，同时设置 HttpOnly、SameSite=Strict Cookie。会话默认 12 小时有效。密码采用 Argon2id；持久状态仅保存会话 token 的摘要。每个来源 IP 与用户名组合每分钟最多尝试登录 10 次。
@@ -137,7 +149,7 @@ CARGO_TARGET_DIR=target/native CARGO_INCREMENTAL=0 \
   cargo test --locked --offline -p storage-server -p storage-client
 ```
 
-Unix socket 测试需要运行环境允许本机 socket。[集成回归](../../test/server/integration/http_engine.rs) 覆盖 HTTP 准入、封存、三盘发布、幂等、Range、ACL、历史计划和策略 CAS，也覆盖文件/目录分支、真实版本祖先、备注与重命名下载、上传池限额，以及改密的 CSRF、同源、字段和 JSON 长度边界。永久丢失后的降级发布与发布后损坏均保留原保护证据；可信嵌入式认证快照恢复测试仍保留，但不代表 daemon 在权威交接后允许自动恢复丢失的认证主库。管理运行时回归另外验证主库丢失时围栏拒绝旧快照、数据引擎阻塞时仍可登录，以及排队请求在撤权后被拒绝。两种保存结果 wire 均通过原 SaveOperation schema 验证，详见 [API 验收证据](../validation/evidence/api.md)。
+Unix socket 测试需要运行环境允许本机 socket。[集成回归](../../test/server/integration/http_engine.rs) 覆盖 HTTP 准入、封存、三盘发布、幂等、Range、ACL、历史计划和策略 CAS，也覆盖文件/目录分支、真实版本祖先、备注与重命名下载、上传池限额，以及改密的 CSRF、同源、字段和 JSON 长度边界。永久丢失后的降级发布与发布后损坏均保留原保护证据；可信嵌入式认证快照恢复测试仍保留，但不代表 daemon 在权威交接后允许自动恢复丢失的认证主库。管理运行时回归另外验证主库丢失时围栏拒绝旧快照、数据引擎阻塞时仍可登录，以及排队请求在撤权后被拒绝。两种保存结果 wire 均通过原 SaveOperation schema 验证。
 
 模块回归还验证上传断开后的占用生命周期、Range/HEAD 及读租约、静态/API 命名空间、规范化账号限流、损坏上传状态和持久化失败清理。平台与共享认证回归使用 `cargo test --locked --offline -p authentication -p platform-io -p storage-server` 一并运行。
 

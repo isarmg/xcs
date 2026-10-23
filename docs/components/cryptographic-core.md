@@ -2,18 +2,36 @@
 
 # 密码学核心
 
-一个 no_std crate 包含公共类型、哈希/MAC trait 及可选块缓冲。各算法仍保留在独立组件中。
+`cryptographic-core` 是 no_std 共享接口库，包含 `common_types`、哈希/MAC trait 及可选 `buffer` 模块。BLAKE2、Argon2、SHA-2、HMAC 和可选 BLAKE3 trait 集成使用同一套接口；算法实现及共享数组 `hybrid-array` 各自独立。
 
-来源为 RustCrypto digest 0.11.3（主来源）、block-buffer 0.12.1 和 crypto-common 0.2.2（合入的实现，而非停用代码）。原始版本、源码快照、文档和 MIT/Apache-2.0 许可证均保留。
+## 能力与安全边界
 
-缓冲模块包含原有且未改动的 unsafe 操作；哈希/公共模块禁止 unsafe 代码。特性保留 alloc、block-api、mac、oid 和 zeroize。统一的 zeroize 特性启用原有缓冲清零能力及 hybrid-array 的可选清零支持。
+- `alloc`、`block-api`、`mac`、`oid` 和 `zeroize` 按需启用。
+- `zeroize` 提供缓冲及 hybrid-array 清零能力，不增加 std 依赖，也不使数组在析构时自动清零。
+- `dev` 提供固定哈希、XOF、MAC 和序列化测试辅助，不依赖外部二进制测试数据解析器。
+- 不提供 `rand_core`、`getrandom`、`blobby` 再导出或旧版二进制加载/运行时输出序列化宏。
+- 根级拒绝 unsafe；哈希及公共类型模块禁止 unsafe，仅缓冲模块允许其原有 unsafe 操作。
+
+<a id="blake2-parameter-limits"></a>
+
+## BLAKE2 接口与参数限制
+
+BLAKE2 使用 `blake2::VariableOutput` 和 `VariableOutputReset` 提供运行时输出长度，包括 Argon2 H' 所需能力。固定输出缓冲器 `BufferedHash` 实现 `CoreProxy`。可选重置、分配输出、常量时间 MAC 验证与 `std::io::Write` 均保留；非法输出长度的重置调用不消耗原状态。
+
+`new_with_salt_and_personal` 对超长 key、salt 或 persona 返回 `InvalidLength`：BLAKE2b 密钥最多 64 字节、salt/persona 各 16 字节；BLAKE2s 分别为 32、8、8 字节。上限不随截断输出长度缩小。返回 `Self` 的底层 `new_with_params` 使用断言，调用方必须自行满足约束。
 
 <a id="maintained-boundaries"></a>
 
-## 维护边界
+## 检查
 
-生产门禁在 Linux amd64 和 WebAssembly 上检查无特性配置、alloc、block-api、mac、oid、zeroize、dev 及其受支持并集，并检查真正的 --all-features。它还运行原始 block-buffer 测试和保留的哈希序列化向量，包括导出的序列化宏，不改变归档的上游数据。zeroize 特性还提供 hybrid-array 清零实现，但不会添加数组析构时的自动清零或 std 依赖。
+运行 `python3 .github/scripts/check-crypto-consolidation.py`。门禁使用仓库外临时 Cargo 工作区及本地、锁定、离线依赖，检查：
 
-新包不再宣称支持未使用的 rand_core/getrandom 特性，也不保留悬空的 rand_core 再导出，因为仓库中没有对应上游提供方。dev 特性现可在没有外部测试数据解析器的情况下运行，并保留固定哈希、XOF、MAC 和序列化辅助能力。未使用的 new_test/new_mac_test 二进制加载宏及 blobby 再导出已移除；过时的 hash_rt_outsize_serialization_test 宏也已移除，因为 digest 0.11 中没有其所需的 VariableOutput trait。它们的精确原始定义仍保存在经过核验的源码归档中。未移除任何算法、运行时可变输出的 BLAKE2 API、重置行为或 I/O 能力。维护探针拒绝已移除的特性名，并验证受支持的 dev 导出。
+- Linux amd64/WASM no_std、最小特性组合及 `--all-features`，拒绝重复密码学 trait 提供方和 generic-array 依赖。
+- BLAKE2 独立向量、有效输出长度、分块、密钥/个性化、参数拒绝和重置；Argon2 KAT/PHC 及 SHA-2、HMAC、BLAKE3 消费者。
+- 原始缓冲测试、哈希序列化向量及导出宏、显式缓冲/数组清零、编译器强制的 unsafe 边界。
 
-三个原始源码及测试清单在 compliance/cryptographic-core-source-archive.json.gz 中经过核验。原始 MIT 和 Apache-2.0 许可材料仍保存在 compliance/licenses/upstream。更早适配到 BLAKE2 中的 digest 0.10.7 实现仍是独立的合入来源；本次整合不将其停用或重新归类。
+向量生成器为 `test/ci/crypto_vectors.py`，独立计算预期值且不修改上游数据。忽略的大内存 Argon2 用例不计作执行；nightly SIMD 的 `platform_intrinsics` 源码不代表当前稳定工具链支持。
+
+## 来源与许可
+
+主来源为 RustCrypto digest 0.11.3，合入来源为 block-buffer 0.12.1 与 crypto-common 0.2.2。原始源码和测试清单保存在 `compliance/cryptographic-core-source-archive.json.gz`，MIT/Apache-2.0 许可材料位于 `compliance/licenses/upstream`。BLAKE2 中的 digest 0.10.7 适配器另有独立来源身份，精确对应关系见[BLAKE2 适配器来源](crypto-consolidation.md)。

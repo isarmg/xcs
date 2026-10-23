@@ -119,6 +119,20 @@ class SourcePolicy(unittest.TestCase):
         with patch.object(manager, "cargo_metadata", return_value=self.metadata):
             self.verify(metadata=True)
 
+    def test_source_document_preserves_current_identity_and_customization_notice_without_history(self):
+        self.catalog["packages"]["src/foundation/mini"]["changes"] = "2026-10-20 package review: docs/reports/old-review.md"
+        self.catalog["merges"][0]["changes"] = "2026-10-21 merge implementation: docs/reports/old-merge.md"
+        original = deepcopy(self.catalog)
+        document = manager.document(self.catalog, self.policy)
+        for required in ("mini@1.0.0", "normalization@2.0.0", "src/foundation/mini", "src/merged",
+                         "SHA256 " + "a" * 64, "compliance/licenses/upstream/mini/LICENSE",
+                         "本地定制", "../compliance/rust-sources.json", "packages / merges"):
+            self.assertIn(required, document)
+        self.assertNotIn("2026-10-20 package review", document)
+        self.assertNotIn("2026-10-21 merge implementation", document)
+        self.assertNotIn("docs/reports/", document)
+        self.assertEqual(self.catalog, original, "documentation rendering must not rewrite provenance")
+
     def test_verification_member_is_explicit_and_non_default(self):
         self.policy["verification_members"] = ["src/foundation/mini"]
         (self.root / "Cargo.toml").write_text(
@@ -763,7 +777,7 @@ class SourcePolicy(unittest.TestCase):
         self.assertEqual(current["vcs"], {"git": {"sha1": "new-release"}})
         self.assertTrue(prior_hashes.items() <= self.catalog["origin_records_sha256"].items())
         document = (self.root / manager.DOC).read_text()
-        self.assertIn("mini@1.0.0", document)
+        self.assertNotIn("mini@1.0.0", document)
         self.assertIn("mini@1.1.0", document)
         first = (self.root / manager.CATALOG).read_bytes()
         self.refresh()

@@ -1,6 +1,6 @@
 # ZXS 状态、功耗和监测历史
 
-`mod.rs` 最初从项目所有者提供的 主机监测项目的 `src/collectors/mod.rs` 选取 CPU/内存的最小采样路径，现已定制为独立的 ZXS 采样服务。自有代码全部为 Rust；`sysinfo` 保持真实依赖包名。服务不枚举进程、网络连接、GPU、SMART 内容或远程代理。
+独立的 ZXS 采样服务复用项目所有者提供的主机监测项目 `src/collectors/mod.rs` 的 CPU/内存采样实现。自有代码全部为 Rust；`sysinfo` 保持真实依赖包名。服务不枚举进程、网络连接、GPU、SMART 内容或远程代理。
 
 `GET /api/system/status` 和 `GET /api/system/history` 均要求有效管理员会话。普通读者不能读取主机监测信息。返回值不包含系统挂载路径、传感器路径、物理设备身份或序列号。
 

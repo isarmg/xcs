@@ -1,6 +1,6 @@
 # 核心契约附件
 
-[文档目录](../README.md) · [盘格式](../08-full-storage-and-disk-format.md#s08-06) · [API](../15-api-and-errors.md#s15-10) · [状态登记](../23-delivery-and-decisions.md#s23-05)
+[文档目录](../README.md) · [盘格式](../08-full-storage-and-disk-format.md#s08-06) · [API](../15-api-and-errors.md#s15-10) · [当前范围与限制](../23-delivery-and-decisions.md#s23-05)
 
 本附件为 `0.1.0-draft`，用于使部分规范可以执行字段与向量校验。仓库已有核心、服务端和客户端实现；本附件的覆盖仍限于下表，不表示完整 API 或盘格式已冻结，也不替代实际 I/O 和平台验收。
 
@@ -48,7 +48,7 @@ Rust 依赖源码已包含在仓库中，首次构建也使用唯一根锁文件
 
 仓库记录必须携带 `smb_binding_generation`，按规范 UINT64 十进制字符串编码；新仓库初值为 `"1"`。它独立于普通历史发布代数，每次显式重绑定或禁用推进，用来拒绝持有旧绑定的 SMB 会话。拆分禁用源仓库也推进其代数；新拆分仓库和导入仓库保持 SMB 禁用并从自己的初始代数开始。此字段为当前持久模型和 `HistoryRepository` schema 的必填项，不为缺失字段的旧记录补默认值。普通目录组成选择不推进此代数，也不改变已固定读取版本。
 
-分支创建只登记元数据与冻结来源引用，`pending_file_versions` 的键/值分别为 FileId/VersionId；Commit 逐快照保留此状态，当前分支首写不会改变旧快照。泛型 Entry 及文件管理的 version_id 都指可见真实版本；继承时为冻结父 ID，own_version_id 为 null，首次写入后才为自有 ID。新增校验同时拒绝 pending 来源逃逸文件作用域、快照来源与条目不符，以及可见父内容被误标为已拥有内容；旧 Branch / Commit 的空映射省略序列化并核对规范字节与摘要。最新执行见[本轮契约记录](../validation/evidence/inherited-branches/contract.md)，不覆盖旧向量验收快照。
+分支创建只登记元数据与冻结来源引用，`pending_file_versions` 的键/值分别为 FileId/VersionId；Commit 逐快照保留此状态，当前分支首写不会改变旧快照。泛型 Entry 及文件管理的 version_id 都指可见真实版本；继承时为冻结父 ID，own_version_id 为 null，首次写入后才为自有 ID。新增校验同时拒绝 pending 来源逃逸文件作用域、快照来源与条目不符，以及可见父内容被误标为已拥有内容；旧 Branch / Commit 的空映射省略序列化并核对规范字节与摘要。
 
 目录分支以 `DirectoryBranch`、`DirectoryTree` 和 `DirectoryReference` 区分命名身份、不可变组成及子目录精确引用；`DirectoryNamespaceBatch` 每项要求源分支、依据子树与稳定条目 ID，非删除操作还要求明确目标分支及依据子树。登记目录分支不提前创建文件分支或占位文件。路径、跨分支冲突与实际归属由核心统一校验，schema 合法不等于业务可发布。
 
