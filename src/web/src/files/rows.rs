@@ -102,7 +102,7 @@ impl Listing {
                     normalized_name: name.to_lowercase(),
                     name,
                     directory: !file_kind(entry),
-                    selection_id: text(entry, &["entry_id", "path"]),
+                    selection_id: entry_key(entry),
                     size: crate::format::parse_u64(&entry["size"]),
                 })
             })

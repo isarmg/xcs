@@ -14,7 +14,7 @@
 use json_codec::Value;
 use smb_protocol::{
     client::{Client, error_errno},
-    protocol::{OpenResult, Request},
+    protocol::{DirectoryPage, OpenResult, Request},
 };
 use std::{
     collections::BTreeMap,
@@ -60,8 +60,12 @@ struct Context {
     files: BTreeMap<usize, Open>,
 }
 struct Directory {
+    client: Client,
+    handle: u64,
     entries: Vec<sdk::dirent>,
     position: usize,
+    more: bool,
+    restart: bool,
 }
 
 fn errno(error: i32) {
@@ -863,46 +867,22 @@ unsafe extern "C" fn fdopendir(
             // SAFETY: The owning host callback supplies a live handle; Context access stays on this
             // event-loop thread and does not escape the callback.
             let context = unsafe { context(handle) }?;
-            let path = context
+            let remote = context
                 .files
                 .get(&(fsp as usize))
                 .ok_or_else(bad)?
                 .info
-                .path
-                .clone();
-            let (result, _) = context.client.call(Request::List { path })?;
-            let mut entries = Vec::new();
-            for node in result
-                .get("entries")
-                .and_then(Value::as_array)
-                .ok_or_else(bad)?
-            {
-                let name = node.get("name").and_then(Value::as_str).ok_or_else(bad)?;
-                let mut entry: sdk::dirent = Default::default();
-                if name.len() >= entry.d_name.len() || name.as_bytes().contains(&0) {
-                    return Err(bad());
-                }
-                entry.d_ino = inode(
-                    node.get("entry_id")
-                        .and_then(Value::as_str)
-                        .ok_or_else(bad)?,
-                ) as _;
-                entry.d_type = if node.get("kind").and_then(Value::as_str) == Some("directory") {
-                    libc::DT_DIR
-                } else {
-                    libc::DT_REG
-                };
-                entry.d_reclen = std::mem::size_of::<sdk::dirent>() as _;
-                for (i, byte) in name.bytes().enumerate() {
-                    entry.d_name[i] = byte as _;
-                }
-                entries.push(entry);
-            }
-            Ok(Box::into_raw(Box::new(Directory {
-                entries,
+                .handle;
+            let mut directory = Directory {
+                client: context.client.clone(),
+                handle: remote,
+                entries: Vec::new(),
                 position: 0,
-            }))
-            .cast())
+                more: true,
+                restart: false,
+            };
+            directory.load_page()?;
+            Ok(Box::into_raw(Box::new(directory)).cast())
         },
     ));
     match result {
@@ -917,36 +897,94 @@ unsafe extern "C" fn fdopendir(
         }
     }
 }
+impl Directory {
+    fn load_page(&mut self) -> std::io::Result<()> {
+        let (value, descriptor) = self.client.call(Request::ReadDirectory {
+            handle: self.handle,
+            restart: self.restart,
+        })?;
+        if descriptor.is_some() {
+            return Err(bad());
+        }
+        let page: DirectoryPage = json_codec::from_value(value).map_err(std::io::Error::other)?;
+        if page.more && page.entries.is_empty() {
+            return Err(bad());
+        }
+        let mut entries = Vec::new();
+        for node in page.entries {
+            let mut entry: sdk::dirent = Default::default();
+            if node.name.len() >= entry.d_name.len() || node.name.as_bytes().contains(&0) {
+                return Err(bad());
+            }
+            entry.d_ino = inode(&node.entry_id) as _;
+            entry.d_type = if node.kind == "directory" {
+                libc::DT_DIR
+            } else {
+                libc::DT_REG
+            };
+            entry.d_reclen = std::mem::size_of::<sdk::dirent>() as _;
+            for (index, byte) in node.name.bytes().enumerate() {
+                entry.d_name[index] = byte as _;
+            }
+            entries.push(entry);
+        }
+        self.entries = entries;
+        self.position = 0;
+        self.more = page.more;
+        self.restart = false;
+        Ok(())
+    }
+}
 unsafe extern "C" fn readdir(
     _handle: *mut sdk::vfs_handle_struct,
     _fsp: *mut sdk::files_struct,
     directory: *mut sdk::DIR,
 ) -> *mut sdk::dirent {
-    if directory.is_null() {
-        errno(libc::EINVAL);
-        return std::ptr::null_mut();
-    }
-    // SAFETY: This non-null opaque directory is the live Box returned by fdopendir; the host
-    // serializes callbacks and closedir consumes it exactly once.
-    let directory = unsafe { &mut *directory.cast::<Directory>() };
-    match directory.entries.get_mut(directory.position) {
-        Some(entry) => {
-            directory.position += 1;
-            entry as *mut sdk::dirent
+    let result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(
+        || -> std::io::Result<*mut sdk::dirent> {
+            if directory.is_null() {
+                return Err(bad());
+            }
+            // SAFETY: This is the live Directory box returned by fdopendir;
+            // the host serializes callbacks, and closedir consumes it once.
+            let directory = unsafe { &mut *directory.cast::<Directory>() };
+            if directory.restart
+                || (directory.position == directory.entries.len() && directory.more)
+            {
+                directory.load_page()?;
+            }
+            match directory.entries.get_mut(directory.position) {
+                Some(entry) => {
+                    directory.position += 1;
+                    Ok(entry as *mut sdk::dirent)
+                }
+                None => {
+                    errno(0);
+                    Ok(std::ptr::null_mut())
+                }
+            }
+        },
+    ));
+    match result {
+        Ok(Ok(entry)) => entry,
+        Ok(Err(error)) => {
+            errno(error_errno(&error));
+            std::ptr::null_mut()
         }
-        None => {
-            errno(0);
+        Err(_) => {
+            errno(libc::EIO);
             std::ptr::null_mut()
         }
     }
 }
 unsafe extern "C" fn rewind(_handle: *mut sdk::vfs_handle_struct, directory: *mut sdk::DIR) {
     if !directory.is_null() {
-        // SAFETY: The non-null opaque pointer is our live Directory box from fdopendir, exclusively
-        // accessed on the host event loop.
-        unsafe {
-            (*directory.cast::<Directory>()).position = 0;
-        }
+        // SAFETY: This is our live Directory box, accessed exclusively on the
+        // event loop. No returned dirent survives the next directory callback.
+        let directory = unsafe { &mut *directory.cast::<Directory>() };
+        directory.entries.clear();
+        directory.position = 0;
+        directory.restart = true;
     }
 }
 unsafe extern "C" fn closedir(

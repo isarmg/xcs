@@ -136,3 +136,6 @@ async fn optional_bridge_failure_leaves_http_until_shutdown() {
 #[cfg(feature = "core")]
 #[path = "service_lifecycle/sockets.rs"]
 mod sockets;
+
+#[path = "service_lifecycle/management.rs"]
+mod management;

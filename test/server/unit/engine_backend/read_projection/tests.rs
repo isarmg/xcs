@@ -23,6 +23,7 @@ fn fixture() -> (
         .unwrap();
     let identity = Identity {
         admission_session: None,
+        smb_binding: None,
         principal: "owner".into(),
         admin: false,
         repositories: BTreeSet::from([repo.repository_id.clone()]),
@@ -553,4 +554,99 @@ fn inherited_directory_context_keeps_first_match_and_historical_sources() {
     )
     .unwrap();
     assert_eq!(projection.pending_file_versions, expected);
+}
+
+fn directory_entry(index: usize, path: String) -> storage_contract::Entry {
+    storage_contract::Entry {
+        entry_id: format!("entry_{index:032x}"),
+        name: path.rsplit('/').next().unwrap().into(),
+        lookup_key: name_policy::path_key(&path),
+        path,
+        kind: "file".into(),
+        file_id: format!("file_{index:032x}"),
+        version_id: format!("version_{index:032x}"),
+        size: 0,
+    }
+}
+#[test]
+fn large_directory_is_paginated_by_actual_bytes_and_count_without_full_tree_copies() {
+    use smb_protocol::protocol::{
+        MAX_DIRECTORY_PAGE_BYTES, MAX_DIRECTORY_PAGE_ENTRIES, MAX_FRAME_BYTES, Response,
+    };
+    let mut entries: Vec<_> = (0..12_000)
+        .map(|index| directory_entry(index, format!("f{index:05}-{}", "x".repeat(180))))
+        .collect();
+    for entry in &entries {
+        name_policy::validate_path(&entry.path).unwrap();
+    }
+    entries.sort_by(|left, right| left.lookup_key.cmp(&right.lookup_key));
+    assert!(
+        json_codec::to_vec(&json!({"entries":entries}))
+            .unwrap()
+            .len()
+            > MAX_FRAME_BYTES
+    );
+    let mut after = None;
+    let mut seen = Vec::new();
+    loop {
+        let page = SmbDirectory::page(
+            "commit_00000000000000000000000000000000",
+            &entries,
+            "",
+            after.as_deref(),
+        )
+        .unwrap();
+        assert!(page.entries.len() <= MAX_DIRECTORY_PAGE_ENTRIES);
+        assert!(
+            json_codec::to_vec(&Response::Ok {
+                result: json_codec::to_value(&page).unwrap()
+            })
+            .unwrap()
+            .len()
+                <= MAX_DIRECTORY_PAGE_BYTES
+        );
+        assert!(!page.more || !page.entries.is_empty());
+        after = page.entries.last().map(|entry| entry.lookup_key.clone());
+        seen.extend(page.entries.iter().map(|entry| entry.entry_id.clone()));
+        if !page.more {
+            break;
+        }
+    }
+    assert_eq!(
+        seen,
+        entries
+            .iter()
+            .map(|entry| entry.entry_id.clone())
+            .collect::<Vec<_>>()
+    );
+}
+#[test]
+fn directory_byte_bound_applies_to_utf8_and_long_paths_before_the_count_limit() {
+    use smb_protocol::protocol::{MAX_DIRECTORY_PAGE_BYTES, MAX_DIRECTORY_PAGE_ENTRIES, Response};
+    // Valid paths have up to 200 UTF-16 units, so non-ASCII names can consume
+    // considerably more bytes than the entry-count budget alone predicts.
+    let parent = vec!["界".repeat(50); 3].join("/");
+    let entries: Vec<_> = (0..300)
+        .map(|index| directory_entry(index, format!("{parent}/f{index:05}")))
+        .collect();
+    for entry in &entries {
+        name_policy::validate_path(&entry.path).unwrap();
+    }
+    let page = SmbDirectory::page(
+        "commit_00000000000000000000000000000000",
+        &entries,
+        &parent,
+        None,
+    )
+    .unwrap();
+    assert!(page.more);
+    assert!(page.entries.len() < MAX_DIRECTORY_PAGE_ENTRIES);
+    assert!(
+        json_codec::to_vec(&Response::Ok {
+            result: json_codec::to_value(page).unwrap()
+        })
+        .unwrap()
+        .len()
+            <= MAX_DIRECTORY_PAGE_BYTES
+    );
 }

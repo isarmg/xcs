@@ -108,9 +108,9 @@ fn charge_attempts<const N: usize>(
     }))
 }
 
-fn admit_attempts(
+fn admit_attempts<const N: usize>(
     attempts: &Mutex<HashMap<String, Attempts>>,
-    keys: [String; 2],
+    keys: [String; N],
     capacity_message: &str,
     attempt_message: &str,
 ) -> Result<(), ApiError> {
@@ -331,6 +331,26 @@ async fn auth_job<T: Send + 'static>(
     .map_err(ApiError::join)?
 }
 
+/// Retry revalidates the current account through AuthorizedBackend. That can
+/// wait for an auth mutation/fsync, so the entire call belongs off the runtime.
+pub(crate) async fn storage_retry_job(
+    backend: Arc<dyn crate::Backend>,
+    slots: Arc<tokio::sync::Semaphore>,
+    identity: Identity,
+) -> Result<Value, ApiError> {
+    let permit = slots
+        .try_acquire_owned()
+        .map_err(|_| ApiError::limit("management capacity reached"))?;
+    tokio::task::spawn_blocking(move || {
+        // A disconnected caller does not free admission while the job is queued
+        // or blocked on the authority lock.
+        let _permit = permit;
+        backend.retry_storage(&identity)
+    })
+    .await
+    .map_err(ApiError::join)?
+}
+
 #[derive(Clone)]
 pub(crate) struct SessionToken(String);
 
@@ -519,14 +539,29 @@ pub(crate) async fn account_upsert(
 #[path = "../../../test/server/unit/http_auth/tests.rs"]
 mod tests;
 
-/// Shared bounded peer admission for locally authorized bootstrap endpoints.
+/// Public bootstrap attempts can consume only their own source's rate budget.
+/// Backend work still has the bounded management semaphore, but an invalid
+/// capability must not exhaust a fixed-window quota shared with other sources.
 #[cfg(feature = "core")]
 pub(crate) fn setup_admission(state: &AppState, request: &Request) -> Result<(), ApiError> {
     let ip = client_ip(request, &state.config)?;
     admit_attempts(
-        &state.attempts,
-        [format!("setup:ip:{ip}"), "setup:global".into()],
+        &state.setup_attempts,
+        [format!("setup:ip:{ip}")],
         "setup admission capacity reached",
         "too many setup attempts; retry after 60 seconds",
+    )
+}
+
+/// Called only after ordinary session/CSRF and administrator authorization.
+/// A separate map isolates both counters and key capacity from public traffic.
+#[cfg(feature = "core")]
+pub(crate) fn recovery_admission(state: &AppState, request: &Request) -> Result<(), ApiError> {
+    let ip = client_ip(request, &state.config)?;
+    admit_attempts(
+        &state.recovery_attempts,
+        [format!("recovery:ip:{ip}"), "recovery:global".into()],
+        "recovery admission capacity reached",
+        "too many recovery attempts; retry after 60 seconds",
     )
 }

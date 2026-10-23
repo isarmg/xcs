@@ -1860,6 +1860,9 @@ impl Engine {
             let mut repository = manifest.repository.clone();
             repository.primary_slot_id = primary.into(); repository.target_copies = copies;
             repository.account_scope_repository_id = None; repository.smb_enabled = false;
+            // This newly admitted repository has no existing destination
+            // binding; imported source revisions do not authorize SMB sessions.
+            repository.smb_binding_generation = 1;
             repository.file_manager_root=false;
             repository.grants.manage.insert(principal.into());
             state.repositories.insert(repository.repository_id.clone(),repository.clone());

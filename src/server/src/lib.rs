@@ -187,6 +187,12 @@ pub trait Backend: Send + Sync {
 
     /// Called after system authentication has been placed in shared state.
     fn start_management(&self, _auth: Arc<Mutex<AuthStore>>) {}
+    /// Close background recovery admission without waiting for disk I/O.
+    fn stop_management(&self) {}
+    /// Join owned native recovery writers; called only on a blocking thread.
+    fn drain_management(&self) -> Result<(), ApiError> {
+        Ok(())
+    }
     fn management_status(&self) -> Value {
         json!({"state":"ready","retryable":false})
     }
@@ -256,6 +262,12 @@ impl AuthorizedBackend {
     }
 }
 impl Backend for AuthorizedBackend {
+    fn stop_management(&self) {
+        self.backend.stop_management();
+    }
+    fn drain_management(&self) -> Result<(), ApiError> {
+        self.backend.drain_management()
+    }
     fn setup_operation(
         &self,
         action: &'static str,
@@ -464,6 +476,10 @@ struct AppState {
     auth: Arc<Mutex<AuthStore>>,
     config: ServerConfig,
     attempts: Arc<Mutex<HashMap<String, http_auth::Attempts>>>,
+    #[cfg(feature = "core")]
+    setup_attempts: Arc<Mutex<HashMap<String, http_auth::Attempts>>>,
+    #[cfg(feature = "core")]
+    recovery_attempts: Arc<Mutex<HashMap<String, http_auth::Attempts>>>,
     pending_logins: Arc<Mutex<std::collections::HashSet<String>>>,
     password_slots: Arc<tokio::sync::Semaphore>,
     authorization_slots: Arc<tokio::sync::Semaphore>,
@@ -542,6 +558,10 @@ fn router_shared(
         config: config.clone(),
         spool_budget,
         attempts: Arc::new(Mutex::new(HashMap::new())),
+        #[cfg(feature = "core")]
+        setup_attempts: Arc::new(Mutex::new(HashMap::new())),
+        #[cfg(feature = "core")]
+        recovery_attempts: Arc::new(Mutex::new(HashMap::new())),
         pending_logins: Arc::new(Mutex::new(std::collections::HashSet::new())),
         password_slots: Arc::new(tokio::sync::Semaphore::new(4)),
         authorization_slots: Arc::new(tokio::sync::Semaphore::new(8)),
@@ -691,6 +711,7 @@ pub async fn serve(
     auth: AuthStore,
     config: ServerConfig,
 ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+    let management_shutdown = service_lifecycle::ManagementShutdown::new(backend.clone());
     config.validate()?;
     let spool_budget = config.open_http_spool();
     let listener = tokio::net::TcpListener::bind(config.listen).await?;
@@ -773,7 +794,7 @@ pub async fn serve(
             }
         }
     };
-    service_lifecycle::run(http, bridge, shutdown()).await?;
+    service_lifecycle::run_with_management(http, bridge, shutdown(), management_shutdown).await?;
     Ok(())
 }
 async fn bridge_identities(
@@ -1124,12 +1145,15 @@ async fn storage_retry(
     http_routing::Extension(identity): http_routing::Extension<Identity>,
 ) -> Result<Json<Value>, ApiError> {
     identity.require_admin()?;
-    state.backend.retry_storage(&identity).map(Json)
+    http_auth::storage_retry_job(state.backend, state.management_slots, identity)
+        .await
+        .map(Json)
 }
 
 async fn ready(State(state): State<AppState>) -> Result<Json<Value>, ApiError> {
     let identity = Identity {
         admission_session: None,
+        smb_binding: None,
         principal: "health".into(),
         admin: false,
         repositories: Default::default(),
@@ -1139,6 +1163,7 @@ async fn ready(State(state): State<AppState>) -> Result<Json<Value>, ApiError> {
 async fn capabilities(State(state): State<AppState>) -> Result<Json<Value>, ApiError> {
     let identity = Identity {
         admission_session: None,
+        smb_binding: None,
         principal: "anonymous".into(),
         admin: false,
         repositories: Default::default(),

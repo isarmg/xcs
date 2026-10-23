@@ -9,7 +9,7 @@ use platform_io::fs_safety::{
     EntryName, RelativePath,
     linux::{MountPolicy, OpenAt2Root},
 };
-use std::os::unix::ffi::OsStrExt;
+use std::os::unix::{ffi::OsStrExt, fs::MetadataExt};
 use std::{
     collections::BTreeMap,
     io::{Read, Write},
@@ -111,6 +111,36 @@ pub struct PreparedUpload {
     size: u64,
     hash: String,
     scratch: Option<std::path::PathBuf>,
+    retained: Option<VerifiedUploadReplay>,
+}
+
+#[derive(PartialEq, Eq)]
+struct UploadFileStamp {
+    device: u64,
+    inode: u64,
+    size: u64,
+    links: u64,
+    mode: u32,
+    modified: (i64, i64),
+    changed: (i64, i64),
+}
+impl UploadFileStamp {
+    fn of(file: &std::fs::File) -> Result<Self> {
+        let metadata = file.metadata()?;
+        Ok(Self {
+            device: metadata.dev(),
+            inode: metadata.ino(),
+            size: metadata.len(),
+            links: metadata.nlink(),
+            mode: metadata.mode(),
+            modified: (metadata.mtime(), metadata.mtime_nsec()),
+            changed: (metadata.ctime(), metadata.ctime_nsec()),
+        })
+    }
+}
+struct VerifiedUploadReplay {
+    file: std::fs::File,
+    stamp: UploadFileStamp,
 }
 impl Drop for PreparedUpload {
     fn drop(&mut self) {
@@ -126,6 +156,28 @@ impl Drop for PreparedUpload {
     }
 }
 impl UploadPreparation {
+    fn retained_file(&self) -> Result<std::fs::File> {
+        let relative =
+            RelativePath::new(Path::new(self.target.file_name().expect("target filename")))
+                .map_err(preparation_fs_error)?;
+        self.directory_handle
+            .open_file(&relative, false)
+            .map_err(preparation_fs_error)
+    }
+
+    fn verify_retained(&self, size: u64, hash: &str) -> Result<VerifiedUploadReplay> {
+        let file = self.retained_file()?;
+        let stamp = UploadFileStamp::of(&file)?;
+        let actual = upload_fingerprint_file(file.try_clone()?, self.max_file_bytes)?;
+        if actual.0 != size || actual.1 != hash || UploadFileStamp::of(&file)? != stamp {
+            return Err(Error::new(
+                "CHECKSUM_MISMATCH",
+                "retained upload generation no longer matches its receipt",
+            ));
+        }
+        Ok(VerifiedUploadReplay { file, stamp })
+    }
+
     fn verify_content(&self, size: u64, hash: &str) -> Result<()> {
         if self
             .expected_content
@@ -159,35 +211,42 @@ impl UploadPreparation {
                     "one upload generation cannot name different bytes",
                 ));
             }
+            if old.source_path != self.target {
+                return Err(Error::new(
+                    "WORKSPACE_CHANGED",
+                    "retained upload path differs from its generation",
+                ));
+            }
+            let retained = self.verify_retained(size, &hash)?;
             return Ok(PreparedUpload {
                 plan: self,
                 size,
                 hash,
                 scratch: None,
+                retained: Some(retained),
             });
         }
         if self.existing {
-            let relative =
-                RelativePath::new(Path::new(self.target.file_name().expect("target filename")))
-                    .map_err(preparation_fs_error)?;
-            let existing = upload_fingerprint_file(
-                self.directory_handle
-                    .open_file(&relative, false)
-                    .map_err(preparation_fs_error)?,
-                self.max_file_bytes,
-            )?;
-            if existing != upload_fingerprint_file(self.source.try_clone()?, self.max_file_bytes)? {
-                return Err(Error::new(
-                    "UPLOAD_GENERATION_CONFLICT",
-                    "one upload generation cannot name different bytes",
-                ));
-            }
-            self.verify_content(existing.0, &existing.1)?;
+            let incoming = upload_fingerprint_file(self.source.try_clone()?, self.max_file_bytes)?;
+            self.verify_content(incoming.0, &incoming.1)?;
+            let retained = self
+                .verify_retained(incoming.0, &incoming.1)
+                .map_err(|error| {
+                    if error.code() == "CHECKSUM_MISMATCH" {
+                        Error::new(
+                            "UPLOAD_GENERATION_CONFLICT",
+                            "one upload generation cannot name different bytes",
+                        )
+                    } else {
+                        error
+                    }
+                })?;
             return Ok(PreparedUpload {
                 plan: self,
-                size: existing.0,
-                hash: existing.1,
+                size: incoming.0,
+                hash: incoming.1,
                 scratch: None,
+                retained: Some(retained),
             });
         }
         let scratch = self
@@ -198,6 +257,7 @@ impl UploadPreparation {
             size: 0,
             hash: String::new(),
             scratch: Some(scratch.clone()),
+            retained: None,
         };
         let scratch_name = EntryName::new(scratch.file_name().expect("scratch filename"))
             .map_err(preparation_fs_error)?;
@@ -299,11 +359,15 @@ fn validate_file_selection(
     let selected = directory::branch_context_at(state, &workspace.branch_id, path)
         .ok_or_else(|| Error::new("FILE_NOT_FOUND", "file context no longer exists"))?;
     if selected.inherited_from.is_none()
-        && state.file_branch_aliases.contains_key(&selected.branch_id)
+        && (state.file_branch_aliases.contains_key(&selected.branch_id)
+            || state
+                .branches
+                .get(&selected.branch_id)
+                .is_none_or(|branch| branch.state != "active"))
     {
         return Err(Error::new(
             "BRANCH_NOT_ACTIVE",
-            "merged branch aliases are read-only; select their surviving branch",
+            "selected file branch is not active; select a writable branch",
         ));
     }
     let repo = state
@@ -724,13 +788,6 @@ impl Engine {
                 "workspace storage changed during upload preparation",
             ));
         }
-        if let Some(old) = plan
-            .previous
-            .as_ref()
-            .filter(|old| old.dirty_generation == plan.generation)
-        {
-            return Ok(old.clone());
-        }
         let current_directory = OpenAt2Root::open(&plan.directory, MountPolicy::SameMount)
             .map_err(preparation_fs_error)?;
         if current_directory.identity() != plan.directory_handle.identity() {
@@ -738,6 +795,22 @@ impl Engine {
                 "UNSAFE_PATH",
                 "workspace data directory identity changed during preparation",
             ));
+        }
+        if let Some(retained) = &prepared.retained
+            && (UploadFileStamp::of(&retained.file)? != retained.stamp
+                || UploadFileStamp::of(&plan.retained_file()?)? != retained.stamp)
+        {
+            return Err(Error::new(
+                "CHECKSUM_MISMATCH",
+                "retained upload generation changed during preparation",
+            ));
+        }
+        if let Some(old) = plan
+            .previous
+            .as_ref()
+            .filter(|old| old.dirty_generation == plan.generation)
+        {
+            return Ok(old.clone());
         }
         let (retained, generations) = retained_upload_usage(&plan.directory_handle)?;
         if retained > self.config.max_workspace_bytes || generations > self.config.max_entries {

@@ -1,6 +1,34 @@
 use super::*;
 
 #[test]
+fn missing_member_with_empty_mountpoint_never_reports_host_capacity() {
+    use std::os::unix::fs::PermissionsExt;
+    let root = tempfile::tempdir().unwrap();
+    let config = Config::development([
+        root.path().join("d1"),
+        root.path().join("d2"),
+        root.path().join("d3"),
+    ]);
+    let engine = Engine::initialize(&root.path().join("system"), config.clone()).unwrap();
+    let plan = engine.prepare_disk_observation();
+    let member = &config.disks[0];
+    std::fs::rename(&member.root, root.path().join("removed-member")).unwrap();
+    std::fs::create_dir(&member.root).unwrap();
+    std::fs::set_permissions(&member.root, std::fs::Permissions::from_mode(0o700)).unwrap();
+    assert!(rustix::fs::statvfs(&member.root).unwrap().f_blocks > 0);
+    let status = plan
+        .status()
+        .unwrap()
+        .into_iter()
+        .find(|disk| disk.slot_id == member.slot_id)
+        .unwrap();
+    assert!(!status.online);
+    assert_eq!(status.available_bytes, 0);
+    assert!(plan.capacity(&member.slot_id).is_err());
+    assert!(engine.disk_capacity(&member.slot_id).is_err());
+}
+
+#[test]
 fn observation_owns_snapshot_and_probes_without_engine() {
     let root = tempfile::tempdir().unwrap();
     let config = Config::development([

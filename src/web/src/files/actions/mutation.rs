@@ -13,17 +13,18 @@ use json_codec::{Value, json};
 use web_interface::tasks::spawn_local;
 use web_interface::{i18n::t, prelude::*};
 
-pub(crate) fn namespace(state: RwSignal<State>, action: NamespaceAction, name: String) {
+pub(crate) fn namespace(
+    state: RwSignal<State>,
+    action: NamespaceAction,
+    name: String,
+) -> Option<String> {
     let snapshot = state.get_untracked();
     if !write_allowed(&snapshot) {
-        return;
+        return None;
     }
     let mut body = match action {
         NamespaceAction::CreateDirectory => {
             json!({"kind":"mkdir","path":join_path(&snapshot.files.directory,&name)})
-        }
-        NamespaceAction::Rename(entry) => {
-            json!({"kind":"rename","path":text(&entry,&["path"]),"destination":join_path(&snapshot.files.directory,&name)})
         }
     };
     let id = api::operation_id();
@@ -35,7 +36,7 @@ pub(crate) fn namespace(state: RwSignal<State>, action: NamespaceAction, name: S
                 "The browser could not generate a secure operation ID.",
             ),
         );
-        return;
+        return None;
     }
     body["operation_id"] = id.clone().into();
     let endpoint = format!("{}/namespace", disk_path(&snapshot.files.slot));
@@ -43,6 +44,7 @@ pub(crate) fn namespace(state: RwSignal<State>, action: NamespaceAction, name: S
         s.files.mutation_pending = true;
     });
     let epoch = state.with_untracked(|s| s.session_epoch);
+    let submitted = id.clone();
     spawn_local(async move {
         let result = api::request("POST", &endpoint, Some(body)).await;
         if !current_session(state, epoch) {
@@ -53,22 +55,25 @@ pub(crate) fn namespace(state: RwSignal<State>, action: NamespaceAction, name: S
                 record_receipt(state, &id, value);
             }
             Err(error) => {
-                if error.mutation_outcome_unknown() {
-                    record_operation(state, json!({"operation_id":id,"state":"in_doubt"}));
-                }
-                fail(state, error);
+                record_failure(state, &id, error);
             }
         }
         state.update(|s| s.files.mutation_pending = false);
     });
+    Some(submitted)
 }
-pub(crate) fn directory_branch(state: RwSignal<State>, path: String, name: String, select: bool) {
+pub(crate) fn directory_branch(
+    state: RwSignal<State>,
+    path: String,
+    name: String,
+    select: bool,
+) -> Option<String> {
     if !state.with_untracked(write_allowed) {
-        return;
+        return None;
     }
     let operation_id = api::operation_id();
     if operation_id.is_empty() {
-        return;
+        return None;
     }
     let slot = state.with_untracked(|s| s.files.slot.clone());
     let action = if select {
@@ -79,6 +84,7 @@ pub(crate) fn directory_branch(state: RwSignal<State>, path: String, name: Strin
     let endpoint = format!("{}/{action}", disk_path(&slot));
     let epoch = state.with_untracked(|s| s.session_epoch);
     state.update(|s| s.files.mutation_pending = true);
+    let submitted = operation_id.clone();
     spawn_local(async move {
         let result = api::request(
             "POST",
@@ -110,17 +116,12 @@ pub(crate) fn directory_branch(state: RwSignal<State>, path: String, name: Strin
                 }
             }
             Err(error) => {
-                if error.mutation_outcome_unknown() {
-                    record_operation(
-                        state,
-                        json!({"operation_id":operation_id,"state":"in_doubt"}),
-                    );
-                }
-                fail(state, error);
+                record_failure(state, &operation_id, error);
             }
         }
         state.update(|s| s.files.mutation_pending = false);
     });
+    Some(submitted)
 }
 
 pub(crate) fn select_default_branch(state: RwSignal<State>, branch_id: String) {
@@ -128,7 +129,7 @@ pub(crate) fn select_default_branch(state: RwSignal<State>, branch_id: String) {
     if repository.is_empty() || branch_id.is_empty() {
         return;
     }
-    record_mutation(
+    let _ = record_mutation(
         state,
         "PUT",
         format!(
@@ -143,13 +144,13 @@ pub(crate) fn rename_directory_branch(
     repository: String,
     branch_id: String,
     name: String,
-) {
+) -> Option<String> {
     if repository.is_empty()
         || branch_id.is_empty()
         || name.len() > storage_contract::MAX_NOTE_BYTES
         || !crate::files::model::valid_name(&name)
     {
-        return;
+        return None;
     }
     record_mutation(
         state,
@@ -160,20 +161,20 @@ pub(crate) fn rename_directory_branch(
             api::segment(&branch_id)
         ),
         json!({"name":name}),
-    );
+    )
 }
 pub(crate) fn rename_file_branch(
     state: RwSignal<State>,
     file: String,
     branch_id: String,
     name: String,
-) {
+) -> Option<String> {
     if file.is_empty()
         || branch_id.is_empty()
         || name.len() > storage_contract::MAX_NOTE_BYTES
         || !crate::files::model::valid_name(&name)
     {
-        return;
+        return None;
     }
     record_mutation(
         state,
@@ -184,24 +185,25 @@ pub(crate) fn rename_file_branch(
             api::segment(&branch_id)
         ),
         json!({"name":name}),
-    );
+    )
 }
 fn record_mutation(
     state: RwSignal<State>,
     method: &'static str,
     endpoint: String,
     mut body: Value,
-) {
+) -> Option<String> {
     if !state.with_untracked(write_allowed) {
-        return;
+        return None;
     }
     let operation_id = api::operation_id();
     if operation_id.is_empty() {
-        return;
+        return None;
     }
     body["operation_id"] = operation_id.clone().into();
     let epoch = state.with_untracked(|s| s.session_epoch);
     state.update(|s| s.files.mutation_pending = true);
+    let submitted = operation_id.clone();
     spawn_local(async move {
         let result = api::request(method, &endpoint, Some(body)).await;
         if !current_session(state, epoch) {
@@ -212,22 +214,21 @@ fn record_mutation(
                 record_receipt(state, &operation_id, value);
             }
             Err(error) => {
-                if error.mutation_outcome_unknown() {
-                    record_operation(
-                        state,
-                        json!({"operation_id":operation_id,"state":"in_doubt"}),
-                    );
-                }
-                fail(state, error);
+                record_failure(state, &operation_id, error);
             }
         }
         state.update(|s| s.files.mutation_pending = false);
     });
+    Some(submitted)
 }
 
-pub(crate) fn update_note(state: RwSignal<State>, version: Option<String>, note: String) {
+pub(crate) fn update_note(
+    state: RwSignal<State>,
+    version: Option<String>,
+    note: String,
+) -> Option<String> {
     if storage_contract::validate_note(&note).is_err() {
-        return;
+        return None;
     }
     let file = state.with_untracked(|s| {
         s.files
@@ -241,11 +242,11 @@ pub(crate) fn update_note(state: RwSignal<State>, version: Option<String>, note:
         None => ("files", file),
     };
     if id.is_empty() || !state.with_untracked(write_allowed) {
-        return;
+        return None;
     }
     let operation_id = api::operation_id();
     if operation_id.is_empty() {
-        return;
+        return None;
     }
     let endpoint = format!(
         "/api/file-manager/{collection}/{}/metadata",
@@ -255,6 +256,7 @@ pub(crate) fn update_note(state: RwSignal<State>, version: Option<String>, note:
     state.update(|s| {
         s.files.mutation_pending = true;
     });
+    let submitted = operation_id.clone();
     spawn_local(async move {
         let result = api::request(
             "POST",
@@ -270,22 +272,21 @@ pub(crate) fn update_note(state: RwSignal<State>, version: Option<String>, note:
                 record_receipt(state, &operation_id, value);
             }
             Err(error) => {
-                if error.mutation_outcome_unknown() {
-                    record_operation(
-                        state,
-                        json!({"operation_id":operation_id,"state":"in_doubt"}),
-                    );
-                }
-                fail(state, error);
+                record_failure(state, &operation_id, error);
             }
         }
         state.update(|s| s.files.mutation_pending = false);
     });
+    Some(submitted)
 }
 
-pub(crate) fn update_node_note(state: RwSignal<State>, node: String, note: String) {
+pub(crate) fn update_node_note(
+    state: RwSignal<State>,
+    node: String,
+    note: String,
+) -> Option<String> {
     if node.is_empty() || storage_contract::validate_note(&note).is_err() {
-        return;
+        return None;
     }
     let file = state.with_untracked(|s| {
         s.files
@@ -295,7 +296,7 @@ pub(crate) fn update_node_note(state: RwSignal<State>, node: String, note: Strin
             .unwrap_or_default()
     });
     if file.is_empty() {
-        return;
+        return None;
     }
     record_mutation(
         state,
@@ -306,16 +307,16 @@ pub(crate) fn update_node_note(state: RwSignal<State>, node: String, note: Strin
             api::segment(&node)
         ),
         json!({"note":note}),
-    );
+    )
 }
 pub(crate) fn create_branch(
     state: RwSignal<State>,
     version: String,
     node: Option<String>,
     name: String,
-) {
+) -> Option<String> {
     if version.is_empty() {
-        return;
+        return None;
     }
     let file = state.with_untracked(|s| {
         s.files
@@ -325,13 +326,13 @@ pub(crate) fn create_branch(
             .unwrap_or_default()
     });
     if file.is_empty() {
-        return;
+        return None;
     }
     let mut body = json!({"source_version_id":version,"name":name});
     if let Some(node) = node.filter(|id| !id.is_empty()) {
         body["source_node_id"] = node.into();
     }
-    file_mutation(state, &file, "branches", body);
+    file_mutation(state, &file, "branches", body)
 }
 pub(crate) fn select_branch(state: RwSignal<State>, branch: String) {
     let file = state.with_untracked(|s| {
@@ -344,15 +345,20 @@ pub(crate) fn select_branch(state: RwSignal<State>, branch: String) {
     if file.is_empty() {
         return;
     }
-    file_mutation(state, &file, "select", json!({"branch_id":branch}));
+    let _ = file_mutation(state, &file, "select", json!({"branch_id":branch}));
 }
-fn file_mutation(state: RwSignal<State>, file: &str, action: &str, mut body: Value) {
+fn file_mutation(
+    state: RwSignal<State>,
+    file: &str,
+    action: &str,
+    mut body: Value,
+) -> Option<String> {
     if !state.with_untracked(write_allowed) {
-        return;
+        return None;
     }
     let id = api::operation_id();
     if id.is_empty() {
-        return;
+        return None;
     }
     if action == "select"
         && let Some((repository, path)) = state.with_untracked(|s| {
@@ -369,6 +375,7 @@ fn file_mutation(state: RwSignal<State>, file: &str, action: &str, mut body: Val
     let endpoint = format!("/api/file-manager/files/{}/{action}", api::segment(file));
     state.update(|s| s.files.mutation_pending = true);
     let epoch = state.with_untracked(|s| s.session_epoch);
+    let submitted = id.clone();
     spawn_local(async move {
         let result = api::request("POST", &endpoint, Some(body)).await;
         if !current_session(state, epoch) {
@@ -379,14 +386,26 @@ fn file_mutation(state: RwSignal<State>, file: &str, action: &str, mut body: Val
                 record_receipt(state, &id, value);
             }
             Err(error) => {
-                if error.mutation_outcome_unknown() {
-                    record_operation(state, json!({"operation_id":id,"state":"in_doubt"}));
-                }
-                fail(state, error);
+                record_failure(state, &id, error);
             }
         }
         state.update(|s| s.files.mutation_pending = false);
     });
+    Some(submitted)
+}
+
+/// Definite HTTP rejection releases only this operation; ambiguous transport or
+/// malformed-success responses stay tied to the original ID for polling.
+fn record_failure(state: RwSignal<State>, id: &str, error: api::Error) {
+    let unknown = error.mutation_outcome_unknown();
+    let status = if unknown { "in_doubt" } else { "REJECTED" };
+    record_operation(state, json!({"operation_id":id,"state":status}));
+    if !unknown {
+        // This is a rejected HTTP request, not a server staging receipt.
+        // Present its actual error without claiming any content was retained.
+        set_notice(state, String::new());
+    }
+    fail(state, error);
 }
 
 #[cfg(test)]

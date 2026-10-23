@@ -696,7 +696,12 @@ fn split_preserves_identity_per_file_and_independent_acl_without_rebinding() {
         Some(repo.repository_id.as_str())
     );
     assert!(!new_repo.smb_enabled);
+    assert_eq!(new_repo.smb_binding_generation, 1);
     assert!(!engine.state.repositories[&repo.repository_id].smb_enabled);
+    assert_eq!(
+        engine.state.repositories[&repo.repository_id].smb_binding_generation,
+        repo.smb_binding_generation + 1
+    );
     assert_eq!(
         engine.state.repositories[&repo.repository_id].history_tree_id,
         repo.history_tree_id

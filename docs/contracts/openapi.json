@@ -1175,8 +1175,8 @@
     },
     "/api/file-manager/disks/{slot}/namespace": {
       "post": {
-        "operationId": "mutateFileManagerNamespace",
-        "description": "创建目录、重命名容器或目录、删除逻辑项。改名会更新容器当前名及真实容器目录，历史版本内名和正文不变；删除保留版本历史及容器最后名称。",
+        "operationId": "createFileManagerDirectory",
+        "description": "仅创建目录。重命名、移动、复制和删除使用 namespace-batch，必须绑定稳定条目身份及预期目录子树；不接受无前置条件的路径覆盖。",
         "parameters": [
           {
             "name": "slot",
@@ -1270,27 +1270,12 @@
                 "type": "object",
                 "properties": {
                   "kind": {
-                    "enum": [
-                      "mkdir",
-                      "rename",
-                      "delete",
-                      "delete_tree"
-                    ]
+                    "const": "mkdir"
                   },
                   "path": {
                     "type": "string",
-                    "description": "受PortablePath约束的磁盘相对路径；空字符串表示当前磁盘根目录。不得传系统绝对路径。"
-                  },
-                  "destination": {
-                    "anyOf": [
-                      {
-                        "type": "string",
-                        "description": "受PortablePath约束的磁盘相对路径；空字符串表示当前磁盘根目录。不得传系统绝对路径。"
-                      },
-                      {
-                        "type": "null"
-                      }
-                    ]
+                    "description": "受 PortablePath 约束的非空磁盘相对路径；不得传系统绝对路径或修改磁盘根目录。",
+                    "minLength": 1
                   },
                   "operation_id": {
                     "$ref": "#/components/schemas/OperationId"
@@ -7425,6 +7410,9 @@
           "smb_enabled": {
             "type": "boolean"
           },
+          "smb_binding_generation": {
+            "$ref": "#/components/schemas/UInt64"
+          },
           "file_manager_root": {
             "type": "boolean"
           }
@@ -7438,7 +7426,8 @@
           "target_copies",
           "name_policy",
           "unicode_version",
-          "grants"
+          "grants",
+          "smb_binding_generation"
         ],
         "additionalProperties": false,
         "description": "根中仓库对象的读取字段形状；命名策略、保护份数和授权语义由核心另行验证。"

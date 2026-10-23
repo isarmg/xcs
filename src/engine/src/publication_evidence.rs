@@ -80,9 +80,11 @@ pub(crate) fn repair_object_copies<T: data_serialization::Serialize>(
                 Ok(metadata) if metadata.is_file() && !metadata.file_type().is_symlink() => {
                     // Never replace an unsafe entry, even if a healthy replica exists.
                     open_regular(&path)?;
-                    if read_bytes(&path, MAX_METADATA).ok().as_deref() != Some(bytes.as_slice()) {
-                        write_atomic(&path, &bytes, true)?;
-                    }
+                    let replace =
+                        read_bytes(&path, MAX_METADATA).ok().as_deref() != Some(bytes.as_slice());
+                    // Matching bytes may be the visible result of a previous
+                    // repair whose directory sync failed. Complete its barrier.
+                    write_atomic(&path, &bytes, replace)?;
                 }
                 Err(e) if e.kind() == std::io::ErrorKind::NotFound => {
                     write_atomic(&path, &bytes, false)?;

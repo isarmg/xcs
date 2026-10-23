@@ -86,6 +86,12 @@ pub(crate) fn synchronize_directory_edits(
         if branch.history_tree_id != current.history_tree_id {
             continue;
         }
+        if branch.state != "active" || state.file_branch_aliases.contains_key(&branch_id) {
+            return Err(Error::new(
+                "BRANCH_NOT_ACTIVE",
+                "selected file branch is not writable",
+            ));
+        }
         let previous = state
             .commits
             .get(&branch.head_commit_id)

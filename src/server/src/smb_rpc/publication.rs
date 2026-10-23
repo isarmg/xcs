@@ -250,8 +250,8 @@ impl Session {
                 content.file.sync_all().map_err(ApiError::io)?;
                 return Ok(json!({"saved":true,"changed":false}));
             }
-            Handle::Directory(file) => {
-                file.sync_all().map_err(ApiError::io)?;
+            Handle::Directory(directory) => {
+                directory.file.sync_all().map_err(ApiError::io)?;
                 return Ok(json!({"saved":true,"changed":false}));
             }
             Handle::Write(writer) => writer,

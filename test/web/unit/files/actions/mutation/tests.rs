@@ -17,11 +17,11 @@ fn business_mutations_require_an_active_session_before_browser_work() {
             // No browser ID generation or server request may start after
             // sign-out admission closes, even while credentials are kept
             // for a failed revocation retry.
-            namespace(state, NamespaceAction::CreateDirectory, "new".into());
-            directory_branch(state, "folder".into(), "draft".into(), false);
-            update_note(state, None, "note".into());
+            let _ = namespace(state, NamespaceAction::CreateDirectory, "new".into());
+            let _ = directory_branch(state, "folder".into(), "draft".into(), false);
+            let _ = update_note(state, None, "note".into());
             select_branch(state, "other".into());
-            record_mutation(state, "PATCH", "/api/test".into(), json!({}));
+            let _ = record_mutation(state, "PATCH", "/api/test".into(), json!({}));
             crate::files::review::submit(
                 state,
                 crate::files::review::Kind::Backup,
@@ -48,10 +48,44 @@ fn refreshed_or_navigating_directories_block_writes_at_the_action_boundary() {
             s.files.selected = Some(json!({"file_id":"file"}));
         });
         // These must return before generating IDs or spawning browser work.
-        namespace(state, NamespaceAction::CreateDirectory, "new".into());
-        directory_branch(state, "folder".into(), "draft".into(), false);
-        update_note(state, None, "note".into());
+        let _ = namespace(state, NamespaceAction::CreateDirectory, "new".into());
+        let _ = directory_branch(state, "folder".into(), "draft".into(), false);
+        let _ = update_note(state, None, "note".into());
         select_branch(state, "other".into());
         assert!(!state.with_untracked(|s| s.files.mutation_pending));
+    });
+}
+
+#[test]
+fn failed_editor_requests_record_only_their_original_outcome() {
+    Owner::new().with(|| {
+        for (status, expected) in [
+            (403, SaveStatus::Rejected),
+            (409, SaveStatus::Rejected),
+            (0, SaveStatus::Unknown),
+            (200, SaveStatus::Unknown),
+            (500, SaveStatus::Unknown),
+        ] {
+            let state = RwSignal::new(State::default());
+            record_failure(
+                state,
+                "original",
+                api::Error {
+                    status,
+                    code: "FAILURE".into(),
+                    message: "request failed".into(),
+                    retryable: false,
+                    request_id: None,
+                },
+            );
+            state.with_untracked(|s| {
+                assert_eq!(s.files.operations[0]["operation_id"], "original");
+                assert_eq!(
+                    crate::files::model::operation_status(&s.files.operations[0]),
+                    expected
+                );
+                assert_eq!(super::super::pending(s), expected == SaveStatus::Unknown);
+            });
+        }
     });
 }

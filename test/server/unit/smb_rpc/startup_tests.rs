@@ -76,3 +76,30 @@ async fn bind_and_register_prepared_socket_preserves_permissions_and_identity_cl
     drop(prepared.guard);
     assert!(!socket.exists());
 }
+
+#[test]
+fn oversized_success_is_a_business_error_and_the_connection_remains_usable() {
+    use std::os::unix::net::UnixStream;
+    let (client, server) = UnixStream::pair().unwrap();
+    let worker = std::thread::spawn(move || {
+        let mut stream = FrameStream::new(server).unwrap();
+        send_success(
+            &mut stream,
+            json!({"large":"x".repeat(smb_protocol::protocol::MAX_FRAME_BYTES)}),
+            None,
+            Some("original-operation".into()),
+        )
+        .unwrap();
+        send_success(&mut stream, json!({"alive":true}), None, None).unwrap();
+    });
+    let mut stream = FrameStream::new(client).unwrap();
+    let (response, fd) = stream.receive::<Response>().unwrap();
+    assert!(fd.is_none());
+    assert!(
+        matches!(response, Response::Error { code, operation_id:Some(id), retryable:false, .. } if code == "RESPONSE_TOO_LARGE" && id == "original-operation")
+    );
+    assert!(
+        matches!(stream.receive::<Response>().unwrap().0, Response::Ok { result } if result["alive"] == true)
+    );
+    worker.join().unwrap();
+}

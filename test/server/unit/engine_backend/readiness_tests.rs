@@ -17,6 +17,7 @@ fn readiness_uses_fixed_membership_and_reports_single_disk_no_metadata_redundanc
         let backend = EngineBackend::new(engine);
         let anonymous = Identity {
             admission_session: None,
+            smb_binding: None,
             principal: String::new(),
             admin: false,
             repositories: Default::default(),

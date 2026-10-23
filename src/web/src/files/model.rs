@@ -104,7 +104,6 @@ impl Model {
 #[derive(Clone, PartialEq)]
 pub(crate) enum NamespaceAction {
     CreateDirectory,
-    Rename(Value),
 }
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub(crate) enum SaveStatus {

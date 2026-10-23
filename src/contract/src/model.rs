@@ -183,6 +183,10 @@ pub struct Repository {
     pub account_scope_repository_id: Option<String>,
     #[serialization(default = "enabled")]
     pub smb_enabled: bool,
+    /// Persistent SMB binding revision, independent of ordinary history writes.
+    /// Every explicit rebind/disable invalidates sessions holding an older value.
+    #[serialization(with = "crate::u64_string")]
+    pub smb_binding_generation: u64,
     /// A controlled disk-root namespace, created lazily by the file manager.
     #[serialization(default, skip_serializing_if = "is_false")]
     pub file_manager_root: bool,

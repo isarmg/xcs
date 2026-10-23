@@ -15,7 +15,9 @@ RuntimeDirectoryMode=0700
 WorkingDirectory=/var/lib/zxs
 ExecStart=/opt/zxs/bin/zxs --root /var/lib/zxs/state --management-root /var/lib/zxs/management --listen 127.0.0.1:7400 --external-origin https://zxs.example.com --web-dir /opt/zxs/web --setup-disk P01=/srv/zxs/disks/P01
 KillSignal=SIGINT
-TimeoutStopSec=60
+# Do not kill admitted durability/recovery work during normal shutdown.
+# A stuck kernel I/O requires an explicit operator force-stop and crash recovery.
+TimeoutStopSec=infinity
 Restart=on-failure
 RestartSec=5
 NoNewPrivileges=yes

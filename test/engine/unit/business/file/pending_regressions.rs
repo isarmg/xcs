@@ -47,6 +47,67 @@ fn file(engine: &Engine, branch: &str) -> Entry {
 }
 
 #[test]
+fn inactive_selected_owner_cannot_receive_main_workspace_writes() {
+    for state in ["archived", "merged"] {
+        let (_root, mut engine, repo) = fixture();
+        save(&mut engine, &repo.main_branch_id, b"original");
+        let original = file(&engine, &repo.main_branch_id);
+        let branch = engine
+            .create_file_branch(
+                &original.file_id,
+                &original.version_id,
+                "selected draft",
+                "admin",
+                &new_id("op"),
+            )
+            .unwrap()
+            .branch_id
+            .unwrap();
+        engine
+            .select_file_branch(&original.file_id, &branch, "admin", &new_id("op"))
+            .unwrap();
+        let workspace = engine
+            .create_workspace(&repo.main_branch_id, "admin")
+            .unwrap();
+        engine.state.branches.get_mut(&branch).unwrap().state = state.into();
+        let before = engine.state.branches[&branch].head_commit_id.clone();
+        assert_eq!(
+            engine
+                .stage_bytes(&workspace.workspace_id, "report.txt", b"must not publish")
+                .unwrap_err()
+                .code(),
+            "BRANCH_NOT_ACTIVE"
+        );
+        let current = engine.state.commits[&workspace.base_head].clone();
+        let mut changed = current.clone();
+        changed.commit_id = new_id("commit");
+        changed
+            .entries
+            .iter_mut()
+            .find(|entry| entry.kind == "file")
+            .unwrap()
+            .version_id = new_id("ver");
+        engine
+            .state
+            .commits
+            .insert(changed.commit_id.clone(), changed.clone());
+        assert_eq!(
+            synchronize_directory_edits(
+                &mut engine.state,
+                &changed.commit_id,
+                &["report.txt".into()],
+                "admin",
+                &new_id("op"),
+            )
+            .unwrap_err()
+            .code(),
+            "BRANCH_NOT_ACTIVE"
+        );
+        assert_eq!(engine.state.branches[&branch].head_commit_id, before);
+    }
+}
+
+#[test]
 fn inherited_range_fences_selection_and_preserves_parent_bytes() {
     let (_root, mut engine, repo) = fixture();
     save(&mut engine, &repo.main_branch_id, b"SOURCE_BYTES");

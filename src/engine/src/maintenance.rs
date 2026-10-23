@@ -752,7 +752,10 @@ impl Engine {
                 let main_moved = old.main_branch_id.as_ref().is_some_and(|id| moved.contains(id));
                 if main_moved { old.main_branch_id = None; old.state = "archived".into(); }
                 if main_moved {
-                    state.repositories.get_mut(&original.repository_id).expect("source repository").smb_enabled = false;
+                    let repository = state.repositories.get_mut(&original.repository_id).expect("source repository");
+                    repository.smb_binding_generation = repository.smb_binding_generation.checked_add(1)
+                        .ok_or_else(|| Error::new("RESOURCE_LIMIT", "SMB binding generation exhausted"))?;
+                    repository.smb_enabled = false;
                 }
                 let mut new_repo = original_repo.clone();
                 new_repo.repository_id = repository_id.clone();
@@ -761,6 +764,7 @@ impl Engine {
                 new_repo.account_scope_repository_id = Some(original_repo.account_scope_repository_id
                     .clone().unwrap_or_else(|| original_repo.repository_id.clone()));
                 new_repo.smb_enabled = false;
+                new_repo.smb_binding_generation = 1;
                 new_repo.file_manager_root = false;
                 loop {
                     new_repo.name = format!("拆分-{}", &new_id("repo")[5..13]);

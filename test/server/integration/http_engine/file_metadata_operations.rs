@@ -68,7 +68,7 @@ async fn tags_and_file_merges_publish_reviewed_node_graphs_without_new_bodies() 
         Some(json!({"note":"独立标签备注","operation_id":new_id("op")})),
     )
     .await;
-    success(&app,&token,"POST","/api/file-manager/disks/P01/namespace",Some(json!({"kind":"rename","path":"report.txt","destination":"renamed.txt","operation_id":new_id("op")}))).await;
+    manager_namespace(&app, &token, "rename", "report.txt", Some("renamed.txt")).await;
     let renamed = history(&app, &token, file).await;
     let path_node = renamed["node_id"].as_str().unwrap();
     manager_upload(&app, &token, "renamed.txt", b"left body").await;

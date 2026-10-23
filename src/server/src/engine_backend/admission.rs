@@ -55,7 +55,11 @@ impl AdmissionEngine {
                 .transpose()
         });
         match projection {
-            Ok(Some(snapshot)) => snapshot.identity(&caller.principal),
+            Ok(Some(snapshot)) => {
+                let mut identity = snapshot.identity(&caller.principal)?;
+                identity.smb_binding = caller.smb_binding.clone();
+                Ok(identity)
+            }
             // Embedded engines without an authoritative protected account store.
             Ok(None) => Ok(caller.clone()),
             Err(error) => Err(ApiError::invalid(error)),

@@ -1,6 +1,14 @@
 //! Publication can succeed before either workspace manifest is durable.
-use std::fs;
+use std::{fs, os::unix::fs::PermissionsExt, path::Path};
 use storage_engine::{Config, Engine, new_id};
+
+fn corrupt_retained_bytes(path: &Path) {
+    // Published generations are read-only. Deliberate out-of-band corruption
+    // must not rely on the test runner having root's permission bypass.
+    fs::set_permissions(path, fs::Permissions::from_mode(0o600)).unwrap();
+    fs::write(path, b"oops").unwrap();
+    fs::set_permissions(path, fs::Permissions::from_mode(0o400)).unwrap();
+}
 
 #[test]
 fn upload_retry_recovers_published_bytes_after_manifest_failure() {
@@ -104,6 +112,112 @@ fn upload_retry_recovers_published_bytes_after_manifest_failure() {
         );
         drop(engine);
         let engine = Engine::open(&root).unwrap();
+        assert_eq!(
+            engine.workspace(&workspace.workspace_id).unwrap().files[&item].content_hash,
+            staged.content_hash
+        );
+    }
+}
+
+#[test]
+fn same_generation_retry_rejects_missing_or_corrupt_retained_bytes() {
+    for missing in [false, true] {
+        for reopen in [false, true] {
+            let temporary = tempfile::tempdir().unwrap();
+            let root = temporary.path().join("system");
+            let mut engine = Engine::initialize(
+                &root,
+                Config::development([
+                    temporary.path().join("primary"),
+                    temporary.path().join("backup"),
+                    temporary.path().join("tertiary"),
+                ]),
+            )
+            .unwrap();
+            let repo = engine
+                .create_repository("Retained upload", "P01", 1, "admin", &new_id("op"))
+                .unwrap();
+            let workspace = engine
+                .create_workspace(&repo.main_branch_id, "admin")
+                .unwrap();
+            let item = new_id("entry");
+            let source = temporary.path().join("source");
+            fs::write(&source, b"data").unwrap();
+            let staged = engine
+                .stage_upload(&workspace.workspace_id, &item, "a", &source, 1)
+                .unwrap();
+            if missing {
+                fs::remove_file(&staged.source_path).unwrap();
+            } else {
+                corrupt_retained_bytes(&staged.source_path);
+            }
+            if reopen {
+                drop(engine);
+                engine = Engine::open(&root).unwrap();
+            }
+            assert!(
+                engine
+                    .stage_upload(&workspace.workspace_id, &item, "a", &source, 1)
+                    .is_err()
+            );
+            let retained = &engine.workspace(&workspace.workspace_id).unwrap().files[&item];
+            assert_eq!(retained.content_hash, staged.content_hash);
+            assert_eq!(retained.dirty_generation, 1);
+            if missing {
+                assert!(!staged.source_path.exists());
+            } else {
+                assert_eq!(fs::read(&staged.source_path).unwrap(), b"oops");
+            }
+        }
+    }
+}
+
+#[test]
+fn same_generation_retry_revalidates_held_target_before_acknowledging() {
+    for replace in [false, true] {
+        let temporary = tempfile::tempdir().unwrap();
+        let root = temporary.path().join("system");
+        let mut engine = Engine::initialize(
+            &root,
+            Config::development([
+                temporary.path().join("primary"),
+                temporary.path().join("backup"),
+                temporary.path().join("tertiary"),
+            ]),
+        )
+        .unwrap();
+        let repo = engine
+            .create_repository("Retained upload", "P01", 1, "admin", &new_id("op"))
+            .unwrap();
+        let workspace = engine
+            .create_workspace(&repo.main_branch_id, "admin")
+            .unwrap();
+        let item = new_id("entry");
+        let source = temporary.path().join("source");
+        fs::write(&source, b"data").unwrap();
+        let staged = engine
+            .stage_upload(&workspace.workspace_id, &item, "a", &source, 1)
+            .unwrap();
+        let prepared = engine
+            .prepare_upload(&workspace.workspace_id, &item, "a", &source, 1)
+            .unwrap()
+            .execute()
+            .unwrap();
+        if replace {
+            fs::rename(
+                &staged.source_path,
+                temporary.path().join("held-generation"),
+            )
+            .unwrap();
+            // Even equal replacement bytes are not the inode already verified.
+            fs::write(&staged.source_path, b"data").unwrap();
+        } else {
+            corrupt_retained_bytes(&staged.source_path);
+        }
+        assert_eq!(
+            engine.finish_upload(prepared).unwrap_err().code(),
+            "CHECKSUM_MISMATCH"
+        );
         assert_eq!(
             engine.workspace(&workspace.workspace_id).unwrap().files[&item].content_hash,
             staged.content_hash

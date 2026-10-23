@@ -115,7 +115,7 @@ async fn user_backup_prefixes_keep_fixed_paths_and_slot_versions_after_primary_r
         ("docs", "archive"),
         ("archive/nested/report.txt", "archive/nested/renamed.txt"),
     ] {
-        success(&app,&admin,"POST","/api/file-manager/disks/P01/namespace",Some(json!({"kind":"rename","path":path,"destination":destination,"operation_id":new_id("op")}))).await;
+        manager_namespace(&app, &admin, "rename", path, Some(destination)).await;
     }
     let renamed = listing(&app, &admin, "P01", "archive/nested").await;
     assert_eq!(renamed["entries"][0]["version_id"], current_version);
@@ -165,8 +165,9 @@ async fn user_backup_prefixes_keep_fixed_paths_and_slot_versions_after_primary_r
             json!({"path":"WorkBackup/nested","name":"forbidden","operation_id":new_id("op")}),
         ),
         (
-            "namespace",
-            json!({"kind":"delete","path":"WorkBackup/nested/report.txt","operation_id":new_id("op")}),
+            "namespace-batch",
+            manager_namespace_request(&app, &admin, "delete", "archive/nested/renamed.txt", None)
+                .await,
         ),
     ] {
         assert_eq!(
@@ -182,7 +183,7 @@ async fn user_backup_prefixes_keep_fixed_paths_and_slot_versions_after_primary_r
             StatusCode::FORBIDDEN
         );
     }
-    success(&app,&admin,"POST","/api/file-manager/disks/P01/namespace",Some(json!({"kind":"delete","path":"archive/nested/renamed.txt","operation_id":new_id("op")}))).await;
+    manager_namespace(&app, &admin, "delete", "archive/nested/renamed.txt", None).await;
     let retained = listing(&app, &admin, "B01", "WorkBackup/nested").await;
     read_only_listing(&retained);
     assert_eq!(retained["entries"][0]["historical_only"], true);

@@ -108,6 +108,18 @@ pub(super) fn write_object_bytes(
     hash: &str,
     bytes: &[u8],
 ) -> Result<()> {
+    write_object_bytes_with(d, kind, hash, bytes, |path, bytes| {
+        write_atomic(path, bytes, false)
+    })
+}
+
+fn write_object_bytes_with(
+    d: &DiskConfig,
+    kind: &str,
+    hash: &str,
+    bytes: &[u8],
+    publish: impl FnOnce(&Path, &[u8]) -> Result<()>,
+) -> Result<()> {
     let paths = existing_object_paths(d, kind, hash)?;
     for path in &paths {
         if read_bytes(path, MAX_METADATA)? != bytes {
@@ -117,11 +129,9 @@ pub(super) fn write_object_bytes(
             ));
         }
     }
-    // New objects are installed only at their current hash-prefix address.
-    if paths.is_empty() {
-        write_atomic(&object_path(d, kind, hash), bytes, false)?;
-    }
-    Ok(())
+    // Reuse still passes through the immutable writer's durability barrier.
+    // An earlier visible object may have survived a failed directory sync.
+    publish(&object_path(d, kind, hash), bytes)
 }
 /// Inventory both layouts, rejecting unexpected entries rather than claiming
 /// absence when unreadable evidence could contain a publication.

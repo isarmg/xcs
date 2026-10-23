@@ -17,6 +17,7 @@ fn fixture() -> (tempfile::TempDir, AdmissionEngine) {
 fn caller() -> Identity {
     Identity {
         admission_session: None,
+        smb_binding: None,
         principal: "owner".into(),
         admin: true,
         repositories: BTreeSet::new(),
@@ -451,4 +452,21 @@ fn backend_mutations_and_lazy_root_creation_invalidate_before_following_reads() 
             .load(Ordering::Relaxed),
         3
     );
+}
+
+#[test]
+fn protected_snapshot_refresh_preserves_the_internal_smb_binding_constraint() {
+    let (_root, mut engine) = fixture();
+    publish(&mut engine, snapshot(0));
+    let mut caller = caller();
+    caller.smb_binding = Some(crate::auth::SmbBinding {
+        repository_id: "repository-one".into(),
+        branch_id: "branch-one".into(),
+        generation: 7,
+    });
+    let refreshed = engine.identity(&caller).unwrap();
+    assert!(!refreshed.admin);
+    assert_eq!(refreshed.smb_binding, caller.smb_binding);
+    let serialized = json_codec::to_value(&refreshed).unwrap();
+    assert!(serialized.get("smb_binding").is_none());
 }

@@ -92,6 +92,7 @@ fn malformed_lazy_root_requests_do_not_publish_any_state() {
         let mut engine = Engine::initialize(&root.path().join("system"), config).unwrap();
         let identity = Identity {
             admission_session: None,
+            smb_binding: None,
             principal: "owner".into(),
             admin: true,
             repositories: BTreeSet::new(),
@@ -110,7 +111,7 @@ fn malformed_lazy_root_requests_do_not_publish_any_state() {
 }
 
 #[test]
-fn missing_targets_and_cross_namespace_moves_do_not_create_a_disk_root() {
+fn destructive_path_only_requests_never_mutate_or_create_a_disk_root() {
     let root = tempfile::tempdir().unwrap();
     let disks = root.path().join("disks");
     let mut engine = Engine::initialize(
@@ -124,6 +125,7 @@ fn missing_targets_and_cross_namespace_moves_do_not_create_a_disk_root() {
     .unwrap();
     let identity = Identity {
         admission_session: None,
+        smb_binding: None,
         principal: "owner".into(),
         admin: true,
         repositories: BTreeSet::new(),
@@ -142,7 +144,7 @@ fn missing_targets_and_cross_namespace_moves_do_not_create_a_disk_root() {
             )
             .unwrap_err()
             .status,
-            404
+            400
         );
         assert!(engine.state().repositories.is_empty());
         assert_eq!(engine.state().sequence, 0);
@@ -164,9 +166,25 @@ fn missing_targets_and_cross_namespace_moves_do_not_create_a_disk_root() {
         .unwrap();
     let before = json_codec::to_value(engine.state()).unwrap();
     let bytes = disk_files(&disks);
-    assert!(call(&mut engine, &identity, BackendAction::FileManagerNamespace, json!({"slot_id":"P01","kind":"rename","path":"Existing/folder","destination":"new-root-folder","operation_id":storage_engine::new_id("op")})).is_err());
-    assert_eq!(json_codec::to_value(engine.state()).unwrap(), before);
-    assert_eq!(disk_files(&disks), bytes);
+    for kind in ["rename", "delete", "delete_tree"] {
+        let mut request = json!({"slot_id":"P01","kind":kind,"path":"Existing/folder","operation_id":storage_engine::new_id("op")});
+        if kind == "rename" {
+            request["destination"] = json!("new-root-folder");
+        }
+        assert_eq!(
+            call(
+                &mut engine,
+                &identity,
+                BackendAction::FileManagerNamespace,
+                request
+            )
+            .unwrap_err()
+            .status,
+            400
+        );
+        assert_eq!(json_codec::to_value(engine.state()).unwrap(), before);
+        assert_eq!(disk_files(&disks), bytes);
+    }
 }
 
 #[test]
@@ -188,6 +206,7 @@ fn valid_creation_and_upload_still_create_the_lazy_root() {
         .unwrap();
         let identity = Identity {
             admission_session: None,
+            smb_binding: None,
             principal: "owner".into(),
             admin: true,
             repositories: BTreeSet::new(),
@@ -230,6 +249,7 @@ fn baseline_name_and_used_operation_are_rejected_before_root_initialization() {
     .unwrap();
     let identity = Identity {
         admission_session: None,
+        smb_binding: None,
         principal: "owner".into(),
         admin: true,
         repositories: BTreeSet::new(),

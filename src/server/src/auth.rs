@@ -57,9 +57,20 @@ pub struct Identity {
     /// Internal session hash, never part of the wire identity.
     #[serialization(skip)]
     pub admission_session: Option<String>,
+    /// Internal SMB entrance constraint. Account refresh must preserve it;
+    /// the engine validates it while holding the same lock as the operation.
+    #[serialization(skip)]
+    pub smb_binding: Option<SmbBinding>,
     pub principal: String,
     pub admin: bool,
     pub repositories: BTreeSet<String>,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct SmbBinding {
+    pub repository_id: String,
+    pub branch_id: String,
+    pub generation: u64,
 }
 
 /// Schema-validated snapshot projection. Sessions and private credential strings
@@ -82,6 +93,7 @@ impl AdmissionSnapshot {
                     name,
                     Identity {
                         admission_session: None,
+                        smb_binding: None,
                         principal: account.username,
                         admin: account.admin,
                         repositories: account.repositories,
@@ -197,7 +209,7 @@ impl AuthStore {
     /// mappings carry no session and are revalidated by principal instead.
     pub fn revalidate_identity(&self, caller: &Identity) -> Result<Identity, ApiError> {
         self.require_available()?;
-        if let Some(key) = &caller.admission_session {
+        let mut identity = if let Some(key) = &caller.admission_session {
             let session = self
                 .db
                 .sessions
@@ -214,10 +226,12 @@ impl AuthStore {
                 .ok_or_else(ApiError::unauthorized)?;
             let mut identity = Self::database_identity(&self.db, &account.username)?;
             identity.admission_session = Some(key.clone());
-            Ok(identity)
+            identity
         } else {
-            Self::database_identity(&self.db, &caller.principal)
-        }
+            Self::database_identity(&self.db, &caller.principal)?
+        };
+        identity.smb_binding = caller.smb_binding.clone();
+        Ok(identity)
     }
     fn database_identity(database: &Database, username: &str) -> Result<Identity, ApiError> {
         let account = database
@@ -227,6 +241,7 @@ impl AuthStore {
             .ok_or_else(ApiError::unauthorized)?;
         Ok(Identity {
             admission_session: None,
+            smb_binding: None,
             principal: account.username.clone(),
             admin: account.admin,
             repositories: account.repositories.clone(),
@@ -622,6 +637,7 @@ impl AuthStore {
             .ok_or_else(ApiError::unauthorized)?;
         Ok(Identity {
             admission_session: Some(primitives::token_hash_hex(token)),
+            smb_binding: None,
             principal: account.username.clone(),
             admin: account.admin,
             repositories: account.repositories.clone(),

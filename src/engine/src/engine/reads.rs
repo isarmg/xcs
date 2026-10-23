@@ -143,13 +143,7 @@ impl Engine {
     }
     pub fn export_version(&self, version_id: &str, destination: &Path) -> Result<()> {
         let (path, version) = self.valid_replica(version_id)?;
-        full_copy(
-            &path,
-            destination,
-            version.checksum_chunk_bytes,
-            version.logical_size,
-        )?;
-        Ok(())
+        verified_full_copy(open_regular(&path)?, destination, &version)
     }
     pub fn check(&self) -> Result<CheckReport> {
         let mut result = CheckReport {

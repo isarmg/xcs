@@ -83,7 +83,7 @@ fn management_views_and_bounded_json_transport_remain() {
     }
     let detail = std::fs::read_to_string(root.join("files/detail.rs")).unwrap();
     for required in [
-        "RenameEntry",
+        "batch::Kind::Rename",
         "Kind::Delete",
         "backup::view",
         "FileNote",
@@ -110,4 +110,13 @@ fn management_views_and_bounded_json_transport_remain() {
             "missing browsing workflow {required}"
         );
     }
+}
+
+#[test]
+fn detail_rename_has_no_path_only_namespace_fallback() {
+    let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("src/files");
+    let mutation = std::fs::read_to_string(root.join("actions/mutation.rs")).unwrap();
+    let inline = std::fs::read_to_string(root.join("inline.rs")).unwrap();
+    assert!(!mutation.contains("NamespaceAction::Rename"));
+    assert!(!inline.contains("RenameEntry"));
 }

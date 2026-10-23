@@ -108,7 +108,7 @@ fn directory(state: RwSignal<State>) -> impl IntoView {
             <button class="zxs-button" disabled=move ||state.with(|s|s.files.repository_id.is_empty()||actions::pending(s)) on:click=move |_|backup::start_current(state)>{t("备份设置","Backup settings")}</button>
             <label class="zxs-file-search"><span class="zxs-visually-hidden">{t("搜索当前文件夹","Search this folder")}</span><input class="zxs-input zxs-input--compact" type="search" aria-label=t("搜索当前文件夹","Search this folder") placeholder=t("搜索当前文件夹","Search this folder") prop:value=move ||state.with(|s|s.files.query.clone()) on:input=move |event|state.update(|s|s.files.query=event_target_value(&event))/></label>
         </div>
-        <div class="zxs-file-toolbar zxs-flow zxs-surface-end">{move ||view!{<Select label=if default_scope.get(){t("当前主分支（SMB 默认）","Current main branch (SMB default)")}else{t("当前目录分支","Current folder branch")} options=folder_options value=folder_value disabled=folder_disabled placeholder=if default_scope.get(){t("主版本","Main")}else{t("尚无目录分支","No folder branches")} on_change=Callback::new(move |value:String|{if state.with_untracked(|s|s.files.default_branch_scope){actions::select_default_branch(state,value)}else{let path=state.with_untracked(|s|s.files.directory.clone());actions::directory_branch(state,path,value,true);}})/>}}
+        <div class="zxs-file-toolbar zxs-flow zxs-surface-end">{move ||view!{<Select label=if default_scope.get(){t("当前主分支（SMB 默认）","Current main branch (SMB default)")}else{t("当前目录分支","Current folder branch")} options=folder_options value=folder_value disabled=folder_disabled placeholder=if default_scope.get(){t("主版本","Main")}else{t("尚无目录分支","No folder branches")} on_change=Callback::new(move |value:String|{if state.with_untracked(|s|s.files.default_branch_scope){actions::select_default_branch(state,value)}else{let path=state.with_untracked(|s|s.files.directory.clone());let _=actions::directory_branch(state,path,value,true);}})/>}}
             {move ||rename_branch.get().map(|(repository,branch_id,name)|inline::control(state,t("重命名分支","Rename branch"),Some("rename"),inline::Target::RenameDirectoryBranch{repository,branch_id,name},folder_disabled))}
             <p class="zxs-row">{move ||if default_scope.get(){t("恢复所选文件分支组合，并作为 SMB 默认视图。","Restores the selected file branch combination as the default SMB view.")}else{t("恢复此目录保存的文件分支组合，不改变目录外文件。","Restores this folder’s saved file branch combination without changing files outside it.")}}</p></div>
         <Show when=move ||state.with(|s|s.files.loaded&&s.files.writable&&!s.files.directory_branches_supported)><p class="zxs-row">{t("请选择具体文件夹后管理目录分支；此硬盘根目录包含多个已有的文件目录。","Select a specific folder to manage folder branches; this disk root contains multiple existing file namespaces.")}</p></Show>
@@ -121,14 +121,8 @@ fn directory(state: RwSignal<State>) -> impl IntoView {
 fn file_table(state: RwSignal<State>) -> impl IntoView {
     let rows = visible_rows(state);
     let disabled = Memo::new(move |_| state.with(|s| !actions::write_allowed(s)));
-    let selected = Memo::new(move |_| {
-        state.with(|s| {
-            s.files
-                .selected
-                .as_ref()
-                .map(|entry| text(entry, &["entry_id", "path"]))
-        })
-    });
+    let selected =
+        Memo::new(move |_| state.with(|s| s.files.selected.as_ref().map(super::model::entry_key)));
     view! {
         <div aria-busy=move ||state.with(|s|s.files.loading).to_string()>
             <Show when=move ||state.with(|s|s.files.loading&&!s.files.loaded)><LoadingState/></Show>

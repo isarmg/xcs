@@ -7,7 +7,10 @@ use storage_engine::DiskObservationPlan;
 pub(super) fn observe(observation: DiskObservationPlan) -> Result<Value, ApiError> {
     let mut disks = Vec::new();
     for disk in observation.status().map_err(error)? {
-        let capacity = observation.capacity(&disk.slot_id).ok();
+        let capacity = disk
+            .online
+            .then(|| observation.capacity(&disk.slot_id).ok())
+            .flatten();
         let (power_watts, power_unavailable_reason) =
             crate::telemetry::disk_power(&disk.physical_device, disk.simulation, disk.online);
         let usage_percent = capacity
@@ -25,3 +28,7 @@ pub(super) fn observe(observation: DiskObservationPlan) -> Result<Value, ApiErro
     }
     Ok(json!({"disks":disks}))
 }
+
+#[cfg(test)]
+#[path = "../../../../test/server/unit/engine_backend/disk_monitor_tests.rs"]
+mod tests;

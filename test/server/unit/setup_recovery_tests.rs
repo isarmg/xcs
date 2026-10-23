@@ -53,6 +53,7 @@ fn request() -> SetupRequest {
 fn admin() -> Identity {
     Identity {
         admission_session: None,
+        smb_binding: None,
         principal: "admin".into(),
         admin: true,
         repositories: BTreeSet::new(),

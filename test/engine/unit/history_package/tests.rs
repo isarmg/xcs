@@ -1369,6 +1369,7 @@ fn split_package_restores_full_history_after_all_original_paths_are_removed() {
     assert!(repo.grants.manage.contains("alice"));
     assert!(repo.grants.manage.contains("rescuer"));
     assert!(!repo.smb_enabled);
+    assert_eq!(repo.smb_binding_generation, 1);
     assert!(repo.account_scope_repository_id.is_none());
     assert!(result.sequence > exported.publication_sequence);
     let branch = graph.history.main_branch_id.unwrap();

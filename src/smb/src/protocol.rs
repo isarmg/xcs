@@ -15,6 +15,9 @@ pub const PROTOCOL: &str = "smb-protocol-rpc";
 /// durable PrepareWrite reservation before every descriptor mutation.
 pub const WRITE_RESERVATION_CAPABILITY: &str = "durable-write-reservations";
 pub const MAX_FRAME_BYTES: usize = 8 * 1024 * 1024;
+/// Directory replies stay well below the frame ceiling, even with long names.
+pub const MAX_DIRECTORY_PAGE_BYTES: usize = 256 * 1024;
+pub const MAX_DIRECTORY_PAGE_ENTRIES: usize = 256;
 
 pub fn effective_uid() -> u32 {
     // SAFETY: geteuid has no arguments or side effects and cannot fail.
@@ -75,8 +78,10 @@ pub enum Request {
     Stat {
         path: String,
     },
-    List {
-        path: String,
+    ReadDirectory {
+        #[serialization(with = "storage_contract::u64_string")]
+        handle: u64,
+        restart: bool,
     },
     Namespace {
         operation_id: String,
@@ -150,6 +155,13 @@ pub struct OpenResult {
     pub max_file_bytes: u64,
     pub version_id: Option<String>,
     pub workspace_id: Option<String>,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+#[serialization(deny_unknown_fields)]
+pub struct DirectoryPage {
+    pub entries: Vec<storage_contract::Entry>,
+    pub more: bool,
 }
 
 /// One serialized request/response stream. The descriptor, when present, is

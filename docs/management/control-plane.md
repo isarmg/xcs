@@ -94,6 +94,13 @@ evidence until it returns. Socket shutdown wakes idle RPC reads, but cannot canc
 a filesystem system call. HTTP drain and the Tokio runtime's blocking-worker join
 are therefore not bounded when kernel I/O cannot return; host-level intervention
 may still be required. No shutdown path force-exits the process to claim success.
+Native management recovery writers are owned as well: shutdown closes their
+enqueue gate and waits for the current worker without allowing a generation
+follow-up. HTTP setup errors and service-future cancellation also retain this
+drain in runtime-owned blocking work. The example systemd unit uses
+`TimeoutStopSec=infinity` to preserve this durability contract. An administrator
+may explicitly force-stop a process stuck in kernel I/O, but that is a crash,
+not a successful graceful drain; recovery must complete on the next start.
 
 ## Optional HTTP files at startup
 

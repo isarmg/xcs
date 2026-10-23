@@ -229,6 +229,10 @@ impl Engine {
                     .file_selections
                     .values()
                     .any(|selected| selected == id)
+                    || state
+                        .file_contexts
+                        .values()
+                        .any(|context| context.branch_id == id)
                 {
                     return Err(Error::new(
                         "FILE_BRANCH_SELECTED",

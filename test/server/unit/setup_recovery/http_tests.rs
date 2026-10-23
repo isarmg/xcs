@@ -24,10 +24,14 @@ impl Backend for Probe {
         action: &'static str,
         _: Value,
         bootstrap: Option<&str>,
-        _: Option<&Identity>,
+        identity: Option<&Identity>,
     ) -> Result<Value, ApiError> {
-        self.service
-            .authorize_bootstrap(bootstrap.ok_or_else(ApiError::unauthorized)?)?;
+        if let Some(identity) = identity {
+            identity.require_admin()?;
+        } else {
+            self.service
+                .authorize_bootstrap(bootstrap.ok_or_else(ApiError::unauthorized)?)?;
+        }
         if action == "status" {
             return json_codec::to_value(self.service.status()).map_err(ApiError::invalid);
         }
@@ -55,6 +59,9 @@ fn app() -> (tempfile::TempDir, Router, Arc<Probe>) {
     app_with_auxiliary_failure(false)
 }
 fn app_with_auxiliary_failure(failed: bool) -> (tempfile::TempDir, Router, Arc<Probe>) {
+    configured_app(failed, false)
+}
+fn configured_app(failed: bool, proxy: bool) -> (tempfile::TempDir, Router, Arc<Probe>) {
     let temp = tempfile::tempdir().unwrap();
     let data = temp.path().join("system");
     let management = temp.path().join("management");
@@ -76,6 +83,10 @@ fn app_with_auxiliary_failure(failed: bool) -> (tempfile::TempDir, Router, Arc<P
     let auth_root = temp.path().join("http-auth");
     let auth = AuthStore::initialize(&auth_root, "admin", "long-test-password").unwrap();
     let mut config = ServerConfig::loopback(&auth_root);
+    if proxy {
+        config.external_origin = Some("https://storage.example.org".into());
+        config.trusted_proxy_ips = vec!["127.0.0.1".parse().unwrap()];
+    }
     if failed {
         std::fs::write(&config.spool_dir, "keep this evidence").unwrap();
         config.web_dir = Some(temp.path().join("missing-web"));
@@ -91,6 +102,35 @@ fn request(method: &str, path: &str, body: &str) -> http_routing::http::request:
         .header("host", "127.0.0.1:7400")
         .header("origin", "http://127.0.0.1:7400")
         .header("content-type", "application/json")
+}
+fn proxy_request(method: &str, path: &str, ip: &str) -> http_routing::http::request::Builder {
+    HttpRequest::builder()
+        .method(method)
+        .uri(path)
+        .extension(http_routing::extract::ConnectInfo(
+            "127.0.0.1:12345".parse::<std::net::SocketAddr>().unwrap(),
+        ))
+        .header("host", "storage.example.org")
+        .header("origin", "https://storage.example.org")
+        .header("x-forwarded-for", ip)
+        .header("content-type", "application/json")
+}
+async fn proxy_admin_token(app: &Router) -> String {
+    let response = app
+        .clone()
+        .oneshot(
+            proxy_request("POST", "/api/auth/login", "192.0.2.200")
+                .body(Body::from(
+                    json!({"username":"admin", "password":"long-test-password"}).to_string(),
+                ))
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(response.status(), StatusCode::OK);
+    let value: Value =
+        json_codec::from_slice(&to_bytes(response.into_body(), 65536).await.unwrap()).unwrap();
+    value["token"].as_str().unwrap().to_owned()
 }
 #[tokio::test]
 async fn setup_http_requires_capability_csrf_origin_and_no_secret_query() {
@@ -243,6 +283,168 @@ async fn setup_http_rate_limits_before_backend_work() {
         .unwrap();
     assert_eq!(limited.status(), StatusCode::TOO_MANY_REQUESTS);
     assert_eq!(probe.mutations.load(Ordering::SeqCst), 0);
+}
+
+#[tokio::test]
+async fn invalid_bootstrap_attempts_do_not_poison_other_sources_or_protected_recovery() {
+    let (_temp, app, probe) = configured_app(false, true);
+    let token = proxy_admin_token(&app).await;
+    for (index, invalid) in ["missing", "malformed", "wrong", "origin"]
+        .into_iter()
+        .enumerate()
+    {
+        let source = format!("192.0.2.{}", index + 1);
+        for _ in 0..10 {
+            let mut call = proxy_request("GET", "/api/setup/status", &source);
+            match invalid {
+                "missing" => {}
+                "malformed" => {
+                    call = call.header("x-zxs-bootstrap", "not-a-capability");
+                }
+                "wrong" => {
+                    call = call.header("x-zxs-bootstrap", "f".repeat(64));
+                }
+                "origin" => {
+                    call = call.header("x-zxs-bootstrap", TOKEN);
+                    call.headers_mut()
+                        .unwrap()
+                        .insert("origin", "https://evil.invalid".parse().unwrap());
+                }
+                _ => unreachable!(),
+            }
+            let response = app
+                .clone()
+                .oneshot(call.body(Body::empty()).unwrap())
+                .await
+                .unwrap();
+            assert_eq!(
+                response.status(),
+                if invalid == "origin" {
+                    StatusCode::FORBIDDEN
+                } else {
+                    StatusCode::UNAUTHORIZED
+                }
+            );
+        }
+        let same_source = app
+            .clone()
+            .oneshot(
+                proxy_request("GET", "/api/setup/status", &source)
+                    .header("x-zxs-bootstrap", TOKEN)
+                    .body(Body::empty())
+                    .unwrap(),
+            )
+            .await
+            .unwrap();
+        assert_eq!(same_source.status(), StatusCode::TOO_MANY_REQUESTS);
+
+        let other_source = app
+            .clone()
+            .oneshot(
+                proxy_request("GET", "/api/setup/status", "192.0.2.100")
+                    .header("x-zxs-bootstrap", TOKEN)
+                    .body(Body::empty())
+                    .unwrap(),
+            )
+            .await
+            .unwrap();
+        assert_eq!(other_source.status(), StatusCode::OK);
+        // Authenticated recovery is independent even on the rejected public source.
+        let recovery = app
+            .clone()
+            .oneshot(
+                proxy_request("POST", "/api/management/offline-check", &source)
+                    .header("authorization", format!("Bearer {token}"))
+                    .body(Body::from("{}"))
+                    .unwrap(),
+            )
+            .await
+            .unwrap();
+        assert_eq!(recovery.status(), StatusCode::OK);
+    }
+    assert_eq!(probe.mutations.load(Ordering::SeqCst), 4);
+}
+
+#[tokio::test]
+async fn protected_recovery_keeps_its_own_global_rate_budget() {
+    let (_temp, app, probe) = configured_app(false, true);
+    let token = proxy_admin_token(&app).await;
+    for index in 1..=11 {
+        let response = app
+            .clone()
+            .oneshot(
+                proxy_request(
+                    "POST",
+                    "/api/management/offline-check",
+                    &format!("192.0.2.{index}"),
+                )
+                .header("authorization", format!("Bearer {token}"))
+                .body(Body::from("{}"))
+                .unwrap(),
+            )
+            .await
+            .unwrap();
+        assert_eq!(
+            response.status(),
+            if index <= 10 {
+                StatusCode::OK
+            } else {
+                StatusCode::TOO_MANY_REQUESTS
+            }
+        );
+    }
+    assert_eq!(probe.mutations.load(Ordering::SeqCst), 10);
+    let bootstrap = app
+        .oneshot(
+            proxy_request("GET", "/api/setup/status", "192.0.2.100")
+                .header("x-zxs-bootstrap", TOKEN)
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(bootstrap.status(), StatusCode::OK);
+}
+
+#[tokio::test]
+async fn public_setup_key_capacity_cannot_exhaust_login_or_recovery_admission() {
+    let (_temp, app, probe) = configured_app(false, true);
+    for index in 0..4096_u32 {
+        let ip = std::net::Ipv4Addr::from(0xc000_0000 + index).to_string();
+        let response = app
+            .clone()
+            .oneshot(
+                proxy_request("GET", "/api/setup/status", &ip)
+                    .body(Body::empty())
+                    .unwrap(),
+            )
+            .await
+            .unwrap();
+        assert_eq!(response.status(), StatusCode::UNAUTHORIZED);
+    }
+    let full = app
+        .clone()
+        .oneshot(
+            proxy_request("GET", "/api/setup/status", "198.51.100.1")
+                .header("x-zxs-bootstrap", TOKEN)
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(full.status(), StatusCode::TOO_MANY_REQUESTS);
+    let token = proxy_admin_token(&app).await;
+    let recovery = app
+        .oneshot(
+            proxy_request("POST", "/api/management/offline-check", "198.51.100.1")
+                .header("authorization", format!("Bearer {token}"))
+                .body(Body::from("{}"))
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(recovery.status(), StatusCode::OK);
+    assert_eq!(probe.mutations.load(Ordering::SeqCst), 1);
 }
 
 #[tokio::test]

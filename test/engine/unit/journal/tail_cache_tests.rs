@@ -81,6 +81,38 @@ fn latest_receipts_are_idempotent_and_old_retries_rescan() {
 }
 
 #[test]
+fn visible_publication_retry_repeats_failed_durability_barrier() {
+    let temp = tempfile::tempdir().unwrap();
+    let d = disk(&temp);
+    let candidate = "a".repeat(64);
+    let object = "b".repeat(64);
+    let failure = append_with_sync(&d, "PUBLICATION", 1, &candidate, &object, |_, _| {
+        Err(Error::new(
+            "INJECTED_SYNC_FAILURE",
+            "frame written, file sync failed",
+        ))
+    });
+    assert_eq!(failure.unwrap_err().code(), "INJECTED_SYNC_FAILURE");
+    assert_eq!(scan(&d).unwrap().records.len(), 1);
+    let length = std::fs::metadata(log_path(&d)).unwrap().len();
+
+    let mut repeated = false;
+    let failure = append_with_sync(&d, "PUBLICATION", 1, &candidate, &object, |file, _| {
+        repeated = true;
+        file.sync_all()?;
+        Err(Error::new("INJECTED_SYNC_FAILURE", "parent sync failed"))
+    });
+    assert!(repeated, "visible matching frames must still synchronize");
+    assert_eq!(failure.unwrap_err().code(), "INJECTED_SYNC_FAILURE");
+    assert!(!tails().lock().unwrap().contains_key(&log_path(&d)));
+
+    let receipt = append(&d, "PUBLICATION", 1, &candidate, &object).unwrap();
+    assert!(receipt_binds(&receipt, "PUBLICATION", 1, &candidate, &object).unwrap());
+    assert_eq!(std::fs::metadata(log_path(&d)).unwrap().len(), length);
+    assert_eq!(scan(&d).unwrap().records.len(), 1);
+}
+
+#[test]
 fn cached_append_detects_same_length_prefix_corruption() {
     let temp = tempfile::tempdir().unwrap();
     let d = disk(&temp);

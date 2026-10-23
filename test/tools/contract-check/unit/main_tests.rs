@@ -5,6 +5,38 @@ fn checked_in_contracts_and_document_examples_are_consistent() {
 }
 
 #[test]
+fn persisted_repository_schema_requires_an_exact_smb_binding_revision() {
+    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../docs/contracts");
+    let mut core = read(&root.join("core.schema.json")).unwrap();
+    core["$ref"] = "#/$defs/HistoryRepository".into();
+    let schema = validator(&core).unwrap();
+    let vectors = read(&root.join("vectors.json")).unwrap();
+    let repository = array(&vectors["positive"])
+        .unwrap()
+        .iter()
+        .find_map(|case| case["value"].get("repository"))
+        .unwrap()
+        .clone();
+    assert!(schema.is_valid(&repository));
+    for invalid in [
+        json!(null),
+        json!(1),
+        json!("01"),
+        json!("18446744073709551616"),
+    ] {
+        let mut changed = repository.clone();
+        changed["smb_binding_generation"] = invalid;
+        assert!(!schema.is_valid(&changed));
+    }
+    let mut missing = repository;
+    missing
+        .as_object_mut()
+        .unwrap()
+        .remove("smb_binding_generation");
+    assert!(!schema.is_valid(&missing));
+}
+
+#[test]
 fn old_branch_and_commit_canonical_bytes_survive_pending_field_defaults() {
     let root = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../docs/contracts");
     let vectors = read(&root.join("vectors.json")).unwrap();

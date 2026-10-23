@@ -442,3 +442,149 @@ async fn authorization_admission_survives_cancellation_and_rejects_without_waiti
         401
     );
 }
+
+#[derive(Default)]
+struct RetryProbe {
+    calls: std::sync::atomic::AtomicUsize,
+}
+
+impl crate::Backend for RetryProbe {
+    fn retry_storage(&self, _: &Identity) -> Result<Value, ApiError> {
+        self.calls.fetch_add(1, std::sync::atomic::Ordering::SeqCst);
+        Ok(json!({"retryable":true}))
+    }
+    fn call(&self, _: crate::BackendAction, _: &Identity, _: Value) -> Result<Value, ApiError> {
+        Err(ApiError::unsupported())
+    }
+    fn upload(
+        &self,
+        _: &Identity,
+        _: &str,
+        _: &str,
+        _: &str,
+        _: &crate::UploadSource,
+    ) -> Result<Value, ApiError> {
+        Err(ApiError::unsupported())
+    }
+    fn content(&self, _: &Identity, _: &str) -> Result<crate::Content, ApiError> {
+        Err(ApiError::unsupported())
+    }
+}
+
+#[tokio::test(flavor = "current_thread")]
+async fn storage_retry_auth_contention_never_blocks_runtime_or_releases_cancelled_capacity() {
+    let root = tempfile::tempdir().unwrap();
+    let mut store =
+        crate::auth::AuthStore::initialize(root.path(), "admin", "a-long-test-password").unwrap();
+    let login = store.login("admin", "a-long-test-password").unwrap();
+    let identity = store.authenticate(&login.token).unwrap();
+    let auth = Arc::new(Mutex::new(store));
+    let probe = Arc::new(RetryProbe::default());
+    let backend: Arc<dyn crate::Backend> = Arc::new(crate::AuthorizedBackend {
+        backend: probe.clone(),
+        auth: auth.clone(),
+    });
+    let slots = Arc::new(tokio::sync::Semaphore::new(2));
+    let held = Arc::new(tokio::sync::Semaphore::new(0));
+    let (release, wait) = std::sync::mpsc::channel();
+    let holder = std::thread::spawn({
+        let held = held.clone();
+        move || {
+            let _guard = auth.lock().unwrap();
+            held.add_permits(1);
+            // Independent watchdog also releases the lock on a regression that
+            // blocks this test's sole Tokio worker, rather than hanging the suite.
+            let _ = wait.recv_timeout(Duration::from_secs(10));
+        }
+    });
+    held.acquire().await.unwrap().forget();
+    let mut jobs = Vec::new();
+    for _ in 0..2 {
+        jobs.push(tokio::spawn(storage_retry_job(
+            backend.clone(),
+            slots.clone(),
+            identity.clone(),
+        )));
+    }
+    tokio::time::timeout(Duration::from_secs(2), async {
+        while slots.available_permits() != 0 {
+            tokio::task::yield_now().await;
+        }
+        // The timer must run before the auth holder's external watchdog fires.
+        tokio::time::sleep(Duration::from_millis(10)).await;
+        assert_eq!(slots.available_permits(), 0);
+    })
+    .await
+    .unwrap();
+    assert_eq!(probe.calls.load(std::sync::atomic::Ordering::SeqCst), 0);
+    assert_eq!(
+        storage_retry_job(backend.clone(), slots.clone(), identity.clone())
+            .await
+            .unwrap_err()
+            .status,
+        429,
+    );
+    for job in jobs {
+        job.abort();
+        assert!(job.await.unwrap_err().is_cancelled());
+    }
+    assert_eq!(slots.available_permits(), 0);
+    assert_eq!(
+        storage_retry_job(backend, slots.clone(), identity)
+            .await
+            .unwrap_err()
+            .status,
+        429,
+    );
+    release.send(()).unwrap();
+    holder.join().unwrap();
+    tokio::time::timeout(Duration::from_secs(2), async {
+        while slots.available_permits() != 2 {
+            tokio::task::yield_now().await;
+        }
+    })
+    .await
+    .unwrap();
+    assert_eq!(probe.calls.load(std::sync::atomic::Ordering::SeqCst), 2);
+}
+
+#[tokio::test(flavor = "current_thread")]
+async fn storage_retry_rechecks_a_session_revoked_while_waiting_for_auth() {
+    let root = tempfile::tempdir().unwrap();
+    let mut store =
+        crate::auth::AuthStore::initialize(root.path(), "admin", "a-long-test-password").unwrap();
+    let login = store.login("admin", "a-long-test-password").unwrap();
+    let identity = store.authenticate(&login.token).unwrap();
+    let auth = Arc::new(Mutex::new(store));
+    let probe = Arc::new(RetryProbe::default());
+    let backend: Arc<dyn crate::Backend> = Arc::new(crate::AuthorizedBackend {
+        backend: probe.clone(),
+        auth: auth.clone(),
+    });
+    let slots = Arc::new(tokio::sync::Semaphore::new(1));
+    let held = Arc::new(tokio::sync::Semaphore::new(0));
+    let (release, wait) = std::sync::mpsc::channel();
+    let holder = std::thread::spawn({
+        let held = held.clone();
+        move || {
+            let mut guard = auth.lock().unwrap();
+            held.add_permits(1);
+            let _ = wait.recv_timeout(Duration::from_secs(10));
+            guard.logout(&login.token).unwrap();
+        }
+    });
+    held.acquire().await.unwrap().forget();
+    let job = tokio::spawn(storage_retry_job(backend, slots.clone(), identity));
+    tokio::time::timeout(Duration::from_secs(2), async {
+        while slots.available_permits() != 0 {
+            tokio::task::yield_now().await;
+        }
+    })
+    .await
+    .unwrap();
+    release.send(()).unwrap();
+    assert_eq!(job.await.unwrap().unwrap_err().status, 401);
+    holder.join().unwrap();
+    assert_eq!(slots.available_permits(), 1);
+    assert_eq!(probe.calls.load(std::sync::atomic::Ordering::SeqCst), 0);
+}

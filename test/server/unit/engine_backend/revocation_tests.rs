@@ -442,6 +442,7 @@ fn current_account_scope_controls_queries_without_disabling_public_probes() {
     );
     let anonymous = Identity {
         admission_session: None,
+        smb_binding: None,
         principal: String::new(),
         admin: false,
         repositories: BTreeSet::new(),
@@ -482,6 +483,7 @@ fn embedded_backend_without_protected_accounts_uses_explicit_caller_identity() {
     );
     let unadmitted = Identity {
         admission_session: None,
+        smb_binding: None,
         repositories: BTreeSet::new(),
         ..fixture.identity.clone()
     };
@@ -514,6 +516,7 @@ fn private_disk_sampling_cannot_grant_public_monitoring_access() {
 
     let synthetic = Identity {
         admission_session: None,
+        smb_binding: None,
         principal: "zxs-system-telemetry".into(),
         admin: true,
         repositories: BTreeSet::new(),

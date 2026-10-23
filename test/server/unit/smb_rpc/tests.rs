@@ -8,8 +8,12 @@ use storage_engine::{CommitRequest, Config, Engine};
 
 #[path = "admission_tests.rs"]
 mod admission_tests;
+#[path = "binding_tests.rs"]
+mod binding_tests;
 #[path = "close_tests.rs"]
 mod close_tests;
+#[path = "directory_tests.rs"]
+mod directory_tests;
 #[path = "namespace_tests.rs"]
 mod namespace_tests;
 
@@ -108,6 +112,7 @@ fn fixture() -> (tempfile::TempDir, Arc<Shared>, Arc<LostCommitReply>, String) {
         .unwrap();
     let identity = Identity {
         admission_session: None,
+        smb_binding: None,
         principal: "alice".into(),
         admin: false,
         repositories: BTreeSet::from([repo.repository_id.clone()]),
@@ -944,26 +949,32 @@ fn listing_uses_portable_lookup_keys_and_rejects_files_or_missing_directories() 
     file.write_all_at(b"content", 0).unwrap();
     session.dirty(opened.handle).unwrap();
     session.close(opened.handle, false).unwrap();
-    let (listed, _) = session
-        .dispatch(Request::List {
-            path: "straße".into(),
-        })
+    for (path, expected_name) in [("straße", "子目录"), ("strasse/子目录", "内容.txt")] {
+        let (opened, _) = session
+            .open(path.into(), false, false, false, false, false)
+            .unwrap();
+        let opened: OpenResult = json_codec::from_value(opened).unwrap();
+        let (listed, _) = session
+            .dispatch(Request::ReadDirectory {
+                handle: opened.handle,
+                restart: false,
+            })
+            .unwrap();
+        let entries = listed["entries"].as_array().unwrap();
+        assert_eq!(entries.len(), 1);
+        assert_eq!(entries[0]["name"], expected_name);
+        assert_eq!(listed["more"], false);
+        session.close(opened.handle, false).unwrap();
+    }
+    let (file, _) = session
+        .open("REPORT.TXT".into(), false, false, false, false, false)
         .unwrap();
-    let entries = listed["entries"].as_array().unwrap();
-    assert_eq!(entries.len(), 1);
-    assert_eq!(entries[0]["name"], "子目录");
-    let (listed, _) = session
-        .dispatch(Request::List {
-            path: "strasse/子目录".into(),
-        })
-        .unwrap();
-    let entries = listed["entries"].as_array().unwrap();
-    assert_eq!(entries.len(), 1);
-    assert_eq!(entries[0]["name"], "内容.txt");
+    let file: OpenResult = json_codec::from_value(file).unwrap();
     assert_eq!(
         session
-            .dispatch(Request::List {
-                path: "REPORT.TXT".into()
+            .dispatch(Request::ReadDirectory {
+                handle: file.handle,
+                restart: false
             })
             .unwrap_err()
             .code,
@@ -971,9 +982,7 @@ fn listing_uses_portable_lookup_keys_and_rejects_files_or_missing_directories() 
     );
     assert_eq!(
         session
-            .dispatch(Request::List {
-                path: "absent".into()
-            })
+            .open("absent".into(), false, false, false, false, false)
             .unwrap_err()
             .status,
         404

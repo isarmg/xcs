@@ -80,6 +80,7 @@ actions! {
     SealWorkspace => "seal_workspace",
     SetGrants => "set_grants",
     SmbBinding => "smb_binding",
+    SmbReadDirectory => "smb_read_directory",
     SplitPlan => "split_plan",
     Topology => "topology",
     Tree => "tree",

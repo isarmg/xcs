@@ -21,7 +21,9 @@ struct BackendProbe;
 impl Backend for BackendProbe {
     fn call(&self, action: BackendAction, _: &Identity, _: Value) -> Result<Value, ApiError> {
         match action {
-            BackendAction::Repository => Ok(json!({"main_branch_id":"test-branch"})),
+            BackendAction::Repository => Ok(
+                json!({"main_branch_id":"test-branch","smb_enabled":true,"smb_binding_generation":"1"}),
+            ),
             BackendAction::Capabilities => Ok(json!({"max_upload_bytes":"4096"})),
             _ => Err(ApiError::unsupported()),
         }
@@ -51,6 +53,7 @@ async fn shutdown_closes_idle_smb_and_http_listener_while_http_request_is_stalle
         "alice".to_owned(),
         Identity {
             admission_session: None,
+            smb_binding: None,
             principal: "alice".into(),
             admin: false,
             repositories: BTreeSet::from(["test-repository".into()]),

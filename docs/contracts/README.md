@@ -46,6 +46,8 @@ Rust 依赖源码已包含在仓库中，首次构建也使用唯一根锁文件
 
 字段与文本变更须同步更新固定向量和 OpenAPI；未经变更说明不得用重新生成期望值来掩盖兼容变化。外部规格依据为 [JSON Schema 2020-12](https://json-schema.org/draft/2020-12)、[OpenAPI 3.1.0](https://spec.openapis.org/oas/v3.1.0.html) 和 [RFC 8785](https://www.rfc-editor.org/rfc/rfc8785.html)，这些资料不为本系统业务协议提供正确性证明。
 
+仓库记录必须携带 `smb_binding_generation`，按规范 UINT64 十进制字符串编码；新仓库初值为 `"1"`。它独立于普通历史发布代数，每次显式重绑定或禁用推进，用来拒绝持有旧绑定的 SMB 会话。拆分禁用源仓库也推进其代数；新拆分仓库和导入仓库保持 SMB 禁用并从自己的初始代数开始。此字段为当前持久模型和 `HistoryRepository` schema 的必填项，不为缺失字段的旧记录补默认值。普通目录组成选择不推进此代数，也不改变已固定读取版本。
+
 分支创建只登记元数据与冻结来源引用，`pending_file_versions` 的键/值分别为 FileId/VersionId；Commit 逐快照保留此状态，当前分支首写不会改变旧快照。泛型 Entry 及文件管理的 version_id 都指可见真实版本；继承时为冻结父 ID，own_version_id 为 null，首次写入后才为自有 ID。新增校验同时拒绝 pending 来源逃逸文件作用域、快照来源与条目不符，以及可见父内容被误标为已拥有内容；旧 Branch / Commit 的空映射省略序列化并核对规范字节与摘要。最新执行见[本轮契约记录](../validation/evidence/inherited-branches/contract.md)，不覆盖旧向量验收快照。
 
 目录分支以 `DirectoryBranch`、`DirectoryTree` 和 `DirectoryReference` 区分命名身份、不可变组成及子目录精确引用；`DirectoryNamespaceBatch` 每项要求源分支、依据子树与稳定条目 ID，非删除操作还要求明确目标分支及依据子树。登记目录分支不提前创建文件分支或占位文件。路径、跨分支冲突与实际归属由核心统一校验，schema 合法不等于业务可发布。

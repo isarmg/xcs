@@ -11,21 +11,18 @@ pub(super) enum Target {
 }
 
 impl Target {
-    fn submit(self, state: RwSignal<State>, name: String) {
+    fn submit(self, state: RwSignal<State>, name: String) -> Option<String> {
         match self {
             Self::CurrentDirectory => {
                 let path = state.with_untracked(|s| s.files.directory.clone());
-                actions::directory_branch(state, path, name, false);
+                actions::directory_branch(state, path, name, false)
             }
             Self::Directory { path, select } => {
-                actions::directory_branch(state, path, name, select);
+                actions::directory_branch(state, path, name, select)
             }
             Self::CurrentFileVersion | Self::HistoryNode(_) => {
-                if let Some((version, node)) =
-                    state.with_untracked(|s| file_source(&s.files, &self))
-                {
-                    actions::create_branch(state, version, node, name);
-                }
+                let (version, node) = state.with_untracked(|s| file_source(&s.files, &self))?;
+                actions::create_branch(state, version, node, name)
             }
         }
     }
@@ -95,31 +92,12 @@ pub(super) fn control(
     target: Target,
     disabled: Signal<bool>,
 ) -> impl IntoView {
-    let editing = RwSignal::new(false);
-    let value = RwSignal::new(String::new());
-    let error = RwSignal::new(false);
+    let draft = super::inline::Draft::new(state);
+    let editing = draft.editing;
+    let value = draft.value;
+    let error = draft.error;
     let label = StoredValue::new(label);
     let target = StoredValue::new(target);
-    let context = Memo::new(move |_| {
-        state.with(|s| {
-            (
-                s.session_epoch,
-                s.page.clone(),
-                s.files.slot.clone(),
-                s.files.directory.clone(),
-                s.files
-                    .selected
-                    .as_ref()
-                    .map(|entry| crate::ui::text(entry, &["file_id", "entry_id", "path"])),
-            )
-        })
-    });
-    Effect::new(move |_| {
-        let _ = context.get();
-        editing.set(false);
-        value.set(String::new());
-        error.set(false);
-    });
 
     view! {
         <span class="zxs-inline-branch zxs-flow zxs-flow--inline">
@@ -135,30 +113,24 @@ pub(super) fn control(
                         title=t("最多 128 个 UTF-8 字节。","Up to 128 UTF-8 bytes.") data-max-bytes="128" autocomplete="off"
                         autocapitalize="none" spellcheck="false"
                         prop:value=move || value.get()
-                        disabled=move || disabled.get()
+                        disabled=move || disabled.get() || draft.pending()
                         on:input=move |event| { value.set(event_target_value(&event)); error.set(false); }
-                        on:blur=move |_| { editing.set(false); value.set(String::new()); error.set(false); }
+                        on:blur=move |_| draft.cancel_idle()
                         on:keydown=move |event: web_sys::KeyboardEvent| {
                             if event.is_composing() { return; }
                             match event.key().as_str() {
                                 "Escape" => {
                                     event.prevent_default(); event.stop_propagation();
-                                    editing.set(false); value.set(String::new()); error.set(false);
+                                    draft.cancel_idle();
                                 }
                                 "Enter" => {
                                     event.prevent_default(); event.stop_propagation();
-                                    let name = branch_name(&value.get_untracked());
-                                    if name == Name::Invalid {
-                                        error.set(true);
-                                        return;
+                                    if disabled.get_untracked() || draft.pending() { return; }
+                                    match branch_name(&value.get_untracked()) {
+                                        Name::Invalid => error.set(true),
+                                        Name::Empty => draft.cancel_idle(),
+                                        Name::Valid(name) => draft.submit(|| target.get_value().submit(state, name)),
                                     }
-                                    // Capture the value before closing: removing the
-                                    // input can fire blur and clear its local text.
-                                    editing.set(false); value.set(String::new()); error.set(false);
-                                    if !disabled.get_untracked()
-                                        && let Name::Valid(name) = name {
-                                            target.get_value().submit(state, name);
-                                        }
                                 }
                                 _ => {}
                             }
@@ -167,7 +139,7 @@ pub(super) fn control(
             } else {
                 view! {
                     <button class="zxs-button" type="button" disabled=move || disabled.get()
-                        on:click=move |_| { value.set(String::new()); error.set(false); editing.set(true); }>
+                        on:click=move |_| if !disabled.get_untracked() { draft.start(String::new()); }>
                         {label.get_value()}
                     </button>
                 }.into_any()

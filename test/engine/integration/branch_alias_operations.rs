@@ -346,6 +346,68 @@ fn selected_aliases(p: &mut Pool) -> (String, String, Entry) {
 }
 
 #[test]
+fn archive_respects_each_selected_alias_and_preserves_closed_branch_head() {
+    let mut p = Pool::new();
+    let (_, _, original) = selected_aliases(&mut p);
+    p.save("a/report.txt", b"owned a content");
+    let a = p
+        .engine
+        .file_context(&p.repo.repository_id, "a/report.txt")
+        .unwrap();
+    let b = p
+        .engine
+        .file_context(&p.repo.repository_id, "b/report.txt")
+        .unwrap();
+    assert_ne!(a.branch_id, b.branch_id);
+    assert_eq!(
+        p.engine.state().file_selections[&original.file_id],
+        a.branch_id
+    );
+    let before = p.engine.state().branches[&b.branch_id].clone();
+    let operation = new_id("op");
+    assert_eq!(
+        p.engine
+            .archive_branch(&b.branch_id, "admin", &operation)
+            .unwrap_err()
+            .code(),
+        "FILE_BRANCH_SELECTED"
+    );
+    assert!(!p.engine.state().operations.contains_key(&operation));
+    assert_eq!(p.engine.state().branches[&b.branch_id].state, "active");
+    assert_eq!(
+        p.engine.state().branches[&b.branch_id].head_commit_id,
+        before.head_commit_id
+    );
+
+    p.engine
+        .select_file_branch_at(
+            &p.repo.repository_id,
+            "b/report.txt",
+            &original.file_id,
+            &a.branch_id,
+            "admin",
+            &new_id("op"),
+        )
+        .unwrap();
+    p.engine
+        .archive_branch(&b.branch_id, "admin", &new_id("op"))
+        .unwrap();
+    p.save("b/report.txt", b"new active branch content");
+    assert_eq!(p.engine.state().branches[&b.branch_id].state, "archived");
+    assert_eq!(
+        p.engine.state().branches[&b.branch_id].head_commit_id,
+        before.head_commit_id
+    );
+    p.reopen(|engine| {
+        assert_eq!(engine.state().branches[&b.branch_id].state, "archived");
+        assert_eq!(
+            engine.state().branches[&b.branch_id].head_commit_id,
+            before.head_commit_id
+        );
+    });
+}
+
+#[test]
 fn workspace_namespace_renames_two_aliases_atomically_with_distinct_write_contexts() {
     let mut p = Pool::new();
     let (n, l, original) = selected_aliases(&mut p);

@@ -53,7 +53,7 @@ fn a_missing_visible_version_never_uses_the_source_id_for_a_branch_request() {
     Owner::new().with(|| {
             let state=RwSignal::new(State::default());
             state.update(|s|s.files.selected=Some(json_codec::json!({"file_id":"file","materialized":false,"version_id":null,"source_version_id":"source"})));
-            Target::CurrentFileVersion.submit(state,"another".into());
+            let _ = Target::CurrentFileVersion.submit(state,"another".into());
             assert!(!state.with_untracked(|s|s.files.mutation_pending));
         });
 }

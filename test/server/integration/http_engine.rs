@@ -20,6 +20,8 @@ mod backup_namespace;
 mod daily_management;
 #[path = "http_engine/file_metadata_operations.rs"]
 mod file_metadata_operations;
+#[path = "http_engine/optional_identities.rs"]
+mod optional_identities;
 
 /// Resolve only fixture payloads for deliberate corruption. Production reads
 /// continue through the engine's verified replica and read-lease interfaces.
@@ -636,7 +638,14 @@ async fn file_notes_are_authorized_bounded_persistent_and_download_uses_current_
         Some(json!({"note":"historical note","operation_id":new_id("op")})),
     )
     .await;
-    success(&app,&token,"POST","/api/file-manager/disks/P01/namespace",Some(json!({"kind":"rename","path":"original.txt","destination":"改名后的文件.txt","operation_id":new_id("op")}))).await;
+    manager_namespace(
+        &app,
+        &token,
+        "rename",
+        "original.txt",
+        Some("改名后的文件.txt"),
+    )
+    .await;
     let history = success(
         &app,
         &reader,
@@ -676,14 +685,7 @@ async fn file_notes_are_authorized_bounded_persistent_and_download_uses_current_
             .unwrap()[..],
         b"immutable historical bytes"
     );
-    success(
-        &app,
-        &token,
-        "POST",
-        "/api/file-manager/disks/P01/namespace",
-        Some(json!({"kind":"delete","path":"改名后的文件.txt","operation_id":new_id("op")})),
-    )
-    .await;
+    manager_namespace(&app, &token, "delete", "改名后的文件.txt", None).await;
     let deleted = success(
         &app,
         &reader,
@@ -999,6 +1001,31 @@ async fn file_manager_exposes_disk_directories_and_independent_file_branches() {
         .await["result"],
         first["result"]
     );
+    // Backup browsing requires an explicit protection policy; disk roots start
+    // with one primary copy even when backup disks are configured.
+    let root_listing = success(
+        &app,
+        &token,
+        "GET",
+        "/api/file-manager/disks/P01/entries",
+        None,
+    )
+    .await;
+    let repository = root_listing["context"]["repository_id"].as_str().unwrap();
+    let backup_route = format!("/api/repositories/{repository}/backup-configuration");
+    let backup = success(&app, &token, "GET", &backup_route, None).await;
+    success(
+        &app,
+        &token,
+        "PUT",
+        &backup_route,
+        Some(json!({
+            "path":"", "target_copies":3, "backup_prefixes":{"B01":"P01","C01":"P01"},
+            "expected_scope_id":backup["scope"]["id"], "expected_generation":backup["generation"],
+            "operation_id":new_id("op")
+        })),
+    )
+    .await;
     manager_upload(&app, &token, "documents/one.txt", b"main file").await;
     manager_upload(&app, &token, "documents/two.txt", b"untouched sibling").await;
     let entries = success(
@@ -1386,31 +1413,28 @@ async fn file_manager_exposes_disk_directories_and_independent_file_branches() {
             .iter()
             .any(|e| e["action"] == "delete" && e["path"] == "documents/two.txt")
     );
-    let rename = json!({"kind":"rename","path":"documents/two.txt","destination":"documents/renamed.txt","operation_id":new_id("op")});
-    success(
+    manager_namespace(
         &app,
         &token,
-        "POST",
-        "/api/file-manager/disks/P01/namespace",
-        Some(rename),
+        "rename",
+        "documents/two.txt",
+        Some("documents/renamed.txt"),
     )
     .await;
-    success(
-        &app,
-        &token,
-        "POST",
-        "/api/file-manager/disks/P01/namespace",
-        Some(json!({"kind":"delete","path":"documents/renamed.txt","operation_id":new_id("op")})),
-    )
-    .await;
-    let events = success(&app, &token, "GET", "/api/file-manager/history", None).await;
-    assert!(
-        events["events"]
-            .as_array()
-            .unwrap()
-            .iter()
-            .any(|e| e["action"] == "delete" && e["path"] == "documents/renamed.txt")
+    let deleted = manager_namespace(&app, &token, "delete", "documents/renamed.txt", None).await;
+    assert_eq!(
+        deleted["result"]["transfers"][0]["source"]["path"],
+        "documents/renamed.txt"
     );
+    let events = success(&app, &token, "GET", "/api/file-manager/history", None).await;
+    assert!(events["events"].as_array().unwrap().iter().any(|e| {
+        e["action"] == "directory.namespace.delete"
+            && deleted["result"]["changes"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .any(|change| change["head_tree_id"] == e["head_tree_id"])
+    }));
 }
 
 #[tokio::test]
@@ -2145,6 +2169,7 @@ fn capture_wire(name: &str, wire: &Value) {
 fn operation_identity() -> Identity {
     Identity {
         admission_session: None,
+        smb_binding: None,
         principal: "admin".into(),
         admin: true,
         repositories: Default::default(),
@@ -2664,6 +2689,164 @@ async fn default_directory_branch_is_shared_authorized_and_persistent() {
         .find(|e| e.name == "one.txt")
         .unwrap();
     assert_eq!(visible.version_id, original["version_id"]);
+}
+
+/// Capture the same explicit scope, immutable tree, and entry identity used by
+/// the file manager batch UI. Destructive tests must not resolve a path at write time.
+async fn manager_namespace_request(
+    app: &Router,
+    token: &str,
+    kind: &str,
+    path: &str,
+    destination: Option<&str>,
+) -> Value {
+    let parent = path
+        .rsplit_once('/')
+        .map(|(parent, _)| parent)
+        .unwrap_or("");
+    let query = url_encoding::form::Serializer::new(String::new())
+        .append_pair("path", parent)
+        .finish();
+    let listing = success(
+        app,
+        token,
+        "GET",
+        &format!("/api/file-manager/disks/P01/entries?{query}"),
+        None,
+    )
+    .await;
+    let scope = listing["directory_branches"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|scope| scope["current"] == true)
+        .expect("selected directory scope");
+    let name = path.rsplit('/').next().unwrap();
+    let relative = if scope["path"] == "" {
+        name.to_owned()
+    } else {
+        format!("{}/{name}", scope["path"].as_str().unwrap())
+    };
+    let mut item = json!({"source":manager_batch_source(scope, &relative)});
+    if let Some(destination) = destination {
+        assert_eq!(
+            destination
+                .rsplit_once('/')
+                .map(|(parent, _)| parent)
+                .unwrap_or(""),
+            parent
+        );
+        let name = destination.rsplit('/').next().unwrap();
+        let relative = if scope["path"] == "" {
+            name.to_owned()
+        } else {
+            format!("{}/{name}", scope["path"].as_str().unwrap())
+        };
+        item["target"] = manager_batch_target(scope, &relative);
+    }
+    json!({"kind":kind,"operation_id":new_id("op"),"items":[item]})
+}
+
+async fn manager_namespace(
+    app: &Router,
+    token: &str,
+    kind: &str,
+    path: &str,
+    destination: Option<&str>,
+) -> Value {
+    let request = manager_namespace_request(app, token, kind, path, destination).await;
+    success(
+        app,
+        token,
+        "POST",
+        "/api/file-manager/disks/P01/namespace-batch",
+        Some(request),
+    )
+    .await
+}
+
+#[tokio::test]
+async fn destructive_namespace_requires_identity_and_rejects_stale_path_aba() {
+    let root = tempfile::tempdir().unwrap();
+    let app = application(root.path());
+    let token = login(&app, "admin", "integration-test-password").await;
+    manager_upload(&app, &token, "report.txt", b"original").await;
+    let entries_route = "/api/file-manager/disks/P01/entries";
+    let original = success(&app, &token, "GET", entries_route, None).await;
+    for kind in ["rename", "delete", "delete_tree"] {
+        let mut request = json!({"kind":kind,"path":"report.txt","operation_id":new_id("op")});
+        if kind == "rename" {
+            request["destination"] = json!("renamed.txt");
+        }
+        assert_eq!(
+            send(
+                &app,
+                Some(&token),
+                "POST",
+                "/api/file-manager/disks/P01/namespace",
+                Some(request)
+            )
+            .await
+            .0,
+            StatusCode::BAD_REQUEST
+        );
+        assert_eq!(
+            success(&app, &token, "GET", entries_route, None).await,
+            original
+        );
+    }
+    let stale_rename =
+        manager_namespace_request(&app, &token, "rename", "report.txt", Some("renamed.txt")).await;
+    let stale_delete = manager_namespace_request(&app, &token, "delete", "report.txt", None).await;
+    manager_namespace(&app, &token, "delete", "report.txt", None).await;
+    manager_upload(&app, &token, "report.txt", b"replacement").await;
+    let replacement = success(&app, &token, "GET", entries_route, None).await;
+    assert_ne!(
+        replacement["entries"][0]["entry_id"],
+        original["entries"][0]["entry_id"]
+    );
+    for request in [stale_rename, stale_delete] {
+        let (status, failure) = send(
+            &app,
+            Some(&token),
+            "POST",
+            "/api/file-manager/disks/P01/namespace-batch",
+            Some(request),
+        )
+        .await;
+        assert_eq!(status, StatusCode::CONFLICT);
+        assert_eq!(failure["error"]["code"], "DIRECTORY_BRANCH_CONFLICT");
+        assert_eq!(
+            success(&app, &token, "GET", entries_route, None).await,
+            replacement
+        );
+    }
+    // Even a current tree does not authorize a stale identity at the same path.
+    let mut stale_identity =
+        manager_namespace_request(&app, &token, "delete", "report.txt", None).await;
+    stale_identity["items"][0]["source"]["entry_id"] = original["entries"][0]["entry_id"].clone();
+    let (_, failure) = send(
+        &app,
+        Some(&token),
+        "POST",
+        "/api/file-manager/disks/P01/namespace-batch",
+        Some(stale_identity),
+    )
+    .await;
+    assert_eq!(failure["error"]["code"], "ENTRY_NOT_FOUND");
+    assert_eq!(
+        success(&app, &token, "GET", entries_route, None).await,
+        replacement
+    );
+    assert_eq!(
+        version_bytes(
+            &app,
+            &token,
+            replacement["entries"][0]["version_id"].as_str().unwrap()
+        )
+        .await,
+        b"replacement"
+    );
 }
 
 async fn manager_directory_branch(app: &Router, token: &str, path: &str, name: &str) -> String {
@@ -3288,7 +3471,7 @@ async fn rename_nodes_reuse_bodies_and_preserve_graph_parents_notes_and_branch_s
     let before = success(&app, &admin, "GET", &history_route, None).await;
     assert_eq!(before["nodes"].as_array().unwrap().len(), 1);
     assert_eq!(before["node_id"], body);
-    success(&app,&admin,"POST","/api/file-manager/disks/P01/namespace",Some(json!({"kind":"rename","path":"documents","destination":"archive","operation_id":new_id("op")}))).await;
+    manager_namespace(&app, &admin, "rename", "documents", Some("archive")).await;
     let after = success(
         &app,
         &admin,
@@ -3567,6 +3750,7 @@ async fn engine_upload_generation_conflicts_reach_http_as_conflicts() {
         .upload_generation(
             &Identity {
                 admission_session: None,
+                smb_binding: None,
                 principal: "admin".into(),
                 admin: true,
                 repositories: Default::default(),

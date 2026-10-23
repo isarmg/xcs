@@ -530,6 +530,7 @@ fn managed_admission_never_falls_back_to_stale_disaster_recovery_grants() {
         .unwrap();
     let caller = crate::auth::Identity {
         admission_session: None,
+        smb_binding: None,
         principal: "reader".into(),
         admin: true,
         repositories: Default::default(),

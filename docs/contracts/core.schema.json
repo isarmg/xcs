@@ -2560,6 +2560,9 @@
         "smb_enabled": {
           "type": "boolean"
         },
+        "smb_binding_generation": {
+          "$ref": "#/$defs/UInt64"
+        },
         "file_manager_root": {
           "type": "boolean"
         }
@@ -2573,7 +2576,8 @@
         "target_copies",
         "name_policy",
         "unicode_version",
-        "grants"
+        "grants",
+        "smb_binding_generation"
       ],
       "additionalProperties": false,
       "description": "根中仓库对象的读取字段形状；命名策略、保护份数和授权语义由核心另行验证。"

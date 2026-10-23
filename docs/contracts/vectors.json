@@ -607,7 +607,8 @@
             ]
           },
           "account_scope_repository_id": null,
-          "smb_enabled": true
+          "smb_enabled": true,
+          "smb_binding_generation": "1"
         },
         "history": {
           "history_tree_id": "history_11111111111111111111111111111111",
@@ -2007,7 +2008,8 @@
             ]
           },
           "account_scope_repository_id": null,
-          "smb_enabled": true
+          "smb_enabled": true,
+          "smb_binding_generation": "1"
         },
         "history": {
           "history_tree_id": "history_11111111111111111111111111111111",
@@ -2164,7 +2166,8 @@
             ]
           },
           "account_scope_repository_id": null,
-          "smb_enabled": true
+          "smb_enabled": true,
+          "smb_binding_generation": "1"
         },
         "history": {
           "history_tree_id": "history_11111111111111111111111111111111",
@@ -2329,7 +2332,8 @@
             ]
           },
           "account_scope_repository_id": null,
-          "smb_enabled": true
+          "smb_enabled": true,
+          "smb_binding_generation": "1"
         },
         "history": {
           "history_tree_id": "history_11111111111111111111111111111111",
@@ -2491,7 +2495,8 @@
             ]
           },
           "account_scope_repository_id": null,
-          "smb_enabled": true
+          "smb_enabled": true,
+          "smb_binding_generation": "1"
         },
         "history": {
           "history_tree_id": "history_11111111111111111111111111111111",
@@ -2652,7 +2657,8 @@
             ]
           },
           "account_scope_repository_id": null,
-          "smb_enabled": true
+          "smb_enabled": true,
+          "smb_binding_generation": "1"
         },
         "history": {
           "history_tree_id": "history_11111111111111111111111111111111",
@@ -2814,7 +2820,8 @@
             ]
           },
           "account_scope_repository_id": null,
-          "smb_enabled": true
+          "smb_enabled": true,
+          "smb_binding_generation": "1"
         },
         "history": {
           "history_tree_id": "history_11111111111111111111111111111111",

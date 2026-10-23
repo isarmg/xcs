@@ -61,6 +61,8 @@ struct Inner {
     state: Mutex<State>,
     auth: Mutex<Option<Arc<Mutex<AuthStore>>>>,
     recovering: AtomicBool,
+    stopping: AtomicBool,
+    recovery_worker: Mutex<Option<std::thread::JoinHandle<()>>>,
     generation: AtomicU64,
     disk_observation: Mutex<Option<(std::time::Instant, Value)>>,
     capabilities: Mutex<Value>,
@@ -199,6 +201,8 @@ pub fn open_service_with_options(
             }),
             auth: Mutex::new(None),
             recovering: AtomicBool::new(false),
+            stopping: AtomicBool::new(false),
+            recovery_worker: Mutex::new(None),
             generation: AtomicU64::new(0),
             disk_observation: Mutex::new(None),
             capabilities: Mutex::new(json!({"features":[],"max_upload_bytes":"0"})),
@@ -229,20 +233,58 @@ impl Inner {
     fn set(&self, backend: Option<Arc<EngineBackend>>, status: StorageState) {
         if let Ok(mut state) = self.state.lock() {
             state.backend = backend;
-            state.status = status;
+            state.status = if self.stopping.load(Ordering::SeqCst) {
+                StorageState::Unavailable
+            } else {
+                status
+            };
             state.observed_at = std::time::Instant::now();
-            state.admitted = matches!(status, StorageState::Ready | StorageState::ReadOnly);
+            state.admitted = !self.stopping.load(Ordering::SeqCst)
+                && matches!(status, StorageState::Ready | StorageState::ReadOnly);
         }
     }
     fn recover(self: &Arc<Self>) -> Result<(), ApiError> {
         self.start_recovery(false)
     }
+    fn resume_after_setup(self: &Arc<Self>, mut completed: Value) -> Result<Value, ApiError> {
+        match self.recover() {
+            Ok(()) => Ok(completed),
+            Err(error) if error.code == "STORAGE_RETRY_RUNNING" => Ok(completed),
+            Err(error) if error.code == "SERVICE_STOPPING" => {
+                // The admitted setup operation is already durable. Shutdown
+                // must not turn its success into a misleading retryable failure.
+                completed["recovering"] = json!(false);
+                completed["restart_required"] = json!(true);
+                Ok(completed)
+            }
+            Err(error) => {
+                // Initialization/recovery has committed already. An enqueue
+                // failure is a service-restart requirement, not an operation
+                // failure that invites repeating the durable mutation.
+                tracing::warn!(%error, "completed setup requires a service restart");
+                completed["recovering"] = json!(false);
+                completed["restart_required"] = json!(true);
+                Ok(completed)
+            }
+        }
+    }
     fn start_recovery(self: &Arc<Self>, reopen: bool) -> Result<(), ApiError> {
+        // Serialize enqueue with stop, including ownership of a newly spawned
+        // native thread. No thread may escape the shutdown owner's drain.
+        let mut worker = crate::lock(&self.recovery_worker)?;
+        self.ensure_running()?;
         if self.recovering.swap(true, Ordering::SeqCst) {
             return Err(ApiError::conflict(
                 "STORAGE_RETRY_RUNNING",
                 "storage recovery is already running",
             ));
+        }
+        let previous = worker.take();
+        drop(worker);
+        // A previous worker has relinquished recovering under the same mutex.
+        // Join outside all locks, even if it is still unwinding its epilogue.
+        if let Some(previous) = previous {
+            let _ = previous.join();
         }
         if reopen {
             let mut state = match crate::lock(&self.state) {
@@ -271,18 +313,90 @@ impl Inner {
                 state.backend = None;
             }
         }
+        let mut worker = crate::lock(&self.recovery_worker)?;
+        if let Err(error) = self.ensure_running() {
+            self.recovering.store(false, Ordering::SeqCst);
+            return Err(error);
+        }
         let inner = self.clone();
-        if let Err(error) = std::thread::Builder::new().name("zxs-storage-recovery".into()).spawn(move || {
-            let generation = inner.generation.load(Ordering::SeqCst);
-            if let Err(error) = inner.recover_once() {
-                tracing::warn!(code=%error.code,"storage unavailable; management remains online");
-                if let Ok(mut state) = inner.state.lock() { state.admitted=false; state.status=StorageState::RecoveryRequired; }
+        match std::thread::Builder::new()
+            .name("zxs-storage-recovery".into())
+            .spawn(move || {
+                inner.run_recovery(Self::recover_once);
+            }) {
+            Ok(handle) => *worker = Some(handle),
+            Err(error) => {
+                self.recovering.store(false, Ordering::SeqCst);
+                return Err(ApiError::io(error));
             }
-            inner.recovering.store(false,Ordering::SeqCst);
-            // Close the enqueue/worker-exit race without polling failed disks.
-            if inner.generation.load(Ordering::SeqCst) != generation { let _ = inner.recover(); }
-        }) { self.recovering.store(false,Ordering::SeqCst); return Err(ApiError::io(error)); }
+        }
         Ok(())
+    }
+    fn ensure_running(&self) -> Result<(), ApiError> {
+        if self.stopping.load(Ordering::SeqCst) {
+            Err(ApiError::new(
+                503,
+                "SERVICE_STOPPING",
+                "service is stopping",
+            ))
+        } else {
+            Ok(())
+        }
+    }
+    fn stop(&self) {
+        // Recover poison during shutdown: a panic must not detach a writer.
+        let worker = self
+            .recovery_worker
+            .lock()
+            .unwrap_or_else(|error| error.into_inner());
+        self.stopping.store(true, Ordering::SeqCst);
+        drop(worker);
+        let mut state = self.state.lock().unwrap_or_else(|error| error.into_inner());
+        state.admitted = false;
+        state.status = StorageState::Unavailable;
+    }
+    fn drain(&self) -> Result<(), ApiError> {
+        self.stop();
+        let worker = self
+            .recovery_worker
+            .lock()
+            .unwrap_or_else(|error| error.into_inner())
+            .take();
+        if let Some(worker) = worker {
+            worker.join().map_err(|_| {
+                ApiError::new(
+                    500,
+                    "RECOVERY_WORKER_FAILED",
+                    "storage recovery worker panicked",
+                )
+            })?;
+        }
+        Ok(())
+    }
+    fn run_recovery(self: Arc<Self>, mut recover: impl FnMut(&Arc<Self>) -> Result<(), ApiError>) {
+        loop {
+            let generation = self.generation.load(Ordering::SeqCst);
+            if let Err(error) = recover(&self) {
+                tracing::warn!(code=%error.code,"storage unavailable; management remains online");
+                if let Ok(mut state) = self.state.lock() {
+                    state.admitted = false;
+                    state.status = StorageState::RecoveryRequired;
+                }
+            }
+            // Coalesce auth changes in this owned thread instead of recursively
+            // spawning a replacement that the shutdown owner might miss.
+            let _worker = self
+                .recovery_worker
+                .lock()
+                .unwrap_or_else(|error| error.into_inner());
+            if !self.stopping.load(Ordering::SeqCst)
+                && self.generation.load(Ordering::SeqCst) != generation
+            {
+                continue;
+            }
+            self.recovering.store(false, Ordering::SeqCst);
+            return;
+        }
     }
     fn recover_once(self: &Arc<Self>) -> Result<(), ApiError> {
         let existing = crate::lock(&self.state)?.backend.clone();
@@ -365,6 +479,7 @@ impl Inner {
                 BackendAction::Capabilities,
                 &Identity {
                     admission_session: None,
+                    smb_binding: None,
                     principal: "management".into(),
                     admin: false,
                     repositories: Default::default(),
@@ -388,6 +503,7 @@ impl Inner {
         }
     }
     fn backend(&self) -> Result<Arc<EngineBackend>, ApiError> {
+        self.ensure_running()?;
         let state = crate::lock(&self.state)?;
         state.backend.as_ref().filter(|_|state.admitted && state.status!=StorageState::Unavailable && state.observed_at.elapsed()<std::time::Duration::from_secs(15)).cloned().ok_or_else(||ApiError::new(503,"STORAGE_UNAVAILABLE","storage is unavailable; inspect /api/system/storage and retry after correcting the fault"))
     }
@@ -400,6 +516,7 @@ impl Backend for ManagementBackend {
         bootstrap: Option<&str>,
         identity: Option<&Identity>,
     ) -> Result<Value, ApiError> {
+        self.inner.ensure_running()?;
         use crate::setup_recovery::{
             CompleteSetupRequest, PresetPreviewRequest, PresetSetupRequest, RecoveryCommitRequest,
             RecoveryPreviewRequest, RestoreRequest, SetupRecovery, SetupRequest,
@@ -630,12 +747,15 @@ impl Backend for ManagementBackend {
                     | "recovery_commit"
             )
         {
-            self.inner.recover()?;
+            return self.inner.resume_after_setup(result?);
         }
         result
     }
 
     fn start_management(&self, auth: Arc<Mutex<AuthStore>>) {
+        if self.inner.ensure_running().is_err() {
+            return;
+        }
         if let Ok(mut current) = self.inner.auth.lock() {
             if current.is_some() {
                 return;
@@ -651,6 +771,9 @@ impl Backend for ManagementBackend {
                     let Some(inner) = weak.upgrade() else {
                         break;
                     };
+                    if inner.stopping.load(Ordering::SeqCst) {
+                        break;
+                    }
                     let backend = inner.state.lock().ok().and_then(|state| {
                         state.backend.as_ref().filter(|_| state.admitted).cloned()
                     });
@@ -664,6 +787,7 @@ impl Backend for ManagementBackend {
                                 BackendAction::Ready,
                                 &Identity {
                                     admission_session: None,
+                                    smb_binding: None,
                                     principal: "monitor".into(),
                                     admin: false,
                                     repositories: Default::default(),
@@ -702,6 +826,12 @@ impl Backend for ManagementBackend {
                     std::thread::sleep(std::time::Duration::from_secs(5));
                 }
             });
+    }
+    fn stop_management(&self) {
+        self.inner.stop();
+    }
+    fn drain_management(&self) -> Result<(), ApiError> {
+        self.inner.drain()
     }
     fn management_status(&self) -> Value {
         let state = self
@@ -801,3 +931,7 @@ mod management_tests;
 #[cfg(test)]
 #[path = "../../../test/server/unit/management_authority_tests.rs"]
 mod authority_tests;
+
+#[cfg(test)]
+#[path = "../../../test/server/unit/management_shutdown_tests.rs"]
+mod shutdown_tests;

@@ -1192,14 +1192,13 @@ pub(super) fn call(
             Ok(response)
         }
         crate::BackendAction::FileManagerNamespace => {
-            keys(
-                &input,
-                &["slot_id", "kind", "path", "destination", "operation_id"],
-            )?;
+            keys(&input, &["slot_id", "kind", "path", "operation_id"])?;
             let slot = field(&input, "slot_id")?;
             let kind = field(&input, "kind")?;
-            if !matches!(kind, "mkdir" | "delete" | "delete_tree" | "rename") {
-                return Err(ApiError::invalid("unsupported namespace operation"));
+            if kind != "mkdir" {
+                return Err(ApiError::invalid(
+                    "only mkdir is supported; use identity-bound namespace-batch for existing entries",
+                ));
             }
             let operation = operation(&input)?;
             storage_contract::validate_id(operation, "op").map_err(ApiError::invalid)?;
@@ -1207,57 +1206,24 @@ pub(super) fn call(
             if display.is_empty() {
                 return Err(ApiError::invalid("disk namespace root cannot be changed"));
             }
-            let target_path = match input.get("destination") {
-                None | Some(Value::Null) => None,
-                Some(value) => Some(
-                    value
-                        .as_str()
-                        .ok_or_else(|| ApiError::invalid("destination must be a string"))?,
-                ),
-            };
-            if let Some(destination) = target_path {
-                name_policy::validate_path(destination).map_err(ApiError::invalid)?;
+            admit_root_operation(engine, slot, display, operation)?;
+            // An empty root needs one entry per requested directory component.
+            if needs_disk_root(engine, slot, display)
+                && display.split('/').count() > engine.config().max_entries
+            {
+                return Err(ApiError::limit("directory entry limit exceeded"));
             }
-            if (kind == "rename") != target_path.is_some() {
-                return Err(ApiError::invalid("only rename requires a destination"));
-            }
-            let access = if kind == "mkdir" {
-                DiskAccess::Create
-            } else {
-                DiskAccess::Write
-            };
-            if access == DiskAccess::Create {
-                admit_root_operation(engine, slot, display, operation)?;
-                // An empty root needs one entry per requested directory component.
-                if needs_disk_root(engine, slot, display)
-                    && display.split('/').count() > engine.config().max_entries
-                {
-                    return Err(ApiError::limit("directory entry limit exceeded"));
-                }
-            }
-            let (repo, relative) = resolve(engine, identity, slot, display, access)?;
+            let (repo, relative) = resolve(engine, identity, slot, display, DiskAccess::Create)?;
             if relative.is_empty() {
                 return Err(ApiError::invalid("disk namespace root cannot be changed"));
             }
-            let destination = if let Some(destination) = target_path {
-                let (target, relative) =
-                    resolve(engine, identity, slot, destination, DiskAccess::Write)?;
-                if target.repository_id != repo.repository_id {
-                    return Err(ApiError::invalid(
-                        "move across disk namespace boundaries is not supported",
-                    ));
-                }
-                Some(relative)
-            } else {
-                None
-            };
             let result = engine
                 .file_namespace(
                     &repo.repository_id,
                     NamespaceOperation {
                         kind: kind.into(),
                         path: relative,
-                        destination,
+                        destination: None,
                     },
                     &identity.principal,
                     operation,

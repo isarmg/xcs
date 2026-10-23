@@ -207,3 +207,24 @@ fn no_mapping_missing_guard_or_invalid_utf8_byte_length_is_submitted() {
     }
     assert!(valid_path("资料/报告"));
 }
+
+#[test]
+fn stale_detail_rename_keeps_original_identity_and_tree_instead_of_retargeting_same_path() {
+    let mut draft = draft(Kind::Rename);
+    draft.entries.truncate(1);
+    draft.selected_sources = BTreeSet::from(["m".into()]);
+    let body = request(&draft).unwrap();
+    assert_eq!(
+        body["items"][0]["source"],
+        json!({"directory_branch_id":"m","expected_tree_id":"tree-m","entry_id":"f","path":"a/old.txt"})
+    );
+    assert_eq!(
+        body["items"][0]["target"],
+        json!({"directory_branch_id":"m","expected_tree_id":"tree-m","path":"a/new.txt"})
+    );
+    // If scope loading sees a replacement at the old path, fail closed rather
+    // than constructing a path-only rename for the replacement identity.
+    draft.sources[0]["entries"] = json!([file("replacement", "a/old.txt", "replacement-version")]);
+    draft.sources[0]["head_tree_id"] = "replacement-tree".into();
+    assert!(request(&draft).is_err());
+}

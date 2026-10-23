@@ -76,7 +76,7 @@ fn ordering_filtering_and_equal_name_server_order_are_preserved() {
         let ids = || {
             rows.with_untracked(|rows| {
                 rows.iter()
-                    .map(|row| row.selection_id.clone())
+                    .map(|row| row.key.entry_id.clone())
                     .collect::<Vec<_>>()
             })
         };
@@ -128,6 +128,16 @@ fn aliases_sessions_and_navigation_do_not_reuse_wrong_identity() {
     ]);
     let old = Listing::capture(&state).project();
     assert_ne!(old[0].key, old[1].key);
+    assert_ne!(old[0].selection_id, old[1].selection_id);
+    state.files.selected = Some(state.files.entries[0].clone());
+    let selected = entry_key(state.files.selected.as_ref().unwrap());
+    assert_eq!(
+        old.iter()
+            .filter(|row| row.selection_id == selected)
+            .count(),
+        1
+    );
+    assert_eq!(old[0].selection_id, selected);
     state.files.directory = "another".into();
     assert!(old[0].current_entry(&state).is_none());
     assert_ne!(old[0].key, Listing::capture(&state).project()[0].key);

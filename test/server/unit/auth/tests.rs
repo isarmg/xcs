@@ -238,3 +238,23 @@ fn detached_login_challenge_keeps_unknown_disabled_and_wrong_password_rejected()
     let session = store.finish_login(proof).unwrap();
     assert!(store.authenticate(&session.token).unwrap().admin);
 }
+
+#[test]
+fn account_refresh_preserves_internal_smb_binding_without_serializing_it() {
+    let root = tempfile::tempdir().unwrap();
+    let store = AuthStore::initialize(root.path(), "admin", "a-long-test-password").unwrap();
+    let mut caller = store.identity_for_principal("admin").unwrap();
+    caller.smb_binding = Some(SmbBinding {
+        repository_id: "repository-one".into(),
+        branch_id: "branch-one".into(),
+        generation: 7,
+    });
+    let current = store.revalidate_identity(&caller).unwrap();
+    assert_eq!(current.smb_binding, caller.smb_binding);
+    assert!(
+        json_codec::to_value(&current)
+            .unwrap()
+            .get("smb_binding")
+            .is_none()
+    );
+}

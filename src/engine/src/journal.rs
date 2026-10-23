@@ -201,6 +201,20 @@ pub(crate) fn append(
     candidate: &str,
     object: &str,
 ) -> Result<Receipt> {
+    append_with_sync(d, kind, sequence, candidate, object, |file, parent| {
+        file.sync_all()?;
+        sync_dir(parent)
+    })
+}
+
+fn append_with_sync(
+    d: &DiskConfig,
+    kind: &str,
+    sequence: u64,
+    candidate: &str,
+    object: &str,
+    synchronize: impl FnOnce(&std::fs::File, &Path) -> Result<()>,
+) -> Result<Receipt> {
     let path = log_path(d);
     private_dir(path.parent().expect("log parent"))?;
     // Serialize cache lookup and append together. A failed operation removes its
@@ -241,6 +255,15 @@ pub(crate) fn append(
             && r.candidate_hash == candidate
             && r.object_hash == object
     }) {
+        // Visible bytes are not a durable receipt: the preceding attempt may
+        // have failed after writing the frame but before either sync completed.
+        synchronize(&file, path.parent().expect("log parent"))?;
+        if FileStamp::of(&file)? != before || FileStamp::of(&open_regular(&path)?)? != before {
+            return Err(Error::new(
+                "RECOVERY_REQUIRED",
+                "journal changed during synchronization",
+            ));
+        }
         let receipt = Receipt {
             disk_id: d.disk_id.clone(),
             slot_id: d.slot_id.clone(),
@@ -304,8 +327,7 @@ pub(crate) fn append(
     file.write_all(&header)?;
     file.write_all(&bytes)?;
     file.write_all(digest.as_bytes())?;
-    file.sync_all()?;
-    sync_dir(path.parent().expect("log parent"))?;
+    synchronize(&file, path.parent().expect("log parent"))?;
     let stamp = FileStamp::of(&file)?;
     if stamp.len != scanned.valid_bytes + header.len() as u64 + bytes.len() as u64 + 32
         || FileStamp::of(&open_regular(&path)?)? != stamp

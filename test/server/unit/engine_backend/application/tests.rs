@@ -22,6 +22,7 @@ fn fixture() -> (
         .unwrap();
     let identity = Identity {
         admission_session: None,
+        smb_binding: None,
         principal: "owner".into(),
         admin: false,
         repositories: BTreeSet::from([repo.repository_id.clone()]),
@@ -146,6 +147,7 @@ fn protection_commands_preserve_core_replay_and_transport_contract() {
         assert_eq!(backend.call(action, &owner, extra).unwrap_err().status, 400);
         let stranger = Identity {
             admission_session: None,
+            smb_binding: None,
             principal: "stranger".into(),
             admin: false,
             repositories: owner.repositories.clone(),
@@ -194,6 +196,7 @@ fn protection_commands_preserve_core_replay_and_transport_contract() {
         };
         let unadmitted_owner = Identity {
             admission_session: None,
+            smb_binding: None,
             principal: owner.principal.clone(),
             admin: false,
             repositories: BTreeSet::new(),
@@ -263,6 +266,7 @@ fn workspace_ownership_and_account_admission_apply_to_typed_and_wire_paths() {
         .unwrap();
     let intruder = Identity {
         admission_session: None,
+        smb_binding: None,
         principal: "intruder".into(),
         ..owner.clone()
     };
@@ -277,6 +281,7 @@ fn workspace_ownership_and_account_admission_apply_to_typed_and_wire_paths() {
     assert_eq!(result.unwrap_err().code, "FORBIDDEN");
     let unadmitted_owner = Identity {
         admission_session: None,
+        smb_binding: None,
         repositories: BTreeSet::new(),
         ..owner.clone()
     };

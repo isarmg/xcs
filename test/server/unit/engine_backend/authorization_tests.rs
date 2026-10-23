@@ -45,10 +45,12 @@ fn transport_acl_matches_core_capabilities_and_preserves_account_admission() {
         grants: Grants::default(),
         account_scope_repository_id: None,
         smb_enabled: false,
+        smb_binding_generation: 1,
         file_manager_root: false,
     };
     let mut identity = Identity {
         admission_session: None,
+        smb_binding: None,
         principal: "user".into(),
         admin: false,
         repositories: BTreeSet::from([repository.repository_id.clone()]),
@@ -99,16 +101,19 @@ fn split_repository_accepts_independent_account_admission_and_still_requires_its
         grants: Grants::owner("reader"),
         account_scope_repository_id: Some("source repository".into()),
         smb_enabled: false,
+        smb_binding_generation: 1,
         file_manager_root: false,
     };
     let direct = Identity {
         admission_session: None,
+        smb_binding: None,
         principal: "reader".into(),
         admin: false,
         repositories: BTreeSet::from([repository.repository_id.clone()]),
     };
     let inherited = Identity {
         admission_session: None,
+        smb_binding: None,
         repositories: BTreeSet::from(["source repository".into()]),
         ..direct.clone()
     };
@@ -116,6 +121,7 @@ fn split_repository_accepts_independent_account_admission_and_still_requires_its
     assert!(authorize(&inherited, &repository, false, false).is_ok());
     let unrelated = Identity {
         admission_session: None,
+        smb_binding: None,
         repositories: BTreeSet::from(["unrelated repository".into()]),
         ..direct.clone()
     };

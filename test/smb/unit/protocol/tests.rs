@@ -173,3 +173,23 @@ fn partial_payload_progress_does_not_restart_the_frame_deadline() {
     ));
     assert!(sent < 20, "progress must not keep this frame alive");
 }
+
+#[test]
+fn directory_reads_use_only_session_handles_and_do_not_accept_client_snapshots() {
+    let request = Request::ReadDirectory {
+        handle: u64::MAX,
+        restart: false,
+    };
+    let value = json_codec::to_value(&request).unwrap();
+    assert_eq!(value["handle"], "18446744073709551615");
+    assert!(json_codec::from_value::<Request>(value.clone()).is_ok());
+    for field in ["commit_id", "path", "after"] {
+        let mut forged = value.clone();
+        forged
+            .as_object_mut()
+            .unwrap()
+            .insert(field.into(), "forged".into());
+        assert!(json_codec::from_value::<Request>(forged).is_err());
+    }
+    assert!(json_codec::from_value::<Request>(json_codec::json!({"op":"list","path":""})).is_err());
+}

@@ -116,3 +116,67 @@ fn account_snapshots_never_settle_an_interrupted_mutation() {
         assert!(model.reload_blocked());
     }
 }
+
+#[test]
+fn saving_an_account_invalidates_old_rows_before_refresh_and_never_regrants_from_them() {
+    let mut model = Model::default();
+    let old = json_codec::json!({"accounts":[{"username":"reader","admin":true,"disabled":false,"repositories":["private"]}]});
+    accept(&mut model, "GET", "/api/admin/accounts", false, old);
+    assert_eq!(account_fields(&model, "reader").unwrap()["admin"], "true");
+    accept(
+        &mut model,
+        "POST",
+        "/api/admin/accounts",
+        false,
+        json_codec::json!({"updated":true}),
+    );
+    assert!(account_write("POST", "/api/admin/accounts"));
+    assert!(model.accounts.is_empty());
+    assert!(
+        account_fields(&model, "reader").is_none(),
+        "a queued old row click cannot repopulate revoked grants"
+    );
+    // Failed follow-up reads do not restore the invalidated row.
+    reject(
+        &mut model,
+        "GET",
+        false,
+        "",
+        &api::Error {
+            status: 503,
+            code: "UNAVAILABLE".into(),
+            message: "refresh failed".into(),
+            retryable: true,
+            request_id: None,
+        },
+    );
+    assert!(account_fields(&model, "reader").is_none());
+    let refreshed = json_codec::json!({"accounts":[{"username":"reader","admin":false,"disabled":true,"repositories":[]}]});
+    accept(&mut model, "GET", "/api/admin/accounts", false, refreshed);
+    let mut fields = account_fields(&model, "reader").unwrap();
+    fields.insert("password".into(), "new password".into());
+    let (_, _, body) = request::build("account", &fields, "").unwrap();
+    assert_eq!(body["admin"], false);
+    assert_eq!(body["disabled"], true);
+    assert_eq!(body["repositories"], json_codec::json!([]));
+}
+
+#[test]
+fn account_row_handlers_do_not_bypass_busy_uncertain_or_session_guards() {
+    Owner::new().with(|| {
+        let state = RwSignal::new(State { authenticated:true, admin:true, ..Default::default() });
+        state.update(|s| {
+            s.admin_console.accounts = vec![json_codec::json!({"username":"reader","admin":true,"disabled":false,"repositories":[]})];
+            s.admin_console.fields.insert("username".into(), "unchanged".into());
+        });
+        for guard in ["busy", "unknown", "logout"] {
+            state.update(|s| {
+                s.admin_console.busy = guard == "busy";
+                s.admin_console.uncertain_operation = if guard == "unknown" {"unknown".into()} else {String::new()};
+                s.logout_pending = guard == "logout";
+            });
+            select_account(state, "reader");
+            assert_eq!(state.with_untracked(|s| s.admin_console.fields["username"].clone()), "unchanged");
+        }
+    });
+}

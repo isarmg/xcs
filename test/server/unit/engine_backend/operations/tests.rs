@@ -51,6 +51,7 @@ fn fixture() -> (
         .unwrap();
     let identity = Identity {
         admission_session: None,
+        smb_binding: None,
         principal: "owner".into(),
         admin: false,
         repositories: BTreeSet::from([repo.repository_id.clone()]),
@@ -74,11 +75,13 @@ fn unauthorized_operations_never_start_payload_observation() {
     }));
     let foreign = Identity {
         admission_session: None,
+        smb_binding: None,
         principal: "other".into(),
         ..identity.clone()
     };
     let denied_account = Identity {
         admission_session: None,
+        smb_binding: None,
         repositories: BTreeSet::new(),
         ..identity.clone()
     };

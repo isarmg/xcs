@@ -4,7 +4,6 @@ use crate::{
     icons::FileIcon,
     ui::{State, text},
 };
-use json_codec::Value;
 use web_interface::{html, i18n::t, prelude::*};
 
 // The UI applies the shared metadata byte bound to newly entered names too.
@@ -13,7 +12,6 @@ pub(super) const MAX_TEXT_BYTES: usize = storage_contract::MAX_NOTE_BYTES;
 #[derive(Clone)]
 pub(super) enum Target {
     CreateDirectory,
-    RenameEntry(Value),
     RenameDirectoryBranch {
         repository: String,
         branch_id: String,
@@ -40,7 +38,6 @@ impl Target {
     fn initial(&self, state: &State) -> String {
         match self {
             Self::CreateDirectory => String::new(),
-            Self::RenameEntry(entry) => text(entry, &["name"]),
             Self::RenameDirectoryBranch { name, .. } | Self::RenameFileBranch { name, .. } => {
                 name.clone()
             }
@@ -99,13 +96,10 @@ impl Target {
         t("无备注", "No note")
     }
 
-    fn submit(self, state: RwSignal<State>, value: String) {
+    fn submit(self, state: RwSignal<State>, value: String) -> Option<String> {
         match self {
             Self::CreateDirectory => {
                 actions::namespace(state, NamespaceAction::CreateDirectory, value)
-            }
-            Self::RenameEntry(entry) => {
-                actions::namespace(state, NamespaceAction::Rename(entry), value)
             }
             Self::RenameDirectoryBranch {
                 repository,
@@ -155,14 +149,157 @@ fn edit_value(value: &str, note: bool) -> Edit {
     }
 }
 
-/// The same editor state is used by toolbar edits and by the two separate rows
-/// of a version node. Persisted metadata is only read when editing starts.
+/// Shared lifetime and receipt handling for metadata and branch-name editors.
+/// A request owns its draft until that exact operation is terminal. Disabling
+/// the input can fire blur, which must never discard an in-flight draft.
+#[derive(Clone, Copy)]
+pub(super) struct Draft {
+    state: RwSignal<State>,
+    context: RwSignal<Option<Context>>,
+    pub(super) editing: RwSignal<bool>,
+    pub(super) value: RwSignal<String>,
+    pub(super) error: RwSignal<bool>,
+    operation: RwSignal<Option<String>>,
+}
+
+#[derive(Clone, PartialEq)]
+struct Context {
+    epoch: u64,
+    active: bool,
+    page: String,
+    slot: String,
+    directory: String,
+    repository: String,
+    directory_branch: String,
+    selected: Option<(String, String, String, String, String)>,
+}
+impl Context {
+    fn capture(state: &State) -> Self {
+        Self {
+            epoch: state.session_epoch,
+            active: state.session_active(),
+            page: state.page.clone(),
+            slot: state.files.slot.clone(),
+            directory: state.files.directory.clone(),
+            repository: state.files.repository_id.clone(),
+            directory_branch: state
+                .files
+                .directory_branches
+                .iter()
+                .find(|branch| branch["current"] == true)
+                .map(|branch| text(branch, &["directory_branch_id"]))
+                .unwrap_or_default(),
+            selected: state.files.selected.as_ref().map(|entry| {
+                (
+                    super::model::entry_key(entry),
+                    text(entry, &["file_id"]),
+                    text(entry, &["selected_branch_id"]),
+                    text(entry, &["version_id"]),
+                    text(entry, &["node_id"]),
+                )
+            }),
+        }
+    }
+}
+impl Draft {
+    fn unobserved(state: RwSignal<State>) -> Self {
+        Self {
+            state,
+            context: RwSignal::new(None),
+            editing: RwSignal::new(false),
+            value: RwSignal::new(String::new()),
+            error: RwSignal::new(false),
+            operation: RwSignal::new(None),
+        }
+    }
+
+    pub(super) fn new(state: RwSignal<State>) -> Self {
+        let draft = Self::unobserved(state);
+        let context = Memo::new(move |_| state.with(Context::capture));
+        Effect::new(move |_| {
+            let _ = context.get();
+            draft.cancel();
+        });
+        Effect::new(move |_| {
+            if let Some(id) = draft.operation.get() {
+                let status = state.with(|s| {
+                    s.files
+                        .operations
+                        .iter()
+                        .find(|op| op["operation_id"].as_str() == Some(id.as_str()))
+                        .map(super::model::operation_status)
+                });
+                if let Some(status) = status {
+                    draft.settle(&id, status);
+                }
+            }
+        });
+        draft
+    }
+
+    fn cancel(self) {
+        self.context.set(None);
+        self.editing.set(false);
+        self.value.set(String::new());
+        self.error.set(false);
+        self.operation.set(None);
+    }
+
+    pub(super) fn cancel_idle(self) {
+        if self.operation.get_untracked().is_none() {
+            self.cancel();
+        }
+    }
+
+    pub(super) fn start(self, value: String) {
+        if self.editing.get_untracked() || self.operation.get_untracked().is_some() {
+            return;
+        }
+        self.context
+            .set(Some(self.state.with_untracked(Context::capture)));
+        self.value.set(value);
+        self.error.set(false);
+        self.editing.set(true);
+    }
+
+    pub(super) fn pending(self) -> bool {
+        self.operation.with(|id| id.is_some())
+    }
+
+    pub(super) fn submit(self, submit: impl FnOnce() -> Option<String>) {
+        if self.operation.get_untracked().is_some() {
+            return;
+        }
+        let current = self.state.with_untracked(Context::capture);
+        if !current.active || self.context.get_untracked().as_ref() != Some(&current) {
+            self.cancel();
+            return;
+        }
+        // Establish the blur guard before admission changes disabled state.
+        self.operation.set(Some(String::new()));
+        self.error.set(false);
+        self.operation.set(submit());
+    }
+
+    fn settle(self, id: &str, status: super::model::SaveStatus) {
+        if self.operation.get_untracked().as_deref() != Some(id) {
+            return;
+        }
+        match status {
+            super::model::SaveStatus::Published | super::model::SaveStatus::Degraded => {
+                self.cancel()
+            }
+            super::model::SaveStatus::Rejected => self.operation.set(None),
+            super::model::SaveStatus::Unknown => {}
+        }
+    }
+}
+
+/// Persisted metadata is only read when editing starts, never on a failed save.
 #[derive(Clone, Copy)]
 struct Editor {
     state: RwSignal<State>,
-    editing: RwSignal<bool>,
-    value: RwSignal<String>,
-    error: RwSignal<bool>,
+    draft: Draft,
     target: StoredValue<Target>,
     label: StoredValue<String>,
     disabled: Signal<bool>,
@@ -171,63 +308,36 @@ struct Editor {
 
 impl Editor {
     fn new(state: RwSignal<State>, label: String, target: Target, disabled: Signal<bool>) -> Self {
-        let editor = Self {
+        Self {
             state,
-            editing: RwSignal::new(false),
-            value: RwSignal::new(String::new()),
-            error: RwSignal::new(false),
+            draft: Draft::new(state),
             note: target.is_note(),
             target: StoredValue::new(target),
             label: StoredValue::new(label),
             disabled,
-        };
-        let context = Memo::new(move |_| {
-            state.with(|s| {
-                (
-                    s.session_epoch,
-                    s.page.clone(),
-                    s.files.slot.clone(),
-                    s.files.directory.clone(),
-                    s.files
-                        .selected
-                        .as_ref()
-                        .map(|entry| text(entry, &["file_id", "entry_id", "path"])),
-                )
-            })
-        });
-        Effect::new(move |_| {
-            let _ = context.get();
-            editor.cancel();
-        });
-        editor
-    }
-
-    fn cancel(self) {
-        self.editing.set(false);
-        self.value.set(String::new());
-        self.error.set(false);
+        }
     }
 
     fn start(self) {
-        self.value.set(
+        if self.disabled.get_untracked() {
+            return;
+        }
+        self.draft.start(
             self.state
                 .with_untracked(|s| self.target.get_value().initial(s)),
         );
-        self.error.set(false);
-        self.editing.set(true);
     }
 
     fn commit(self) {
-        let edit = edit_value(&self.value.get_untracked(), self.note);
-        if edit == Edit::Invalid {
-            self.error.set(true);
+        if self.disabled.get_untracked() || self.draft.operation.get_untracked().is_some() {
             return;
         }
-        self.cancel();
-        if !self.disabled.get_untracked()
-            && let Edit::Save(value) = edit
-        {
-            self.target.get_value().submit(self.state, value);
+        match edit_value(&self.draft.value.get_untracked(), self.note) {
+            Edit::Invalid => self.draft.error.set(true),
+            Edit::Cancel => self.draft.cancel_idle(),
+            Edit::Save(value) => self
+                .draft
+                .submit(|| self.target.get_value().submit(self.state, value)),
         }
     }
 }
@@ -240,22 +350,22 @@ fn editor_input(editor: Editor) -> impl IntoView {
     });
     view! {
         <input class="zxs-inline-input zxs-input zxs-input--compact zxs-input--underline" node_ref=input type="text"
-            aria-label=editor.label.get_value() aria-invalid=move ||editor.error.get().to_string()
+            aria-label=editor.label.get_value() aria-invalid=move ||editor.draft.error.get().to_string()
             title=t("最多 128 个 UTF-8 字节；Enter 保存，Esc 或点击其他位置取消。","Up to 128 UTF-8 bytes. Enter saves; Escape or clicking elsewhere cancels.")
             data-max-bytes="128" autocomplete="off" autocapitalize="none" spellcheck="false"
-            prop:value=move ||editor.value.get() disabled=move ||editor.disabled.get()
-            on:input=move |event|{editor.value.set(event_target_value(&event));editor.error.set(false);}
-            on:blur=move |_|editor.cancel()
+            prop:value=move ||editor.draft.value.get() disabled=move ||editor.disabled.get()||editor.draft.pending()
+            on:input=move |event|{editor.draft.value.set(event_target_value(&event));editor.draft.error.set(false);}
+            on:blur=move |_|editor.draft.cancel_idle()
             on:keydown=move |event:web_sys::KeyboardEvent| {
                 if event.is_composing(){return;}
                 match event.key().as_str() {
-                    "Escape"=>{event.prevent_default();event.stop_propagation();editor.cancel();}
+                    "Escape"=>{event.prevent_default();event.stop_propagation();editor.draft.cancel_idle();}
                     "Enter"=>{event.prevent_default();event.stop_propagation();editor.commit();}
                     _=>{}
                 }
             }/>
-        <span class="zxs-inline-hint zxs-row" aria-live="polite">{move ||format!("{}/128 {}",editor.value.with(|value|value.len()),t("字节","bytes"))}</span>
-        <Show when=move ||editor.error.get()>
+        <span class="zxs-inline-hint zxs-row" aria-live="polite">{move ||format!("{}/128 {}",editor.draft.value.with(|value|value.len()),t("字节","bytes"))}</span>
+        <Show when=move ||editor.draft.error.get()>
             <span class="zxs-inline-error zxs-row" role="status">{if editor.note{t("备注最多 128 个 UTF-8 字节，不能包含换行或控制字符。","Notes must be at most 128 UTF-8 bytes without line breaks or control characters.")}else{t("名称无效，最多 128 个 UTF-8 字节。","Invalid name. Use at most 128 UTF-8 bytes.")}}</span>
         </Show>
     }
@@ -271,7 +381,7 @@ pub(super) fn control(
     let editor = Editor::new(state, label, target, disabled);
     view! {
         <span class="zxs-inline-edit zxs-flow zxs-flow--inline" class:zxs-inline-note=editor.note>
-            {move ||if editor.editing.get() {
+            {move ||if editor.draft.editing.get() {
                 editor_input(editor).into_any()
             } else {
                 view! {
@@ -299,8 +409,8 @@ pub(super) fn version_note(
 ) -> (impl IntoView, impl IntoView) {
     let editor = Editor::new(state, t("编辑备注", "Edit note"), target, disabled);
     let note = view! {
-        <div class="zxs-version-note-row zxs-row" class:zxs-inline-note=move ||editor.editing.get()>
-            {move ||if editor.editing.get() {
+        <div class="zxs-version-note-row zxs-row" class:zxs-inline-note=move ||editor.draft.editing.get()>
+            {move ||if editor.draft.editing.get() {
                 editor_input(editor).into_any()
             } else {
                 view!{<span class="zxs-version-note">{move ||{
@@ -314,7 +424,7 @@ pub(super) fn version_note(
     });
     let action = view! {
         <Show when=move ||can_modify.get()><button class="zxs-button zxs-version-note-action" type="button"
-            disabled=move ||editor.disabled.get()||editor.editing.get()
+            disabled=move ||editor.disabled.get()||editor.draft.editing.get()
             on:click=move |_|editor.start()>{t("编辑备注","Edit note")}</button></Show>
     };
     (note, action)

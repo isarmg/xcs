@@ -13,6 +13,8 @@ impl Session {
     ) -> Result<(Value, Option<OwnedFd>), ApiError> {
         if !path.is_empty() {
             name_policy::validate_path(&path).map_err(contract)?;
+        } else {
+            self.authorize_binding()?;
         }
         if self.handles.len() >= MAX_HANDLES {
             return Err(ApiError::limit("too many SMB handles"));
@@ -56,10 +58,34 @@ impl Session {
                     "directory data is not writable",
                 ));
             }
+            let canonical_path = existing
+                .as_ref()
+                .map(|entry| entry.path.clone())
+                .unwrap_or_default();
+            // Freeze a directory's snapshot when its descriptor is opened,
+            // not on the first read. Capture and identity validation share the
+            // engine authorization lock and allocate no namespace copy.
+            let snapshot = self.call(
+                crate::BackendAction::SmbReadDirectory,
+                json!({"branch_id":self.branch,"path":canonical_path,
+                    "entry_id":entry_id,"capture_only":true}),
+            )?;
+            let commit_id = field(&snapshot, "commit_id")?.to_owned();
             let file =
                 File::open(self.shared.spool.join("empty-directory")).map_err(ApiError::io)?;
             let fd = OwnedFd::from(file.try_clone().map_err(ApiError::io)?);
-            self.handles.insert(handle_id, Handle::Directory(file));
+            self.handles.insert(
+                handle_id,
+                Handle::Directory(DirectoryHandle {
+                    file,
+                    entry_id: entry_id.clone(),
+                    path: canonical_path,
+                    cursor: Some(DirectoryCursor {
+                        commit_id,
+                        after: None,
+                    }),
+                }),
+            );
             let result = OpenResult {
                 entry_id,
                 kind: "directory".into(),

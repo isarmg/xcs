@@ -179,6 +179,10 @@ pub(crate) fn write_atomic(path: &Path, bytes: &[u8], replace: bool) -> Result<(
             .map_err(fs_error)?
             == bytes
         {
+            // A prior create may have installed these bytes before its parent
+            // sync failed. Reusing an immutable object must finish that barrier.
+            open_regular(&path)?.sync_all()?;
+            directory.sync().map_err(fs_error)?;
             return Ok(());
         }
         return Err(Error::new(
@@ -217,6 +221,31 @@ pub(crate) fn full_copy(
     max_bytes: u64,
 ) -> Result<(u64, String, ChecksumManifest)> {
     let source = open_regular(source)?;
+    full_copy_to_path(source, destination, chunk_bytes, max_bytes, None)
+}
+
+pub(crate) fn verified_full_copy(
+    source: File,
+    destination: &Path,
+    version: &FileVersion,
+) -> Result<()> {
+    full_copy_to_path(
+        source,
+        destination,
+        version.checksum_chunk_bytes,
+        version.logical_size,
+        Some(version),
+    )
+    .map(|_| ())
+}
+
+fn full_copy_to_path(
+    source: File,
+    destination: &Path,
+    chunk_bytes: u32,
+    max_bytes: u64,
+    expected: Option<&FileVersion>,
+) -> Result<(u64, String, ChecksumManifest)> {
     let destination = absolute_path(destination)?;
     let parent = destination
         .parent()
@@ -231,12 +260,13 @@ pub(crate) fn full_copy(
             .ok_or_else(|| Error::new("UNSAFE_PATH", "missing destination name"))?,
     )
     .map_err(fs_error)?;
-    full_copy_held(
+    full_copy_checked(
         source,
         &directory,
         &destination_name,
         chunk_bytes,
         max_bytes,
+        expected,
     )
 }
 
@@ -246,6 +276,24 @@ pub(crate) fn full_copy_held(
     destination_name: &EntryName,
     chunk_bytes: u32,
     max_bytes: u64,
+) -> Result<(u64, String, ChecksumManifest)> {
+    full_copy_checked(
+        source,
+        directory,
+        destination_name,
+        chunk_bytes,
+        max_bytes,
+        None,
+    )
+}
+
+fn full_copy_checked(
+    source: File,
+    directory: &OpenAt2Root,
+    destination_name: &EntryName,
+    chunk_bytes: u32,
+    max_bytes: u64,
+    expected: Option<&FileVersion>,
 ) -> Result<(u64, String, ChecksumManifest)> {
     let temporary = format!(".zxs-full-{}", new_id("req"));
     let mut target = File::from(
@@ -295,6 +343,25 @@ pub(crate) fn full_copy_held(
             full.update(&buf[..used]);
             chunks.push(*blake3::hash(&buf[..used]).as_bytes());
         }
+        let hash = full.finalize().to_hex().to_string();
+        let checksums = ChecksumManifest {
+            chunk_bytes,
+            logical_size: size,
+            chunks,
+        };
+        // Validate the bytes actually copied, not an earlier read of the source.
+        // Never expose the final pathname until all published commitments match.
+        if let Some(expected) = expected
+            && (size != expected.logical_size
+                || hash != expected.content_hash
+                || blake3::hash(&checksums.encode()?).to_hex().as_str()
+                    != expected.checksum_manifest_hash)
+        {
+            return Err(Error::new(
+                "SOURCE_CHANGED",
+                "exported content differs from the published manifest",
+            ));
+        }
         target.sync_all()?;
         target.set_permissions(fs::Permissions::from_mode(0o400))?;
         target.sync_all()?;
@@ -307,15 +374,7 @@ pub(crate) fn full_copy_held(
         )
         .map_err(std::io::Error::from)?;
         directory.directory().sync_all()?;
-        Ok((
-            size,
-            full.finalize().to_hex().to_string(),
-            ChecksumManifest {
-                chunk_bytes,
-                logical_size: size,
-                chunks,
-            },
-        ))
+        Ok((size, hash, checksums))
     })();
     if result.is_err() {
         let _ = rustix::fs::unlinkat(
@@ -327,6 +386,10 @@ pub(crate) fn full_copy_held(
     result
 }
 pub(crate) fn verify_payload(directory: &Path, version: &FileVersion) -> Result<()> {
+    verify_payload_held(directory, version).map(|_| ())
+}
+
+fn verify_payload_held(directory: &Path, version: &FileVersion) -> Result<File> {
     let checks = read_bytes(&directory.join("checksums.bin"), MAX_CHECKSUM_MANIFEST)?;
     if blake3::hash(&checks).to_hex().as_str() != version.checksum_manifest_hash {
         return Err(Error::new(
@@ -365,7 +428,7 @@ pub(crate) fn verify_payload(directory: &Path, version: &FileVersion) -> Result<
             "complete payload hash differs",
         ));
     }
-    Ok(())
+    Ok(file)
 }
 pub(crate) fn version_dir(disk: &DiskConfig, history: &str, version: &str) -> PathBuf {
     disk.root
@@ -628,19 +691,14 @@ pub fn offline_export(root: &Path, version_id: &str, destination: &Path) -> Resu
         let version: FileVersion = read_json(&directory.join("version.json"))?;
         name_policy::validate_name(&version.creation_name)?;
         crate::journal::verify_local_publication(&directory, &version)?;
-        verify_payload(&directory, &version)?;
+        let source = verify_payload_held(&directory, &version)?;
         if destination.exists() {
             return Err(Error::new(
                 "DESTINATION_EXISTS",
                 "export does not overwrite existing files",
             ));
         }
-        full_copy(
-            &crate::container_storage::content_path(&directory, &version)?,
-            destination,
-            version.checksum_chunk_bytes,
-            version.logical_size,
-        )?;
+        verified_full_copy(source, destination, &version)?;
         return Ok(());
     }
     Err(Error::new(
@@ -648,3 +706,7 @@ pub fn offline_export(root: &Path, version_id: &str, destination: &Path) -> Resu
         "version is not present on this disk",
     ))
 }
+
+#[cfg(test)]
+#[path = "../../../test/engine/unit/disk/export_tests.rs"]
+mod export_tests;

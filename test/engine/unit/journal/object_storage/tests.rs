@@ -36,6 +36,32 @@ fn current_shards_preserve_hashes_and_reject_conflicting_bytes() {
 }
 
 #[test]
+fn matching_object_retry_cannot_bypass_a_failed_publication_barrier() {
+    let temp = tempfile::tempdir().unwrap();
+    let config = config(&temp);
+    let disk = &config.disks[0];
+    let value = json!({"publication": "retry"});
+    let hash = store_object(disk, "publication", &value).unwrap();
+    let bytes = canonical_json(&value).unwrap();
+    let mut reached = false;
+    let failure = write_object_bytes_with(disk, "publication", &hash, &bytes, |_, actual| {
+        reached = true;
+        assert_eq!(actual, bytes);
+        Err(Error::new("INJECTED_SYNC_FAILURE", "parent sync failed"))
+    });
+    assert!(
+        reached,
+        "existing bytes cannot replace the publication barrier"
+    );
+    assert_eq!(failure.unwrap_err().code(), "INJECTED_SYNC_FAILURE");
+    assert_eq!(store_object(disk, "publication", &value).unwrap(), hash);
+    assert_eq!(
+        load_object::<Value>(disk, "publication", &hash).unwrap(),
+        value
+    );
+}
+
+#[test]
 fn flat_objects_are_rejected_without_migration_or_deletion() {
     for sharded_copy in [false, true] {
         let temp = tempfile::tempdir().unwrap();

@@ -23,6 +23,7 @@ const MAX_SESSIONS_PER_ACCOUNT: usize = 8;
 const MAX_HANDLES: usize = 1024;
 
 mod budget;
+mod directory;
 mod handles;
 mod namespace;
 mod publication;
@@ -50,8 +51,21 @@ struct Shared {
 
 enum Handle {
     Read(Content, String),
-    Directory(File),
+    Directory(DirectoryHandle),
     Write(Box<Writer>),
+}
+
+struct DirectoryHandle {
+    file: File,
+    entry_id: String,
+    path: String,
+    cursor: Option<DirectoryCursor>,
+}
+
+#[derive(Clone)]
+struct DirectoryCursor {
+    commit_id: String,
+    after: Option<String>,
 }
 
 struct Writer {

@@ -42,7 +42,7 @@ fn file_note_ready(model: &Model) -> bool {
 fn entry_view(state: RwSignal<State>, entry: Value) -> impl IntoView {
     let name = text(&entry, &["name"]);
     let is_file = file_kind(&entry);
-    let rename_entry = entry.clone();
+    let rename_entry = StoredValue::new(entry.clone());
     let delete_entry = StoredValue::new(entry.clone());
     let backup_entry = entry.clone();
     let open_path = text(&entry, &["path"]);
@@ -81,6 +81,9 @@ fn entry_view(state: RwSignal<State>, entry: Value) -> impl IntoView {
     });
     let mutation_disabled =
         Signal::derive(move || !can_modify.get() || !state.with(actions::write_allowed));
+    let rename_disabled = Signal::derive(move || {
+        mutation_disabled.get() || state.with(|s| !batch::available(&s.files))
+    });
     let note_disabled = Signal::derive(move || {
         mutation_disabled.get() || state.with(|s| !file_note_ready(&s.files))
     });
@@ -97,7 +100,7 @@ fn entry_view(state: RwSignal<State>, entry: Value) -> impl IntoView {
         <article class="zxs-content-panel zxs-entry-content zxs-frame zxs-stack" aria-label=t("文件详情","File details")>
             <div class="zxs-file-heading zxs-flow"><h2 class="zxs-row">{name}</h2><div class="zxs-entry-actions zxs-flow">
                 {(!is_file).then(move ||view!{<button class="zxs-button" on:click=move |_|actions::go_directory(state,open_path.clone())><FileIcon name="folder"/>{t("打开文件夹","Open folder")}</button>})}
-                <Show when=move ||can_modify.get()>{inline::control(state,t("重命名","Rename"),Some("rename"),inline::Target::RenameEntry(rename_entry.clone()),mutation_disabled)}</Show>
+                <Show when=move ||can_modify.get()><button class="zxs-button" disabled=move ||rename_disabled.get() on:click=move |_|batch::start(state,batch::Kind::Rename,Some(rename_entry.get_value()))><FileIcon name="rename"/>{t("重命名","Rename")}</button></Show>
                 <button class="zxs-button" disabled=move ||state.with(|s|actions::pending(s)||super::model::file_context(&s.files,&backup_entry).is_none()) on:click=move |_|if let Some(entry)=state.with_untracked(|s|s.files.selected.clone()){backup::start_entry(state,entry);}>{t("备份设置","Backup settings")}</button>
                 <Show when=move ||can_modify.get()><button class="zxs-button" disabled=move ||mutation_disabled.get() on:click=move |_|batch::start(state,batch::Kind::Delete,Some(delete_entry.get_value()))><FileIcon name="delete"/>{t("删除","Delete")}</button></Show>
             </div></div>

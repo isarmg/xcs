@@ -117,3 +117,91 @@ fn absolute_names_are_confined_to_the_exact_share_root() {
         }
     }
 }
+
+#[test]
+fn readdir_keeps_one_page_and_rewind_requests_a_fresh_snapshot() {
+    use smb_protocol::protocol::{FrameStream, PROTOCOL, Response, WRITE_RESERVATION_CAPABILITY};
+    use std::{
+        ffi::CStr,
+        os::unix::net::UnixListener,
+        time::{SystemTime, UNIX_EPOCH},
+    };
+    let socket = std::env::temp_dir().join(format!(
+        "zxs-vfs-{}-{}.sock",
+        std::process::id(),
+        SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .unwrap()
+            .as_nanos()
+    ));
+    let listener = UnixListener::bind(&socket).unwrap();
+    let worker = std::thread::spawn(move || {
+        let mut stream = FrameStream::new(listener.accept().unwrap().0).unwrap();
+        assert!(matches!(
+            stream.receive::<Request>().unwrap().0,
+            Request::Hello { .. }
+        ));
+        stream.send(&Response::Ok { result: json_codec::json!({"protocol": PROTOCOL, "capabilities": [WRITE_RESERVATION_CAPABILITY]}) }, None).unwrap();
+        for (restart, names, more) in [
+            (false, vec!["one", "two"], true),
+            (false, vec!["three"], false),
+            (true, vec!["fresh"], false),
+        ] {
+            assert!(
+                matches!(stream.receive::<Request>().unwrap().0, Request::ReadDirectory {handle: 7, restart: actual} if actual == restart)
+            );
+            let entries: Vec<_> = names
+                .iter()
+                .map(|name| {
+                    json_codec::json!({
+                        "entry_id": name, "name": name, "lookup_key": name, "path": name,
+                        "kind": "file", "file_id": "file", "version_id": "version", "size": "0",
+                    })
+                })
+                .collect();
+            stream
+                .send(
+                    &Response::Ok {
+                        result: json_codec::json!({"entries": entries, "more": more}),
+                    },
+                    None,
+                )
+                .unwrap();
+        }
+    });
+    let client = Client::connect(&socket, "alice", "repository").unwrap();
+    let directory = Box::into_raw(Box::new(Directory {
+        client,
+        handle: 7,
+        entries: Vec::new(),
+        position: 0,
+        more: true,
+        restart: false,
+    }));
+    // SAFETY: These callbacks ignore the null host arguments and receive the
+    // live, uniquely owned Directory box; each returned name is read before
+    // the next callback can replace its backing page. closedir consumes it.
+    unsafe {
+        for (name, page_size) in [("one", 2), ("two", 2), ("three", 1)] {
+            let entry = readdir(std::ptr::null_mut(), std::ptr::null_mut(), directory.cast());
+            assert!(!entry.is_null());
+            assert_eq!(
+                CStr::from_ptr((*entry).d_name.as_ptr()).to_str().unwrap(),
+                name
+            );
+            assert_eq!((*directory).entries.len(), page_size);
+        }
+        assert!(readdir(std::ptr::null_mut(), std::ptr::null_mut(), directory.cast()).is_null());
+        rewind(std::ptr::null_mut(), directory.cast());
+        assert!((*directory).entries.is_empty());
+        let entry = readdir(std::ptr::null_mut(), std::ptr::null_mut(), directory.cast());
+        assert!(!entry.is_null());
+        assert_eq!(
+            CStr::from_ptr((*entry).d_name.as_ptr()).to_str().unwrap(),
+            "fresh"
+        );
+        assert_eq!(closedir(std::ptr::null_mut(), directory.cast()), 0);
+    }
+    worker.join().unwrap();
+    std::fs::remove_file(socket).unwrap();
+}

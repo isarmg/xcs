@@ -66,7 +66,7 @@ Bearer 请求使用 `Authorization: Bearer ...`。Cookie 写请求必须同时�
 | `/api/auth/login`、`/api/auth/me`、`/api/auth/logout` | POST 登录、GET 当前会话、POST 撤销 |
 | `/api/auth/password` | POST 校验当前密码并更新本账号密码，撤销原有会话 |
 | `/api/file-manager/disks`、`/disks/{slot}/entries` | GET 独立磁盘目录、文件列表与冻结目录分支组成 |
-| `/api/file-manager/disks/{slot}/write-sessions`、`/namespace` | POST 当前文件上传会话、目录创建/重命名/删除 |
+| `/api/file-manager/disks/{slot}/write-sessions`、`/namespace` | POST 当前文件上传会话、仅创建目录（重命名/删除使用带身份和子树前置条件的 namespace-batch） |
 | `/api/file-manager/disks/{slot}/directory-branches`、`/directory-select` | POST 登记或选择目录分支的完整冻结子树 |
 | `/api/file-manager/disks/{slot}/namespace-batch` | POST 显式源/目标目录分支映射，原子移动、复制、删除、重命名 |
 | `/api/repositories/{repo}/directory-branches`、`/directory-branches/{id}` | GET 全部或指定路径作用域与冻结条目；PATCH 分支标签 |

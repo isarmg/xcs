@@ -1,11 +1,101 @@
 //! Keep optional listeners owned by the HTTP service, including during drain.
-use std::{future::Future, io};
+use std::{future::Future, io, sync::Arc};
 use tokio::sync::oneshot;
 
+/// Own native management writers even if serve setup fails or its future is
+/// cancelled. Blocking joins run on Tokio's tracked blocking pool, whose
+/// runtime teardown waits for them instead of silently detaching a writer.
+pub(crate) struct ManagementShutdown {
+    backend: Option<Arc<dyn crate::Backend>>,
+    drain: Option<tokio::task::JoinHandle<Result<(), crate::ApiError>>>,
+}
+/// Tokio may discard queued non-mandatory blocking jobs during runtime
+/// shutdown. The closure must own a drain-on-drop obligation, not just an Arc.
+struct NativeDrain(Option<Arc<dyn crate::Backend>>);
+impl NativeDrain {
+    fn run(mut self) -> Result<(), crate::ApiError> {
+        match self.0.take() {
+            Some(backend) => backend.drain_management(),
+            None => Ok(()),
+        }
+    }
+}
+impl Drop for NativeDrain {
+    fn drop(&mut self) {
+        if let Some(backend) = self.0.take()
+            && let Err(error) = backend.drain_management()
+        {
+            tracing::error!(%error, "management shutdown failed");
+        }
+    }
+}
+impl ManagementShutdown {
+    pub(crate) fn new(backend: Arc<dyn crate::Backend>) -> Self {
+        Self {
+            backend: Some(backend),
+            drain: None,
+        }
+    }
+    fn begin(&mut self) {
+        let Some(backend) = self.backend.take() else {
+            return;
+        };
+        backend.stop_management();
+        let drain = NativeDrain(Some(backend));
+        if let Ok(runtime) = tokio::runtime::Handle::try_current() {
+            self.drain = Some(runtime.spawn_blocking(move || drain.run()));
+        } else {
+            // A guard may be dropped outside a runtime by an embedding caller.
+            // Never panic or detach its native writers in that fallback path.
+            drop(drain);
+        }
+    }
+    async fn finish(&mut self) -> io::Result<()> {
+        self.begin();
+        if let Some(drain) = self.drain.take() {
+            drain
+                .await
+                .map_err(io::Error::other)?
+                .map_err(io::Error::other)?;
+        }
+        Ok(())
+    }
+}
+impl Drop for ManagementShutdown {
+    fn drop(&mut self) {
+        self.begin();
+    }
+}
+
+#[cfg(test)]
 pub(crate) async fn run<H, Http, Bridge, Shutdown>(
     http: H,
     bridge: Bridge,
     shutdown: Shutdown,
+) -> io::Result<()>
+where
+    H: FnOnce(oneshot::Receiver<()>) -> Http,
+    Http: Future<Output = io::Result<()>>,
+    Bridge: Future<Output = ()>,
+    Shutdown: Future<Output = ()>,
+{
+    run_with_management(
+        http,
+        bridge,
+        shutdown,
+        ManagementShutdown {
+            backend: None,
+            drain: None,
+        },
+    )
+    .await
+}
+
+pub(crate) async fn run_with_management<H, Http, Bridge, Shutdown>(
+    http: H,
+    bridge: Bridge,
+    shutdown: Shutdown,
+    mut management: ManagementShutdown,
 ) -> io::Result<()>
 where
     H: FnOnce(oneshot::Receiver<()>) -> Http,
@@ -31,9 +121,17 @@ where
                 // their permits and durability/recovery ownership until done.
                 drop(stop_http);
                 drop(bridge);
-                return http.await;
+                management.begin();
+                let result = http.await;
+                let drained = management.finish().await;
+                return result.and(drained);
             }
-            result = &mut http => return result,
+            result = &mut http => {
+                drop(bridge);
+                management.begin();
+                let drained = management.finish().await;
+                return result.and(drained);
+            },
             _ = &mut bridge, if !bridge_finished => {
                 // Optional bridge failure must not take management HTTP down.
                 bridge_finished = true;

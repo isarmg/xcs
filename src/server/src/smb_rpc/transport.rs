@@ -99,7 +99,7 @@ pub(super) fn run_connection(mut stream: FrameStream, shared: Arc<Shared>) -> io
                 "SMB bridge requires durable write reservations",
             ));
         }
-        let identity = shared
+        let mut identity = shared
             .identities
             .get(&username)
             .cloned()
@@ -110,7 +110,7 @@ pub(super) fn run_connection(mut stream: FrameStream, shared: Arc<Shared>) -> io
             &identity,
             json!({"repository_id":repository_id}),
         )?;
-        if repo.get("smb_enabled").and_then(Value::as_bool) == Some(false) {
+        if repo.get("smb_enabled").and_then(Value::as_bool) != Some(true) {
             return Err(ApiError::new(
                 409,
                 "SMB_REBIND_REQUIRED",
@@ -118,6 +118,12 @@ pub(super) fn run_connection(mut stream: FrameStream, shared: Arc<Shared>) -> io
             ));
         }
         let branch = field(&repo, "main_branch_id")?.to_owned();
+        identity.smb_binding = Some(crate::auth::SmbBinding {
+            repository_id,
+            branch_id: branch.clone(),
+            generation: parse_u64_decimal(field(&repo, "smb_binding_generation")?)
+                .map_err(contract)?,
+        });
         let capabilities =
             shared
                 .backend
@@ -168,13 +174,44 @@ pub(super) fn run_connection(mut stream: FrameStream, shared: Arc<Shared>) -> io
                 "client descriptors forbidden",
             ));
         }
+        let operation_id = match &request {
+            Request::Namespace { operation_id, .. } => Some(operation_id.clone()),
+            _ => None,
+        };
         match session.dispatch(request) {
-            Ok((result, fd)) => {
-                stream.send(&Response::Ok { result }, fd.as_ref().map(AsFd::as_fd))?
-            }
+            Ok((result, fd)) => send_success(&mut stream, result, fd, operation_id)?,
             Err(error) => stream.send(&response_error(error.error, error.operation_id), None)?,
         }
     }
+}
+
+// A local response-size failure has not written any frame bytes. Report it as
+// a business error instead of tearing down unrelated handles on this stream.
+fn send_success(
+    stream: &mut FrameStream,
+    result: Value,
+    descriptor: Option<OwnedFd>,
+    requested_operation: Option<String>,
+) -> io::Result<()> {
+    let operation_id = result
+        .get("operation_id")
+        .and_then(Value::as_str)
+        .map(str::to_owned)
+        .or(requested_operation);
+    let response = Response::Ok { result };
+    if json_codec::to_vec(&response)
+        .map_err(io::Error::other)?
+        .len()
+        > smb_protocol::protocol::MAX_FRAME_BYTES
+    {
+        return stream.send(&Response::Error {
+            code: "RESPONSE_TOO_LARGE".into(),
+            message: "result exceeds RPC frame limit; the operation may have completed, query its original identity rather than replaying".into(),
+            retryable: false,
+            operation_id,
+        }, None);
+    }
+    stream.send(&response, descriptor.as_ref().map(AsFd::as_fd))
 }
 
 fn response_error(error: ApiError, operation_id: Option<String>) -> Response {

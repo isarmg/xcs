@@ -202,7 +202,22 @@ fn current_protected_identity(
     engine: &AdmissionEngine,
     identity: &Identity,
 ) -> Result<Identity, ApiError> {
-    engine.identity(identity)
+    let current = engine.identity(identity)?;
+    if let Some(binding) = &current.smb_binding {
+        let bound = engine.state().repositories.get(&binding.repository_id);
+        if bound.is_none_or(|repo| {
+            !repo.smb_enabled
+                || repo.main_branch_id != binding.branch_id
+                || repo.smb_binding_generation != binding.generation
+        }) {
+            return Err(ApiError::new(
+                409,
+                "SMB_REBIND_REQUIRED",
+                "SMB share binding changed; reconnect before starting another operation",
+            ));
+        }
+    }
+    Ok(current)
 }
 
 fn finish_authorized_upload(
@@ -338,6 +353,10 @@ impl Backend for EngineBackend {
             }
             crate::BackendAction::Tree => {
                 let projection = read_projection::Tree::capture(&engine, identity, &input)?;
+                read_projection::render_unlocked(engine, projection)
+            }
+            crate::BackendAction::SmbReadDirectory => {
+                let projection = read_projection::SmbDirectory::capture(&engine, identity, &input)?;
                 read_projection::render_unlocked(engine, projection)
             }
             crate::BackendAction::SmbBinding => {
@@ -500,10 +519,8 @@ impl Backend for EngineBackend {
                 let branch = engine.state().branches.get(branch_id).unwrap();
                 let path = field(&input, "path")?;
                 name_policy::validate_path(path).map_err(ApiError::invalid)?;
-                let commit_id = input
-                    .get("commit_id")
-                    .and_then(Value::as_str)
-                    .unwrap_or(&branch.head_commit_id);
+                let commit_id =
+                    wire::optional_identity(&input, "commit_id")?.unwrap_or(&branch.head_commit_id);
                 let commit = engine
                     .state()
                     .commits
@@ -627,7 +644,7 @@ impl Backend for EngineBackend {
                 let branch = field(&input, "branch_id")?;
                 authorize(identity, repo_for_branch(&engine, branch)?, true, false)?;
                 let workspace =
-                    if let Some(source) = input.get("source_commit_id").and_then(Value::as_str) {
+                    if let Some(source) = wire::optional_identity(&input, "source_commit_id")? {
                         engine
                             .create_historical_workspace(branch, source, &identity.principal)
                             .map_err(error)?

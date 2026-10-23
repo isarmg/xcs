@@ -76,7 +76,14 @@ fn execute(
         }
         state.update(|s| s.admin_console.busy = false);
         match result {
-            Ok(value) => state.update(|s| accept(&mut s.admin_console, method, &path, plan, value)),
+            Ok(value) => {
+                state.update(|s| accept(&mut s.admin_console, method, &path, plan, value));
+                // The write response is only {updated:true}, not an account
+                // snapshot. Invalidate first, then read authoritative fields.
+                if account_write(method, &path) {
+                    load(state);
+                }
+            }
             Err(error) => {
                 state.update(|s| reject(&mut s.admin_console, method, plan, &operation, &error));
                 if error.status == 401 {
@@ -97,10 +104,17 @@ fn reject(m: &mut Model, method: &str, plan: bool, operation: &str, error: &api:
     }
 }
 
+fn account_write(method: &str, path: &str) -> bool {
+    method == "POST" && path == "/api/admin/accounts"
+}
+
 /// Call only after validating the endpoint-specific contract.
 fn accept(m: &mut Model, method: &str, path: &str, plan: bool, value: Value) {
     if path == "/api/admin/accounts" && method == "GET" {
         m.accounts = list(&value, "accounts");
+    }
+    if account_write(method, path) {
+        m.accounts.clear();
     }
     if plan {
         m.plan = value.clone();
@@ -195,6 +209,46 @@ fn select(state: RwSignal<State>, kind: &'static str) {
         s.admin_console.result.clear();
     });
 }
+/// Resolve a clicked row against the latest authoritative snapshot. A queued
+/// click from a row removed by a successful write cannot restore old grants.
+fn account_fields(model: &Model, username: &str) -> Option<request::Fields> {
+    let account = model
+        .accounts
+        .iter()
+        .find(|account| account["username"] == username)?;
+    let mut fields = request::initial_fields("account");
+    for key in ["username", "admin", "disabled"] {
+        fields.insert(
+            key.into(),
+            account[key]
+                .as_str()
+                .map(str::to_owned)
+                .unwrap_or_else(|| account[key].to_string()),
+        );
+    }
+    fields.insert(
+        "repositories".into(),
+        list(account, "repositories")
+            .iter()
+            .filter_map(Value::as_str)
+            .collect::<Vec<_>>()
+            .join(", "),
+    );
+    Some(fields)
+}
+fn select_account(state: RwSignal<State>, username: &str) {
+    if !allowed(state, false)
+        || state.with_untracked(|s| !s.admin_console.uncertain_operation.is_empty())
+    {
+        return;
+    }
+    let Some(fields) = state.with_untracked(|s| account_fields(&s.admin_console, username)) else {
+        return;
+    };
+    select(state, "account");
+    state.update(|s| s.admin_console.fields = fields);
+}
+
 fn field(
     state: RwSignal<State>,
     key: &'static str,
@@ -238,7 +292,7 @@ pub(crate) fn view(state: RwSignal<State>) -> impl IntoView {
     <Show when=move ||state.with(|s|!s.admin_console.uncertain_operation.is_empty())><p role="alert">"结果未确认，禁止重复修改。账户列表不是终态回执；账户修改未知时，请先暂停其他账户修改，在服务器本地停止并重启服务以终止旧请求，核对账户后再开启新的管理会话。 Outcome unknown; do not repeat mutations. Account lists are not completion receipts. For unknown account changes, quiesce account writers and stop and restart the server locally to terminate old requests, verify the account, then open a new management session."</p><p>{move ||state.with(|s|s.admin_console.uncertain_operation.clone())}</p><button class="zxs-button" on:click=move |_|{let id=state.with_untracked(|s|s.admin_console.uncertain_operation.clone());if id=="unknown"{load(state)}else{execute(state,"GET",format!("/api/operations/{}",api::segment(&id)),None,false,String::new())}}>{move ||state.with(|s|if s.admin_console.uncertain_operation=="unknown" {"仅刷新账户快照 / Refresh snapshot only"} else {"查询原操作 / Check outcome"})}</button></Show>
     <Show when=move ||state.with(|s|s.admin_console.kind=="account" || s.admin_console.kind.is_empty())>
         <button class="zxs-button" disabled=move ||state.with(|s|s.admin_console.busy) on:click=move |_|load(state)>"刷新账户 Refresh accounts"</button>
-        {move ||state.with(|s|s.admin_console.accounts.clone()).into_iter().map(move |account|{let label=format!("{} · admin={} · disabled={} · repositories={}",account["username"].as_str().unwrap_or(""),account["admin"],account["disabled"],account["repositories"]);view!{<button class="zxs-button" disabled=move ||state.with(|s|s.admin_console.busy||!s.admin_console.uncertain_operation.is_empty()) on:click=move |_|{select(state,"account");state.update(|s|{for key in ["username","admin","disabled"]{s.admin_console.fields.insert(key.into(),account[key].as_str().map(str::to_owned).unwrap_or_else(||account[key].to_string()));}let repos=list(&account,"repositories").iter().filter_map(Value::as_str).collect::<Vec<_>>().join(", ");s.admin_console.fields.insert("repositories".into(),repos);});}>{label}</button>}}).collect_view()}
+        {move ||state.with(|s|s.admin_console.accounts.clone()).into_iter().map(move |account|{let label=format!("{} · admin={} · disabled={} · repositories={}",account["username"].as_str().unwrap_or(""),account["admin"],account["disabled"],account["repositories"]);view!{<button class="zxs-button" disabled=move ||state.with(|s|s.admin_console.busy||!s.admin_console.uncertain_operation.is_empty()) on:click=move |_|select_account(state,account["username"].as_str().unwrap_or_default())>{label}</button>}}).collect_view()}
         {field(state,"username","用户名 Username",false)}{field(state,"password","密码 Password (blank preserves existing)",true)}{field(state,"repositories","仓库授权 Repository IDs (comma separated)",false)}{toggle(state,"admin","管理员 Administrator")}{toggle(state,"disabled","禁用 Disabled")}
         <p>"保存会撤销该账户已有会话；最后一个管理员不能被禁用。 Saving revokes existing sessions. The last administrator is protected."</p>
     </Show>

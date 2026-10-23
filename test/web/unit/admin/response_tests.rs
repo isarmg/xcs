@@ -70,7 +70,7 @@ fn inspection_must_match_original_operation_and_terminal_state() {
 }
 #[test]
 fn domain_and_preview_contracts_accept_real_shapes_not_generic_receipts() {
-    let repository = json!({"repository_id":"r", "name":"Repo", "history_tree_id":"h", "main_branch_id":"b", "primary_slot_id":"P01", "target_copies":1,"name_policy":"portable", "unicode_version":"17", "grants":{"read":[],"write":[],"manage":[]}});
+    let repository = json!({"repository_id":"r", "name":"Repo", "history_tree_id":"h", "main_branch_id":"b", "primary_slot_id":"P01", "target_copies":1,"name_policy":"portable", "unicode_version":"17", "grants":{"read":[],"write":[],"manage":[]},"smb_binding_generation":"1"});
     let c = contract(
         "/api/repositories",
         json!({"name":"Repo","primary_slot_id":"P01","target_copies":1}),

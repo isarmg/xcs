@@ -24,10 +24,12 @@ impl Engine {
             if engine.workspaces.values().any(|w|matches!(w.state.as_str(),"open"|"sealed")&&state.branches.get(&w.branch_id).is_some_and(|b|b.history_tree_id==history.history_tree_id)) { return Err(Error::new("WORKSPACE_BUSY","close affected write workspaces before rebinding the share")); }
             let history_id=repo.history_tree_id.clone();
             let repo=state.repositories.get_mut(repository).expect("repository checked");
+            repo.smb_binding_generation=repo.smb_binding_generation.checked_add(1).ok_or_else(||Error::new("RESOURCE_LIMIT","SMB binding generation exhausted"))?;
             repo.main_branch_id=branch_id.into(); repo.smb_enabled=enabled;
+            let binding_generation=repo.smb_binding_generation;
             let history=state.histories.get_mut(&history_id).expect("history checked");
             history.main_branch_id=Some(branch_id.into()); history.generation=history.generation.checked_add(1).ok_or_else(||Error::new("RESOURCE_LIMIT","history generation exhausted"))?;
-            Ok(json!({"repository_id":repository,"branch_id":branch_id,"smb_enabled":enabled,"generation":history.generation.to_string()}))
+            Ok(json!({"repository_id":repository,"branch_id":branch_id,"smb_enabled":enabled,"generation":history.generation.to_string(),"smb_binding_generation":binding_generation.to_string()}))
         })
     }
     pub fn create_repository(
@@ -46,6 +48,7 @@ impl Engine {
         principal: &str,
         operation: &str,
     ) -> Result<Repository> {
+        let primary = self.disk(primary)?.slot_id.clone();
         if let Some(repo) = self
             .state
             .repositories
@@ -57,8 +60,10 @@ impl Engine {
         }
         self.create_repository_kind(
             &format!("ZXS disk {primary}"),
-            primary,
-            3,
+            &primary,
+            // A disk root needs only its own primary. Additional copies are
+            // an explicit protection policy, not a prerequisite for using it.
+            1,
             principal,
             operation,
             true,
@@ -92,7 +97,7 @@ impl Engine {
                 let commit_id = new_id("commit");
                 let repository = Repository {
                     repository_id: repo_id.clone(), account_scope_repository_id: None,
-                    smb_enabled: true, file_manager_root, name: name.into(), history_tree_id: history_id.clone(),
+                    smb_enabled: true, smb_binding_generation: 1, file_manager_root, name: name.into(), history_tree_id: history_id.clone(),
                     main_branch_id: branch_id.clone(), primary_slot_id: engine.disk(primary)?.slot_id.clone(),
                     target_copies: copies, name_policy: name_policy::NAME_POLICY.into(),
                     unicode_version: name_policy::UNICODE_VERSION.into(), grants: Grants::owner(principal),
@@ -127,3 +132,7 @@ impl Engine {
             .ok_or_else(|| Error::new("STATE_INVALID", "repository missing after publication"))
     }
 }
+
+#[cfg(test)]
+#[path = "../../../../test/engine/unit/business/repository/tests.rs"]
+mod tests;

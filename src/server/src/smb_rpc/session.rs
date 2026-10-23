@@ -39,6 +39,18 @@ impl Drop for Session {
 }
 
 impl Session {
+    // Operations implemented without an engine action (the synthetic share
+    // root) still have to validate their entrance. Mutations also revalidate
+    // inside Backend, not just at this preliminary check.
+    pub(super) fn authorize_binding(&self) -> Result<(), ApiError> {
+        if let Some(binding) = &self.identity.smb_binding {
+            self.call(
+                crate::BackendAction::Repository,
+                json!({"repository_id":binding.repository_id}),
+            )?;
+        }
+        Ok(())
+    }
     pub(super) fn call(
         &self,
         action: crate::BackendAction,
@@ -187,6 +199,7 @@ impl Session {
             Request::Abort { handle } => self.close(handle, true)?,
             Request::Stat { path } => {
                 if path.is_empty() || path == "." {
+                    self.authorize_binding()?;
                     json!({"path":"","kind":"directory","size":"0","entry_id":self.branch})
                 } else {
                     name_policy::validate_path(&path).map_err(contract)?;
@@ -197,41 +210,7 @@ impl Session {
                     .map_err(ApiError::invalid)?
                 }
             }
-            Request::List { path } => {
-                if !path.is_empty() {
-                    name_policy::validate_path(&path).map_err(contract)?;
-                }
-                let entries = self.entries()?;
-                let key = name_policy::path_key(&path);
-                if !path.is_empty() {
-                    let directory = entries
-                        .iter()
-                        .find(|entry| entry.lookup_key == key)
-                        .ok_or_else(|| ApiError::new(404, "NOT_FOUND", "directory missing"))?;
-                    if directory.kind != "directory" {
-                        return Err(ApiError::new(
-                            409,
-                            "NOT_DIRECTORY",
-                            "entry is not a directory",
-                        ));
-                    }
-                }
-                let prefix = if key.is_empty() {
-                    String::new()
-                } else {
-                    format!("{key}/")
-                };
-                let entries = entries
-                    .into_iter()
-                    .filter(|entry| {
-                        entry
-                            .lookup_key
-                            .strip_prefix(&prefix)
-                            .is_some_and(|rest| !rest.contains('/'))
-                    })
-                    .collect::<Vec<_>>();
-                json!({"entries":entries})
-            }
+            Request::ReadDirectory { handle, restart } => self.read_directory(handle, restart)?,
             Request::Namespace {
                 kind,
                 path,
