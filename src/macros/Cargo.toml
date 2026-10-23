@@ -11,7 +11,6 @@ name = "view_macros"
 proc-macro = true
 
 [dependencies]
-attribute-derive = { version = "0.11", features = ["syntax-full"], path = "../foundation/attribute-derive"}
 convert_case = {version = "0.11", path = "../foundation/convert_case"}
 html-escape = {version = "0.2", path = "../foundation/html-escape"}
 iterator-toolkit = {version = "0.14", path = "../foundation/iterator-toolkit"}

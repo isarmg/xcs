@@ -134,10 +134,6 @@ path = "../uuid"
 version = "1.2.0"
 path = "../bytes"
 
-[dependencies.atoi]
-version = "2.0"
-path = "../atoi"
-
 [dependencies.flume]
 version = "0.12.0"
 features = ["async"]

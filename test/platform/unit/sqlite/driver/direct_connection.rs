@@ -233,3 +233,70 @@ fn parsed_percent_filename_and_query_options_reopen_readonly() -> TestResult {
         Ok(())
     })
 }
+
+#[test]
+fn ordinal_parameters_preserve_repetition_order_and_missing_values() -> TestResult {
+    block_on(async {
+        let mut connection = SqliteConnection::connect_with(&SqliteConnectOptions::new()).await?;
+        for sql in ["SELECT $2, $1, $2, $01", "SELECT ?2, ?1, ?2, ?01"] {
+            let row: (i64, i64, i64, i64) = crate::query_as(sql)
+                .bind(11_i64)
+                .bind(22_i64)
+                .fetch_one(&mut connection)
+                .await?;
+            assert_eq!(row, (22, 11, 22, 11), "{sql}");
+        }
+        let row: (Option<i64>, i64) = crate::query_as("SELECT $2, $1")
+            .bind(11_i64)
+            .fetch_one(&mut connection)
+            .await?;
+        assert_eq!(row, (None, 11));
+        let row: (i64, i64) = crate::query_as("SELECT ?, ?")
+            .bind(11_i64)
+            .bind(22_i64)
+            .fetch_one(&mut connection)
+            .await?;
+        assert_eq!(row, (11, 22));
+        connection.close().await?;
+        Ok(())
+    })
+}
+
+#[test]
+fn invalid_ordinal_parameters_return_errors_without_poisoning_connection() -> TestResult {
+    block_on(async {
+        let mut connection = SqliteConnection::connect_with(&SqliteConnectOptions::new()).await?;
+        // These are valid SQLite names, but not supported positive decimal ordinals.
+        // Check twice to exercise statement reuse after a binding failure.
+        for _ in 0..2 {
+            for sql in [
+                "SELECT $0",
+                "SELECT $00",
+                "SELECT $1junk",
+                "SELECT $1::suffix",
+                "SELECT $1(suffix)",
+                "SELECT $18446744073709551616",
+                "SELECT $name",
+                "SELECT :1",
+                "SELECT @1",
+                "SELECT $2, $0",
+            ] {
+                let result = crate::query(sql)
+                    .bind(11_i64)
+                    .fetch_one(&mut connection)
+                    .await;
+                assert!(
+                    matches!(result, Err(Error::Protocol(_))),
+                    "{sql}: {result:?}"
+                );
+                let value: i64 = crate::query_scalar("SELECT $1")
+                    .bind(42_i64)
+                    .fetch_one(&mut connection)
+                    .await?;
+                assert_eq!(value, 42);
+            }
+        }
+        connection.close().await?;
+        Ok(())
+    })
+}

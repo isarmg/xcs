@@ -52060,7 +52060,7 @@
     }
   },
   "external_test_mappings_sha256": {
-    "compliance/external-tests/foundation.json": "6a264b4e03b0302c2952db335028c7bd9db97fd625743da89003d751a58b4b2d",
+    "compliance/external-tests/foundation.json": "efdb3f2cdfb2421ff0b97b8b60fa26130df9ab1dbec7a4065a0120da9b064017",
     "compliance/external-tests/integrated.json": "c6aaba81aa6d0e5e2004cf185de321a4301ddf7a7bc74ddc462cae92db59c4d6",
     "compliance/external-tests/ring.json": "3e5a834ea832ea11a0da5cdeab898e9c2e2d5229becc1988edc3462cfb51dab1"
   },
@@ -52740,23 +52740,6 @@
       "origin_directory": "vendor/rust/async-trait-0.1.92",
       "roots": [
         "test/foundation/async-trait"
-      ]
-    },
-    "src/foundation/atoi": {
-      "bytes": 1561,
-      "directory": "src/foundation/atoi",
-      "file_count": 1,
-      "files": [
-        {
-          "path": "test/foundation/atoi/unit/src/lib/test_645.rs",
-          "sha256": "91c07c5f9263442b790211defd1a21b7805b3c257070394aba6255d1f6e9d6ec",
-          "source": "src/foundation/atoi/src/lib.rs",
-          "source_sha256_before": "e7733bd7453ff989767ff7b93c39727000931b5a5d68925b56e92f69b15d0ef8"
-        }
-      ],
-      "origin_directory": "vendor/rust/atoi-2.0.0",
-      "roots": [
-        "test/foundation/atoi"
       ]
     },
     "src/foundation/autocfg": {
@@ -61676,35 +61659,6 @@
         "test/foundation/indexmap"
       ]
     },
-    "src/foundation/interpolator": {
-      "bytes": 7779,
-      "directory": "src/foundation/interpolator",
-      "file_count": 3,
-      "files": [
-        {
-          "path": "test/foundation/interpolator/unit/src/fmt/iter/test_85.rs",
-          "sha256": "45350142f108ce0d239d6b732b54c498689b1f56a36e3387ba3c2603d778d0bc",
-          "source": "src/foundation/interpolator/src/fmt/iter.rs",
-          "source_sha256_before": "b6e7d106ea8591f2dad4f8767a0010704a8871d2a943cd526008bb17f85836dc"
-        },
-        {
-          "path": "test/foundation/interpolator/unit/src/macros/test_395.rs",
-          "sha256": "424ccf61a859d1043a79a6004a23a1c982dae64580c0a57fd170ea4d0a9e5209",
-          "source": "src/foundation/interpolator/src/macros.rs",
-          "source_sha256_before": "9cb530c98cc32471e6e6f413737d7617abef6011a33e11e158b285ace29de3d0"
-        },
-        {
-          "path": "test/foundation/interpolator/unit/src/parser/test_334.rs",
-          "sha256": "2383652aba62841190212614a1db51a2172c1a2875abf8b7d6d6df705d96410e",
-          "source": "src/foundation/interpolator/src/parser.rs",
-          "source_sha256_before": "ff48932ec16ef2e27d62a7e405e8a717db2e8d5835af6f5749308d51a83292f6"
-        }
-      ],
-      "origin_directory": "vendor/rust/interpolator-0.5.0",
-      "roots": [
-        "test/foundation/interpolator"
-      ]
-    },
     "src/foundation/ipnet": {
       "bytes": 23476,
       "directory": "src/foundation/ipnet",
@@ -62498,47 +62452,6 @@
       "origin_directory": "vendor/rust/env_logger-0.11.11",
       "roots": [
         "test/foundation/logging"
-      ]
-    },
-    "src/foundation/manyhow": {
-      "bytes": 5666,
-      "directory": "src/foundation/manyhow",
-      "file_count": 5,
-      "files": [
-        {
-          "path": "test/foundation/manyhow/functions/src/lib/function_macro_722.rs",
-          "sha256": "a3f3966dffbdd863a5bdc13258644974af6a5a25a20b8d5bb1862d6e80769811",
-          "source": "src/foundation/manyhow/src/lib.rs",
-          "source_sha256_before": "b3cd7a3eec26a1fe7432ddea819c2790f2a6c84f381b19efce516ef624b30381"
-        },
-        {
-          "path": "test/foundation/manyhow/functions/src/parse_to_tokens/test_inference_113.rs",
-          "sha256": "89b449be70eea4e79850323c7e6aea42be506e5f3879d52de4d8f5a2ea0e8c7b",
-          "source": "src/foundation/manyhow/src/parse_to_tokens.rs",
-          "source_sha256_before": "b08fc4b06b3b13c62cb747087b219dcf3c4b19ac9729c318694f5113e9786a19"
-        },
-        {
-          "path": "test/foundation/manyhow/unit/src/error/test_476.rs",
-          "sha256": "8a2ffd19722966d7fb2fd5a2f0c406bc5038b88163062cebcc2937c18c0dee2c",
-          "source": "src/foundation/manyhow/src/error.rs",
-          "source_sha256_before": "7ccd11f585920d9a8e0d1274bcc07baa770d639ef655febd576948353c51e2b6"
-        },
-        {
-          "path": "test/foundation/manyhow/unit/src/macro_rules/test_227.rs",
-          "sha256": "1aec611915ceb37bcd703ea7312b6a61ab2bf1589005efc33cd7c1918d541394",
-          "source": "src/foundation/manyhow/src/macro_rules.rs",
-          "source_sha256_before": "27cfc11e7b453fdbc36790df3bae7f168206e064e51cef0f88ae74000ecbac27"
-        },
-        {
-          "path": "test/foundation/manyhow/unit/src/span_ranged/test_226.rs",
-          "sha256": "ee8758417a5ad7964e083d64ff8b6675323aec54afe3e885b883dcd8cdf0fcb1",
-          "source": "src/foundation/manyhow/src/span_ranged.rs",
-          "source_sha256_before": "e0eb45cdd05ee31c3bcdd79ba72ba6a5462dc76d9c19a8c9d8b4c6dbc56803d9"
-        }
-      ],
-      "origin_directory": "vendor/rust/manyhow-0.14.1",
-      "roots": [
-        "test/foundation/manyhow"
       ]
     },
     "src/foundation/matchit": {
@@ -64359,35 +64272,6 @@
         "test/foundation/potential_utf"
       ]
     },
-    "src/foundation/proc-macro-utils": {
-      "bytes": 6368,
-      "directory": "src/foundation/proc-macro-utils",
-      "file_count": 3,
-      "files": [
-        {
-          "path": "test/foundation/proc-macro-utils/functions/src/assert/test_267.rs",
-          "sha256": "b6a49376597969918d74a6557c401bff1ebeb2df72890de9338f17724fb71592",
-          "source": "src/foundation/proc-macro-utils/src/assert.rs",
-          "source_sha256_before": "46304ec9dcf5bab4161b1c768d0af85a3902dbc14b71392e50e720a0056b72f1"
-        },
-        {
-          "path": "test/foundation/proc-macro-utils/unit/src/lib/all_test_419.rs",
-          "sha256": "666e237cc44c16d09385caeece756cdbb514efcd57b6a9f0f118b88ed40f4ada",
-          "source": "src/foundation/proc-macro-utils/src/lib.rs",
-          "source_sha256_before": "41fc7bc491a9714f16aabef212a8bfe06eb9ff625a9db9ace69c10e54cd031c9"
-        },
-        {
-          "path": "test/foundation/proc-macro-utils/unit/src/parser/test_1098.rs",
-          "sha256": "b17819548717845d66ccb30a4cf02b6986ce3576163f55139526c7595128faec",
-          "source": "src/foundation/proc-macro-utils/src/parser.rs",
-          "source_sha256_before": "5b481162f650c70bd18ba59eeb927365588ac636c2e823e09e391ff9e90cb8be"
-        }
-      ],
-      "origin_directory": "vendor/rust/proc-macro-utils-0.10.0",
-      "roots": [
-        "test/foundation/proc-macro-utils"
-      ]
-    },
     "src/foundation/proc-macro2": {
       "bytes": 43687,
       "directory": "src/foundation/proc-macro2",
@@ -64647,23 +64531,6 @@
       "origin_directory": "vendor/rust/quote-1.0.47",
       "roots": [
         "test/foundation/quote"
-      ]
-    },
-    "src/foundation/quote-use-macros": {
-      "bytes": 1531,
-      "directory": "src/foundation/quote-use-macros",
-      "file_count": 1,
-      "files": [
-        {
-          "path": "test/foundation/quote-use-macros/unit/src/use_parser/test_170.rs",
-          "sha256": "fc9b6b2559f0c2f1136b6e6f36ea69b0102befd11d96e485b2b14bb0c63b79e9",
-          "source": "src/foundation/quote-use-macros/src/use_parser.rs",
-          "source_sha256_before": "b1a084b633ce3182f14ae564cedeb41d9a056890ed94c754bd85aa4e3e5d6840"
-        }
-      ],
-      "origin_directory": "vendor/rust/quote-use-macros-0.9.0",
-      "roots": [
-        "test/foundation/quote-use-macros"
       ]
     },
     "src/foundation/random-generator-core": {
@@ -78659,7 +78526,7 @@
   },
   "initial_test_relocation_sha256": "791ad728a408677dd54ef98e3feaffe825c5fc5670e888440615933d9498ecc3",
   "lockfiles_sha256": {
-    "Cargo.lock": "d3f66c35d36fc1ebf63098e6c700ded09f227e35fd5e77e8e39cac756ca67ef0"
+    "Cargo.lock": "a6da2cebce7b78247b9a89aea4026cce282a31ec856bca64ce6286c0f72eb98e"
   },
   "manifests_sha256": {
     "Cargo.toml": "4fa15cfe7d2baf5436dbc9b9c42bd6acb37fa93bd5d03823f8d09715fe4e6e6e",
@@ -78674,9 +78541,6 @@
     "src/foundation/arrayvec/Cargo.toml": "13233aaeb3ab6c046247cc29964b024e4c93388b25b6081fd415168edb5cdb96",
     "src/foundation/async-notification/Cargo.toml": "959c1d6629eea201fcb339a02cbfb3e34e48ecc250ed68f14be200598676efef",
     "src/foundation/async-trait/Cargo.toml": "b3365acb1795443dcd3f8b5cfe366f5b778f94fa13d854833d1ad44359e77530",
-    "src/foundation/atoi/Cargo.toml": "b5f15ca70c88dce01cd68300cd0f87c1f337c1f6be03958fbb4fdfbcdd7fdfe6",
-    "src/foundation/attribute-derive-macro/Cargo.toml": "08b7d0be07c9a0f7f95df99c52f60625be626e9fbf855145ef18569d9a04de1c",
-    "src/foundation/attribute-derive/Cargo.toml": "dab488fcb3c28bc43e0147bd5e08c11da7887768d43495d21e6abec3d9291c12",
     "src/foundation/autocfg/Cargo.toml": "fbd42d1ec63c097ed7f545ca974fabcce7a8634a7131fc47b83d3fe9b190b79a",
     "src/foundation/axum-macros/Cargo.toml": "20f720e15596ce27f016da9d4592f80946335bd1731c20d270d034c52d6eb17c",
     "src/foundation/base64/Cargo.toml": "9504252614940f1a708e69e97f94dc912c59c6fcc10b172dc6a7bafcf32a2976",
@@ -78756,7 +78620,6 @@
     "src/foundation/icu_provider/Cargo.toml": "fc0796100d6dd3f19e59aa586e8e41a5a6fbc67e3bfd29e817d71cf8bba091f0",
     "src/foundation/id-arena/Cargo.toml": "5fe28f90d672cf4149cbda0c30b05e155b739b290bd3c6273da7ecb5b5004229",
     "src/foundation/indexmap/Cargo.toml": "cf87d849d8c5b88760fb29f0228cacdc8710bb7949ab6d7aca82345eb8a9970b",
-    "src/foundation/interpolator/Cargo.toml": "982a77cf5d2de1e56c13ba9ebf3a5d7fb827bc33bc4a0d1d9183cbf82c701762",
     "src/foundation/ipnet/Cargo.toml": "232ccd236b7b3e8f74d2e0032cbd7e9b5bc3b2eef5bde5b9faa6b27139b86201",
     "src/foundation/iterator-toolkit/Cargo.toml": "bad5a12009b839e025a585758d7aff965c429077980d63d2f3648224bb68be44",
     "src/foundation/itoa/Cargo.toml": "91e17d7f7f5a0353ea808436775e7c02ddb18e4fc5c0e1126ee2f507574c541a",
@@ -78772,8 +78635,6 @@
     "src/foundation/litemap/Cargo.toml": "2495d580648fbcef3f02874496c050449fe0faff035ad4cd7c262c2c3cc27480",
     "src/foundation/log/Cargo.toml": "e22a6c582975a74f045111d30b3b7dbe7a61bd8dd1a20230babeb8b08e21590b",
     "src/foundation/logging/Cargo.toml": "80adbee020a431ec1cee1b83bd0f7db78996e400b12b491abb72d3602b72b76b",
-    "src/foundation/manyhow-macros/Cargo.toml": "db7f2237c79b10b4a68612307418b4d02b753eeef15ba024f90e5a52e9d75b09",
-    "src/foundation/manyhow/Cargo.toml": "05638c31f318027769be671ad03f2d0ad530c6a149cb9f8f19b33a73f4a1aa17",
     "src/foundation/matchit/Cargo.toml": "32661069f447c37c49bed5c80080ee274810d7bac2ca15d89c3d794cd7b21aba",
     "src/foundation/memchr/Cargo.toml": "841f1627065195695b65f672173f133c917ec1e6c1e2efb8ec00ab2b7b513360",
     "src/foundation/micromap/Cargo.toml": "fba67cdeb7108f0108693a6dba37f38e53acbc7d6c5007ed2527da574b8cb435",
@@ -78792,11 +78653,8 @@
     "src/foundation/pin-project-lite/Cargo.toml": "e3bf7b881836004c8be84237691474f43e50815fafc73b911c5c7f9065feedf8",
     "src/foundation/pkg-config/Cargo.toml": "8724b0843f65eeb453e40b1e392b856717eda463d1a97d69524664dc43d7f7ec",
     "src/foundation/potential_utf/Cargo.toml": "b32c041b361fcd630cbe5fb94d838c1749a863a02dd1dd89f980c13cc81ecfcb",
-    "src/foundation/proc-macro-utils/Cargo.toml": "25bb597c559cd17ead99b260f743bf580df4420cc6b17c194fd0bd9ab2e1105e",
     "src/foundation/proc-macro2-diagnostics/Cargo.toml": "24b5aad457570c818223217978359f68d9a35374a31dafadc8b554989da2cc4b",
     "src/foundation/proc-macro2/Cargo.toml": "3e73cc7d25dbf5fc080534865aaca5e0e75e3d23d74c9bb4b97dea9d8f27d360",
-    "src/foundation/quote-use-macros/Cargo.toml": "2d2c52f3431ea930dd9ae2eea96ef1aaf9b9a694192fec9914d24f32ed977ecb",
-    "src/foundation/quote-use/Cargo.toml": "76731ced54f44d7f2df6b48402e3b5c4f9c15d9497bd69201db35f39736c81b4",
     "src/foundation/quote/Cargo.toml": "b56481fbbe2846c7db15fadaee878e62c4b49b0ffb9a30d3d52663b6e7fd8292",
     "src/foundation/random-generator-core/Cargo.toml": "7eec94598ffd4e8672d36cc2051e0f60248ce2e17afacd4838589087b4ab21c1",
     "src/foundation/rayon-core/Cargo.toml": "ec99da3c7e92b7454834e615d0a0e2407bb7b1fd1877607c00c8f1e3bc98985f",
@@ -78833,7 +78691,7 @@
     "src/foundation/smallvec/Cargo.toml": "7f4809c1243c4cb0854b7878cedcbcf9b1b8a30f667333eb9edb76f990b77f05",
     "src/foundation/socket2/Cargo.toml": "a748169b0a61eda1988393bf74d1a3f13b9033cb29b83240a74eb7b2be808a92",
     "src/foundation/spin/Cargo.toml": "b5996fae3be64ef8d7b80f6e3880903b3015cdd91f3eb968daf6833c1e0272e9",
-    "src/foundation/sqlite-access/Cargo.toml": "d7ce7a3b5709afeab1f5404b51a7b58e4cfbaf403845110c5579507672732993",
+    "src/foundation/sqlite-access/Cargo.toml": "527664a39e0bc38ab7912e150b6b62a044c700af342d011a72d5bb8625e13e91",
     "src/foundation/stable_deref_trait/Cargo.toml": "4f080b924f2ae5fa6c2a7fd2d5fdcc08728c189503b520c2fec8132495f21256",
     "src/foundation/strum/Cargo.toml": "ce19c4c3938857512107c5ca185a1aba6fed8b5ddc302e82cec8b11727482035",
     "src/foundation/strum_macros/Cargo.toml": "7c365d47b935a04e16d53c59ed91690f0a62895cafe77b4dcf504ac8d2b3cef2",
@@ -78896,7 +78754,7 @@
     "src/foundation/zerovec/Cargo.toml": "dd088e3746a936ee712ff6f9aacc6b5d40b68a1ec14a0c57f58a7eb0e1aedcf6",
     "src/foundation/zmij/Cargo.toml": "9230831f8b50f7ac0b50a32d458f95f0e758ef847a81b15cbae9b84a6dd44df4",
     "src/interface/Cargo.toml": "9de3202f864ec8fbb9594b60bfd9774aa38decf08976294a74e2ff7e371e8ce9",
-    "src/macros/Cargo.toml": "34ae205cb1da53da61bfa0e625f47e99dc524011aa56d26452234c48cbd9f5c7",
+    "src/macros/Cargo.toml": "0a0255c12e82b72646ff5b356f3b3dffee67dfa3c652bd89210b672aa703438d",
     "src/naming/Cargo.toml": "6599ac90d88b7a74eeb47444aa4fdad2002161798ae72cfe4b18e3d42eae1a9a",
     "src/platform/Cargo.toml": "6315b1efba0b551f24bf231da2c7a83d13ac64b5a2d0d13c99d281eb85eae1f0",
     "src/rescue/Cargo.toml": "8d5bd0f02eff46f12595c50064d4f801718b022f1bc37fc9e09f47dae31760d1",
@@ -79032,13 +78890,14 @@
       "description": "Utility types used for dev mode and hot-reloading for the Leptos web framework.",
       "directory": "src/macros",
       "files_sha256": {
-        "Cargo.toml": "34ae205cb1da53da61bfa0e625f47e99dc524011aa56d26452234c48cbd9f5c7",
-        "src/component.rs": "2de5b2edb467395f8ee4cda35d3ce0488671fd0c4b70c7a28a469a1a7c3ccf92",
+        "Cargo.toml": "0a0255c12e82b72646ff5b356f3b3dffee67dfa3c652bd89210b672aa703438d",
+        "src/component.rs": "8d1ec4dc361d06135b8519bf623172665d37b9d86d92f47c81572bb9a2481bb6",
         "src/diagnostics.rs": "b501d80659ee3202adc4f60e6eec000389fe34eeb19cc0fb60e02c15aaabd03e",
-        "src/lib.rs": "e9927ff107dd16a29bdec54b6e188b26cf9d69fe04795d1e405056dbd244abe6",
+        "src/lib.rs": "98e54fddf8c3158126335057b77fca502230bab9b6a0763d6735eff6f70c4014",
         "src/memo.rs": "9ac1857a33a83f73eafb576895ce02f3d0c0898ca869ae8741747fa281a01539",
+        "src/prop_options.rs": "020bb41625d3e026d2963e3c1c6eda87a16f3b968fb5c5380411e9c838f35424",
         "src/slice.rs": "496a010eedcb7f8c4b74a9aed209f2ff5c435d3efba6f9d3d877864eb18fc943",
-        "src/slot.rs": "323e72f091b67fea8b7cf0b8706821ad1a8deebec7ab3f4bfe79163c62b6039f",
+        "src/slot.rs": "49ea36d20dcc5e92cc62547d2cfca2fd541e52909c608d1bd848756b78d13af5",
         "src/view/component_builder.rs": "2cb6a02c28818b01533485afc2431d210cbf1784b5bff25315d4a870737acf5c",
         "src/view/mod.rs": "bfdf3d476685542b5a5b4438e4077562dd4e53baa44ac35a238a2b6db9d0826b",
         "src/view/slot_helper.rs": "09aef49e24e87d876ef884c911dcef068b809d2d0756ca23e2f7da7b5fa90203",
@@ -80239,7 +80098,7 @@
       "description": "Core of SQLx, the rust SQL toolkit. Not intended to be used directly.",
       "directory": "src/foundation/sqlite-access",
       "files_sha256": {
-        "Cargo.toml": "d7ce7a3b5709afeab1f5404b51a7b58e4cfbaf403845110c5579507672732993",
+        "Cargo.toml": "527664a39e0bc38ab7912e150b6b62a044c700af342d011a72d5bb8625e13e91",
         "benches/sqlite/describe.rs": "e3846b1cd17054663e135116aecde934c2d20f3b83592562a3e34596168f0e94",
         "contrib/ide/vscode/settings.json": "af1e5804fd68126c54f709b71aee3c7dd4dca964f509257c2dd331006dda66ad",
         "gen-changelog.sh": "be0292a711d7a7bb03b57b9b3534dbb34d084189ed85d32c528d0a39e2e156a7",
@@ -80286,7 +80145,7 @@
         "src/query_engine/types/text.rs": "cb0b12a819478a21e741eff4e6e71e30d5946fab374ee4ae783309ff9783f5a3",
         "src/query_engine/value.rs": "546f85b9e7eefea448f9908fba309e29f451e616c54a8bd64d493851b0b146d4",
         "src/query_engine/value_debug.rs": "efc3328047f4c52308967d60218c8cd18047cfdd9d5508fe0b62d2e5ee892641",
-        "src/sqlite/arguments.rs": "c60b98254e41ba9437dd9d5de835b096e948719cfd7bd12f9194b7b1c843c9fd",
+        "src/sqlite/arguments.rs": "c21a7ff0d70444d4fa637606e5242ee20f50aeff3dd8c5250776d0c6b0f558e5",
         "src/sqlite/column.rs": "084ac19c20989d03deb34d89be43d58133dcfe638d055f14e5c4b5b2c0d7001f",
         "src/sqlite/connection/collation.rs": "f4d6f4783804e52f71e6dcdab5c9e680f8e44d03afb64f51ee1552b8e6341299",
         "src/sqlite/connection/describe.rs": "4245e6b8bce8fec1764529ecca126870e84ee8d3fe0340e0fa4149236e72896d",
@@ -80362,7 +80221,7 @@
       "description": "SQLite driver implementation for SQLx. Not for direct use; see the `sqlx` crate for details.",
       "directory": "src/foundation/sqlite-access",
       "files_sha256": {
-        "Cargo.toml": "d7ce7a3b5709afeab1f5404b51a7b58e4cfbaf403845110c5579507672732993",
+        "Cargo.toml": "527664a39e0bc38ab7912e150b6b62a044c700af342d011a72d5bb8625e13e91",
         "benches/sqlite/describe.rs": "e3846b1cd17054663e135116aecde934c2d20f3b83592562a3e34596168f0e94",
         "contrib/ide/vscode/settings.json": "af1e5804fd68126c54f709b71aee3c7dd4dca964f509257c2dd331006dda66ad",
         "gen-changelog.sh": "be0292a711d7a7bb03b57b9b3534dbb34d084189ed85d32c528d0a39e2e156a7",
@@ -80409,7 +80268,7 @@
         "src/query_engine/types/text.rs": "cb0b12a819478a21e741eff4e6e71e30d5946fab374ee4ae783309ff9783f5a3",
         "src/query_engine/value.rs": "546f85b9e7eefea448f9908fba309e29f451e616c54a8bd64d493851b0b146d4",
         "src/query_engine/value_debug.rs": "efc3328047f4c52308967d60218c8cd18047cfdd9d5508fe0b62d2e5ee892641",
-        "src/sqlite/arguments.rs": "c60b98254e41ba9437dd9d5de835b096e948719cfd7bd12f9194b7b1c843c9fd",
+        "src/sqlite/arguments.rs": "c21a7ff0d70444d4fa637606e5242ee20f50aeff3dd8c5250776d0c6b0f558e5",
         "src/sqlite/column.rs": "084ac19c20989d03deb34d89be43d58133dcfe638d055f14e5c4b5b2c0d7001f",
         "src/sqlite/connection/collation.rs": "f4d6f4783804e52f71e6dcdab5c9e680f8e44d03afb64f51ee1552b8e6341299",
         "src/sqlite/connection/describe.rs": "4245e6b8bce8fec1764529ecca126870e84ee8d3fe0340e0fa4149236e72896d",
@@ -88743,107 +88602,6 @@
       },
       "version": "0.1.92"
     },
-    "src/foundation/atoi": {
-      "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 2026-10-20：移除不可达条件实现并修复稳定工具链编译诊断；当前逐文件摘要记录本地实现差异。",
-      "description": "Parse integers directly from `[u8]` slices in safe code",
-      "directory": "src/foundation/atoi",
-      "files_sha256": {
-        "Cargo.toml": "b5f15ca70c88dce01cd68300cd0f87c1f337c1f6be03958fbb4fdfbcdd7fdfe6",
-        "benches/benches.rs": "1dd462d7ef67add836bdd22e92db2828ac8e67dac3c87b907d23cb58b34f5510",
-        "src/lib.rs": "e0642993d733deccb6e399257f54ea959287b244622e536fda85639439a655c4"
-      },
-      "license": "MIT",
-      "license_materials": [
-        "compliance/licenses/upstream/atoi-2.0.0/LICENSE"
-      ],
-      "merged_into": "无；通过统一内部源码源接入",
-      "name": "atoi",
-      "origin_directory": "vendor/rust/atoi-2.0.0",
-      "repository": "https://github.com/pacman82/atoi-rs",
-      "status": "内部维护源码",
-      "upstream": {
-        "archive_sha256": "f28d99ec8bfea296261ca1af174f24225171fea9664ba9003cbebee704810528",
-        "archive_url": "https://static.crates.io/crates/atoi/atoi-2.0.0.crate",
-        "name": "atoi",
-        "version": "2.0.0"
-      },
-      "vcs": {
-        "git": {
-          "sha1": "e4f73c8c0d21bd8cb89bf67a7118ad4c117562ba"
-        },
-        "path_in_vcs": ""
-      },
-      "version": "2.0.0"
-    },
-    "src/foundation/attribute-derive": {
-      "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。",
-      "description": "Clap like parsing for attributes in proc-macros",
-      "directory": "src/foundation/attribute-derive",
-      "files_sha256": {
-        "Cargo.toml": "dab488fcb3c28bc43e0147bd5e08c11da7887768d43495d21e6abec3d9291c12",
-        "docs/traits.html": "e4cc3f6cd577623236e969907f420331d4679ad6b5c6d3903f826386de606a95",
-        "src/from_partial.rs": "6feb64ef85c4e77ddb9d34948441747b7d1717b0a7a872149070bd551bea7164",
-        "src/lib.rs": "186f6b26f01f96b72d7ea6167fd023f6ed67c957c3f519bbb847a0ccd9eed4ed",
-        "src/parsing.rs": "e1504084801886706113fcd29ea478e607cb5cfac2a7d2add94d927253048325",
-        "src/std_impls.rs": "cbaac7d883bf086fdc84ccb09fd9d31bfee24d2ebd919e30dbe3868b58d9f677",
-        "src/syntax_impls.rs": "11112b576dba1b84569ae969b3670735b617bdb9f3594093f2e2e7d5d7fcf1ff",
-        "src/utils.rs": "6a684bb430b0dcbd03ff5ac9dafcf38621172c60805f7ea0e28c1f89d63f377f"
-      },
-      "license": "MIT OR Apache-2.0",
-      "license_materials": [
-        "compliance/licenses/upstream/attribute-derive-0.11.0/LICENSE-APACHE",
-        "compliance/licenses/upstream/attribute-derive-0.11.0/LICENSE-MIT"
-      ],
-      "merged_into": "无；通过统一内部源码源接入",
-      "name": "attribute-derive",
-      "origin_directory": "vendor/rust/attribute-derive-0.11.0",
-      "repository": "https://github.com/ModProg/attribute-derive",
-      "status": "内部维护源码",
-      "upstream": {
-        "archive_sha256": "d2f9ef7a68684657ce9da341c934c73b63df7a3585a61e366d84c84ed5d3d167",
-        "archive_url": "https://static.crates.io/crates/attribute-derive/attribute-derive-0.11.0.crate",
-        "name": "attribute-derive",
-        "version": "0.11.0"
-      },
-      "vcs": {
-        "git": {
-          "sha1": "e2be97a0472806fce7d64573bf154f6cfb8f498e"
-        },
-        "path_in_vcs": ""
-      },
-      "version": "0.11.0"
-    },
-    "src/foundation/attribute-derive-macro": {
-      "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 2026-10-21：实际消费者标准库整合与依赖去重；详见 docs/reports/foundation-sqlite-cloud-20261021.md，原始身份和法律材料保留。",
-      "description": "Clap for proc macro attributes",
-      "directory": "src/foundation/attribute-derive-macro",
-      "files_sha256": {
-        "Cargo.toml": "08b7d0be07c9a0f7f95df99c52f60625be626e9fbf855145ef18569d9a04de1c",
-        "src/lib.rs": "d1fc464ca1e1d34a2bb04d0dafc4455046980bc4e3e82d10f0d0a3969db0bd1d"
-      },
-      "license": "MIT",
-      "license_materials": [
-        "compliance/licenses/upstream/attribute-derive-macro-0.11.0/LICENSE"
-      ],
-      "merged_into": "无；通过统一内部源码源接入",
-      "name": "attribute-derive-macro",
-      "origin_directory": "vendor/rust/attribute-derive-macro-0.11.0",
-      "repository": "https://github.com/ModProg/attribute-derive",
-      "status": "内部维护源码",
-      "upstream": {
-        "archive_sha256": "300d426e5e73549125bb8e4649bdd5508f82c94ddf898fb0517246e71dfb8e98",
-        "archive_url": "https://static.crates.io/crates/attribute-derive-macro/attribute-derive-macro-0.11.0.crate",
-        "name": "attribute-derive-macro",
-        "version": "0.11.0"
-      },
-      "vcs": {
-        "git": {
-          "sha1": "e2be97a0472806fce7d64573bf154f6cfb8f498e"
-        },
-        "path_in_vcs": "macro"
-      },
-      "version": "0.11.0"
-    },
     "src/foundation/autocfg": {
       "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 清理独立演示：移除 5 个独立示例程序及专属输入（2531 字节）；保留文档编译、真实测试及性能基准输入。",
       "description": "Automatic cfg for Rust compiler features",
@@ -92958,55 +92716,6 @@
       },
       "version": "2.14.2"
     },
-    "src/foundation/interpolator": {
-      "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 2026-10-20：移除不可达条件实现并修复稳定工具链编译诊断；当前逐文件摘要记录本地实现差异。",
-      "description": "runtime format strings, fully compatible with std's macros",
-      "directory": "src/foundation/interpolator",
-      "files_sha256": {
-        "Cargo.toml": "982a77cf5d2de1e56c13ba9ebf3a5d7fb827bc33bc4a0d1d9183cbf82c701762",
-        "src/error.rs": "3e158f2c10de5c4624c1c90de2997860195eb0e692ec5b83fca2d9a2ced8e379",
-        "src/fmt/binary.rs": "a810e1ce3dc572cb659e99c378afc9f8392699c338edad7a461c8781d949b730",
-        "src/fmt/debug.rs": "c52307d07dd4455e489d23ed5dfa47b634523a137725a09ddfb78a5efa63e32e",
-        "src/fmt/display.rs": "ac8995994d16acd9bcef6a82ff3a30de21304e0ac68b96efffafab8f0c5d9d8d",
-        "src/fmt/iter.rs": "67d5536edb3accfa212845a53040ccb45c7e078a5ea49b82af21c2b93991caf0",
-        "src/fmt/lower_exp.rs": "16a37f74d3b52ad47c54fae443cf81355455681c7a4dcdfdf292f9a3868c3547",
-        "src/fmt/lower_hex.rs": "2a746321b5fe62f9a9630913c7c4342653d5aee85a73c2540c4b81fad595e7eb",
-        "src/fmt/lower_hex_question.rs": "e29bc027fb0bee4350200eaa562b21257ae7c133cfe9101ca6a168e4e2ca2742",
-        "src/fmt/mod.rs": "352d8ceb0b5d359290a5fe8fe7c6fe2411b2f78b09c5b5483f735aa35d854767",
-        "src/fmt/octal.rs": "9c74d3a452cbfc3c709a553b8fd63517d9659f96a96bd0c2f0f3ffa0e0e8588c",
-        "src/fmt/pointer.rs": "e47158faa8c1a00c149e77609d6f3b23acc2174f1c7e7234c7db6728bd87782f",
-        "src/fmt/upper_exp.rs": "e285a67d9a96f94e1f3a6bb94a34674ce973f4433b12148b4fcfa2d8d904805c",
-        "src/fmt/upper_hex.rs": "7bd134c73cf44b59e61961317c58586f7c361dd41027b721f2756702ee6d46f7",
-        "src/fmt/upper_hex_debug.rs": "4dbc163ae8129865cd74c224870b4cb8891e1743fb14427670e5adf217a3aa60",
-        "src/formattable.rs": "718f66842cb7d6c3e7853b1b9555fd94550c38ff5bdf861f7c92b056a2e09ff7",
-        "src/lib.rs": "82ad260f4cfe7adf2b26dd84fc8ebabcb64bd74f090f3ed57040af520f1d7707",
-        "src/macros.rs": "86e589a7617e45e347460983295c55cc273493b0edfc36255665d5180c629a00",
-        "src/parser.rs": "d51356f374aa9532c80f04c500708f71b7a6e47b43f5debf690c71bfbbd27df0"
-      },
-      "license": "MIT OR Apache-2.0",
-      "license_materials": [
-        "compliance/licenses/upstream/interpolator-0.5.0/LICENSE-APACHE",
-        "compliance/licenses/upstream/interpolator-0.5.0/LICENSE-MIT"
-      ],
-      "merged_into": "无；通过统一内部源码源接入",
-      "name": "interpolator",
-      "origin_directory": "vendor/rust/interpolator-0.5.0",
-      "repository": "https://github.com/ModProg/interpolator",
-      "status": "内部维护源码",
-      "upstream": {
-        "archive_sha256": "71dd52191aae121e8611f1e8dc3e324dd0dd1dee1e6dd91d10ee07a3cfb4d9d8",
-        "archive_url": "https://static.crates.io/crates/interpolator/interpolator-0.5.0.crate",
-        "name": "interpolator",
-        "version": "0.5.0"
-      },
-      "vcs": {
-        "git": {
-          "sha1": "3000bc114c12b8a4d7cc480e480e0e1af12dfcb8"
-        },
-        "path_in_vcs": ""
-      },
-      "version": "0.5.0"
-    },
     "src/foundation/ipnet": {
       "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 2026-10-20：移除不可达条件实现并修复稳定工具链编译诊断；当前逐文件摘要记录本地实现差异。",
       "description": "Provides types and useful methods for working with IPv4 and IPv6 network addresses, commonly called IP prefixes. The new `IpNet`, `Ipv4Net`, and `Ipv6Net` types build on the existing `IpAddr`, `Ipv4Addr`, and `Ipv6Addr` types already provided in Rust's standard library and align to their design to stay consistent. The module also provides useful traits that extend `Ipv4Addr` and `Ipv6Addr` with methods for `Add`, `Sub`, `BitAnd`, and `BitOr` operations. The module only uses stable feature so it is guaranteed to compile using the stable toolchain.",
@@ -93821,73 +93530,6 @@
       },
       "version": "0.11.11"
     },
-    "src/foundation/manyhow": {
-      "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。",
-      "description": "proc macro error handling à la anyhow x proc-macro-error",
-      "directory": "src/foundation/manyhow",
-      "files_sha256": {
-        "Cargo.toml": "05638c31f318027769be671ad03f2d0ad530c6a149cb9f8f19b33a73f4a1aa17",
-        "src/error.rs": "42c2256516bb3e0e292436d0d471ed7f44636e52427c3cb4c5e47b64a2c060fe",
-        "src/lib.rs": "8cf21370e91d46b325a18b3df8741b1b7e1dde32b2de9e5c487d3719a0b1bd6c",
-        "src/macro_rules.rs": "49b4850326cd49beadd18ee17556c4761eed7e52bb38ccba7a35ca47790dc742",
-        "src/parse_to_tokens.rs": "ba0404082dbfeaa833c590772f96d869c376d6c51309b3cd959835935519e560",
-        "src/span_ranged.rs": "9e3bf57cb9f0f8b7ebb85a73ac2180c3662499b83b8f16e9abb66af6ad7fd36c"
-      },
-      "license": "MIT OR Apache-2.0",
-      "license_materials": [
-        "compliance/licenses/upstream/manyhow-0.14.1/LICENSE-APACHE",
-        "compliance/licenses/upstream/manyhow-0.14.1/LICENSE-MIT"
-      ],
-      "merged_into": "无；通过统一内部源码源接入",
-      "name": "manyhow",
-      "origin_directory": "vendor/rust/manyhow-0.14.1",
-      "repository": "https://github.com/ModProg/manyhow",
-      "status": "内部维护源码",
-      "upstream": {
-        "archive_sha256": "f1704b073316272a6785b70599f91f73b49022c2e290b065591ee6b9109ed8c7",
-        "archive_url": "https://static.crates.io/crates/manyhow/manyhow-0.14.1.crate",
-        "name": "manyhow",
-        "version": "0.14.1"
-      },
-      "vcs": {
-        "git": {
-          "sha1": "e2627cd8c29e585a457efcc5ab7f4059ab185d7e"
-        },
-        "path_in_vcs": ""
-      },
-      "version": "0.14.1"
-    },
-    "src/foundation/manyhow-macros": {
-      "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。",
-      "description": "Macro for manyhow",
-      "directory": "src/foundation/manyhow-macros",
-      "files_sha256": {
-        "Cargo.toml": "db7f2237c79b10b4a68612307418b4d02b753eeef15ba024f90e5a52e9d75b09",
-        "src/lib.rs": "40ce4c366e52872d8dc04a4daded0064cd04b3f4ed1f1033e1c3f3667b8e4041"
-      },
-      "license": "MIT OR Apache-2.0",
-      "license_materials": [
-        "compliance/licenses/upstream/manyhow-macros-0.14.1/LICENSE"
-      ],
-      "merged_into": "无；通过统一内部源码源接入",
-      "name": "manyhow-macros",
-      "origin_directory": "vendor/rust/manyhow-macros-0.14.1",
-      "repository": "https://github.com/ModProg/manyhow",
-      "status": "内部维护源码",
-      "upstream": {
-        "archive_sha256": "31601db71f1f5fb6f831a18aa3052d13a62528ee4f2cba7e8c9a5e258d953725",
-        "archive_url": "https://static.crates.io/crates/manyhow-macros/manyhow-macros-0.14.1.crate",
-        "name": "manyhow-macros",
-        "version": "0.14.1"
-      },
-      "vcs": {
-        "git": {
-          "sha1": "e2627cd8c29e585a457efcc5ab7f4059ab185d7e"
-        },
-        "path_in_vcs": "macros"
-      },
-      "version": "0.14.1"
-    },
     "src/foundation/matchit": {
       "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 清理独立演示：移除 1 个独立示例程序及专属输入（2872 字节）；保留文档编译、真实测试及性能基准输入。",
       "description": "A high performance, zero-copy URL router.",
@@ -94675,41 +94317,6 @@
       },
       "version": "0.1.6"
     },
-    "src/foundation/proc-macro-utils": {
-      "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 2026-10-20：移除不可达条件实现并修复稳定工具链编译诊断；当前逐文件摘要记录本地实现差异。",
-      "description": "low-level utilities on proc-macro and proc-macro2 types",
-      "directory": "src/foundation/proc-macro-utils",
-      "files_sha256": {
-        "Cargo.toml": "25bb597c559cd17ead99b260f743bf580df4420cc6b17c194fd0bd9ab2e1105e",
-        "src/__private.rs": "be8d5b62853b2ebae30c7e8876159513ffc37100ebc61358b043498e21dcfd78",
-        "src/assert.rs": "b9f485dbd24618a11b22e7da33035f5a317085f3a10f1396dc3f0e309e5d42cb",
-        "src/lib.rs": "b74acc94f5bc9dcb8e88a0bd0ae5cda82c7da23438c49c411df78368582b500d",
-        "src/parser.rs": "f504109029c6f535475c4d93d06909698e561efad12b01de4629a10c4f948ff3"
-      },
-      "license": "MIT OR Apache-2.0",
-      "license_materials": [
-        "compliance/licenses/upstream/proc-macro-utils-0.10.0/LICENSE-APACHE",
-        "compliance/licenses/upstream/proc-macro-utils-0.10.0/LICENSE-MIT"
-      ],
-      "merged_into": "无；通过统一内部源码源接入",
-      "name": "proc-macro-utils",
-      "origin_directory": "vendor/rust/proc-macro-utils-0.10.0",
-      "repository": "https://github.com/ModProg/proc-macro-utils",
-      "status": "内部维护源码",
-      "upstream": {
-        "archive_sha256": "eeaf08a13de400bc215877b5bdc088f241b12eb42f0a548d3390dc1c56bb7071",
-        "archive_url": "https://static.crates.io/crates/proc-macro-utils/proc-macro-utils-0.10.0.crate",
-        "name": "proc-macro-utils",
-        "version": "0.10.0"
-      },
-      "vcs": {
-        "git": {
-          "sha1": "a6995bb9ff248b55fcefd1f6842f72676f5dbcf8"
-        },
-        "path_in_vcs": ""
-      },
-      "version": "0.10.0"
-    },
     "src/foundation/proc-macro2": {
       "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。",
       "description": "A substitute implementation of the compiler's `proc_macro` API to decouple token-based libraries from the procedural macro use case.",
@@ -94831,73 +94438,6 @@
         "path_in_vcs": ""
       },
       "version": "1.0.47"
-    },
-    "src/foundation/quote-use": {
-      "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。",
-      "description": "Support `use` in procmacros hygienically",
-      "directory": "src/foundation/quote-use",
-      "files_sha256": {
-        "Cargo.toml": "76731ced54f44d7f2df6b48402e3b5c4f9c15d9497bd69201db35f39736c81b4",
-        "src/lib.rs": "639c26737c487f34717c63e9ac9f93f68b2177c5c2c75b88d720c3bcd53735cf"
-      },
-      "license": "MIT",
-      "license_materials": [
-        "compliance/licenses/upstream/quote-use-0.9.0/LICENSE"
-      ],
-      "merged_into": "无；通过统一内部源码源接入",
-      "name": "quote-use",
-      "origin_directory": "vendor/rust/quote-use-0.9.0",
-      "repository": "https://github.com/ModProg/quote-use",
-      "status": "内部维护源码",
-      "upstream": {
-        "archive_sha256": "48356e493823dc3c1d7e9fc7b3ff204ecec48afbdd718fc4134091b88eb63f3d",
-        "archive_url": "https://static.crates.io/crates/quote-use/quote-use-0.9.0.crate",
-        "name": "quote-use",
-        "version": "0.9.0"
-      },
-      "vcs": {
-        "git": {
-          "sha1": "6e5feb569fa6c7be3cc7ecf9932fa7d0177063b3"
-        },
-        "path_in_vcs": ""
-      },
-      "version": "0.9.0"
-    },
-    "src/foundation/quote-use-macros": {
-      "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。",
-      "description": "Support `use` in procmacros hygienically",
-      "directory": "src/foundation/quote-use-macros",
-      "files_sha256": {
-        "Cargo.toml": "2d2c52f3431ea930dd9ae2eea96ef1aaf9b9a694192fec9914d24f32ed977ecb",
-        "src/lib.rs": "9bbe5e000fe406b4c9e6a378d3ef70f6172fc19a15c2df360861904d57a457e4",
-        "src/prelude.rs": "81fbfc01a92be367acdbc466ab63db80bb1a6ce7823005965962b2af12694c9b",
-        "src/prelude/2021.rs": "97603603be151e231518e7760307129f28081f9473d643a135129ccd1ccc0d2c",
-        "src/prelude/core.rs": "33cd688afb240a353a629a369b45628879e472649e8bb12ccde425cd38844293",
-        "src/prelude/std.rs": "5e52806875ed22c66c06c7bf3776c78943b876a593dbff811c9a1e3fbeb548eb",
-        "src/use_parser.rs": "75def5cb16ef317e4cf2347d45eb9016a5fe92fe92251d2af7d66a91f97fbb80"
-      },
-      "license": "MIT",
-      "license_materials": [
-        "compliance/licenses/upstream/quote-use-macros-0.9.0/LICENSE"
-      ],
-      "merged_into": "无；通过统一内部源码源接入",
-      "name": "quote-use-macros",
-      "origin_directory": "vendor/rust/quote-use-macros-0.9.0",
-      "repository": "https://github.com/ModProg/quote-use",
-      "status": "内部维护源码",
-      "upstream": {
-        "archive_sha256": "8cf1c5de6a7cc231c71e03c77aa4c7019097859ea7029156b54d2894a8430704",
-        "archive_url": "https://static.crates.io/crates/quote-use-macros/quote-use-macros-0.9.0.crate",
-        "name": "quote-use-macros",
-        "version": "0.9.0"
-      },
-      "vcs": {
-        "git": {
-          "sha1": "6e5feb569fa6c7be3cc7ecf9932fa7d0177063b3"
-        },
-        "path_in_vcs": "quote-use-macros"
-      },
-      "version": "0.9.0"
     },
     "src/foundation/random-generator-core": {
       "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 2026-10-20：移除不可达条件实现并修复稳定工具链编译诊断；当前逐文件摘要记录本地实现差异。",
@@ -97555,7 +97095,7 @@
       "description": "🧰 The Rust SQL Toolkit. An async, pure Rust SQL crate featuring compile-time checked queries without a DSL. Supports PostgreSQL, MySQL, and SQLite.",
       "directory": "src/foundation/sqlite-access",
       "files_sha256": {
-        "Cargo.toml": "d7ce7a3b5709afeab1f5404b51a7b58e4cfbaf403845110c5579507672732993",
+        "Cargo.toml": "527664a39e0bc38ab7912e150b6b62a044c700af342d011a72d5bb8625e13e91",
         "benches/sqlite/describe.rs": "e3846b1cd17054663e135116aecde934c2d20f3b83592562a3e34596168f0e94",
         "contrib/ide/vscode/settings.json": "af1e5804fd68126c54f709b71aee3c7dd4dca964f509257c2dd331006dda66ad",
         "gen-changelog.sh": "be0292a711d7a7bb03b57b9b3534dbb34d084189ed85d32c528d0a39e2e156a7",
@@ -97602,7 +97142,7 @@
         "src/query_engine/types/text.rs": "cb0b12a819478a21e741eff4e6e71e30d5946fab374ee4ae783309ff9783f5a3",
         "src/query_engine/value.rs": "546f85b9e7eefea448f9908fba309e29f451e616c54a8bd64d493851b0b146d4",
         "src/query_engine/value_debug.rs": "efc3328047f4c52308967d60218c8cd18047cfdd9d5508fe0b62d2e5ee892641",
-        "src/sqlite/arguments.rs": "c60b98254e41ba9437dd9d5de835b096e948719cfd7bd12f9194b7b1c843c9fd",
+        "src/sqlite/arguments.rs": "c21a7ff0d70444d4fa637606e5242ee20f50aeff3dd8c5250776d0c6b0f558e5",
         "src/sqlite/column.rs": "084ac19c20989d03deb34d89be43d58133dcfe638d055f14e5c4b5b2c0d7001f",
         "src/sqlite/connection/collation.rs": "f4d6f4783804e52f71e6dcdab5c9e680f8e44d03afb64f51ee1552b8e6341299",
         "src/sqlite/connection/describe.rs": "4245e6b8bce8fec1764529ecca126870e84ee8d3fe0340e0fa4149236e72896d",
@@ -101672,13 +101212,14 @@
       "description": "Project CSR view and component macros",
       "directory": "src/macros",
       "files_sha256": {
-        "Cargo.toml": "34ae205cb1da53da61bfa0e625f47e99dc524011aa56d26452234c48cbd9f5c7",
-        "src/component.rs": "2de5b2edb467395f8ee4cda35d3ce0488671fd0c4b70c7a28a469a1a7c3ccf92",
+        "Cargo.toml": "0a0255c12e82b72646ff5b356f3b3dffee67dfa3c652bd89210b672aa703438d",
+        "src/component.rs": "8d1ec4dc361d06135b8519bf623172665d37b9d86d92f47c81572bb9a2481bb6",
         "src/diagnostics.rs": "b501d80659ee3202adc4f60e6eec000389fe34eeb19cc0fb60e02c15aaabd03e",
-        "src/lib.rs": "e9927ff107dd16a29bdec54b6e188b26cf9d69fe04795d1e405056dbd244abe6",
+        "src/lib.rs": "98e54fddf8c3158126335057b77fca502230bab9b6a0763d6735eff6f70c4014",
         "src/memo.rs": "9ac1857a33a83f73eafb576895ce02f3d0c0898ca869ae8741747fa281a01539",
+        "src/prop_options.rs": "020bb41625d3e026d2963e3c1c6eda87a16f3b968fb5c5380411e9c838f35424",
         "src/slice.rs": "496a010eedcb7f8c4b74a9aed209f2ff5c435d3efba6f9d3d877864eb18fc943",
-        "src/slot.rs": "323e72f091b67fea8b7cf0b8706821ad1a8deebec7ab3f4bfe79163c62b6039f",
+        "src/slot.rs": "49ea36d20dcc5e92cc62547d2cfca2fd541e52909c608d1bd848756b78d13af5",
         "src/view/component_builder.rs": "2cb6a02c28818b01533485afc2431d210cbf1784b5bff25315d4a870737acf5c",
         "src/view/mod.rs": "bfdf3d476685542b5a5b4438e4077562dd4e53baa44ac35a238a2b6db9d0826b",
         "src/view/slot_helper.rs": "09aef49e24e87d876ef884c911dcef068b809d2d0756ca23e2f7da7b5fa90203",
@@ -104940,6 +104481,7 @@
     "docs/upstream/atomic-waker-1.1.2/CHANGELOG.md": "cc4994b303e1f0926c064585b6a3177c9e8f6a5f3dae21c0692310e55ed4f24b",
     "docs/upstream/atomic-waker-1.1.2/README.md": "59f887c1f6ed5f5b29fbf2b8b24fa57e9d9e48aee263afba44d2a662701409c7",
     "docs/upstream/attribute-derive-0.11.0/README.md": "477694978292cfb42094bfbc48aa6f937ca52a8b99bbe4d5a6809b3f0c9879e0",
+    "docs/upstream/attribute-derive-0.11.0/docs/traits.html": "e4cc3f6cd577623236e969907f420331d4679ad6b5c6d3903f826386de606a95",
     "docs/upstream/attribute-derive-macro-0.11.0/README.md": "8eae4d0b145ca37f68fbaf37fdf8568cf4fc0a9b955c59191a7f9531c3e9211e",
     "docs/upstream/autocfg-1.5.1/README.md": "1c6c43f1d22ab1c6411b82862c356c550947f3cecbb4c7eede5edefc8890ff32",
     "docs/upstream/axum-0.8.9/CHANGELOG.md": "3226641ee081e76ef9d0591bc080f9b3881846354ffaaf2aad9018bd662df6b5",
@@ -112163,21 +111705,6 @@
             "runtime"
           ]
         },
-        "src/foundation/atoi": {
-          "features": [
-            "default",
-            "std"
-          ],
-          "roles": [
-            "runtime"
-          ]
-        },
-        "src/foundation/autocfg": {
-          "features": [],
-          "roles": [
-            "compile"
-          ]
-        },
         "src/foundation/axum-macros": {
           "features": [
             "default"
@@ -112733,21 +112260,6 @@
         "src/foundation/nu-ansi-term": {
           "features": [
             "default",
-            "std"
-          ],
-          "roles": [
-            "runtime"
-          ]
-        },
-        "src/foundation/numeric": {
-          "features": [
-            "alloc",
-            "bigint",
-            "collection",
-            "complex",
-            "integer",
-            "iter",
-            "rational",
             "std"
           ],
           "roles": [
@@ -113451,20 +112963,6 @@
             "runtime"
           ]
         },
-        "src/foundation/attribute-derive": {
-          "features": [
-            "syntax-full"
-          ],
-          "roles": [
-            "compile"
-          ]
-        },
-        "src/foundation/attribute-derive-macro": {
-          "features": [],
-          "roles": [
-            "compile"
-          ]
-        },
         "src/foundation/blake3": {
           "features": [
             "default",
@@ -113667,14 +113165,6 @@
             "runtime"
           ]
         },
-        "src/foundation/interpolator": {
-          "features": [
-            "iter"
-          ],
-          "roles": [
-            "compile"
-          ]
-        },
         "src/foundation/iterator-toolkit": {
           "features": [
             "default",
@@ -113711,22 +113201,6 @@
           ],
           "roles": [
             "runtime"
-          ]
-        },
-        "src/foundation/manyhow": {
-          "features": [
-            "default",
-            "macros",
-            "rust-syntax"
-          ],
-          "roles": [
-            "compile"
-          ]
-        },
-        "src/foundation/manyhow-macros": {
-          "features": [],
-          "roles": [
-            "compile"
           ]
         },
         "src/foundation/memchr": {
@@ -113774,19 +113248,6 @@
             "runtime"
           ]
         },
-        "src/foundation/proc-macro-utils": {
-          "features": [
-            "default",
-            "parser",
-            "proc-macro",
-            "proc-macro2",
-            "quote",
-            "smallvec"
-          ],
-          "roles": [
-            "compile"
-          ]
-        },
         "src/foundation/proc-macro2": {
           "features": [
             "default",
@@ -113810,18 +113271,6 @@
             "default",
             "proc-macro"
           ],
-          "roles": [
-            "compile"
-          ]
-        },
-        "src/foundation/quote-use": {
-          "features": [],
-          "roles": [
-            "compile"
-          ]
-        },
-        "src/foundation/quote-use-macros": {
-          "features": [],
           "roles": [
             "compile"
           ]
@@ -113930,15 +113379,6 @@
           ],
           "roles": [
             "runtime"
-          ]
-        },
-        "src/foundation/smallvec": {
-          "features": [
-            "const_generics",
-            "const_new"
-          ],
-          "roles": [
-            "compile"
           ]
         },
         "src/foundation/system-entropy": {
@@ -115113,15 +114553,6 @@
         },
         "src/foundation/arrayvec": {
           "features": [],
-          "roles": [
-            "compile"
-          ]
-        },
-        "src/foundation/atoi": {
-          "features": [
-            "default",
-            "std"
-          ],
           "roles": [
             "compile"
           ]
@@ -116493,21 +115924,6 @@
             "compile"
           ]
         },
-        "src/foundation/atoi": {
-          "features": [
-            "default",
-            "std"
-          ],
-          "roles": [
-            "compile"
-          ]
-        },
-        "src/foundation/autocfg": {
-          "features": [],
-          "roles": [
-            "compile"
-          ]
-        },
         "src/foundation/blake3": {
           "features": [
             "default",
@@ -116870,21 +116286,6 @@
         "src/foundation/nu-ansi-term": {
           "features": [
             "default",
-            "std"
-          ],
-          "roles": [
-            "compile"
-          ]
-        },
-        "src/foundation/numeric": {
-          "features": [
-            "alloc",
-            "bigint",
-            "collection",
-            "complex",
-            "integer",
-            "iter",
-            "rational",
             "std"
           ],
           "roles": [
@@ -118165,6 +117566,154 @@
         "path_in_vcs": "crates/anstyle-wincon"
       },
       "version": "3.0.11"
+    },
+    "src/foundation/atoi": {
+      "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 2026-10-20：移除不可达条件实现并修复稳定工具链编译诊断；当前逐文件摘要记录本地实现差异。",
+      "description": "Parse integers directly from `[u8]` slices in safe code",
+      "directory": "src/foundation/atoi",
+      "files_sha256": {
+        "Cargo.toml": "b5f15ca70c88dce01cd68300cd0f87c1f337c1f6be03958fbb4fdfbcdd7fdfe6",
+        "benches/benches.rs": "1dd462d7ef67add836bdd22e92db2828ac8e67dac3c87b907d23cb58b34f5510",
+        "src/lib.rs": "e0642993d733deccb6e399257f54ea959287b244622e536fda85639439a655c4"
+      },
+      "license": "MIT",
+      "license_materials": [
+        "compliance/licenses/upstream/atoi-2.0.0/LICENSE"
+      ],
+      "merged_into": "无；通过统一内部源码源接入",
+      "name": "atoi",
+      "origin_directory": "vendor/rust/atoi-2.0.0",
+      "repository": "https://github.com/pacman82/atoi-rs",
+      "retirement": {
+        "bytes": 27512,
+        "category": "unused-dependency",
+        "external_tests": {
+          "bytes": 1561,
+          "directory": "src/foundation/atoi",
+          "file_count": 1,
+          "files": [
+            {
+              "path": "test/foundation/atoi/unit/src/lib/test_645.rs",
+              "sha256": "91c07c5f9263442b790211defd1a21b7805b3c257070394aba6255d1f6e9d6ec",
+              "source": "src/foundation/atoi/src/lib.rs",
+              "source_sha256_before": "e7733bd7453ff989767ff7b93c39727000931b5a5d68925b56e92f69b15d0ef8"
+            }
+          ],
+          "origin_directory": "vendor/rust/atoi-2.0.0",
+          "roots": [
+            "test/foundation/atoi"
+          ]
+        },
+        "file_count": 3,
+        "reason": "Replaced sole SQLite parameter consumer with strict checked ASCII ordinal parsing.",
+        "targets": [
+          "wasm32-unknown-unknown",
+          "x86_64-unknown-linux-gnu"
+        ]
+      },
+      "status": "内部维护源码",
+      "upstream": {
+        "archive_sha256": "f28d99ec8bfea296261ca1af174f24225171fea9664ba9003cbebee704810528",
+        "archive_url": "https://static.crates.io/crates/atoi/atoi-2.0.0.crate",
+        "name": "atoi",
+        "version": "2.0.0"
+      },
+      "vcs": {
+        "git": {
+          "sha1": "e4f73c8c0d21bd8cb89bf67a7118ad4c117562ba"
+        },
+        "path_in_vcs": ""
+      },
+      "version": "2.0.0"
+    },
+    "src/foundation/attribute-derive": {
+      "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。",
+      "description": "Clap like parsing for attributes in proc-macros",
+      "directory": "src/foundation/attribute-derive",
+      "files_sha256": {
+        "Cargo.toml": "dab488fcb3c28bc43e0147bd5e08c11da7887768d43495d21e6abec3d9291c12",
+        "docs/traits.html": "e4cc3f6cd577623236e969907f420331d4679ad6b5c6d3903f826386de606a95",
+        "src/from_partial.rs": "6feb64ef85c4e77ddb9d34948441747b7d1717b0a7a872149070bd551bea7164",
+        "src/lib.rs": "186f6b26f01f96b72d7ea6167fd023f6ed67c957c3f519bbb847a0ccd9eed4ed",
+        "src/parsing.rs": "e1504084801886706113fcd29ea478e607cb5cfac2a7d2add94d927253048325",
+        "src/std_impls.rs": "cbaac7d883bf086fdc84ccb09fd9d31bfee24d2ebd919e30dbe3868b58d9f677",
+        "src/syntax_impls.rs": "11112b576dba1b84569ae969b3670735b617bdb9f3594093f2e2e7d5d7fcf1ff",
+        "src/utils.rs": "6a684bb430b0dcbd03ff5ac9dafcf38621172c60805f7ea0e28c1f89d63f377f"
+      },
+      "license": "MIT OR Apache-2.0",
+      "license_materials": [
+        "compliance/licenses/upstream/attribute-derive-0.11.0/LICENSE-APACHE",
+        "compliance/licenses/upstream/attribute-derive-0.11.0/LICENSE-MIT"
+      ],
+      "merged_into": "无；通过统一内部源码源接入",
+      "name": "attribute-derive",
+      "origin_directory": "vendor/rust/attribute-derive-0.11.0",
+      "repository": "https://github.com/ModProg/attribute-derive",
+      "retirement": {
+        "bytes": 61757,
+        "category": "unused-dependency",
+        "file_count": 8,
+        "reason": "Replaced sole generic property-derive consumer with the project-specific component/slot parser; no source bodies transferred. Diagnostic span and merge/conflict design attribution remains in docs/architecture/view-prop-parser.md.",
+        "targets": [
+          "wasm32-unknown-unknown",
+          "x86_64-unknown-linux-gnu"
+        ]
+      },
+      "status": "内部维护源码",
+      "upstream": {
+        "archive_sha256": "d2f9ef7a68684657ce9da341c934c73b63df7a3585a61e366d84c84ed5d3d167",
+        "archive_url": "https://static.crates.io/crates/attribute-derive/attribute-derive-0.11.0.crate",
+        "name": "attribute-derive",
+        "version": "0.11.0"
+      },
+      "vcs": {
+        "git": {
+          "sha1": "e2be97a0472806fce7d64573bf154f6cfb8f498e"
+        },
+        "path_in_vcs": ""
+      },
+      "version": "0.11.0"
+    },
+    "src/foundation/attribute-derive-macro": {
+      "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 2026-10-21：实际消费者标准库整合与依赖去重；详见 docs/reports/foundation-sqlite-cloud-20261021.md，原始身份和法律材料保留。",
+      "description": "Clap for proc macro attributes",
+      "directory": "src/foundation/attribute-derive-macro",
+      "files_sha256": {
+        "Cargo.toml": "08b7d0be07c9a0f7f95df99c52f60625be626e9fbf855145ef18569d9a04de1c",
+        "src/lib.rs": "d1fc464ca1e1d34a2bb04d0dafc4455046980bc4e3e82d10f0d0a3969db0bd1d"
+      },
+      "license": "MIT",
+      "license_materials": [
+        "compliance/licenses/upstream/attribute-derive-macro-0.11.0/LICENSE"
+      ],
+      "merged_into": "无；通过统一内部源码源接入",
+      "name": "attribute-derive-macro",
+      "origin_directory": "vendor/rust/attribute-derive-macro-0.11.0",
+      "repository": "https://github.com/ModProg/attribute-derive",
+      "retirement": {
+        "bytes": 39498,
+        "category": "unused-dependency",
+        "file_count": 2,
+        "reason": "Replaced sole generic property-derive consumer with the project-specific component/slot parser; no source bodies transferred. Diagnostic span and merge/conflict design attribution remains in docs/architecture/view-prop-parser.md.",
+        "targets": [
+          "wasm32-unknown-unknown",
+          "x86_64-unknown-linux-gnu"
+        ]
+      },
+      "status": "内部维护源码",
+      "upstream": {
+        "archive_sha256": "300d426e5e73549125bb8e4649bdd5508f82c94ddf898fb0517246e71dfb8e98",
+        "archive_url": "https://static.crates.io/crates/attribute-derive-macro/attribute-derive-macro-0.11.0.crate",
+        "name": "attribute-derive-macro",
+        "version": "0.11.0"
+      },
+      "vcs": {
+        "git": {
+          "sha1": "e2be97a0472806fce7d64573bf154f6cfb8f498e"
+        },
+        "path_in_vcs": "macro"
+      },
+      "version": "0.11.0"
     },
     "src/foundation/base64-0.22.1": {
       "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 2026-10-20：移除不可达条件实现并修复稳定工具链编译诊断；当前逐文件摘要记录本地实现差异。 清理独立演示：移除 1 个独立示例程序及专属输入（2318 字节）；保留文档编译、真实测试及性能基准输入。",
@@ -119834,6 +119383,94 @@
       },
       "version": "0.4.3"
     },
+    "src/foundation/interpolator": {
+      "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 2026-10-20：移除不可达条件实现并修复稳定工具链编译诊断；当前逐文件摘要记录本地实现差异。",
+      "description": "runtime format strings, fully compatible with std's macros",
+      "directory": "src/foundation/interpolator",
+      "files_sha256": {
+        "Cargo.toml": "982a77cf5d2de1e56c13ba9ebf3a5d7fb827bc33bc4a0d1d9183cbf82c701762",
+        "src/error.rs": "3e158f2c10de5c4624c1c90de2997860195eb0e692ec5b83fca2d9a2ced8e379",
+        "src/fmt/binary.rs": "a810e1ce3dc572cb659e99c378afc9f8392699c338edad7a461c8781d949b730",
+        "src/fmt/debug.rs": "c52307d07dd4455e489d23ed5dfa47b634523a137725a09ddfb78a5efa63e32e",
+        "src/fmt/display.rs": "ac8995994d16acd9bcef6a82ff3a30de21304e0ac68b96efffafab8f0c5d9d8d",
+        "src/fmt/iter.rs": "67d5536edb3accfa212845a53040ccb45c7e078a5ea49b82af21c2b93991caf0",
+        "src/fmt/lower_exp.rs": "16a37f74d3b52ad47c54fae443cf81355455681c7a4dcdfdf292f9a3868c3547",
+        "src/fmt/lower_hex.rs": "2a746321b5fe62f9a9630913c7c4342653d5aee85a73c2540c4b81fad595e7eb",
+        "src/fmt/lower_hex_question.rs": "e29bc027fb0bee4350200eaa562b21257ae7c133cfe9101ca6a168e4e2ca2742",
+        "src/fmt/mod.rs": "352d8ceb0b5d359290a5fe8fe7c6fe2411b2f78b09c5b5483f735aa35d854767",
+        "src/fmt/octal.rs": "9c74d3a452cbfc3c709a553b8fd63517d9659f96a96bd0c2f0f3ffa0e0e8588c",
+        "src/fmt/pointer.rs": "e47158faa8c1a00c149e77609d6f3b23acc2174f1c7e7234c7db6728bd87782f",
+        "src/fmt/upper_exp.rs": "e285a67d9a96f94e1f3a6bb94a34674ce973f4433b12148b4fcfa2d8d904805c",
+        "src/fmt/upper_hex.rs": "7bd134c73cf44b59e61961317c58586f7c361dd41027b721f2756702ee6d46f7",
+        "src/fmt/upper_hex_debug.rs": "4dbc163ae8129865cd74c224870b4cb8891e1743fb14427670e5adf217a3aa60",
+        "src/formattable.rs": "718f66842cb7d6c3e7853b1b9555fd94550c38ff5bdf861f7c92b056a2e09ff7",
+        "src/lib.rs": "82ad260f4cfe7adf2b26dd84fc8ebabcb64bd74f090f3ed57040af520f1d7707",
+        "src/macros.rs": "86e589a7617e45e347460983295c55cc273493b0edfc36255665d5180c629a00",
+        "src/parser.rs": "d51356f374aa9532c80f04c500708f71b7a6e47b43f5debf690c71bfbbd27df0"
+      },
+      "license": "MIT OR Apache-2.0",
+      "license_materials": [
+        "compliance/licenses/upstream/interpolator-0.5.0/LICENSE-APACHE",
+        "compliance/licenses/upstream/interpolator-0.5.0/LICENSE-MIT"
+      ],
+      "merged_into": "无；通过统一内部源码源接入",
+      "name": "interpolator",
+      "origin_directory": "vendor/rust/interpolator-0.5.0",
+      "repository": "https://github.com/ModProg/interpolator",
+      "retirement": {
+        "bytes": 237945,
+        "category": "unused-dependency",
+        "external_tests": {
+          "bytes": 7779,
+          "directory": "src/foundation/interpolator",
+          "file_count": 3,
+          "files": [
+            {
+              "path": "test/foundation/interpolator/unit/src/fmt/iter/test_85.rs",
+              "sha256": "45350142f108ce0d239d6b732b54c498689b1f56a36e3387ba3c2603d778d0bc",
+              "source": "src/foundation/interpolator/src/fmt/iter.rs",
+              "source_sha256_before": "b6e7d106ea8591f2dad4f8767a0010704a8871d2a943cd526008bb17f85836dc"
+            },
+            {
+              "path": "test/foundation/interpolator/unit/src/macros/test_395.rs",
+              "sha256": "424ccf61a859d1043a79a6004a23a1c982dae64580c0a57fd170ea4d0a9e5209",
+              "source": "src/foundation/interpolator/src/macros.rs",
+              "source_sha256_before": "9cb530c98cc32471e6e6f413737d7617abef6011a33e11e158b285ace29de3d0"
+            },
+            {
+              "path": "test/foundation/interpolator/unit/src/parser/test_334.rs",
+              "sha256": "2383652aba62841190212614a1db51a2172c1a2875abf8b7d6d6df705d96410e",
+              "source": "src/foundation/interpolator/src/parser.rs",
+              "source_sha256_before": "ff48932ec16ef2e27d62a7e405e8a717db2e8d5835af6f5749308d51a83292f6"
+            }
+          ],
+          "origin_directory": "vendor/rust/interpolator-0.5.0",
+          "roots": [
+            "test/foundation/interpolator"
+          ]
+        },
+        "file_count": 19,
+        "reason": "Replaced sole generic property-derive consumer with the project-specific component/slot parser; no source bodies transferred.",
+        "targets": [
+          "wasm32-unknown-unknown",
+          "x86_64-unknown-linux-gnu"
+        ]
+      },
+      "status": "内部维护源码",
+      "upstream": {
+        "archive_sha256": "71dd52191aae121e8611f1e8dc3e324dd0dd1dee1e6dd91d10ee07a3cfb4d9d8",
+        "archive_url": "https://static.crates.io/crates/interpolator/interpolator-0.5.0.crate",
+        "name": "interpolator",
+        "version": "0.5.0"
+      },
+      "vcs": {
+        "git": {
+          "sha1": "3000bc114c12b8a4d7cc480e480e0e1af12dfcb8"
+        },
+        "path_in_vcs": ""
+      },
+      "version": "0.5.0"
+    },
     "src/foundation/is_terminal_polyfill": {
       "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。",
       "description": "Polyfill for `is_terminal` stdlib feature for use with older MSRVs",
@@ -120270,6 +119907,134 @@
       },
       "vcs": null,
       "version": "0.1.3"
+    },
+    "src/foundation/manyhow": {
+      "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。",
+      "description": "proc macro error handling à la anyhow x proc-macro-error",
+      "directory": "src/foundation/manyhow",
+      "files_sha256": {
+        "Cargo.toml": "05638c31f318027769be671ad03f2d0ad530c6a149cb9f8f19b33a73f4a1aa17",
+        "src/error.rs": "42c2256516bb3e0e292436d0d471ed7f44636e52427c3cb4c5e47b64a2c060fe",
+        "src/lib.rs": "8cf21370e91d46b325a18b3df8741b1b7e1dde32b2de9e5c487d3719a0b1bd6c",
+        "src/macro_rules.rs": "49b4850326cd49beadd18ee17556c4761eed7e52bb38ccba7a35ca47790dc742",
+        "src/parse_to_tokens.rs": "ba0404082dbfeaa833c590772f96d869c376d6c51309b3cd959835935519e560",
+        "src/span_ranged.rs": "9e3bf57cb9f0f8b7ebb85a73ac2180c3662499b83b8f16e9abb66af6ad7fd36c"
+      },
+      "license": "MIT OR Apache-2.0",
+      "license_materials": [
+        "compliance/licenses/upstream/manyhow-0.14.1/LICENSE-APACHE",
+        "compliance/licenses/upstream/manyhow-0.14.1/LICENSE-MIT"
+      ],
+      "merged_into": "无；通过统一内部源码源接入",
+      "name": "manyhow",
+      "origin_directory": "vendor/rust/manyhow-0.14.1",
+      "repository": "https://github.com/ModProg/manyhow",
+      "retirement": {
+        "bytes": 62747,
+        "category": "unused-dependency",
+        "external_tests": {
+          "bytes": 5666,
+          "directory": "src/foundation/manyhow",
+          "file_count": 5,
+          "files": [
+            {
+              "path": "test/foundation/manyhow/functions/src/lib/function_macro_722.rs",
+              "sha256": "a3f3966dffbdd863a5bdc13258644974af6a5a25a20b8d5bb1862d6e80769811",
+              "source": "src/foundation/manyhow/src/lib.rs",
+              "source_sha256_before": "b3cd7a3eec26a1fe7432ddea819c2790f2a6c84f381b19efce516ef624b30381"
+            },
+            {
+              "path": "test/foundation/manyhow/functions/src/parse_to_tokens/test_inference_113.rs",
+              "sha256": "89b449be70eea4e79850323c7e6aea42be506e5f3879d52de4d8f5a2ea0e8c7b",
+              "source": "src/foundation/manyhow/src/parse_to_tokens.rs",
+              "source_sha256_before": "b08fc4b06b3b13c62cb747087b219dcf3c4b19ac9729c318694f5113e9786a19"
+            },
+            {
+              "path": "test/foundation/manyhow/unit/src/error/test_476.rs",
+              "sha256": "8a2ffd19722966d7fb2fd5a2f0c406bc5038b88163062cebcc2937c18c0dee2c",
+              "source": "src/foundation/manyhow/src/error.rs",
+              "source_sha256_before": "7ccd11f585920d9a8e0d1274bcc07baa770d639ef655febd576948353c51e2b6"
+            },
+            {
+              "path": "test/foundation/manyhow/unit/src/macro_rules/test_227.rs",
+              "sha256": "1aec611915ceb37bcd703ea7312b6a61ab2bf1589005efc33cd7c1918d541394",
+              "source": "src/foundation/manyhow/src/macro_rules.rs",
+              "source_sha256_before": "27cfc11e7b453fdbc36790df3bae7f168206e064e51cef0f88ae74000ecbac27"
+            },
+            {
+              "path": "test/foundation/manyhow/unit/src/span_ranged/test_226.rs",
+              "sha256": "ee8758417a5ad7964e083d64ff8b6675323aec54afe3e885b883dcd8cdf0fcb1",
+              "source": "src/foundation/manyhow/src/span_ranged.rs",
+              "source_sha256_before": "e0eb45cdd05ee31c3bcdd79ba72ba6a5462dc76d9c19a8c9d8b4c6dbc56803d9"
+            }
+          ],
+          "origin_directory": "vendor/rust/manyhow-0.14.1",
+          "roots": [
+            "test/foundation/manyhow"
+          ]
+        },
+        "file_count": 6,
+        "reason": "Replaced sole generic property-derive consumer with the project-specific component/slot parser; no source bodies transferred.",
+        "targets": [
+          "wasm32-unknown-unknown",
+          "x86_64-unknown-linux-gnu"
+        ]
+      },
+      "status": "内部维护源码",
+      "upstream": {
+        "archive_sha256": "f1704b073316272a6785b70599f91f73b49022c2e290b065591ee6b9109ed8c7",
+        "archive_url": "https://static.crates.io/crates/manyhow/manyhow-0.14.1.crate",
+        "name": "manyhow",
+        "version": "0.14.1"
+      },
+      "vcs": {
+        "git": {
+          "sha1": "e2627cd8c29e585a457efcc5ab7f4059ab185d7e"
+        },
+        "path_in_vcs": ""
+      },
+      "version": "0.14.1"
+    },
+    "src/foundation/manyhow-macros": {
+      "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。",
+      "description": "Macro for manyhow",
+      "directory": "src/foundation/manyhow-macros",
+      "files_sha256": {
+        "Cargo.toml": "db7f2237c79b10b4a68612307418b4d02b753eeef15ba024f90e5a52e9d75b09",
+        "src/lib.rs": "40ce4c366e52872d8dc04a4daded0064cd04b3f4ed1f1033e1c3f3667b8e4041"
+      },
+      "license": "MIT OR Apache-2.0",
+      "license_materials": [
+        "compliance/licenses/upstream/manyhow-macros-0.14.1/LICENSE"
+      ],
+      "merged_into": "无；通过统一内部源码源接入",
+      "name": "manyhow-macros",
+      "origin_directory": "vendor/rust/manyhow-macros-0.14.1",
+      "repository": "https://github.com/ModProg/manyhow",
+      "retirement": {
+        "bytes": 15229,
+        "category": "unused-dependency",
+        "file_count": 2,
+        "reason": "Replaced sole generic property-derive consumer with the project-specific component/slot parser; no source bodies transferred.",
+        "targets": [
+          "wasm32-unknown-unknown",
+          "x86_64-unknown-linux-gnu"
+        ]
+      },
+      "status": "内部维护源码",
+      "upstream": {
+        "archive_sha256": "31601db71f1f5fb6f831a18aa3052d13a62528ee4f2cba7e8c9a5e258d953725",
+        "archive_url": "https://static.crates.io/crates/manyhow-macros/manyhow-macros-0.14.1.crate",
+        "name": "manyhow-macros",
+        "version": "0.14.1"
+      },
+      "vcs": {
+        "git": {
+          "sha1": "e2627cd8c29e585a457efcc5ab7f4059ab185d7e"
+        },
+        "path_in_vcs": "macros"
+      },
+      "version": "0.14.1"
     },
     "src/foundation/minimal-lexical": {
       "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 2026-10-20：SDK 工具链：改用 i32::MAX，ReverseView 明确输入借用生命周期，保留数值边界。",
@@ -121299,6 +121064,80 @@
       },
       "version": "0.2.37"
     },
+    "src/foundation/proc-macro-utils": {
+      "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 2026-10-20：移除不可达条件实现并修复稳定工具链编译诊断；当前逐文件摘要记录本地实现差异。",
+      "description": "low-level utilities on proc-macro and proc-macro2 types",
+      "directory": "src/foundation/proc-macro-utils",
+      "files_sha256": {
+        "Cargo.toml": "25bb597c559cd17ead99b260f743bf580df4420cc6b17c194fd0bd9ab2e1105e",
+        "src/__private.rs": "be8d5b62853b2ebae30c7e8876159513ffc37100ebc61358b043498e21dcfd78",
+        "src/assert.rs": "b9f485dbd24618a11b22e7da33035f5a317085f3a10f1396dc3f0e309e5d42cb",
+        "src/lib.rs": "b74acc94f5bc9dcb8e88a0bd0ae5cda82c7da23438c49c411df78368582b500d",
+        "src/parser.rs": "f504109029c6f535475c4d93d06909698e561efad12b01de4629a10c4f948ff3"
+      },
+      "license": "MIT OR Apache-2.0",
+      "license_materials": [
+        "compliance/licenses/upstream/proc-macro-utils-0.10.0/LICENSE-APACHE",
+        "compliance/licenses/upstream/proc-macro-utils-0.10.0/LICENSE-MIT"
+      ],
+      "merged_into": "无；通过统一内部源码源接入",
+      "name": "proc-macro-utils",
+      "origin_directory": "vendor/rust/proc-macro-utils-0.10.0",
+      "repository": "https://github.com/ModProg/proc-macro-utils",
+      "retirement": {
+        "bytes": 70333,
+        "category": "unused-dependency",
+        "external_tests": {
+          "bytes": 6368,
+          "directory": "src/foundation/proc-macro-utils",
+          "file_count": 3,
+          "files": [
+            {
+              "path": "test/foundation/proc-macro-utils/functions/src/assert/test_267.rs",
+              "sha256": "b6a49376597969918d74a6557c401bff1ebeb2df72890de9338f17724fb71592",
+              "source": "src/foundation/proc-macro-utils/src/assert.rs",
+              "source_sha256_before": "46304ec9dcf5bab4161b1c768d0af85a3902dbc14b71392e50e720a0056b72f1"
+            },
+            {
+              "path": "test/foundation/proc-macro-utils/unit/src/lib/all_test_419.rs",
+              "sha256": "666e237cc44c16d09385caeece756cdbb514efcd57b6a9f0f118b88ed40f4ada",
+              "source": "src/foundation/proc-macro-utils/src/lib.rs",
+              "source_sha256_before": "41fc7bc491a9714f16aabef212a8bfe06eb9ff625a9db9ace69c10e54cd031c9"
+            },
+            {
+              "path": "test/foundation/proc-macro-utils/unit/src/parser/test_1098.rs",
+              "sha256": "b17819548717845d66ccb30a4cf02b6986ce3576163f55139526c7595128faec",
+              "source": "src/foundation/proc-macro-utils/src/parser.rs",
+              "source_sha256_before": "5b481162f650c70bd18ba59eeb927365588ac636c2e823e09e391ff9e90cb8be"
+            }
+          ],
+          "origin_directory": "vendor/rust/proc-macro-utils-0.10.0",
+          "roots": [
+            "test/foundation/proc-macro-utils"
+          ]
+        },
+        "file_count": 5,
+        "reason": "Replaced sole generic property-derive consumer with the project-specific component/slot parser; no source bodies transferred.",
+        "targets": [
+          "wasm32-unknown-unknown",
+          "x86_64-unknown-linux-gnu"
+        ]
+      },
+      "status": "内部维护源码",
+      "upstream": {
+        "archive_sha256": "eeaf08a13de400bc215877b5bdc088f241b12eb42f0a548d3390dc1c56bb7071",
+        "archive_url": "https://static.crates.io/crates/proc-macro-utils/proc-macro-utils-0.10.0.crate",
+        "name": "proc-macro-utils",
+        "version": "0.10.0"
+      },
+      "vcs": {
+        "git": {
+          "sha1": "a6995bb9ff248b55fcefd1f6842f72676f5dbcf8"
+        },
+        "path_in_vcs": ""
+      },
+      "version": "0.10.0"
+    },
     "src/foundation/quinn": {
       "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。",
       "description": "Versatile QUIC transport protocol implementation",
@@ -121508,6 +121347,110 @@
         "path_in_vcs": "quinn-udp"
       },
       "version": "0.5.16"
+    },
+    "src/foundation/quote-use": {
+      "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。",
+      "description": "Support `use` in procmacros hygienically",
+      "directory": "src/foundation/quote-use",
+      "files_sha256": {
+        "Cargo.toml": "76731ced54f44d7f2df6b48402e3b5c4f9c15d9497bd69201db35f39736c81b4",
+        "src/lib.rs": "639c26737c487f34717c63e9ac9f93f68b2177c5c2c75b88d720c3bcd53735cf"
+      },
+      "license": "MIT",
+      "license_materials": [
+        "compliance/licenses/upstream/quote-use-0.9.0/LICENSE"
+      ],
+      "merged_into": "无；通过统一内部源码源接入",
+      "name": "quote-use",
+      "origin_directory": "vendor/rust/quote-use-0.9.0",
+      "repository": "https://github.com/ModProg/quote-use",
+      "retirement": {
+        "bytes": 5031,
+        "category": "unused-dependency",
+        "file_count": 2,
+        "reason": "Replaced sole generic property-derive consumer with the project-specific component/slot parser; no source bodies transferred.",
+        "targets": [
+          "wasm32-unknown-unknown",
+          "x86_64-unknown-linux-gnu"
+        ]
+      },
+      "status": "内部维护源码",
+      "upstream": {
+        "archive_sha256": "48356e493823dc3c1d7e9fc7b3ff204ecec48afbdd718fc4134091b88eb63f3d",
+        "archive_url": "https://static.crates.io/crates/quote-use/quote-use-0.9.0.crate",
+        "name": "quote-use",
+        "version": "0.9.0"
+      },
+      "vcs": {
+        "git": {
+          "sha1": "6e5feb569fa6c7be3cc7ecf9932fa7d0177063b3"
+        },
+        "path_in_vcs": ""
+      },
+      "version": "0.9.0"
+    },
+    "src/foundation/quote-use-macros": {
+      "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。",
+      "description": "Support `use` in procmacros hygienically",
+      "directory": "src/foundation/quote-use-macros",
+      "files_sha256": {
+        "Cargo.toml": "2d2c52f3431ea930dd9ae2eea96ef1aaf9b9a694192fec9914d24f32ed977ecb",
+        "src/lib.rs": "9bbe5e000fe406b4c9e6a378d3ef70f6172fc19a15c2df360861904d57a457e4",
+        "src/prelude.rs": "81fbfc01a92be367acdbc466ab63db80bb1a6ce7823005965962b2af12694c9b",
+        "src/prelude/2021.rs": "97603603be151e231518e7760307129f28081f9473d643a135129ccd1ccc0d2c",
+        "src/prelude/core.rs": "33cd688afb240a353a629a369b45628879e472649e8bb12ccde425cd38844293",
+        "src/prelude/std.rs": "5e52806875ed22c66c06c7bf3776c78943b876a593dbff811c9a1e3fbeb548eb",
+        "src/use_parser.rs": "75def5cb16ef317e4cf2347d45eb9016a5fe92fe92251d2af7d66a91f97fbb80"
+      },
+      "license": "MIT",
+      "license_materials": [
+        "compliance/licenses/upstream/quote-use-macros-0.9.0/LICENSE"
+      ],
+      "merged_into": "无；通过统一内部源码源接入",
+      "name": "quote-use-macros",
+      "origin_directory": "vendor/rust/quote-use-macros-0.9.0",
+      "repository": "https://github.com/ModProg/quote-use",
+      "retirement": {
+        "bytes": 11673,
+        "category": "unused-dependency",
+        "external_tests": {
+          "bytes": 1531,
+          "directory": "src/foundation/quote-use-macros",
+          "file_count": 1,
+          "files": [
+            {
+              "path": "test/foundation/quote-use-macros/unit/src/use_parser/test_170.rs",
+              "sha256": "fc9b6b2559f0c2f1136b6e6f36ea69b0102befd11d96e485b2b14bb0c63b79e9",
+              "source": "src/foundation/quote-use-macros/src/use_parser.rs",
+              "source_sha256_before": "b1a084b633ce3182f14ae564cedeb41d9a056890ed94c754bd85aa4e3e5d6840"
+            }
+          ],
+          "origin_directory": "vendor/rust/quote-use-macros-0.9.0",
+          "roots": [
+            "test/foundation/quote-use-macros"
+          ]
+        },
+        "file_count": 7,
+        "reason": "Replaced sole generic property-derive consumer with the project-specific component/slot parser; no source bodies transferred.",
+        "targets": [
+          "wasm32-unknown-unknown",
+          "x86_64-unknown-linux-gnu"
+        ]
+      },
+      "status": "内部维护源码",
+      "upstream": {
+        "archive_sha256": "8cf1c5de6a7cc231c71e03c77aa4c7019097859ea7029156b54d2894a8430704",
+        "archive_url": "https://static.crates.io/crates/quote-use-macros/quote-use-macros-0.9.0.crate",
+        "name": "quote-use-macros",
+        "version": "0.9.0"
+      },
+      "vcs": {
+        "git": {
+          "sha1": "6e5feb569fa6c7be3cc7ecf9932fa7d0177063b3"
+        },
+        "path_in_vcs": "quote-use-macros"
+      },
+      "version": "0.9.0"
     },
     "src/foundation/r-efi-5.3.0": {
       "changes": "锁文件超集保留，未在登记的 normal/build 闭包选中；未声称属于生产运行代码。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。",
@@ -130386,6 +130329,9 @@
   },
   "retired_records_sha256": {
     "src/foundation/anstyle-wincon": "5a0150bb732478959f49ff460a2811133143119a34db1df32dea36dbf73edd6b",
+    "src/foundation/atoi": "a3ad08239ac3c248327b53edc34dcae88e58a96c9073de355c660e884897c163",
+    "src/foundation/attribute-derive": "830d0bbb92d552eb8665684b5bd9103f378600e7250f63d9c9e6eda52c71c8a8",
+    "src/foundation/attribute-derive-macro": "1283201381f65d13276a75bfd0d5efe202063dd6ef42434b9c757db551d29c61",
     "src/foundation/base64-0.22.1": "92c2491c81dae6cf8ae5b3dcf59249610b42e604a44246529e30be38dbfe631a",
     "src/foundation/bitflags-1.3.2": "ac778507e82d947908dc49d1656946beb62148438d79ce43146662308cc05e3b",
     "src/foundation/block-buffer-0.10.4": "38f569480fe2c20616cb32dc874f95f0cb09abcc692647783a0ed50a415ad8f4",
@@ -130409,12 +130355,15 @@
     "src/foundation/getrandom-0.3.4": "134390924fc2ba79a7633d5166c36f4ff84f84111edcfe0bc576eef4b897c537",
     "src/foundation/hashbrown-0.16.1": "79cdc46d22754ec4dc3289737115e2bceb5bc1ad1fc6863183230495337d6df3",
     "src/foundation/hex": "37146935caac26425e292364a000256037ac1737af648797011f3538a82dccab",
+    "src/foundation/interpolator": "e072e5d4d64a98cc3e7cfd145e7679347dda93b3eaca7ca3ff0dd4ababe72fe8",
     "src/foundation/is_terminal_polyfill": "c7eff78a05c7f9d66148372cab1c3d140d2ff77b3c35f62f153debcec5831b57",
     "src/foundation/itertools-0.13.0": "4e09c2210957ad9fbb36f0dce993191f39ff0e4c2e85ae0411bc53749ec68ddf",
     "src/foundation/jiff": "897579d87e1f93cdc3350b1e28126d371c8d8ace10305016e130362e1cc0c928",
     "src/foundation/jiff-core": "84153b337c3b4d6a08ae32b16e48148c4ae55028eb9d8f729d6a85ee71335f26",
     "src/foundation/jiff-static": "a5c7f332c971252392426c6cba3d526166cc12fe3675a67671e1d9c64134db35",
     "src/foundation/lru-slab": "3e22d7677884e82f33389c358d993d081571bd032c688d442c058ee9703ecc70",
+    "src/foundation/manyhow": "c9a17861892282a25a688e5b2f8123d14491904b04c948b3123aa040c6e71249",
+    "src/foundation/manyhow-macros": "2dfd93d383bb8152c058436d03ac72b3d7c95d69f69272e09fc6646951f314a9",
     "src/foundation/minimal-lexical": "0b873669d019a362d2496cad313a79ebd60059af4cff98fe4548170c41fb902a",
     "src/foundation/nom": "c0b2544bae316a8d8b97b7947b2659c93720efa8a6d54e7be463957178b3c5aa",
     "src/foundation/ntapi": "9d9471eee04e049fbe93c13484d10bad6a3e7d688c64b426d902b8a817612b99",
@@ -130425,9 +130374,12 @@
     "src/foundation/portable-atomic": "1d73293acff1a0f5e411f6d97486c7e3f904506173215796e225e162aaf2b917",
     "src/foundation/portable-atomic-util": "a9605f66c9314e638d0f74816bb1be4642607937e42971b0cce4f42798775428",
     "src/foundation/prettyplease-0.2.37": "be950a57cef2c9ee14d470e08fb41fa18c07f6431a085d7bc5c6e6db166a3328",
+    "src/foundation/proc-macro-utils": "145097718c0b922d5161a9dd5e380f419f12d718c9c2a6bcc7cd1354b0fd6848",
     "src/foundation/quinn": "353c3caec4dd73feafb8aa175e78d0760cbe1177bd1a8ea656c04f2a99472c04",
     "src/foundation/quinn-proto": "6dc2dfa213d04fb97f3fc84a17d95042f3b6d46a1159fed3d826440e296c1100",
     "src/foundation/quinn-udp": "6bc849cda9a15508b959d34072ef923b1cec95b166314863163a9cf8e547d66d",
+    "src/foundation/quote-use": "ead3e5c9c658c0d0be064e9c04ae7c9ea21dadc1232cce56ee5aa49b56e80621",
+    "src/foundation/quote-use-macros": "d6f4fdda09dd18e5287e151a1260cffcc8a69c091027d7e2f1ae1eaf9d6d983e",
     "src/foundation/r-efi-5.3.0": "36395f2dab3d5ca770fdfaa7d22f124a7d75d056874d100a4c8bc4e8a2160939",
     "src/foundation/r-efi-6.0.0": "de1e55ace8b77d916a6d3589fba28af4f4c0864623e01bdaef0c3afb6fa8430a",
     "src/foundation/rand": "c484fbf4dd3d86d1307bd9c49c7a829d1f42f45fb4b338d4a65821892c39d238",

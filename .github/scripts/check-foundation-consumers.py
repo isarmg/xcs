@@ -7,18 +7,40 @@ import subprocess
 import tempfile
 
 ROOT = Path(__file__).resolve().parents[2]
-FEATURES = {"terminal-style": ["output"], "attribute-derive": ["syntax-full"]}
+FEATURES = {"terminal-style": ["output"], "rust-syntax": ["full"]}
 CONSUMER = (ROOT / "test/ci/fixtures/foundation-consumers.rs").read_text()
+
+
+PROP_PARSER_TESTS = {
+    'prop_options::tests::accepted_values_and_diagnostics_match_the_reference_grammar',
+    'prop_options::tests::errors_point_to_the_relevant_input',
+}
+
+
+def check_prop_parser(root, target):
+    # Exercise the production parser, not a replacement generic-derive fixture.
+    # Verify discovery first: a renamed filter must never silently run zero tests.
+    command = ['cargo', 'test', '--locked', '--offline', '-p', 'view-macros',
+               '--lib', 'prop_options::tests', '--target-dir', str(target)]
+    listing = subprocess.run(command + ['--', '--list'], cwd=root, check=True,
+                             capture_output=True, text=True)
+    discovered = {line.removesuffix(': test') for line in listing.stdout.splitlines()
+                  if line.endswith(': test')}
+    if not PROP_PARSER_TESTS <= discovered:
+        raise AssertionError('production property parser tests were not discovered: '
+                             + ', '.join(sorted(PROP_PARSER_TESTS - discovered)))
+    subprocess.run(command + ['--', '--test-threads=1'], cwd=root, check=True)
 
 
 def check(root):
     (root / 'target').mkdir(exist_ok=True)
+    check_prop_parser(root, root / 'target/foundation-consumer-check')
     with tempfile.TemporaryDirectory(prefix='foundation-consumers-', dir=root / 'target') as temporary:
         work = Path(temporary)
         (work / 'src').mkdir()
         dependencies = '\n'.join(f'{name} = {{path = "{root / "src/foundation" / directory}", features = {json.dumps(FEATURES.get(name, []))}}}'
                                  for name, directory in [('bindgen', 'bindgen'), ('terminal-style', 'terminal-style'),
-                                                         ('attribute-derive', 'attribute-derive'), ('rust-syntax', 'rust-syntax'),
+                                                         ('rust-syntax', 'rust-syntax'),
                                                          ('winnow', 'winnow'), ('toml', 'toml')])
         manifest = work / 'Cargo.toml'
         manifest.write_text('[package]\nname = "foundation-consumer-regression"\nversion = "0.0.0"\n'

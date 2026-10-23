@@ -127,7 +127,9 @@ def check(root):
             execute(cargo_command("test", package_manifest, target, "--doc", "--features", "sqlite-bundled",
                                   "types::Type"), root, minimum_tests=1)
             execute(cargo_command("test", package_manifest, target, "--lib", "--features", "sqlite-bundled"), root,
-                    minimum_tests=10, required_tests=("direct_memory_transactions_savepoints_rollback_and_errors",
+                    minimum_tests=10, required_tests=("ordinal_parameters_preserve_repetition_order_and_missing_values",
+                                                     "invalid_ordinal_parameters_return_errors_without_poisoning_connection",
+                                                     "direct_memory_transactions_savepoints_rollback_and_errors",
                                                      "filename_absolute_relative_unicode_percent_and_query_characters_are_literal",
                                                      "missing_nul_and_non_utf8_filenames_fail_without_creating_files",
                                                      "parsed_memory_options_share_only_the_selected_database",

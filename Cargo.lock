@@ -53,37 +53,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "atoi"
-version = "2.0.0"
-dependencies = [
- "numeric",
-]
-
-[[package]]
-name = "attribute-derive"
-version = "0.11.0"
-dependencies = [
- "attribute-derive-macro",
- "manyhow",
- "proc-macro2",
- "quote",
- "rust-syntax",
-]
-
-[[package]]
-name = "attribute-derive-macro"
-version = "0.11.0"
-dependencies = [
- "interpolator",
- "manyhow",
- "proc-macro-utils",
- "proc-macro2",
- "quote",
- "quote-use",
- "rust-syntax",
-]
-
-[[package]]
 name = "authentication"
 version = "0.1.0"
 dependencies = [
@@ -708,10 +677,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "interpolator"
-version = "0.5.0"
-
-[[package]]
 name = "ipnet"
 version = "2.12.2"
 
@@ -795,25 +760,6 @@ dependencies = [
  "log",
  "regex",
  "terminal-style",
-]
-
-[[package]]
-name = "manyhow"
-version = "0.14.1"
-dependencies = [
- "manyhow-macros",
- "proc-macro2",
- "quote",
- "rust-syntax",
-]
-
-[[package]]
-name = "manyhow-macros"
-version = "0.14.1"
-dependencies = [
- "proc-macro-utils",
- "proc-macro2",
- "quote",
 ]
 
 [[package]]
@@ -946,15 +892,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "proc-macro-utils"
-version = "0.10.0"
-dependencies = [
- "proc-macro2",
- "quote",
- "smallvec",
-]
-
-[[package]]
 name = "proc-macro2"
 version = "1.0.107"
 dependencies = [
@@ -976,24 +913,6 @@ name = "quote"
 version = "1.0.47"
 dependencies = [
  "proc-macro2",
-]
-
-[[package]]
-name = "quote-use"
-version = "0.9.0"
-dependencies = [
- "quote",
- "quote-use-macros",
-]
-
-[[package]]
-name = "quote-use-macros"
-version = "0.9.0"
-dependencies = [
- "proc-macro-utils",
- "proc-macro2",
- "quote",
- "rust-syntax",
 ]
 
 [[package]]
@@ -1340,7 +1259,6 @@ name = "sqlite-access"
 version = "0.9.0"
 dependencies = [
  "async-notification",
- "atoi",
  "bytes",
  "concurrent-collections",
  "either",
@@ -1765,7 +1683,6 @@ dependencies = [
 name = "view-macros"
 version = "0.8.19"
 dependencies = [
- "attribute-derive",
  "convert_case",
  "html-escape",
  "iterator-toolkit",

@@ -1,52 +1,18 @@
 
 #[cfg(test)]
 mod tests {
-    use attribute_derive::FromAttr;
     use std::io::Write;
 
-    #[derive(Debug, FromAttr)]
-    #[from_attr(ident = one)]
-    struct One { required: String }
-
-    #[derive(Debug, FromAttr)]
-    struct Two { alpha: Option<String>, beta: Option<String> }
-
-    #[derive(Debug, FromAttr)]
-    struct Flags {
-        #[from_attr(conflicts = [beta])]
-        alpha: bool,
-        beta: bool,
-    }
-
-    #[derive(FromAttr)]
-    struct Expression { expression: rust_syntax::ExprIf }
-
     #[test]
-    fn full_syntax_attributes_parse_expression_nodes() {
-        let parsed = rust_syntax::parse_str::<Expression>(
-            "expression = if true { 1 } else { 2 }"
+    fn full_syntax_parser_preserves_conditional_expression_nodes() {
+        let parsed = rust_syntax::parse_str::<rust_syntax::ExprIf>(
+            "if true { 1 } else { 2 }"
         ).unwrap();
-        assert!(parsed.expression.else_branch.is_some());
-    }
-
-    #[test]
-    fn attribute_templates_preserve_missing_duplicate_unknown_and_conflict_diagnostics() {
-        assert_eq!(rust_syntax::parse_str::<One>(r#"required = "文件 Ω""#).unwrap().required, "文件 Ω");
-        let unknown = rust_syntax::parse_str::<One>("unknown = 1").unwrap_err().to_string();
-        assert_eq!(unknown, "expected supported field `required`");
-        let missing = rust_syntax::parse_str::<One>("").unwrap_err().to_string();
-        assert_eq!(missing, "required `required` is not specified\n\n= help: try `#[one(required = ...)]`");
-        let duplicate = rust_syntax::parse_str::<One>(r#"required = "a", required = "b""#).unwrap_err().to_string();
-        assert_eq!(duplicate, "`required` is specified multiple times");
-        let two = rust_syntax::parse_str::<Two>("").unwrap();
-        assert!(two.alpha.is_none() && two.beta.is_none());
-        assert_eq!(rust_syntax::parse_str::<Two>("unknown = 1").unwrap_err().to_string(),
-                   "supported fields are `alpha` and `beta`");
-        let flags = rust_syntax::parse_str::<Flags>("alpha").unwrap();
-        assert!(flags.alpha && !flags.beta);
-        let conflict = rust_syntax::parse_str::<Flags>("alpha, beta").unwrap_err().to_string();
-        assert!(conflict.contains("conflicts with mutually exclusive"), "{conflict}");
-        assert!(conflict.contains("alpha") && conflict.contains("beta"), "{conflict}");
+        assert!(parsed.else_branch.is_some());
+        assert_eq!(parsed.then_branch.stmts.len(), 1);
+        assert!(rust_syntax::parse_str::<rust_syntax::ExprIf>(
+            "if true { 1 } else"
+        ).is_err());
     }
 
     #[test]

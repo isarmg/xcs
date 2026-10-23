@@ -15,6 +15,7 @@ use crate::component::unmodified_fn_name_from_fn_name;
 mod component;
 mod diagnostics;
 mod memo;
+mod prop_options;
 mod slice;
 mod slot;
 mod view_source;

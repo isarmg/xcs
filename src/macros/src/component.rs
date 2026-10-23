@@ -1,6 +1,5 @@
 use crate::diagnostics::{message_with_help, Errors};
 use crate::view_source::value_to_string;
-use attribute_derive::FromAttr;
 use convert_case::{
     Case::{Pascal, Snake},
     Casing,
@@ -591,23 +590,7 @@ impl ToTokens for UnknownAttrs {
     }
 }
 
-#[derive(Clone, Debug, FromAttr)]
-#[attribute(ident = prop)]
-struct PropOpt {
-    #[attribute(conflicts = [optional_no_strip, strip_option, marker])]
-    optional: bool,
-    #[attribute(conflicts = [optional, strip_option, marker])]
-    optional_no_strip: bool,
-    #[attribute(conflicts = [optional, optional_no_strip, marker])]
-    strip_option: bool,
-    #[attribute(example = "5 * 10")]
-    default: Option<rust_syntax::Expr>,
-    into: bool,
-    attrs: bool,
-    name: Option<String>,
-    #[attribute(conflicts = [optional, optional_no_strip, strip_option, default, into, attrs, name])]
-    marker: bool,
-}
+type PropOpt = crate::prop_options::PropOptions<true>;
 
 struct TypedBuilderOpts<'a> {
     marker: bool,

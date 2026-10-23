@@ -1,7 +1,6 @@
 """Keep the maintained AST regression's optional build paths actually selected."""
 from pathlib import Path
 import runpy
-import re
 import tomllib
 import unittest
 
@@ -13,14 +12,19 @@ class RustSyntaxMigrationGateTests(unittest.TestCase):
     def setUp(self):
         self.manifest = tomllib.loads(GATE['manifest']())
 
-    def test_full_syntax_cfg_matches_manifest_and_real_consumer(self):
-        root = ROOT / 'src/foundation/attribute-derive'
-        manifest = tomllib.loads((root / 'Cargo.toml').read_text())
-        cfgs = set(re.findall(r'feature\s*=\s*"([^"]+)"', (root / 'src/syntax_impls.rs').read_text()))
-        self.assertTrue(cfgs <= set(manifest['features']))
-        self.assertIn('syntax-full', cfgs)
+    def test_full_syntax_is_selected_by_real_macro_and_fixture_consumers(self):
+        manifest = tomllib.loads((ROOT / 'src/macros/Cargo.toml').read_text())
+        syntax = manifest['dependencies']['rust-syntax']
+        self.assertIn('full', syntax['features'])
+        self.assertEqual((ROOT / 'src/macros' / syntax['path']).resolve(),
+                         ROOT / 'src/foundation/rust-syntax')
+        self.assertNotIn('attribute-derive', manifest['dependencies'])
         consumer = runpy.run_path(str(ROOT / '.github/scripts/check-foundation-consumers.py'))
-        self.assertEqual(consumer['FEATURES']['attribute-derive'], ['syntax-full'])
+        self.assertEqual(consumer['FEATURES']['rust-syntax'], ['full'])
+        self.assertNotIn('attribute-derive', consumer['FEATURES'])
+        fixture = consumer['CONSUMER']
+        self.assertIn('rust_syntax::parse_str::<rust_syntax::ExprIf>', fixture)
+        self.assertNotIn('attribute_derive::', fixture)
 
     def test_real_sqlite_generator_and_matching_parser_are_selected(self):
         dependencies = self.manifest['dependencies']

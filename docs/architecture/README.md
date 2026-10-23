@@ -31,3 +31,5 @@
 - [Unicode 数据职责包](unicode-data-families.md)：能力边界、来源与验证范围。
 - [URL 与编码职责包](url-encoding.md)：能力边界、来源与验证范围。
 - [压缩与校验整合](compression.md)：能力边界、来源与验证范围。
+
+- [Component and slot property grammar](view-prop-parser.md)：共享选项解析、诊断语义与构建依赖边界。

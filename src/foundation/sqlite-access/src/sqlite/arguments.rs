@@ -1,8 +1,7 @@
+use crate::sqlite::Sqlite;
 use crate::sqlite::encode::{Encode, IsNull};
 use crate::sqlite::error::Error;
 use crate::sqlite::statement::StatementHandle;
-use crate::sqlite::Sqlite;
-use atoi::atoi;
 use libsqlite3_sys::SQLITE_OK;
 use std::sync::Arc;
 
@@ -78,33 +77,25 @@ impl SqliteArguments {
         for param_i in 1..=cnt {
             // figure out the index of this bind parameter into our argument tuple
             let n: usize = if let Some(name) = handle.bind_parameter_name(param_i) {
-                if let Some(name) = name.strip_prefix('?') {
-                    // parameter should have the form ?NNN
-                    atoi(name.as_bytes()).expect("parameter of the form ?NNN")
-                } else if let Some(name) = name.strip_prefix('$') {
-                    // parameter should have the form $NNN
-                    atoi(name.as_bytes()).ok_or_else(|| {
-                        err_protocol!(
-                            "parameters with non-integer names are not currently supported: {}",
-                            name
-                        )
-                    })?
-                } else {
-                    return Err(err_protocol!("unsupported SQL parameter format: {}", name));
-                }
+                // SQLite assigns named parameters occurrence-based indices. Our
+                // ordinal API instead maps both ?NNN and $NNN to argument NNN.
+                name.strip_prefix('?')
+                    .or_else(|| name.strip_prefix('$'))
+                    .filter(|ordinal| {
+                        !ordinal.is_empty() && ordinal.bytes().all(|byte| byte.is_ascii_digit())
+                    })
+                    .and_then(|ordinal| ordinal.parse::<usize>().ok())
+                    .filter(|ordinal| *ordinal > 0)
+                    .ok_or_else(|| err_protocol!("unsupported SQL parameter format: {}", name))?
             } else {
                 arg_i += 1;
                 arg_i
             };
 
             if n > self.values.0.len() {
-                // SQLite treats unbound variables as NULL
-                // we reproduce this here
-                // If you are reading this and think this should be an error, open an issue and we can
-                // discuss configuring this somehow
-                // Note that the query macros have a different way of enforcing
-                // argument arity
-                break;
+                // SQLite treats unbound variables as NULL. A later named
+                // parameter may still refer to an argument that was supplied.
+                continue;
             }
 
             self.values.0[n - 1].bind(handle, param_i)?;

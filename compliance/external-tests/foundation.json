@@ -660,20 +660,6 @@
       ]
     },
     {
-      "directory": "src/foundation/atoi",
-      "files": [
-        {
-          "path": "test/foundation/atoi/unit/src/lib/test_645.rs",
-          "sha256": "91c07c5f9263442b790211defd1a21b7805b3c257070394aba6255d1f6e9d6ec",
-          "source": "src/foundation/atoi/src/lib.rs",
-          "source_sha256_before": "e7733bd7453ff989767ff7b93c39727000931b5a5d68925b56e92f69b15d0ef8"
-        }
-      ],
-      "roots": [
-        "test/foundation/atoi"
-      ]
-    },
-    {
       "directory": "src/foundation/autocfg",
       "files": [
         {
@@ -9424,32 +9410,6 @@
       ]
     },
     {
-      "directory": "src/foundation/interpolator",
-      "files": [
-        {
-          "path": "test/foundation/interpolator/unit/src/fmt/iter/test_85.rs",
-          "sha256": "45350142f108ce0d239d6b732b54c498689b1f56a36e3387ba3c2603d778d0bc",
-          "source": "src/foundation/interpolator/src/fmt/iter.rs",
-          "source_sha256_before": "b6e7d106ea8591f2dad4f8767a0010704a8871d2a943cd526008bb17f85836dc"
-        },
-        {
-          "path": "test/foundation/interpolator/unit/src/macros/test_395.rs",
-          "sha256": "424ccf61a859d1043a79a6004a23a1c982dae64580c0a57fd170ea4d0a9e5209",
-          "source": "src/foundation/interpolator/src/macros.rs",
-          "source_sha256_before": "9cb530c98cc32471e6e6f413737d7617abef6011a33e11e158b285ace29de3d0"
-        },
-        {
-          "path": "test/foundation/interpolator/unit/src/parser/test_334.rs",
-          "sha256": "2383652aba62841190212614a1db51a2172c1a2875abf8b7d6d6df705d96410e",
-          "source": "src/foundation/interpolator/src/parser.rs",
-          "source_sha256_before": "ff48932ec16ef2e27d62a7e405e8a717db2e8d5835af6f5749308d51a83292f6"
-        }
-      ],
-      "roots": [
-        "test/foundation/interpolator"
-      ]
-    },
-    {
       "directory": "src/foundation/ipnet",
       "files": [
         {
@@ -10157,44 +10117,6 @@
       ],
       "roots": [
         "test/foundation/log"
-      ]
-    },
-    {
-      "directory": "src/foundation/manyhow",
-      "files": [
-        {
-          "path": "test/foundation/manyhow/functions/src/lib/function_macro_722.rs",
-          "sha256": "a3f3966dffbdd863a5bdc13258644974af6a5a25a20b8d5bb1862d6e80769811",
-          "source": "src/foundation/manyhow/src/lib.rs",
-          "source_sha256_before": "b3cd7a3eec26a1fe7432ddea819c2790f2a6c84f381b19efce516ef624b30381"
-        },
-        {
-          "path": "test/foundation/manyhow/functions/src/parse_to_tokens/test_inference_113.rs",
-          "sha256": "89b449be70eea4e79850323c7e6aea42be506e5f3879d52de4d8f5a2ea0e8c7b",
-          "source": "src/foundation/manyhow/src/parse_to_tokens.rs",
-          "source_sha256_before": "b08fc4b06b3b13c62cb747087b219dcf3c4b19ac9729c318694f5113e9786a19"
-        },
-        {
-          "path": "test/foundation/manyhow/unit/src/error/test_476.rs",
-          "sha256": "8a2ffd19722966d7fb2fd5a2f0c406bc5038b88163062cebcc2937c18c0dee2c",
-          "source": "src/foundation/manyhow/src/error.rs",
-          "source_sha256_before": "7ccd11f585920d9a8e0d1274bcc07baa770d639ef655febd576948353c51e2b6"
-        },
-        {
-          "path": "test/foundation/manyhow/unit/src/macro_rules/test_227.rs",
-          "sha256": "1aec611915ceb37bcd703ea7312b6a61ab2bf1589005efc33cd7c1918d541394",
-          "source": "src/foundation/manyhow/src/macro_rules.rs",
-          "source_sha256_before": "27cfc11e7b453fdbc36790df3bae7f168206e064e51cef0f88ae74000ecbac27"
-        },
-        {
-          "path": "test/foundation/manyhow/unit/src/span_ranged/test_226.rs",
-          "sha256": "ee8758417a5ad7964e083d64ff8b6675323aec54afe3e885b883dcd8cdf0fcb1",
-          "source": "src/foundation/manyhow/src/span_ranged.rs",
-          "source_sha256_before": "e0eb45cdd05ee31c3bcdd79ba72ba6a5462dc76d9c19a8c9d8b4c6dbc56803d9"
-        }
-      ],
-      "roots": [
-        "test/foundation/manyhow"
       ]
     },
     {
@@ -11968,32 +11890,6 @@
       ]
     },
     {
-      "directory": "src/foundation/proc-macro-utils",
-      "files": [
-        {
-          "path": "test/foundation/proc-macro-utils/functions/src/assert/test_267.rs",
-          "sha256": "b6a49376597969918d74a6557c401bff1ebeb2df72890de9338f17724fb71592",
-          "source": "src/foundation/proc-macro-utils/src/assert.rs",
-          "source_sha256_before": "46304ec9dcf5bab4161b1c768d0af85a3902dbc14b71392e50e720a0056b72f1"
-        },
-        {
-          "path": "test/foundation/proc-macro-utils/unit/src/lib/all_test_419.rs",
-          "sha256": "666e237cc44c16d09385caeece756cdbb514efcd57b6a9f0f118b88ed40f4ada",
-          "source": "src/foundation/proc-macro-utils/src/lib.rs",
-          "source_sha256_before": "41fc7bc491a9714f16aabef212a8bfe06eb9ff625a9db9ace69c10e54cd031c9"
-        },
-        {
-          "path": "test/foundation/proc-macro-utils/unit/src/parser/test_1098.rs",
-          "sha256": "b17819548717845d66ccb30a4cf02b6986ce3576163f55139526c7595128faec",
-          "source": "src/foundation/proc-macro-utils/src/parser.rs",
-          "source_sha256_before": "5b481162f650c70bd18ba59eeb927365588ac636c2e823e09e391ff9e90cb8be"
-        }
-      ],
-      "roots": [
-        "test/foundation/proc-macro-utils"
-      ]
-    },
-    {
       "directory": "src/foundation/proc-macro2",
       "files": [
         {
@@ -12243,20 +12139,6 @@
       ],
       "roots": [
         "test/foundation/quote"
-      ]
-    },
-    {
-      "directory": "src/foundation/quote-use-macros",
-      "files": [
-        {
-          "path": "test/foundation/quote-use-macros/unit/src/use_parser/test_170.rs",
-          "sha256": "fc9b6b2559f0c2f1136b6e6f36ea69b0102befd11d96e485b2b14bb0c63b79e9",
-          "source": "src/foundation/quote-use-macros/src/use_parser.rs",
-          "source_sha256_before": "b1a084b633ce3182f14ae564cedeb41d9a056890ed94c754bd85aa4e3e5d6840"
-        }
-      ],
-      "roots": [
-        "test/foundation/quote-use-macros"
       ]
     },
     {

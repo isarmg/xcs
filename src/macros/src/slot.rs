@@ -1,5 +1,4 @@
 use crate::component::{convert_from_snake_case, drain_filter, is_option, unwrap_option, Docs};
-use attribute_derive::FromAttr;
 use proc_macro2::{Ident, TokenStream};
 use quote::{quote, ToTokens};
 use rust_syntax::{parse::Parse, parse_quote, Field, ItemStruct, LitStr, Meta, Type, Visibility};
@@ -130,20 +129,7 @@ impl Prop {
     }
 }
 
-#[derive(Clone, Debug, FromAttr)]
-#[attribute(ident = prop)]
-struct PropOpt {
-    #[attribute(conflicts = [optional_no_strip, strip_option])]
-    pub optional: bool,
-    #[attribute(conflicts = [optional, strip_option])]
-    pub optional_no_strip: bool,
-    #[attribute(conflicts = [optional, optional_no_strip])]
-    pub strip_option: bool,
-    #[attribute(example = "5 * 10")]
-    pub default: Option<rust_syntax::Expr>,
-    pub into: bool,
-    pub attrs: bool,
-}
+type PropOpt = crate::prop_options::PropOptions<false>;
 
 struct TypedBuilderOpts<'a> {
     default: bool,
