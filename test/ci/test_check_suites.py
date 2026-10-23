@@ -65,6 +65,30 @@ class SuiteCoverageTests(unittest.TestCase):
         self.assertIn({"tool": "python3", "args": [".github/scripts/check-logging.py"]}, calls)
         self.assertTrue(any(call["tool"] == "cargo" and "web-bindings" in call["args"] for call in calls))
 
+    def test_security_suite_revalidates_cached_scanner_and_runs_all_scans(self):
+        source = Path(__file__).resolve().parents[2] / ".github"
+        shutil.copy2(source / "scripts/security.sh", self.root / ".github/scripts/security.sh")
+        config = self.root / ".github/security-tools"
+        config.mkdir()
+        shutil.copy2(source / "security-tools/audit.toml", config / "audit.toml")
+        cached = self.root / "target/security-tools"
+        (cached / "bin").mkdir(parents=True)
+        # Reuse the command recorder instead of running a compiler or live audit.
+        shutil.copy2(self.root / "bin/python3", cached / "bin/cargo-audit")
+        (cached / "verified-build.json").write_text("{}\n")
+        calls = self.suite("security")
+        installer = {"tool": "python3", "args": [".github/scripts/install-security-audit.py"]}
+        self.assertEqual(calls.count(installer), 1)
+        scans = [call for call in calls if call["tool"] == "cargo-audit"]
+        self.assertEqual(len(scans), 3)
+        self.assertLess(calls.index(installer), calls.index(scans[0]))
+        paths = [Path(call["args"][2]) for call in scans]
+        self.assertEqual(paths[:2], [config / "cargo-audit-0.22.2.lock", self.root / "Cargo.lock"])
+        self.assertEqual(paths[2].name, "upstream.Cargo.lock")
+        for call in scans:
+            self.assertEqual(call["args"][:2], ["audit", "--file"])
+            self.assertEqual(call["args"][3:], ["--deny", "warnings", "--json", "--color", "never"])
+
     def test_removed_demo_suite_fails_before_running_tools(self):
         result = subprocess.run(
             ["bash", str(self.root / ".github/scripts/check.sh"), "demo"],

@@ -77,6 +77,14 @@ jobs:
       - name: Enable sandboxed Chrome for browser future runtime checks
         if: matrix.suite == 'foundation-language'
         run: bash .github/scripts/prepare-browser-contract.sh
+      - name: Cache verified security scanner
+        if: matrix.suite == 'security'
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: |
+            target/security-tools/bin/cargo-audit
+            target/security-tools/verified-build.json
+          key: security-audit-ubuntu24.04-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('rust-toolchain.toml', '.github/scripts/install-security-audit.py', '.github/security-tools/cargo-audit.json', '.github/security-tools/cargo-audit-0.22.2.lock') }}
       - name: Run portable test suite and contract checks
         run: bash .github/scripts/check.sh "${{ matrix.suite }}"
       - name: Verify isolated system SQLite consumer

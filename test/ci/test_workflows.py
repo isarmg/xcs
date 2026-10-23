@@ -48,6 +48,32 @@ class WorkflowContexts(unittest.TestCase):
         self.assertLess(sdk.index("initialize-cargo-home.sh"), sdk.index("rustup "))
         self.assertNotIn("ref:", sdk)  # checkout must use the caller's commit
 
+    def test_security_cache_is_narrow_and_never_skips_the_suite(self):
+        expected = """name: Cache verified security scanner
+        if: matrix.suite == 'security'
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: |
+            target/security-tools/bin/cargo-audit
+            target/security-tools/verified-build.json
+          key: security-audit-ubuntu24.04-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('rust-toolchain.toml', '.github/scripts/install-security-audit.py', '.github/security-tools/cargo-audit.json', '.github/security-tools/cargo-audit-0.22.2.lock') }}"""
+        for filename, job, suite_name in (
+            ("ci.yml", "tests", "Run locked test suite"),
+            ("release.yml", "verify", "Run portable test suite and contract checks"),
+        ):
+            with self.subTest(workflow=filename):
+                source = (SCRIPTS.parent / "workflows" / filename).read_text()
+                parts = re.split(r"^  ([A-Za-z0-9_-]+):\s*$",
+                                 source.split("\njobs:\n", 1)[1], flags=re.MULTILINE)
+                body = dict(zip(parts[1::2], parts[2::2]))[job]
+                self.assertIn("    runs-on: ubuntu-24.04\n", body)
+                steps = [step.strip() for step in re.split(r"^      - ", body, flags=re.MULTILINE)[1:]]
+                cache = [step for step in steps if "security-audit-" in step]
+                self.assertEqual(cache, [expected])  # Exact inputs/paths; no restore-keys or cache-hit bypass.
+                following = steps[steps.index(cache[0]) + 1]
+                self.assertEqual(following, f"name: {suite_name}\n"
+                                 '        run: bash .github/scripts/check.sh "${{ matrix.suite }}"')
+
     def test_workflow_env_rejects_runner_and_other_job_only_contexts(self):
         for expression in ("runner.temp", "Runner['temp']", "toJSON(runner)",
                            "matrix.target", "needs.build.outputs.path", "env.OTHER"):
