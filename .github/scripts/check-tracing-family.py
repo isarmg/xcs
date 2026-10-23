@@ -48,6 +48,19 @@ def structure(root):
     assert 'synchronization/locks' in package['features']['parking']
 
 
+def native_product_optional_macro_closure(root):
+    """Keep optional tracing/router proc macros out of the actual server graph."""
+    result = subprocess.run(
+        ['cargo', 'tree', '--locked', '--offline', '-p', 'storage-server',
+         '--target', 'x86_64-unknown-linux-gnu', '--edges', 'normal,build,dev',
+         '--prefix', 'none', '--format', '{p}'],
+        cwd=root, capture_output=True, text=True, check=True)
+    names = {line.split()[0] for line in result.stdout.splitlines() if line.strip()}
+    assert {'storage-server', 'tracing', 'http-routing'} <= names, names
+    unexpected = names & {'tracing-attributes', 'axum-macros'}
+    assert not unexpected, f'native product acquired unused optional macros: {unexpected}'
+
+
 def capabilities(root):
     with tempfile.TemporaryDirectory(prefix='tracing-capabilities-') as temp:
         d = Path(temp); (d / 'src').mkdir()
@@ -121,6 +134,7 @@ def main():
     args = parser.parse_args(); root = args.root.resolve()
     structure(root)
     if not args.structure_only:
+        native_product_optional_macro_closure(root)
         capabilities(root)
         retained_tests(root)
         static_levels(root)

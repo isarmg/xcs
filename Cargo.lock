@@ -551,7 +551,6 @@ version = "0.4.2"
 name = "http-routing"
 version = "0.8.9"
 dependencies = [
- "axum-macros",
  "bytes",
  "data-serialization",
  "form-codec",
@@ -1560,7 +1559,6 @@ dependencies = [
  "sharded-slab",
  "smallvec",
  "thread_local",
- "tracing-attributes",
 ]
 
 [[package]]

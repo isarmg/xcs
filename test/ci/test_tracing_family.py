@@ -2,6 +2,8 @@
 import importlib.util
 import json
 from pathlib import Path
+import subprocess
+import tomllib
 import unittest
 from unittest.mock import patch
 
@@ -18,6 +20,42 @@ class TracingFamily(unittest.TestCase):
         self.assertIn('json', GATE.FULL)
         self.assertIn('log', GATE.FULL)
         self.assertIn('env-filter', GATE.FULL)
+
+    def test_product_does_not_enable_optional_macros_but_family_fixtures_do(self):
+        server = tomllib.loads((ROOT / 'src/server/Cargo.toml').read_text())['dependencies']
+        self.assertFalse(server['tracing']['default-features'])
+        self.assertEqual(server['tracing']['features'], ['collector-default', 'env-filter'])
+        self.assertNotIn('macros', server['http-routing'].get('features', []))
+        sqlite = tomllib.loads((ROOT / 'src/foundation/data-storage/sqlite-access/Cargo.toml').read_text())
+        self.assertFalse(sqlite['dependencies']['tracing']['default-features'])
+        self.assertEqual(sqlite['dependencies']['tracing']['features'], ['log', 'std'])
+        self.assertIn('attributes', GATE.FULL)
+        spec = importlib.util.spec_from_file_location('routing_gate', ROOT / '.github/scripts/check-http-routing.py')
+        routing = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(routing)
+        self.assertIn(('json', 'form', 'query', 'macros'), routing.BASE_FEATURES)
+
+    def test_native_product_macro_gate_rejects_leaks_and_missing_graphs(self):
+        graph = 'storage-server v0.1.1\ntracing v0.1.44\nhttp-routing v0.8.9\n'
+        with patch.object(GATE.subprocess, 'run') as cargo:
+            cargo.return_value = subprocess.CompletedProcess([], 0, graph, '')
+            GATE.native_product_optional_macro_closure(ROOT)
+            cargo.assert_called_once_with(
+                ['cargo', 'tree', '--locked', '--offline', '-p', 'storage-server',
+                 '--target', 'x86_64-unknown-linux-gnu', '--edges', 'normal,build,dev',
+                 '--prefix', 'none', '--format', '{p}'],
+                cwd=ROOT, capture_output=True, text=True, check=True)
+            for name in ('tracing-attributes', 'axum-macros'):
+                with self.subTest(package=name):
+                    cargo.return_value = subprocess.CompletedProcess([], 0, graph + name + ' v0.1.0\n', '')
+                    with self.assertRaisesRegex(AssertionError, 'unused optional macros'):
+                        GATE.native_product_optional_macro_closure(ROOT)
+            cargo.return_value = subprocess.CompletedProcess([], 0, '', '')
+            with self.assertRaises(AssertionError):
+                GATE.native_product_optional_macro_closure(ROOT)
+            cargo.side_effect = subprocess.CalledProcessError(1, ['cargo', 'tree'])
+            with self.assertRaises(subprocess.CalledProcessError):
+                GATE.native_product_optional_macro_closure(ROOT)
 
     def test_parking_provider_is_exercised(self):
         source = (ROOT / '.github/scripts/check-tracing-family.py').read_text()

@@ -136,7 +136,7 @@ Samba 的只读打开取得父版本的只读描述符；写打开从当前可�
 
 ## 静态资源与 Samba
 
-静态目录支持 `.gz` 预压缩、WASM MIME、弱 ETag/304、CSP 和 nosniff；发布新静态文件后应重启服务以重建资源 ETag 表。未知 API 不回退到网页。不要在静态目录保存认证或工作文件。
+静态目录支持 `.gz` 预压缩、WASM MIME、弱 ETag/304、CSP 和 nosniff；发布新静态文件后应重启服务以重建资源 ETag 表。目录不可读、不安全或缺少 `index.html` 时，静态页面返回 `503 WEB_ASSETS_UNAVAILABLE`，不阻止管理 HTTP API 启动；`GET /api/management/status` 的 `auxiliary.web_assets` 报告 `unavailable`。省略 `--web-dir` 时该状态为 `not_configured`，不会假定已提供 Web 页面。未知 API 不回退到网页。不要在静态目录保存认证或工作文件。
 
 `/api` 和 `/api/` 下路径只属于 API：即便静态目录意外出现同名文件，也不返回静态正文或静态 304。未知 API 与缺失静态文件均返回 JSON `NOT_FOUND` 错误封装。
 

@@ -188,7 +188,7 @@ fn sync_and_async_reads_bound_immutable_extents_but_allow_workspace_growth() {
     let file = unsafe { File::from_raw_fd(raw) };
     file.write_all_at(b"good", 0).unwrap();
     let opened = vfs::Open {
-        info: OpenResult {
+        info: Arc::new(OpenResult {
             entry_id: "entry".into(),
             kind: "file".into(),
             path: "file".into(),
@@ -197,7 +197,7 @@ fn sync_and_async_reads_bound_immutable_extents_but_allow_workspace_growth() {
             max_file_bytes: 1024,
             version_id: Some("version".into()),
             workspace_id: None,
-        },
+        }),
         fd: file.try_clone().unwrap().into_raw_fd(),
         writable: false,
         io: Arc::new(Mutex::new(())),
@@ -216,6 +216,17 @@ fn sync_and_async_reads_bound_immutable_extents_but_allow_workspace_growth() {
     // only an opaque map key. The real SDK event/request allocations are freed
     // on this thread after completion. free_context owns and closes its FD.
     unsafe {
+        let snapshot = vfs::snapshot(&mut handle, std::ptr::null_mut()).unwrap();
+        let stored = &vfs::context(&mut handle)
+            .unwrap()
+            .files
+            .get(&0)
+            .unwrap()
+            .info;
+        assert!(Arc::ptr_eq(stored, &snapshot.info));
+        assert_eq!(Arc::strong_count(stored), 2);
+        drop(snapshot);
+        assert_eq!(Arc::strong_count(stored), 1);
         let event = event_context();
         assert!(!event.is_null());
         for writable in [false, true] {
@@ -225,6 +236,12 @@ fn sync_and_async_reads_bound_immutable_extents_but_allow_workspace_growth() {
                 .get_mut(&0)
                 .unwrap()
                 .writable = writable;
+            let mut metadata = sdk::SMB_STRUCT_STAT::default();
+            assert_eq!(
+                vfs::fstat(&mut handle, std::ptr::null_mut(), &mut metadata),
+                0
+            );
+            assert_eq!(metadata.st_ex_size, if writable { 10 } else { 4 });
             for offset in [0, 2, 4, 5] {
                 let expected: &[u8] = if writable {
                     &b"goodSECRET"[offset..]

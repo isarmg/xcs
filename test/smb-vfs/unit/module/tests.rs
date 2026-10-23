@@ -1,6 +1,54 @@
 use super::*;
 
 #[test]
+fn typed_handle_stat_matches_path_stat_without_json_reencoding() {
+    for (kind, size) in [
+        ("file", 0),
+        ("file", 513),
+        ("file", i64::MAX),
+        ("directory", 0),
+    ] {
+        let mut direct = sdk::SMB_STRUCT_STAT::default();
+        let mut decoded = sdk::SMB_STRUCT_STAT::default();
+        let node = json_codec::json!({"kind": kind, "entry_id": "entry", "size": size.to_string()});
+        // SAFETY: Both outputs are live, exclusive local SDK stat structures.
+        unsafe {
+            fill_stat_fields(kind, "entry", size, &mut direct).unwrap();
+            fill_stat(&node, &mut decoded).unwrap();
+        }
+        assert_eq!(direct.st_ex_dev, decoded.st_ex_dev);
+        assert_eq!(direct.st_ex_ino, inode("entry"));
+        assert_eq!(direct.st_ex_ino, decoded.st_ex_ino);
+        assert_eq!(direct.st_ex_mode, decoded.st_ex_mode);
+        assert_eq!(
+            direct.st_ex_mode & libc::S_IFMT,
+            if kind == "directory" {
+                libc::S_IFDIR
+            } else {
+                libc::S_IFREG
+            }
+        );
+        assert_eq!(direct.st_ex_nlink, 1);
+        assert_eq!(direct.st_ex_uid, decoded.st_ex_uid);
+        assert_eq!(direct.st_ex_gid, decoded.st_ex_gid);
+        assert_eq!(direct.st_ex_size, size);
+        assert_eq!(direct.st_ex_size, decoded.st_ex_size);
+        assert_eq!(direct.st_ex_blksize, decoded.st_ex_blksize);
+        assert_eq!(direct.st_ex_blocks, (size as u64).div_ceil(512) as i64);
+        assert_eq!(direct.st_ex_blocks, decoded.st_ex_blocks);
+    }
+    let mut output = sdk::SMB_STRUCT_STAT::default();
+    // SAFETY: The local output is writable; null is rejected before dereference.
+    unsafe {
+        assert!(fill_stat_fields("file", "entry", -1, &mut output).is_err());
+        assert!(fill_stat_fields("file", "entry", 0, std::ptr::null_mut()).is_err());
+        let too_large =
+            json_codec::json!({"kind": "file", "entry_id": "entry", "size": u64::MAX.to_string()});
+        assert!(fill_stat(&too_large, &mut output).is_err());
+    }
+}
+
+#[test]
 fn input_buffer_checks_null_empty_and_oversize_before_borrowing() {
     // SAFETY: null/zero and invalid sizes must be rejected before dereference;
     // the only nonempty valid buffer is a live local array borrowed here.
@@ -31,7 +79,7 @@ fn removed_open_descriptor_is_closed_on_poisoned_lock_and_remote_save_failure() 
             });
         }
         let opened = Open {
-            info: OpenResult {
+            info: Arc::new(OpenResult {
                 entry_id: "entry".into(),
                 kind: "file".into(),
                 path: "file.txt".into(),
@@ -40,7 +88,7 @@ fn removed_open_descriptor_is_closed_on_poisoned_lock_and_remote_save_failure() 
                 max_file_bytes: 1,
                 version_id: None,
                 workspace_id: None,
-            },
+            }),
             fd: descriptor.into_raw_fd(),
             writable: true,
             io: lock,

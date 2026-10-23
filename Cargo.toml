@@ -21,8 +21,10 @@ members = [
     "tools/web-build",
     "tools/browser-smoke",
     "tools/web-bindings",
-    # Explicit regression target, not a default product member.
+    # Explicit regression targets, not default product members.
     "src/foundation/cryptography/ring",
+    "src/foundation/diagnostics/tracing-attributes",
+    "src/foundation/networking/axum-macros",
 ]
 exclude = ["src/foundation"]
 default-members = [

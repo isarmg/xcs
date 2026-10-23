@@ -31,6 +31,10 @@ default = []
 name = "axum_macros"
 path = "src/lib.rs"
 proc-macro = true
+# Retained upstream UI/docs need unsupported consumers; the routing gate tests macros.
+test = false
+doctest = false
+bench = false
 
 [dependencies.proc-macro2]
 version = "1.0"

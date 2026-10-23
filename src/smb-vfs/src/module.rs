@@ -50,7 +50,8 @@ use descriptors::{close_opened, snapshot};
 use paths::{at_name, name, text};
 
 struct Open {
-    info: OpenResult,
+    // Metadata is fixed at open; workers share it instead of copying names and IDs per I/O.
+    info: Arc<OpenResult>,
     fd: i32,
     writable: bool,
     io: Arc<Mutex<()>>,
@@ -249,7 +250,7 @@ unsafe extern "C" fn openat(
         context.files.insert(
             fsp as usize,
             Open {
-                info,
+                info: Arc::new(info),
                 fd,
                 writable,
                 io: Arc::new(Mutex::new(())),
@@ -605,9 +606,6 @@ unsafe extern "C" fn fsync_recv(
 /// # Safety
 /// A non-null stat points to live, aligned, exclusively writable SDK stat storage.
 unsafe fn fill_stat(node: &Value, stat: *mut sdk::SMB_STRUCT_STAT) -> std::io::Result<()> {
-    if stat.is_null() {
-        return Err(bad());
-    }
     let kind = node.get("kind").and_then(Value::as_str).ok_or_else(bad)?;
     let id = node
         .get("entry_id")
@@ -619,7 +617,20 @@ unsafe fn fill_stat(node: &Value, stat: *mut sdk::SMB_STRUCT_STAT) -> std::io::R
         .ok_or_else(bad)?
         .parse::<i64>()
         .map_err(|_| bad())?;
-    if size < 0 {
+    // SAFETY: The caller provides the same exclusive SDK output required by
+    // fill_stat_fields, which rejects null before writing.
+    unsafe { fill_stat_fields(kind, id, size, stat) }
+}
+
+/// # Safety
+/// A non-null stat points to live, aligned, exclusively writable SDK stat storage.
+unsafe fn fill_stat_fields(
+    kind: &str,
+    id: &str,
+    size: i64,
+    stat: *mut sdk::SMB_STRUCT_STAT,
+) -> std::io::Result<()> {
+    if stat.is_null() || size < 0 {
         return Err(bad());
     }
     let mode = if kind == "directory" {
@@ -688,20 +699,15 @@ unsafe extern "C" fn fstat(
             return Err(std::io::Error::last_os_error());
         }
         let size = if opened.info.kind == "directory" {
-            "0".into()
+            0
         } else if opened.writable {
-            metadata.st_size.to_string()
+            metadata.st_size
         } else {
-            opened.info.size.to_string()
+            i64::try_from(opened.info.size).map_err(|_| bad())?
         };
         // SAFETY: The host provides exclusive writable stat output for this callback, as required
-        // by fill_stat.
-        unsafe {
-            fill_stat(
-                &json_codec::json!({"kind":opened.info.kind,"entry_id":opened.info.entry_id,"size":size}),
-                stat,
-            )
-        }?;
+        // by fill_stat_fields.
+        unsafe { fill_stat_fields(&opened.info.kind, &opened.info.entry_id, size, stat) }?;
         Ok(0)
     })
 }

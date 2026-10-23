@@ -122,7 +122,8 @@ path = "../../concurrency/tokio"
 
 [dependencies.tracing]
 version = "0.1.37"
-features = ["log"]
+default-features = false
+features = ["log", "std"]
 path = "../../diagnostics/tracing"
 
 [dependencies.uuid]

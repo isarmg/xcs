@@ -78528,10 +78528,10 @@
   "foundation_layout_receipt": "5f02def35b57751ea9e54a2f1f22fdfebdbd6dda1ed910de7f8fa805f55e281d",
   "initial_test_relocation_sha256": "791ad728a408677dd54ef98e3feaffe825c5fc5670e888440615933d9498ecc3",
   "lockfiles_sha256": {
-    "Cargo.lock": "93d3a0c816c91d9078731ccad41c7ae31b78fb4608c7e8b0035cca51dca02d4a"
+    "Cargo.lock": "fe6324509133c1590ea1c97d43981a9be0202d6d8f2d1396a53a45756505538e"
   },
   "manifests_sha256": {
-    "Cargo.toml": "ccf4eaf7393cceea3de0b3888728e7053cb9e6f0b81b6ab80dcda1bc2be31c48",
+    "Cargo.toml": "2915aa60a121d18f665872ccaf51d9dcc3b5bb3465df5dc684dca366f7aed03e",
     "src/auth/Cargo.toml": "e6986ad60c15d48e2b3d60a5157de60ac7318f1ecc80befc1adfd60059b5dab3",
     "src/client/Cargo.toml": "fe89bb77ac7a669a4acf5d7136f0146a2847a12938b7be300c2d5670592c8660",
     "src/contract/Cargo.toml": "3cdb429c2617fb934312c73d89045b838d1329b4db8e317701fa4daa04c95d8f",
@@ -78656,7 +78656,7 @@
     "src/foundation/data-storage/libsqlite3-sys/Cargo.toml": "88fa3d599d15d790dda5669b26d4098cfb33ac6aff4ddc7b9724e4be8d432c87",
     "src/foundation/data-storage/schema-validation/Cargo.toml": "e1f0ba8e8f2599b2dc6ae773f7601195c8d170d6fa7c8fc2bd28f6af6efb361a",
     "src/foundation/data-storage/serialization-derive/Cargo.toml": "591ee524da95815434169fdfd904aead9f019711971cc041f963fa63b548b739",
-    "src/foundation/data-storage/sqlite-access/Cargo.toml": "46956952afebd6520f29a641d2a8a61c6506ae40e73cf97c98842812537e0a10",
+    "src/foundation/data-storage/sqlite-access/Cargo.toml": "f6f4f257e5c645f7f0b15f87d8c9e7b0f9e664ea96a37ec660f3ab02549cfbea",
     "src/foundation/data-storage/toml/Cargo.toml": "143abd83039d84b93bc64bc4e73b770228f900ebf33256fa8c5f1befdcc2e30e",
     "src/foundation/diagnostics/anyhow/Cargo.toml": "95a1a32da1e601b3c34c339bc425b52f269ba3559274a0a54d8bb2178009bb9e",
     "src/foundation/diagnostics/console_error_panic_hook/Cargo.toml": "ed5c60b3d2bb1927cae813d6361b790bbf634c8d6485db659e7b70979dd7d220",
@@ -78669,7 +78669,7 @@
     "src/foundation/diagnostics/throw_error/Cargo.toml": "ef8f112e0bd7f11dea7c400db9af652533feb5ba0c295b56d898de1bedc7789a",
     "src/foundation/diagnostics/tracing-attributes/Cargo.toml": "5d9cef6161edf444db95fef13de5566f32adc9f367f3df1ca4be450e2dfc85df",
     "src/foundation/diagnostics/tracing/Cargo.toml": "4e8ae6f9f66cf2eb465303109d260190d6b78198f5f3b2d0efffb55782409827",
-    "src/foundation/networking/axum-macros/Cargo.toml": "582826a4603c5addd02f4b0cfd590fa9ec4e6700770ae97f0daa91f6c1ed39f4",
+    "src/foundation/networking/axum-macros/Cargo.toml": "7fb05abf98d1e66d5dd363732ab40a5b30bc56cbf61d9c9275de513dc64d669b",
     "src/foundation/networking/email_address/Cargo.toml": "7f972a64ad15e07c899d6965780a0ac7853848b7b2481f2a371e5ae124ed1dba",
     "src/foundation/networking/fluent-uri/Cargo.toml": "ab593e982922c36ad875033c0c89359504f0a30f463d202d0598f10345ee0456",
     "src/foundation/networking/http-body/Cargo.toml": "ab87589a80437845e0c3521601ecb93adb11fd7b6afda01399c1a3c5aa9c96fd",
@@ -78760,7 +78760,7 @@
     "src/naming/Cargo.toml": "5dea667ea941dfde629bfc5e809ba6d6c12ca018507c4030ecdfdddcc2a01aff",
     "src/platform/Cargo.toml": "8b667ac649113e5e58334f7b8c3fddb47aa10873ac610a073868874b77dba968",
     "src/rescue/Cargo.toml": "8d5bd0f02eff46f12595c50064d4f801718b022f1bc37fc9e09f47dae31760d1",
-    "src/server/Cargo.toml": "4abb831dc339fec580acd92f84db820c4ecbbed3d47a9f1a32f1191fd684b314",
+    "src/server/Cargo.toml": "b0407a2acd6e965aa3d3b2c5de79f81b4583b478dd3a991bae8a1666744ee619",
     "src/smb-vfs/Cargo.toml": "8513f0d76d84f2e345de71376e751d36313fb2c42878af69b6d71ec37b3a3817",
     "src/smb/Cargo.toml": "66ca64b286cff2b2a6b2f551145e267b2eac6017affcd4c239605a9d080ecec4",
     "src/web/Cargo.toml": "612dd26e977186b9f9a32a0e8a739d34ce6b7f22d05ab7b7f1955c39d0910e7f",
@@ -80100,7 +80100,7 @@
       "description": "Core of SQLx, the rust SQL toolkit. Not intended to be used directly.",
       "directory": "src/foundation/data-storage/sqlite-access",
       "files_sha256": {
-        "Cargo.toml": "46956952afebd6520f29a641d2a8a61c6506ae40e73cf97c98842812537e0a10",
+        "Cargo.toml": "f6f4f257e5c645f7f0b15f87d8c9e7b0f9e664ea96a37ec660f3ab02549cfbea",
         "benches/sqlite/describe.rs": "e3846b1cd17054663e135116aecde934c2d20f3b83592562a3e34596168f0e94",
         "contrib/ide/vscode/settings.json": "af1e5804fd68126c54f709b71aee3c7dd4dca964f509257c2dd331006dda66ad",
         "gen-changelog.sh": "be0292a711d7a7bb03b57b9b3534dbb34d084189ed85d32c528d0a39e2e156a7",
@@ -80223,7 +80223,7 @@
       "description": "SQLite driver implementation for SQLx. Not for direct use; see the `sqlx` crate for details.",
       "directory": "src/foundation/data-storage/sqlite-access",
       "files_sha256": {
-        "Cargo.toml": "46956952afebd6520f29a641d2a8a61c6506ae40e73cf97c98842812537e0a10",
+        "Cargo.toml": "f6f4f257e5c645f7f0b15f87d8c9e7b0f9e664ea96a37ec660f3ab02549cfbea",
         "benches/sqlite/describe.rs": "e3846b1cd17054663e135116aecde934c2d20f3b83592562a3e34596168f0e94",
         "contrib/ide/vscode/settings.json": "af1e5804fd68126c54f709b71aee3c7dd4dca964f509257c2dd331006dda66ad",
         "gen-changelog.sh": "be0292a711d7a7bb03b57b9b3534dbb34d084189ed85d32c528d0a39e2e156a7",
@@ -95059,7 +95059,7 @@
       "description": "🧰 The Rust SQL Toolkit. An async, pure Rust SQL crate featuring compile-time checked queries without a DSL. Supports PostgreSQL, MySQL, and SQLite.",
       "directory": "src/foundation/data-storage/sqlite-access",
       "files_sha256": {
-        "Cargo.toml": "46956952afebd6520f29a641d2a8a61c6506ae40e73cf97c98842812537e0a10",
+        "Cargo.toml": "f6f4f257e5c645f7f0b15f87d8c9e7b0f9e664ea96a37ec660f3ab02549cfbea",
         "benches/sqlite/describe.rs": "e3846b1cd17054663e135116aecde934c2d20f3b83592562a3e34596168f0e94",
         "contrib/ide/vscode/settings.json": "af1e5804fd68126c54f709b71aee3c7dd4dca964f509257c2dd331006dda66ad",
         "gen-changelog.sh": "be0292a711d7a7bb03b57b9b3534dbb34d084189ed85d32c528d0a39e2e156a7",
@@ -95858,7 +95858,7 @@
       "description": "Macros for axum",
       "directory": "src/foundation/networking/axum-macros",
       "files_sha256": {
-        "Cargo.toml": "582826a4603c5addd02f4b0cfd590fa9ec4e6700770ae97f0daa91f6c1ed39f4",
+        "Cargo.toml": "7fb05abf98d1e66d5dd363732ab40a5b30bc56cbf61d9c9275de513dc64d669b",
         "src/attr_parsing.rs": "6b18d19b79abbdb0e5a818adde9281c7866aa143bdfe4fdde060c1b796f3be60",
         "src/axum_test.rs": "a43339923e1d1350266503e3de1de800541b35a397a30f0ee1b732a452d3b470",
         "src/debug_handler.rs": "b9bce99cf160a8b576986e4cd99eb21abac2894a1b59767f74ca48d6b0a94df6",
@@ -101278,7 +101278,7 @@
       "version": "0.2.129"
     }
   },
-  "policy_sha256": "255bcec81d0402a891a409003676473d979a7dce9870a627ae2ced3df120b336",
+  "policy_sha256": "191af577911e81783ffb7ff95246243217de38247e7a086cf4444593dc16169a",
   "post_consolidation_benchmark_relocation": "8a08cc5b47c335b9e6aa2b7361ab7259fdc394c8dad16c29efb3e90d330ffbbc",
   "proof_routing_receipts": [
     "42cbfc30f0e5db58801c1806abba6926e34a3279dd0697bc1b4cdf2c98fbcce0",
@@ -112395,10 +112395,8 @@
           "features": [
             "alloc",
             "ansi",
-            "attributes",
             "collector",
             "collector-default",
-            "default",
             "env-filter",
             "fmt",
             "log",
@@ -112407,25 +112405,10 @@
             "pattern",
             "registry",
             "smallvec",
-            "std",
-            "tracing-attributes"
+            "std"
           ],
           "roles": [
             "runtime"
-          ]
-        },
-        "src/foundation/diagnostics/tracing-attributes": {
-          "features": [],
-          "roles": [
-            "compile"
-          ]
-        },
-        "src/foundation/networking/axum-macros": {
-          "features": [
-            "default"
-          ],
-          "roles": [
-            "compile"
           ]
         },
         "src/foundation/networking/http": {
@@ -112458,7 +112441,6 @@
             "form",
             "http1",
             "json",
-            "macros",
             "matched-path",
             "original-uri",
             "query",
@@ -115364,10 +115346,8 @@
           "features": [
             "alloc",
             "ansi",
-            "attributes",
             "collector",
             "collector-default",
-            "default",
             "env-filter",
             "fmt",
             "log",
@@ -115376,22 +115356,7 @@
             "pattern",
             "registry",
             "smallvec",
-            "std",
-            "tracing-attributes"
-          ],
-          "roles": [
-            "compile"
-          ]
-        },
-        "src/foundation/diagnostics/tracing-attributes": {
-          "features": [],
-          "roles": [
-            "compile"
-          ]
-        },
-        "src/foundation/networking/axum-macros": {
-          "features": [
-            "default"
+            "std"
           ],
           "roles": [
             "compile"
@@ -115449,7 +115414,6 @@
             "form",
             "http1",
             "json",
-            "macros",
             "matched-path",
             "original-uri",
             "query",
@@ -116502,10 +116466,8 @@
           "features": [
             "alloc",
             "ansi",
-            "attributes",
             "collector",
             "collector-default",
-            "default",
             "env-filter",
             "fmt",
             "log",
@@ -116514,15 +116476,8 @@
             "pattern",
             "registry",
             "smallvec",
-            "std",
-            "tracing-attributes"
+            "std"
           ],
-          "roles": [
-            "compile"
-          ]
-        },
-        "src/foundation/diagnostics/tracing-attributes": {
-          "features": [],
           "roles": [
             "compile"
           ]
@@ -117523,6 +117478,70 @@
       "requested_features": [
         "contract-check/schema-async"
       ],
+      "target": "x86_64-unknown-linux-gnu"
+    },
+    {
+      "manifest": "Cargo.toml",
+      "packages": {
+        "src/foundation/code-generation/proc-macro2": {
+          "features": [
+            "default",
+            "proc-macro",
+            "span-locations"
+          ],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/code-generation/quote": {
+          "features": [
+            "default",
+            "proc-macro"
+          ],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/code-generation/rust-syntax": {
+          "features": [
+            "clone-impls",
+            "default",
+            "derive",
+            "extra-traits",
+            "fold",
+            "full",
+            "parsing",
+            "printing",
+            "proc-macro",
+            "visit",
+            "visit-mut"
+          ],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/diagnostics/tracing-attributes": {
+          "features": [],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/networking/axum-macros": {
+          "features": [
+            "default"
+          ],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/text-unicode/unicode-ident": {
+          "features": [],
+          "roles": [
+            "compile"
+          ]
+        }
+      },
+      "profile": "optional-macro-validation",
       "target": "x86_64-unknown-linux-gnu"
     }
   ],

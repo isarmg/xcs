@@ -11,7 +11,7 @@ use std::{
 
 pub(super) struct Snapshot {
     pub(super) client: Client,
-    pub(super) info: OpenResult,
+    pub(super) info: Arc<OpenResult>,
     pub(super) fd: OwnedFd,
     pub(super) writable: bool,
     pub(super) io: Arc<Mutex<()>>,
