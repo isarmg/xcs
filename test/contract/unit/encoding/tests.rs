@@ -78,6 +78,32 @@ fn utf16_order() {
 }
 
 #[test]
+fn canonical_strings_preserve_escaping_unicode_and_long_values() {
+    let text = "\0\u{1}\u{8}\u{b}\u{c}\u{1f}\n\r\t\"\\中文𐀀";
+    let value = json_codec::json!({
+        "\u{e000}": "bmp",
+        "\u{10000}": "astral",
+        "long": "long/".repeat(40),
+        "array": [text, {"quote\"\\\n": text}],
+    });
+    let expected = format!(
+        concat!(
+            r#"{{"array":["\u0000\u0001\b\u000b\f\u001f\n\r\t\"\\中文𐀀","#,
+            r#"{{"quote\"\\\n":"\u0000\u0001\b\u000b\f\u001f\n\r\t\"\\中文𐀀"}}],"#,
+            r#""long":"{}","𐀀":"astral","":"bmp"}}"#,
+        ),
+        "long/".repeat(40),
+    );
+    assert_eq!(canonical_json(&value).unwrap(), expected.as_bytes());
+    let (bytes, hash) = encode_hashed_object("string-escaping", &value).unwrap();
+    assert_eq!(bytes, expected.as_bytes());
+    assert_eq!(
+        hash,
+        "177d51ad5c965742b9f2d657453d1acf861863bec86cc2c43e89d631081231c4"
+    );
+}
+
+#[test]
 fn canonical_json_rejects_float_types_and_unsafe_numeric_integers() {
     for value in [f64::NAN, f64::INFINITY, f64::NEG_INFINITY, 1.0, 1.5] {
         assert!(canonical_json(&value).is_err());

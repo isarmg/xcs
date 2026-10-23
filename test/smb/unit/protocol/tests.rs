@@ -89,6 +89,44 @@ fn framing_transfers_an_owned_cloexec_descriptor_without_a_path() {
 }
 
 #[test]
+fn serialized_frames_reject_invalid_sizes_before_writing_and_preserve_descriptor_delivery() {
+    let (one, two) = UnixStream::pair().unwrap();
+    let mut sender = FrameStream::new(one).unwrap();
+    let mut receiver = FrameStream::new(two).unwrap();
+    let source = File::open("/dev/null").unwrap();
+    for payload in [Vec::new(), vec![b'x'; MAX_FRAME_BYTES + 1]] {
+        assert_eq!(
+            sender
+                .send_serialized(&payload, Some(source.as_fd()))
+                .unwrap_err()
+                .kind(),
+            io::ErrorKind::InvalidInput
+        );
+        receiver.0.set_nonblocking(true).unwrap();
+        assert_eq!(
+            receiver.0.read(&mut [0u8; 1]).unwrap_err().kind(),
+            io::ErrorKind::WouldBlock
+        );
+        receiver.0.set_nonblocking(false).unwrap();
+    }
+    let payload = json_codec::to_vec(&Response::Ok {
+        result: json_codec::json!({"alive":true}),
+    })
+    .unwrap();
+    sender
+        .send_serialized(&payload, Some(source.as_fd()))
+        .unwrap();
+    let (response, fd) = receiver.receive::<Response>().unwrap();
+    assert!(matches!(response, Response::Ok { result } if result["alive"] == true));
+    let fd = fd.unwrap();
+    // SAFETY: F_GETFD only reads the flags of this live owned descriptor.
+    assert_ne!(
+        unsafe { libc::fcntl(fd.as_raw_fd(), libc::F_GETFD) } & libc::FD_CLOEXEC,
+        0
+    );
+}
+
+#[test]
 fn oversized_length_is_rejected_before_allocating_payload() {
     let (mut one, two) = UnixStream::pair().unwrap();
     one.write_all(&u32::MAX.to_be_bytes()).unwrap();

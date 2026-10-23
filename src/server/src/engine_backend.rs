@@ -110,6 +110,11 @@ fn repository<'a>(engine: &'a Engine, id: &str) -> Result<&'a Repository, ApiErr
         .get(id)
         .ok_or_else(|| ApiError::new(404, "NOT_FOUND", "repository not found"))
 }
+/// Publications append increasing sequences; snapshot recovery preserves their
+/// vector order. Seek directly to the unseen suffix for resumed event polls.
+fn events_after(events: &[storage_contract::Event], after: u64) -> &[storage_contract::Event] {
+    &events[events.partition_point(|event| event.sequence <= after)..]
+}
 fn repo_for_history<'a>(engine: &'a Engine, id: &str) -> Result<&'a Repository, ApiError> {
     let history = engine
         .state()
@@ -1149,12 +1154,7 @@ impl Backend for EngineBackend {
                 }
                 let mut events = Vec::new();
                 let mut inspected = after;
-                for event in engine
-                    .state()
-                    .events
-                    .iter()
-                    .filter(|event| event.sequence > after)
-                {
+                for event in events_after(&engine.state().events, after) {
                     inspected = event.sequence;
                     if identity.admin
                         || engine
@@ -1291,6 +1291,9 @@ impl Backend for EngineBackend {
 #[cfg(test)]
 #[path = "../../../test/server/unit/engine_backend/authorization_tests.rs"]
 mod authorization_tests;
+#[cfg(test)]
+#[path = "../../../test/server/unit/engine_backend/event_tests.rs"]
+mod event_tests;
 #[cfg(test)]
 #[path = "../../../test/server/unit/engine_backend/readiness_tests.rs"]
 mod readiness_tests;

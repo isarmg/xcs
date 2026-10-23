@@ -201,6 +201,16 @@ impl FrameStream {
 
     pub fn send<T: Serialize>(&mut self, value: &T, fd: Option<BorrowedFd<'_>>) -> io::Result<()> {
         let payload = json_codec::to_vec(value).map_err(io::Error::other)?;
+        self.send_serialized(&payload, fd)
+    }
+
+    /// Send an already serialized JSON payload, rejecting invalid frame sizes
+    /// before writing any bytes or transferring the borrowed descriptor.
+    pub fn send_serialized(
+        &mut self,
+        payload: &[u8],
+        fd: Option<BorrowedFd<'_>>,
+    ) -> io::Result<()> {
         if payload.is_empty() || payload.len() > MAX_FRAME_BYTES {
             return Err(io::Error::new(
                 io::ErrorKind::InvalidInput,
@@ -261,7 +271,7 @@ impl FrameStream {
             return Err(io::ErrorKind::WriteZero.into());
         }
         self.write_before_deadline(&header[sent..], deadline)?;
-        self.write_before_deadline(&payload, deadline)
+        self.write_before_deadline(payload, deadline)
     }
 
     // A blocking send can keep making progress beyond SO_SNDTIMEO. Use

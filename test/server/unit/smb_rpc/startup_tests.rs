@@ -83,21 +83,33 @@ fn oversized_success_is_a_business_error_and_the_connection_remains_usable() {
     let (client, server) = UnixStream::pair().unwrap();
     let worker = std::thread::spawn(move || {
         let mut stream = FrameStream::new(server).unwrap();
-        send_success(
-            &mut stream,
-            json!({"large":"x".repeat(smb_protocol::protocol::MAX_FRAME_BYTES)}),
-            None,
-            Some("original-operation".into()),
-        )
-        .unwrap();
+        for operation_id in [None, Some("result-operation")] {
+            let (descriptor, mut peer) = UnixStream::pair().unwrap();
+            peer.set_read_timeout(Some(std::time::Duration::from_secs(2)))
+                .unwrap();
+            let mut result = json!({"large":"x".repeat(smb_protocol::protocol::MAX_FRAME_BYTES)});
+            if let Some(operation_id) = operation_id {
+                result["operation_id"] = operation_id.into();
+            }
+            send_success(
+                &mut stream,
+                result,
+                Some(descriptor.into()),
+                Some("original-operation".into()),
+            )
+            .unwrap();
+            assert_eq!(peer.read(&mut [0u8; 1]).unwrap(), 0);
+        }
         send_success(&mut stream, json!({"alive":true}), None, None).unwrap();
     });
     let mut stream = FrameStream::new(client).unwrap();
-    let (response, fd) = stream.receive::<Response>().unwrap();
-    assert!(fd.is_none());
-    assert!(
-        matches!(response, Response::Error { code, operation_id:Some(id), retryable:false, .. } if code == "RESPONSE_TOO_LARGE" && id == "original-operation")
-    );
+    for expected_operation in ["original-operation", "result-operation"] {
+        let (response, fd) = stream.receive::<Response>().unwrap();
+        assert!(fd.is_none());
+        assert!(
+            matches!(response, Response::Error { code, operation_id:Some(id), retryable:false, .. } if code == "RESPONSE_TOO_LARGE" && id == expected_operation)
+        );
+    }
     assert!(
         matches!(stream.receive::<Response>().unwrap().0, Response::Ok { result } if result["alive"] == true)
     );

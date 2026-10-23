@@ -99,7 +99,7 @@ pub fn canonical_json<T: Serialize + ?Sized>(value: &T) -> Result<Vec<u8>> {
             Value::Null => out.extend_from_slice(b"null"),
             Value::Bool(true) => out.extend_from_slice(b"true"),
             Value::Bool(false) => out.extend_from_slice(b"false"),
-            Value::String(s) => out.extend(json_codec::to_vec(s)?),
+            Value::String(s) => json_codec::to_writer(&mut *out, s)?,
             Value::Number(n) => out.extend(number(n)?.as_bytes()),
             Value::Array(a) => {
                 out.push(b'[');
@@ -119,7 +119,7 @@ pub fn canonical_json<T: Serialize + ?Sized>(value: &T) -> Result<Vec<u8>> {
                     if i > 0 {
                         out.push(b',');
                     }
-                    out.extend(json_codec::to_vec(k)?);
+                    json_codec::to_writer(&mut *out, k)?;
                     out.push(b':');
                     emit(&o[k], out)?;
                 }

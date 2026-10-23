@@ -199,11 +199,9 @@ fn send_success(
         .map(str::to_owned)
         .or(requested_operation);
     let response = Response::Ok { result };
-    if json_codec::to_vec(&response)
-        .map_err(io::Error::other)?
-        .len()
-        > smb_protocol::protocol::MAX_FRAME_BYTES
-    {
+    let payload = json_codec::to_vec(&response).map_err(io::Error::other)?;
+    if payload.len() > smb_protocol::protocol::MAX_FRAME_BYTES {
+        drop(payload);
         return stream.send(&Response::Error {
             code: "RESPONSE_TOO_LARGE".into(),
             message: "result exceeds RPC frame limit; the operation may have completed, query its original identity rather than replaying".into(),
@@ -211,7 +209,7 @@ fn send_success(
             operation_id,
         }, None);
     }
-    stream.send(&response, descriptor.as_ref().map(AsFd::as_fd))
+    stream.send_serialized(&payload, descriptor.as_ref().map(AsFd::as_fd))
 }
 
 fn response_error(error: ApiError, operation_id: Option<String>) -> Response {
