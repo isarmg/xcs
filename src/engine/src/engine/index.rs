@@ -52,16 +52,28 @@ impl Delta {
         before: Option<&BTreeMap<String, T>>,
         after: &BTreeMap<String, T>,
     ) -> Result<()> {
+        let Some(before) = before else {
+            for (id, value) in after {
+                self.put(kind, id.clone(), value)?;
+            }
+            return Ok(());
+        };
+        // Merge the ordered maps once, preserving each output vector's key
+        // order without two tree searches per unchanged row.
+        let mut before = before.iter().peekable();
         for (id, value) in after {
-            if before.and_then(|m| m.get(id)) != Some(value) {
+            while let Some((old_id, _)) = before.next_if(|(old_id, _)| *old_id < id) {
+                self.deletes.push((kind, old_id.clone()));
+            }
+            let previous = before
+                .next_if(|(old_id, _)| *old_id == id)
+                .map(|(_, value)| value);
+            if previous != Some(value) {
                 self.put(kind, id.clone(), value)?;
             }
         }
-        if let Some(before) = before {
-            for id in before.keys().filter(|id| !after.contains_key(*id)) {
-                self.deletes.push((kind, id.clone()));
-            }
-        }
+        self.deletes
+            .extend(before.map(|(id, _)| (kind, id.clone())));
         Ok(())
     }
     fn between(before: Option<&State>, after: &State) -> Result<Self> {

@@ -388,6 +388,50 @@ fn projected_state(path: &Path) -> State {
 }
 
 #[test]
+fn ordered_map_delta_matches_lookup_reference_across_all_small_maps() {
+    fn lookup_delta(before: Option<&BTreeMap<String, u8>>, after: &BTreeMap<String, u8>) -> Delta {
+        let mut delta = Delta::default();
+        for (id, value) in after {
+            if before.and_then(|map| map.get(id)) != Some(value) {
+                delta.put("test", id.clone(), value).unwrap();
+            }
+        }
+        if let Some(before) = before {
+            for id in before.keys().filter(|id| !after.contains_key(*id)) {
+                delta.deletes.push(("test", id.clone()));
+            }
+        }
+        delta
+    }
+
+    // Every key can be absent or have either value. All pairs cover empty,
+    // unchanged, inserted, deleted and changed rows, including boundary keys.
+    let keys = ["", "a", "aa", "z", "é"];
+    let maps: Vec<_> = (0..3_usize.pow(keys.len() as u32))
+        .map(|mut pattern| {
+            let mut map = BTreeMap::new();
+            for key in keys {
+                let choice = pattern % 3;
+                pattern /= 3;
+                if choice != 0 {
+                    map.insert(key.to_owned(), (choice - 1) as u8);
+                }
+            }
+            map
+        })
+        .collect();
+    for before in std::iter::once(None).chain(maps.iter().map(Some)) {
+        for after in &maps {
+            let expected = lookup_delta(before, after);
+            let mut actual = Delta::default();
+            actual.map("test", before, after).unwrap();
+            assert_eq!(actual.upserts, expected.upserts, "{before:?} -> {after:?}");
+            assert_eq!(actual.deletes, expected.deletes, "{before:?} -> {after:?}");
+        }
+    }
+}
+
+#[test]
 fn incremental_matches_full_projection_after_insert_update_delete_and_truncation() {
     let temp = tempfile::tempdir().unwrap();
     let incremental = temp.path().join("incremental.sqlite");
