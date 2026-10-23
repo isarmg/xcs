@@ -335,31 +335,41 @@ async fn upload_idle_timeout_preserves_tail_and_allows_verified_retry() {
     assert_eq!(data_count(root.path()), 1);
 }
 
-#[tokio::test]
-async fn upload_total_timeout_retains_unfinished_evidence_despite_progress() {
+#[test]
+fn upload_total_timeout_retains_unfinished_evidence_despite_progress() {
     let root = crate::tests::private_tempdir();
-    let mut settings = config(root.path(), METADATA_ALLOWANCE + 100);
-    settings.http_transfer_limits.idle_timeout = Duration::from_millis(100);
-    settings.http_transfer_limits.total_timeout = Duration::from_millis(180);
-    let app = application_config(root.path(), settings);
-    let (token, _, _) = authenticated(&app).await;
-    let hash = blake3::hash(&[b'x'; 100]).to_hex().to_string();
-    let stream = futures::stream::unfold((), |_| async {
-        tokio::time::sleep(Duration::from_millis(10)).await;
-        Some((Ok::<_, std::io::Error>(Bytes::from_static(b"x")), ()))
-    });
-    let response = app
-        .oneshot(request(
-            &token,
-            "total",
-            1,
-            100,
-            &hash,
-            Body::from_stream(stream),
-        ))
-        .await
+    let runtime = tokio::runtime::Builder::new_current_thread()
+        .enable_all()
+        .build()
         .unwrap();
-    assert_eq!(response.status(), StatusCode::REQUEST_TIMEOUT);
+    runtime.block_on(async {
+        let mut settings = config(root.path(), METADATA_ALLOWANCE + 100);
+        settings.http_transfer_limits.idle_timeout = Duration::from_millis(100);
+        settings.http_transfer_limits.total_timeout = Duration::from_millis(180);
+        let app = application_config(root.path(), settings);
+        let (token, _, _) = authenticated(&app).await;
+        let hash = blake3::hash(&[b'x'; 100]).to_hex().to_string();
+        let stream = futures::stream::unfold((), |_| async {
+            tokio::time::sleep(Duration::from_millis(10)).await;
+            Some((Ok::<_, std::io::Error>(Bytes::from_static(b"x")), ()))
+        });
+        let response = app
+            .oneshot(request(
+                &token,
+                "total",
+                1,
+                100,
+                &hash,
+                Body::from_stream(stream),
+            ))
+            .await
+            .unwrap();
+        assert_eq!(response.status(), StatusCode::REQUEST_TIMEOUT);
+    });
+    // The total deadline ends HTTP waiting, not an admitted blocking progress
+    // publication. Join those jobs before inspecting retained evidence; otherwise
+    // load's identity check can race the legitimate atomic metadata replacement.
+    drop(runtime);
     let record = uploads::load(&root.path().join("api-spool"), "ws", "total")
         .unwrap()
         .unwrap();
