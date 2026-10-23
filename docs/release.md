@@ -6,7 +6,7 @@
 
 ## 触发与验证
 
-`.github/workflows/release.yml` 在推送 `v*` 标签时运行；标签须为 `v` 加合法 SemVer，并与根 workspace 中第一方产品包版本一致。先提交版本与锁文件更新，再创建标签。`workflow_dispatch` 只演练构建，保留 `release-complete` artifact，不创建标签或公开 Release。
+`.github/workflows/release.yml` 在推送 `v*` 标签时运行；标签须为 `v` 加合法 SemVer，并与根 workspace 中第一方产品包版本一致。先提交版本与锁文件更新，并同步 `test/fixtures/command-line-cli.json` 中产品 `--version` 的固定回归快照，验证实际命令输出后再创建标签；独立构建工具的版本不随产品版本机械替换。`workflow_dispatch` 只演练构建，保留 `release-complete` artifact，不创建标签或公开 Release。
 
 发布流程执行源码、格式、严格 Clippy 与安全检查、业务测试、契约检查、正式 WASM 构建、真实浏览器冒烟和同提交的 Samba 4.23.0 SDK/FFI 检查。CI 与 Release 调用同一 SDK 工作流，发布组装等待其成功。质量门禁直接属于发布的 `verify` 依赖，失败会阻止公开版本。全部成功后校验产物集合，创建草稿、上传、下载核对 SHA-256，再公开。失败保留草稿；重试仅续传同一源码的本流程草稿，拒绝覆盖已公开版本。发布前后均核对标签提交。只有发布任务持有 `contents: write`。
 
