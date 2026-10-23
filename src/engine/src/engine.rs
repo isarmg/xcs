@@ -22,6 +22,8 @@ pub use reads::{ContentReadPlan, RangeContent, WorkspaceReadPlan};
 mod recovery;
 mod recovery_checkpoint;
 mod workspace_budget;
+mod workspace_limits;
+pub use workspace_limits::RetainedWorkspaceLimits;
 mod workspace_storage;
 use config::{acquire_locks, validate_config};
 
@@ -31,6 +33,7 @@ pub struct Engine {
     pub(crate) state: State,
     pub(crate) workspaces: BTreeMap<String, Workspace>,
     workspace_budget: workspace_budget::WorkspaceBudget,
+    retained_workspace_limits: Option<RetainedWorkspaceLimits>,
     pub(crate) blocked: bool,
     pub(crate) snapshot: Option<String>,
     pub(crate) next_slot: u64,
@@ -116,7 +119,16 @@ impl Engine {
         Ok(())
     }
 
-    pub fn initialize(root: &Path, mut config: Config) -> Result<Self> {
+    pub fn initialize(root: &Path, config: Config) -> Result<Self> {
+        Self::initialize_with_workspace_limits(root, config, None)
+    }
+
+    /// Set restart-only retained-evidence limits without changing disk configuration.
+    pub fn initialize_with_workspace_limits(
+        root: &Path,
+        mut config: Config,
+        workspace_limits: Option<RetainedWorkspaceLimits>,
+    ) -> Result<Self> {
         if root.join("config.json").exists() {
             return Err(Error::new(
                 "ALREADY_INITIALIZED",
@@ -124,6 +136,9 @@ impl Engine {
             ));
         }
         validate_config(&config)?;
+        if let Some(limits) = workspace_limits {
+            limits.validate_for(&config)?;
+        }
         private_dir(root)?;
         let root = existing_private_dir(root)?.path().to_path_buf();
         for d in &mut config.disks {
@@ -183,6 +198,7 @@ impl Engine {
             state,
             workspaces: BTreeMap::new(),
             workspace_budget: workspace_budget::WorkspaceBudget::default(),
+            retained_workspace_limits: workspace_limits,
             blocked: false,
             snapshot: None,
             next_slot: 1,
@@ -197,16 +213,53 @@ impl Engine {
         Ok(engine)
     }
     pub fn open(root: &Path) -> Result<Self> {
-        Self::open_mode(root, true)
+        Self::open_with_workspace_limits(root, None)
     }
+
+    pub fn open_with_workspace_limits(
+        root: &Path,
+        workspace_limits: Option<RetainedWorkspaceLimits>,
+    ) -> Result<Self> {
+        Self::open_mode(root, true, workspace_limits)
+    }
+
     /// Offline recovery entry. Unpublished candidates are never advanced here.
     pub fn open_for_recovery(root: &Path) -> Result<Self> {
-        Self::open_mode(root, false)
+        Self::open_for_recovery_with_workspace_limits(root, None)
     }
-    fn open_mode(root: &Path, complete_unpublished: bool) -> Result<Self> {
+
+    pub fn open_for_recovery_with_workspace_limits(
+        root: &Path,
+        workspace_limits: Option<RetainedWorkspaceLimits>,
+    ) -> Result<Self> {
+        Self::open_mode(root, false, workspace_limits)
+    }
+
+    fn open_mode(
+        root: &Path,
+        complete_unpublished: bool,
+        workspace_limits: Option<RetainedWorkspaceLimits>,
+    ) -> Result<Self> {
         let root = existing_private_dir(root)?.path().to_path_buf();
         let config: Config = read_json(&root.join("config.json"))?;
         validate_config(&config)?;
+        if let Some(limits) = workspace_limits {
+            limits.validate_for(&config)?;
+        }
+        let mut engine = Self::prepare_workspace_recovery(root, config, workspace_limits)?;
+        engine.recover_mode(complete_unpublished)?;
+        engine.load_workspaces()?;
+        engine.rebuild_index()?;
+        Ok(engine)
+    }
+
+    /// Admission preflight is read-only apart from writer lock files. Keep this
+    /// same Engine and its locks through replay and authoritative reconciliation.
+    fn prepare_workspace_recovery(
+        root: PathBuf,
+        config: Config,
+        workspace_limits: Option<RetainedWorkspaceLimits>,
+    ) -> Result<Self> {
         let locks = acquire_locks(&root, &config, true)?;
         let mut engine = Self {
             root,
@@ -217,6 +270,7 @@ impl Engine {
             },
             workspaces: BTreeMap::new(),
             workspace_budget: workspace_budget::WorkspaceBudget::default(),
+            retained_workspace_limits: workspace_limits,
             blocked: false,
             snapshot: None,
             next_slot: 1,
@@ -228,13 +282,18 @@ impl Engine {
             fault: None,
         };
         engine.seed_workspace_recovery()?;
-        engine.recover_mode(complete_unpublished)?;
-        engine.load_workspaces()?;
-        engine.rebuild_index()?;
         Ok(engine)
     }
     /// Explicit recovery after loss of the system disk. Never initializes data disks.
     pub fn restore_from_disks(root: &Path, disks: &[PathBuf]) -> Result<Self> {
+        Self::restore_from_disks_with_workspace_limits(root, disks, None)
+    }
+
+    pub fn restore_from_disks_with_workspace_limits(
+        root: &Path,
+        disks: &[PathBuf],
+        workspace_limits: Option<RetainedWorkspaceLimits>,
+    ) -> Result<Self> {
         if root.join("config.json").exists() {
             return Err(Error::new(
                 "ALREADY_INITIALIZED",
@@ -314,9 +373,19 @@ impl Engine {
         {
             validate_seal(&config, member)?;
         }
+        if let Some(limits) = workspace_limits {
+            limits.validate_for(&config)?;
+        }
         private_dir(root)?;
-        write_json(&root.join("config.json"), &config, false)?;
-        Self::open(root)
+        let root = existing_private_dir(root)?.path().to_path_buf();
+        let mut engine = Self::prepare_workspace_recovery(root, config, workspace_limits)?;
+        // A quota failure must not publish a system configuration or replay any
+        // journal repair. Preflight above retains the locks across publication.
+        write_json(&engine.root.join("config.json"), &engine.config, false)?;
+        engine.recover_mode(true)?;
+        engine.load_workspaces()?;
+        engine.rebuild_index()?;
+        Ok(engine)
     }
     pub(crate) fn require_recovery_locks(&self) -> Result<()> {
         if self._locks.len() != self.config.disks.len() + 1 {

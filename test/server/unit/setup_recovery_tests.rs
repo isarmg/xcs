@@ -1097,3 +1097,163 @@ fn offline_engine_failures_preserve_http_outcome_and_retry_classification() {
         engine_error(storage_engine::Error::new("STORAGE_BUSY", "private").retryable()).retryable
     );
 }
+
+fn raised_workspace_limits(config: &Config) -> RetainedWorkspaceLimits {
+    RetainedWorkspaceLimits {
+        max_retained_workspaces: config.max_retained_workspaces + 1,
+        max_retained_workspaces_per_principal: config.max_retained_workspaces_per_principal + 1,
+        max_retained_workspace_metadata_bytes: config.max_retained_workspace_metadata_bytes + 1,
+        max_retained_workspace_metadata_bytes_per_principal: config
+            .max_retained_workspace_metadata_bytes_per_principal
+            + 1,
+    }
+}
+
+fn assert_workspace_limits(engine: &Engine, limits: RetainedWorkspaceLimits) {
+    let capacity = engine.workspace_capacity("admin", true);
+    let global = capacity.global.unwrap();
+    assert_eq!(global.records.limit, limits.max_retained_workspaces as u64);
+    assert_eq!(
+        global.metadata_bytes.limit,
+        limits.max_retained_workspace_metadata_bytes
+    );
+    assert_eq!(
+        capacity.principal.records.limit,
+        limits.max_retained_workspaces_per_principal as u64
+    );
+    assert_eq!(
+        capacity.principal.metadata_bytes.limit,
+        limits.max_retained_workspace_metadata_bytes_per_principal
+    );
+    assert!(!capacity.automatic_retirement);
+}
+
+#[test]
+fn runtime_workspace_limits_below_selected_setup_baseline_do_not_publish_intent() {
+    for preset in [false, true] {
+        let (mut f, config, path) = preset_fixture();
+        let mut limits = raised_workspace_limits(&config);
+        if preset {
+            // Exceeds the host limit but is still a valid locally reviewed preset.
+            let mut selected = config.clone();
+            selected.max_retained_workspaces = limits.max_retained_workspaces + 1;
+            fs::write(&path, json_codec::to_vec(&selected).unwrap()).unwrap();
+        } else {
+            limits.max_retained_workspaces = config.max_retained_workspaces - 1;
+        }
+        f.service = f.service.with_workspace_limits(Some(limits)).unwrap();
+        let error = if preset {
+            let preview = f
+                .service
+                .preview_preset(
+                    &permit(&f.service),
+                    PresetPreviewRequest {
+                        preset_id: "custom".into(),
+                    },
+                )
+                .unwrap();
+            f.service.initialize_preset(
+                &permit(&f.service),
+                PresetSetupRequest {
+                    preset_id: "custom".into(),
+                    config_digest: preview["config_digest"].as_str().unwrap().into(),
+                    username: "admin".into(),
+                    password: "long-valid-password".into(),
+                },
+                |_, _, _| panic!("invalid host limits cannot install authority"),
+            )
+        } else {
+            f.service
+                .initialize(&permit(&f.service), request(), |_, _, _| {
+                    panic!("invalid host limits cannot install authority")
+                })
+        }
+        .unwrap_err();
+        assert_eq!(error.status, 400);
+        assert!(!f.service.data_root.join("setup-intent.json").exists());
+        assert!(!f.service.data_root.join("config.json").exists());
+        assert!(
+            !f.service
+                .management_root
+                .join("management-auth.json")
+                .exists()
+        );
+        for disk in f.service.disks.values() {
+            assert_eq!(fs::read_dir(disk).unwrap().count(), 0);
+        }
+    }
+}
+
+#[test]
+fn initialization_and_bound_completion_keep_runtime_workspace_limits_out_of_config() {
+    let mut f = fixture();
+    let baseline = Config::development(f.service.disks.values().cloned());
+    let limits = raised_workspace_limits(&baseline);
+    f.service = f.service.with_workspace_limits(Some(limits)).unwrap();
+    let error = f
+        .service
+        .initialize(&permit(&f.service), request(), |engine, _, _| {
+            assert_workspace_limits(&engine, limits);
+            assert_eq!(
+                engine.config().max_retained_workspaces,
+                baseline.max_retained_workspaces
+            );
+            Err(ApiError::conflict(
+                "INTERRUPTED",
+                "test before authority publication",
+            ))
+        })
+        .unwrap_err();
+    assert_eq!(error.code, "INTERRUPTED");
+    let persisted = fs::read(f.service.data_root.join("config.json")).unwrap();
+    f.service
+        .complete_initialization(
+            &permit(&f.service),
+            CompleteSetupRequest {
+                username: "admin".into(),
+                password: "long-valid-password".into(),
+            },
+            |engine, _, _| {
+                assert_workspace_limits(&engine, limits);
+                Ok(())
+            },
+        )
+        .unwrap();
+    assert_eq!(
+        fs::read(f.service.data_root.join("config.json")).unwrap(),
+        persisted
+    );
+}
+
+#[test]
+fn system_restore_passes_runtime_workspace_limits_without_rewriting_baseline() {
+    let mut f = recoverable_fixture();
+    let original = fs::read(f._temp.path().join("system/config.json")).unwrap();
+    let config: Config = storage_engine::decode_strict(&original).unwrap();
+    let limits = raised_workspace_limits(&config);
+    f.service = f.service.with_workspace_limits(Some(limits)).unwrap();
+    f.service
+        .restore_system(
+            &permit(&f.service),
+            RestoreRequest {
+                disk_ids: vec!["one".into()],
+                accept_stale_credentials: true,
+            },
+            |engine| {
+                assert_workspace_limits(&engine, limits);
+                assert_eq!(
+                    json_codec::to_value(engine.config()).unwrap(),
+                    json_codec::to_value(&config).unwrap()
+                );
+                Ok(())
+            },
+        )
+        .unwrap();
+    let restored: Config =
+        storage_engine::decode_strict(&fs::read(f.service.data_root.join("config.json")).unwrap())
+            .unwrap();
+    assert_eq!(
+        json_codec::to_value(restored).unwrap(),
+        json_codec::to_value(config).unwrap()
+    );
+}

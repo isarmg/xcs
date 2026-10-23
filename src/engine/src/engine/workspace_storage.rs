@@ -195,7 +195,7 @@ impl Engine {
                 })?;
                 validate_id(&id, "ws")?;
                 if !candidates.contains_key(&id)
-                    && candidates.len() >= self.config.max_retained_workspaces
+                    && candidates.len() >= self.effective_workspace_limits().max_retained_workspaces
                 {
                     return Err(Error::new(
                         "RESOURCE_LIMIT",

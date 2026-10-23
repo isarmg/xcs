@@ -10,7 +10,7 @@ use std::{
     io::{Read, Write},
     path::{Path, PathBuf},
 };
-use storage_engine::{Config, Engine, Mode};
+use storage_engine::{Config, Engine, Mode, RetainedWorkspaceLimits};
 
 mod http;
 pub(crate) use http::{protected_routes, public_routes};
@@ -132,6 +132,7 @@ pub struct SetupRecovery {
     identities: BTreeMap<String, (u64, u64)>,
     allow_development: bool,
     presets: BTreeMap<String, PathBuf>,
+    retained_workspace_limits: Option<RetainedWorkspaceLimits>,
 }
 
 impl SetupRecovery {
@@ -199,7 +200,20 @@ impl SetupRecovery {
             identities,
             allow_development: false,
             presets: BTreeMap::new(),
+            retained_workspace_limits: None,
         })
+    }
+
+    /// Immutable trusted-local host policy; never derive these limits from a request.
+    pub fn with_workspace_limits(
+        mut self,
+        limits: Option<RetainedWorkspaceLimits>,
+    ) -> Result<Self, ApiError> {
+        if let Some(limits) = limits {
+            limits.validate().map_err(engine_error)?;
+        }
+        self.retained_workspace_limits = limits;
+        Ok(self)
     }
 
     /// Explicit trusted-local opt-in only; never derive this flag from a request.
@@ -496,6 +510,11 @@ impl SetupRecovery {
         F: FnOnce(Engine, &str, &str) -> Result<(), ApiError>,
     {
         self.verify_permit(permit)?;
+        // A locally provisioned limit below the selected (including preset)
+        // baseline must not publish an intent that strands a pristine setup.
+        if let Some(limits) = self.retained_workspace_limits {
+            limits.validate_for(&config).map_err(engine_error)?;
+        }
         let intent = SetupIntent {
             version: 2,
             config: config.clone(),
@@ -503,7 +522,12 @@ impl SetupRecovery {
             bootstrap_binding: permit.binding.to_hex().to_string(),
         };
         self.write_control("setup-intent.json", &intent)?;
-        let engine = Engine::initialize(&self.data_root, config).map_err(engine_error)?;
+        let engine = Engine::initialize_with_workspace_limits(
+            &self.data_root,
+            config,
+            self.retained_workspace_limits,
+        )
+        .map_err(engine_error)?;
         self.write_ready(&intent)?;
         // Disk I/O may outlive or revoke the original local authorization.
         // Never publish account authority after that authorization is gone.
@@ -749,7 +773,11 @@ impl SetupRecovery {
         let _lock = self.lock()?;
         self.verify_permit(permit)?;
         self.completion_proof()?;
-        let engine = Engine::open_for_recovery(&self.data_root).map_err(engine_error)?;
+        let engine = Engine::open_for_recovery_with_workspace_limits(
+            &self.data_root,
+            self.retained_workspace_limits,
+        )
+        .map_err(engine_error)?;
         let pristine = storage_engine::State {
             topology_generation: 1,
             ..Default::default()
@@ -791,7 +819,11 @@ impl SetupRecovery {
     ) -> Result<storage_engine::RecoveryPlan, ApiError> {
         require_admin(identity)?;
         let _lock = self.lock()?;
-        let mut engine = Engine::open_for_recovery(&self.data_root).map_err(engine_error)?;
+        let mut engine = Engine::open_for_recovery_with_workspace_limits(
+            &self.data_root,
+            self.retained_workspace_limits,
+        )
+        .map_err(engine_error)?;
         engine
             .prepare_degraded_recovery(&request.operation_id, &identity.principal, &request.reason)
             .map_err(engine_error)
@@ -809,7 +841,11 @@ impl SetupRecovery {
             ));
         }
         let _lock = self.lock()?;
-        let mut engine = Engine::open_for_recovery(&self.data_root).map_err(engine_error)?;
+        let mut engine = Engine::open_for_recovery_with_workspace_limits(
+            &self.data_root,
+            self.retained_workspace_limits,
+        )
+        .map_err(engine_error)?;
         engine
             .commit_degraded_recovery(
                 &request.recovery_id,
@@ -896,7 +932,12 @@ impl SetupRecovery {
             ));
         }
         let disks = self.selected(&request.disk_ids)?;
-        let engine = Engine::restore_from_disks(&self.data_root, &disks).map_err(engine_error)?;
+        let engine = Engine::restore_from_disks_with_workspace_limits(
+            &self.data_root,
+            &disks,
+            self.retained_workspace_limits,
+        )
+        .map_err(engine_error)?;
         if engine.auth_state().is_none() {
             return Err(ApiError::conflict(
                 "AUTH_RECOVERY_REQUIRED",

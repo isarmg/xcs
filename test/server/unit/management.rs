@@ -842,6 +842,7 @@ async fn preset_web_setup_is_lazy_digest_bound_and_preserves_custom_configuratio
                 ),
             ]),
             allow_development_setup: true,
+            retained_workspace_limits: None,
         },
     )
     .unwrap();
@@ -922,4 +923,177 @@ async fn wait_for_ready(backend: &ManagementBackend) {
     })
     .await
     .expect("successful installation must reopen storage without a restart");
+}
+
+#[test]
+fn invalid_runtime_workspace_limits_do_not_create_management_state() {
+    let root = tempfile::tempdir().unwrap();
+    let data = root.path().join("pool");
+    let management = root.path().join("management");
+    let result = open_service_with_options(
+        &data,
+        &management,
+        ManagementOptions {
+            retained_workspace_limits: Some(storage_engine::RetainedWorkspaceLimits {
+                max_retained_workspaces: 0,
+                max_retained_workspaces_per_principal: 1,
+                max_retained_workspace_metadata_bytes: 1,
+                max_retained_workspace_metadata_bytes_per_principal: 1,
+            }),
+            ..Default::default()
+        },
+    );
+    assert!(result.is_err());
+    assert!(!data.exists());
+    assert!(!management.exists());
+}
+
+#[tokio::test]
+async fn background_reopen_uses_local_workspace_limits_and_preserves_capacity_privacy() {
+    let root = tempfile::tempdir().unwrap();
+    let data = root.path().join("pool");
+    let management = root.path().join("management");
+    let mut config = storage_engine::Config::development([root.path().join("disk")]);
+    config.max_retained_workspaces = 1;
+    config.max_retained_workspaces_per_principal = 1;
+    let mut engine = storage_engine::Engine::initialize(&data, config.clone()).unwrap();
+    let repo = engine
+        .create_repository("capacity", "P01", 1, "admin", &storage_engine::new_id("op"))
+        .unwrap();
+    engine
+        .create_workspace(&repo.main_branch_id, "admin")
+        .unwrap();
+    drop(engine);
+    let persisted = std::fs::read(data.join("config.json")).unwrap();
+    let limits = storage_engine::RetainedWorkspaceLimits {
+        max_retained_workspaces: 3,
+        max_retained_workspaces_per_principal: 2,
+        max_retained_workspace_metadata_bytes: config.max_retained_workspace_metadata_bytes + 100,
+        max_retained_workspace_metadata_bytes_per_principal: config
+            .max_retained_workspace_metadata_bytes_per_principal
+            + 100,
+    };
+    drop(AuthStore::initialize_management(&management, "admin", "a-long-test-password").unwrap());
+    let (backend, auth) = open_service_with_options(
+        &data,
+        &management,
+        ManagementOptions {
+            retained_workspace_limits: Some(limits),
+            ..Default::default()
+        },
+    )
+    .unwrap();
+    let app = router(backend.clone(), auth, ServerConfig::loopback(&management)).unwrap();
+    wait_for_ready(&backend).await;
+    let (status, login) = request(
+        &app,
+        "/api/auth/login",
+        None,
+        Some(json!({"username":"admin","password":"a-long-test-password"})),
+    )
+    .await;
+    assert_eq!(status, StatusCode::OK);
+    let token = login["token"].as_str().unwrap();
+    let (status, capacity) = request(&app, "/api/workspaces/capacity", Some(token), None).await;
+    assert_eq!(status, StatusCode::OK);
+    assert_eq!(capacity["global"]["records"]["used"], "1");
+    assert_eq!(capacity["global"]["records"]["limit"], "3");
+    assert_eq!(capacity["principal"]["records"]["limit"], "2");
+    assert_eq!(
+        capacity["global"]["metadata_bytes"]["limit"],
+        limits.max_retained_workspace_metadata_bytes.to_string()
+    );
+    assert_eq!(
+        capacity["principal"]["metadata_bytes"]["limit"],
+        limits
+            .max_retained_workspace_metadata_bytes_per_principal
+            .to_string()
+    );
+    assert_eq!(capacity["warning"], "ok");
+    assert_eq!(capacity["automatic_retirement"], false);
+    assert!(json_codec::from_value::<storage_contract::WorkspaceCapacity>(capacity).is_ok());
+    assert_eq!(
+        request(
+            &app,
+            "/api/workspaces",
+            Some(token),
+            Some(json!({"branch_id":repo.main_branch_id}))
+        )
+        .await
+        .0,
+        StatusCode::OK
+    );
+    assert_eq!(request(&app, "/api/admin/accounts", Some(token), Some(json!({"username":"reader","password":"reader-test-password","admin":false,"repositories":[],"disabled":false}))).await.0, StatusCode::OK);
+    let (_, login) = request(
+        &app,
+        "/api/auth/login",
+        None,
+        Some(json!({"username":"reader","password":"reader-test-password"})),
+    )
+    .await;
+    let token = login["token"].as_str().unwrap();
+    let (status, own) = request(
+        &app,
+        "/api/workspaces/capacity?admin=true&principal=admin&max_retained_workspaces=999",
+        Some(token),
+        None,
+    )
+    .await;
+    assert_eq!(status, StatusCode::OK);
+    assert!(own.get("global").is_none());
+    assert_eq!(own["principal"]["records"]["used"], "0");
+    assert_eq!(own["principal"]["records"]["limit"], "2");
+    assert_eq!(own["warning"], "ok");
+    assert!(json_codec::from_value::<storage_contract::WorkspaceCapacity>(own).is_ok());
+    assert_eq!(std::fs::read(data.join("config.json")).unwrap(), persisted);
+    backend.drain_management().unwrap();
+}
+
+#[test]
+fn below_baseline_runtime_limits_fail_in_background_without_blocking_management() {
+    let root = tempfile::tempdir().unwrap();
+    let data = root.path().join("pool");
+    let management = root.path().join("management");
+    drop(
+        storage_engine::Engine::initialize(
+            &data,
+            storage_engine::Config::development([root.path().join("disk")]),
+        )
+        .unwrap(),
+    );
+    let config = std::fs::read(data.join("config.json")).unwrap();
+    drop(AuthStore::initialize_management(&management, "admin", "a-long-test-password").unwrap());
+    let (backend, auth) = open_service_with_options(
+        &data,
+        &management,
+        ManagementOptions {
+            retained_workspace_limits: Some(storage_engine::RetainedWorkspaceLimits {
+                max_retained_workspaces: 1,
+                max_retained_workspaces_per_principal: 1,
+                max_retained_workspace_metadata_bytes: 1,
+                max_retained_workspace_metadata_bytes_per_principal: 1,
+            }),
+            ..Default::default()
+        },
+    )
+    .expect("pure startup must not compare against the pool configuration");
+    let auth = std::sync::Arc::new(std::sync::Mutex::new(auth));
+    *backend.inner.auth.lock().unwrap() = Some(auth.clone());
+    backend.inner.start_recovery(false).unwrap();
+    let worker = backend
+        .inner
+        .recovery_worker
+        .lock()
+        .unwrap()
+        .take()
+        .unwrap();
+    worker.join().unwrap();
+    assert_eq!(backend.management_status()["state"], "unavailable");
+    assert!(
+        auth.lock()
+            .unwrap()
+            .login("admin", "a-long-test-password")
+            .is_ok()
+    );
+    assert_eq!(std::fs::read(data.join("config.json")).unwrap(), config);
 }

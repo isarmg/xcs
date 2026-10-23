@@ -69,17 +69,20 @@ struct Inner {
     setup_disks: BTreeMap<String, PathBuf>,
     setup_configs: BTreeMap<String, PathBuf>,
     allow_development_setup: bool,
+    retained_workspace_limits: Option<storage_engine::RetainedWorkspaceLimits>,
 }
 pub struct ManagementBackend {
     inner: Arc<Inner>,
 }
-/// Locally provisioned setup choices. Paths are retained without reading them;
-/// unavailable preset files never gate management startup.
+/// Locally provisioned setup choices and immutable engine policy. Paths are
+/// retained without reading them; unavailable presets never gate management startup.
 #[derive(Default)]
 pub struct ManagementOptions {
     pub setup_disks: BTreeMap<String, PathBuf>,
     pub setup_configs: BTreeMap<String, PathBuf>,
     pub allow_development_setup: bool,
+    /// Immutable host policy, never loaded from an HTTP request or persisted to the pool.
+    pub retained_workspace_limits: Option<storage_engine::RetainedWorkspaceLimits>,
 }
 
 /// Marks the old engine snapshot as a replica, never an automatic admission source.
@@ -158,6 +161,7 @@ pub fn open_service_with_disks(
             setup_disks,
             setup_configs: BTreeMap::new(),
             allow_development_setup,
+            retained_workspace_limits: None,
         },
     )
 }
@@ -170,7 +174,13 @@ pub fn open_service_with_options(
         setup_disks,
         setup_configs,
         allow_development_setup,
+        retained_workspace_limits,
     } = options;
+    // Pure host validation must precede every system-state write. Baseline
+    // comparison belongs to the background engine open, not startup disk I/O.
+    if let Some(limits) = retained_workspace_limits {
+        limits.validate().map_err(ApiError::invalid)?;
+    }
     // These are system state directories, never data-disk mountpoints.
     if !setup_disks.is_empty() || !setup_configs.is_empty() {
         create_private_directory(data_root)?;
@@ -209,6 +219,7 @@ pub fn open_service_with_options(
             setup_disks,
             setup_configs,
             allow_development_setup,
+            retained_workspace_limits,
         }),
     });
     Ok((backend, auth))
@@ -403,7 +414,10 @@ impl Inner {
         let backend = if let Some(backend) = existing {
             backend
         } else {
-            let engine = match storage_engine::Engine::open(&self.data_root) {
+            let engine = match storage_engine::Engine::open_with_workspace_limits(
+                &self.data_root,
+                self.retained_workspace_limits,
+            ) {
                 Ok(engine) => engine,
                 Err(error) => {
                     tracing::warn!(%error,"storage recovery failed");
@@ -546,7 +560,8 @@ impl Backend for ManagementBackend {
             self.inner.management_root.clone(),
             self.inner.setup_disks.clone(),
         )?
-        .with_presets(self.inner.setup_configs.clone());
+        .with_presets(self.inner.setup_configs.clone())
+        .with_workspace_limits(self.inner.retained_workspace_limits)?;
         if self.inner.allow_development_setup {
             setup = setup.allow_development_mode();
         }

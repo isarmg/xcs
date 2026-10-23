@@ -84,6 +84,7 @@ fn rescue_restores_from_two_old_members_without_management_commands() {
         storage_engine::Config::development(disks.clone()),
     )
     .unwrap();
+    let baseline = engine.config().clone();
     let repository = engine
         .create_repository(
             "rescue-fixture",
@@ -99,11 +100,38 @@ fn rescue_restores_from_two_old_members_without_management_commands() {
         .unwrap();
     drop(backend);
     std::fs::remove_dir_all(&original).unwrap();
+    let limits = |records: usize| {
+        [
+            "--max-retained-workspaces".to_owned(),
+            records.to_string(),
+            "--max-retained-workspaces-per-principal".to_owned(),
+            baseline.max_retained_workspaces_per_principal.to_string(),
+            "--max-retained-workspace-metadata-bytes".to_owned(),
+            baseline.max_retained_workspace_metadata_bytes.to_string(),
+            "--max-retained-workspace-metadata-bytes-per-principal".to_owned(),
+            baseline
+                .max_retained_workspace_metadata_bytes_per_principal
+                .to_string(),
+        ]
+    };
+    let rejected = directory.path().join("rejected");
+    let output = Command::new(env!("CARGO_BIN_EXE_zxs-rescue"))
+        .arg("--root")
+        .arg(&rejected)
+        .args(["restore-system", "--disks"])
+        .args(&disks[..2])
+        .args(limits(baseline.max_retained_workspaces - 1))
+        .output()
+        .unwrap();
+    assert!(!output.status.success(), "{output:?}");
+    assert!(String::from_utf8_lossy(&output.stderr).contains("CONFIG_INVALID"));
+    assert!(!rejected.join("config.json").exists());
     let output = Command::new(env!("CARGO_BIN_EXE_zxs-rescue"))
         .arg("--root")
         .arg(&replacement)
         .args(["restore-system", "--disks"])
         .args(&disks[..2])
+        .args(limits(baseline.max_retained_workspaces + 1))
         .output()
         .unwrap();
     assert!(output.status.success(), "{output:?}");
@@ -117,6 +145,10 @@ fn rescue_restores_from_two_old_members_without_management_commands() {
             .contains_key(&repository.repository_id)
     );
     assert!(restored.auth_state().is_some());
+    assert_eq!(
+        json_codec::to_value(restored.config()).unwrap(),
+        json_codec::to_value(&baseline).unwrap()
+    );
 }
 
 #[test]
@@ -299,4 +331,36 @@ fn template_cli_accepts_one_disk_and_rejects_no_disks() {
         .output()
         .unwrap();
     assert_eq!(output.status.code(), Some(2));
+}
+
+#[test]
+fn invalid_retained_workspace_flags_do_not_create_state() {
+    for flags in [
+        vec!["--max-retained-workspaces", "2"],
+        vec![
+            "--max-retained-workspaces",
+            "0",
+            "--max-retained-workspaces-per-principal",
+            "1",
+            "--max-retained-workspace-metadata-bytes",
+            "1",
+            "--max-retained-workspace-metadata-bytes-per-principal",
+            "1",
+        ],
+    ] {
+        let directory = tempfile::tempdir().unwrap();
+        let root = directory.path().join("pool");
+        let output = Command::new(env!("CARGO_BIN_EXE_zxs-rescue"))
+            .arg("--root")
+            .arg(&root)
+            .args(["package", "export", "history"])
+            .arg(directory.path().join("package"))
+            .args(flags)
+            .output()
+            .unwrap();
+        assert_eq!(output.status.code(), Some(2), "{output:?}");
+        assert!(output.stdout.is_empty());
+        assert!(!String::from_utf8_lossy(&output.stderr).contains("TOKIO_WORKER_THREADS"));
+        assert_eq!(std::fs::read_dir(directory.path()).unwrap().count(), 0);
+    }
 }

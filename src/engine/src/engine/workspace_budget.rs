@@ -56,6 +56,7 @@ impl Engine {
     /// Callers must authorize `include_global` separately (administrator only).
     /// This is an observation, not a reservation or authorization decision.
     pub fn workspace_capacity(&self, principal: &str, include_global: bool) -> WorkspaceCapacity {
+        let limits = self.effective_workspace_limits();
         let budget = &self.workspace_budget;
         let (principal_records, principal_bytes) = budget
             .principals
@@ -65,20 +66,19 @@ impl Engine {
         let counters = [
             (
                 budget.records.len() as u128,
-                self.config.max_retained_workspaces as u128,
+                limits.max_retained_workspaces as u128,
             ),
             (
                 principal_records as u128,
-                self.config.max_retained_workspaces_per_principal as u128,
+                limits.max_retained_workspaces_per_principal as u128,
             ),
             (
                 budget.bytes as u128,
-                self.config.max_retained_workspace_metadata_bytes as u128,
+                limits.max_retained_workspace_metadata_bytes as u128,
             ),
             (
                 principal_bytes as u128,
-                self.config
-                    .max_retained_workspace_metadata_bytes_per_principal as u128,
+                limits.max_retained_workspace_metadata_bytes_per_principal as u128,
             ),
         ];
         let pressure = counters
@@ -100,16 +100,15 @@ impl Engine {
                 capacity_scope(
                     budget.records.len(),
                     budget.bytes,
-                    self.config.max_retained_workspaces,
-                    self.config.max_retained_workspace_metadata_bytes,
+                    limits.max_retained_workspaces,
+                    limits.max_retained_workspace_metadata_bytes,
                 )
             }),
             principal: capacity_scope(
                 principal_records,
                 principal_bytes,
-                self.config.max_retained_workspaces_per_principal,
-                self.config
-                    .max_retained_workspace_metadata_bytes_per_principal,
+                limits.max_retained_workspaces_per_principal,
+                limits.max_retained_workspace_metadata_bytes_per_principal,
             ),
             warning: match pressure {
                 2 => CapacityWarning::Exhausted,
@@ -181,6 +180,7 @@ impl Engine {
         &self,
         candidate: &Workspace,
     ) -> Result<WorkspaceAdmission> {
+        let limits = self.effective_workspace_limits();
         let budget = &self.workspace_budget;
         let old = budget.records.get(&candidate.workspace_id);
         if old.is_some_and(|(owner, _)| owner != &candidate.principal) {
@@ -204,27 +204,23 @@ impl Engine {
         let principal_bytes = principal_bytes
             .checked_sub(old_charge)
             .and_then(|bytes| bytes.checked_add(charge));
-        let exhausted =
-            if budget.records.len().saturating_add(added) > self.config.max_retained_workspaces {
-                Some("global record count")
-            } else if principal_count.saturating_add(added)
-                > self.config.max_retained_workspaces_per_principal
-            {
-                Some("principal record count")
-            } else if bytes
-                .is_none_or(|bytes| bytes > self.config.max_retained_workspace_metadata_bytes)
-            {
-                Some("global metadata bytes")
-            } else if principal_bytes.is_none_or(|bytes| {
-                bytes
-                    > self
-                        .config
-                        .max_retained_workspace_metadata_bytes_per_principal
-            }) {
-                Some("principal metadata bytes")
-            } else {
-                None
-            };
+        let exhausted = if budget.records.len().saturating_add(added)
+            > limits.max_retained_workspaces
+        {
+            Some("global record count")
+        } else if principal_count.saturating_add(added)
+            > limits.max_retained_workspaces_per_principal
+        {
+            Some("principal record count")
+        } else if bytes.is_none_or(|bytes| bytes > limits.max_retained_workspace_metadata_bytes) {
+            Some("global metadata bytes")
+        } else if principal_bytes
+            .is_none_or(|bytes| bytes > limits.max_retained_workspace_metadata_bytes_per_principal)
+        {
+            Some("principal metadata bytes")
+        } else {
+            None
+        };
         if let Some(dimension) = exhausted {
             return Err(Error::new(
                 "RESOURCE_LIMIT",

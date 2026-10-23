@@ -16,6 +16,18 @@ Recovery preview/commit only accepts decided, unpublished operations with all or
 Offline export validates one published version, not the entire pool or current permissions."
 )]
 struct Args {
+    /// Host retained-workspace record limit; supply all four limits or none.
+    #[arg(long, global = true, requires_all = ["max_retained_workspaces_per_principal", "max_retained_workspace_metadata_bytes", "max_retained_workspace_metadata_bytes_per_principal"])]
+    max_retained_workspaces: Option<std::num::NonZeroUsize>,
+    /// Host per-principal retained-workspace record limit.
+    #[arg(long, global = true, requires_all = ["max_retained_workspaces", "max_retained_workspace_metadata_bytes", "max_retained_workspace_metadata_bytes_per_principal"])]
+    max_retained_workspaces_per_principal: Option<std::num::NonZeroUsize>,
+    /// Host retained-workspace metadata byte limit.
+    #[arg(long, global = true, requires_all = ["max_retained_workspaces", "max_retained_workspaces_per_principal", "max_retained_workspace_metadata_bytes_per_principal"])]
+    max_retained_workspace_metadata_bytes: Option<std::num::NonZeroU64>,
+    /// Host per-principal retained-workspace metadata byte limit.
+    #[arg(long, global = true, requires_all = ["max_retained_workspaces", "max_retained_workspaces_per_principal", "max_retained_workspace_metadata_bytes"])]
+    max_retained_workspace_metadata_bytes_per_principal: Option<std::num::NonZeroU64>,
     #[arg(long, default_value = "./zxs-data", global = true)]
     root: PathBuf,
     #[arg(long, default_value = "admin", global = true)]
@@ -84,6 +96,28 @@ fn print(value: impl data_serialization::Serialize) -> Result<()> {
     println!("{}", json_codec::to_string_pretty(&value)?);
     Ok(())
 }
+impl Args {
+    fn workspace_limits(&self) -> Result<Option<storage_engine::RetainedWorkspaceLimits>> {
+        match (
+            self.max_retained_workspaces,
+            self.max_retained_workspaces_per_principal,
+            self.max_retained_workspace_metadata_bytes,
+            self.max_retained_workspace_metadata_bytes_per_principal,
+        ) {
+            (None, None, None, None) => Ok(None),
+            (Some(records), Some(principal_records), Some(bytes), Some(principal_bytes)) => {
+                Ok(Some(storage_engine::RetainedWorkspaceLimits {
+                    max_retained_workspaces: records.get(),
+                    max_retained_workspaces_per_principal: principal_records.get(),
+                    max_retained_workspace_metadata_bytes: bytes.get(),
+                    max_retained_workspace_metadata_bytes_per_principal: principal_bytes.get(),
+                }))
+            }
+            _ => Err("all four retained-workspace limits must be supplied together".into()),
+        }
+    }
+}
+
 fn main() {
     let args = Args::parse();
     if let Err(error) = run(args) {
@@ -92,6 +126,7 @@ fn main() {
     }
 }
 fn run(args: Args) -> Result<()> {
+    let retained_workspace_limits = args.workspace_limits()?;
     let root = args.root;
     match args.command {
         Command::Configuration { command } => configuration::run(command),
@@ -103,7 +138,7 @@ fn run(args: Args) -> Result<()> {
                 history,
                 destination,
             } => {
-                let engine = Engine::open(&root)?;
+                let engine = Engine::open_with_workspace_limits(&root, retained_workspace_limits)?;
                 print(engine.export_history_package(&history, &destination, &args.principal)?)
             }
             PackageCommand::Restore {
@@ -112,7 +147,8 @@ fn run(args: Args) -> Result<()> {
                 copies,
                 operation_id,
             } => {
-                let mut engine = Engine::open(&root)?;
+                let mut engine =
+                    Engine::open_with_workspace_limits(&root, retained_workspace_limits)?;
                 let operation = operation_id.unwrap_or_else(|| storage_engine::new_id("op"));
                 print(engine.restore_history_package(
                     &package,
@@ -124,7 +160,11 @@ fn run(args: Args) -> Result<()> {
             }
         },
         Command::RestoreSystem { disks } => {
-            let engine = Engine::restore_from_disks(&root, &disks)?;
+            let engine = Engine::restore_from_disks_with_workspace_limits(
+                &root,
+                &disks,
+                retained_workspace_limits,
+            )?;
             let pool = engine.config().pool_id.clone();
             let repositories = engine.state().repositories.len();
             let credentials_available = engine.auth_state().is_some();
@@ -133,7 +173,8 @@ fn run(args: Args) -> Result<()> {
             )
         }
         Command::RecoveryPreview { operation, reason } => {
-            let mut engine = Engine::open_for_recovery(&root)?;
+            let mut engine =
+                Engine::open_for_recovery_with_workspace_limits(&root, retained_workspace_limits)?;
             print(engine.prepare_degraded_recovery(&operation, &args.principal, &reason)?)
         }
         Command::RecoveryCommit {
@@ -147,7 +188,8 @@ fn run(args: Args) -> Result<()> {
                         .into(),
                 );
             }
-            let mut engine = Engine::open_for_recovery(&root)?;
+            let mut engine =
+                Engine::open_for_recovery_with_workspace_limits(&root, retained_workspace_limits)?;
             print(engine.commit_degraded_recovery(&recovery, &digest, &args.principal, true)?)
         }
         Command::OfflineCheck { disk } => {

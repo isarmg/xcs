@@ -7,6 +7,18 @@ type Result<T> = std::result::Result<T, Box<dyn std::error::Error + Send + Sync>
 #[derive(Parser)]
 #[command(name = "zxs", version, about = "ZXS storage and Web management daemon")]
 struct Args {
+    /// Host retained-workspace record limit; supply all four limits or none.
+    #[arg(long, requires_all = ["max_retained_workspaces_per_principal", "max_retained_workspace_metadata_bytes", "max_retained_workspace_metadata_bytes_per_principal"])]
+    max_retained_workspaces: Option<std::num::NonZeroUsize>,
+    /// Host per-principal retained-workspace record limit.
+    #[arg(long, requires_all = ["max_retained_workspaces", "max_retained_workspace_metadata_bytes", "max_retained_workspace_metadata_bytes_per_principal"])]
+    max_retained_workspaces_per_principal: Option<std::num::NonZeroUsize>,
+    /// Host retained-workspace metadata byte limit.
+    #[arg(long, requires_all = ["max_retained_workspaces", "max_retained_workspaces_per_principal", "max_retained_workspace_metadata_bytes_per_principal"])]
+    max_retained_workspace_metadata_bytes: Option<std::num::NonZeroU64>,
+    /// Host per-principal retained-workspace metadata byte limit.
+    #[arg(long, requires_all = ["max_retained_workspaces", "max_retained_workspaces_per_principal", "max_retained_workspace_metadata_bytes"])]
+    max_retained_workspace_metadata_bytes_per_principal: Option<std::num::NonZeroU64>,
     #[arg(long, default_value = "./zxs-data")]
     root: PathBuf,
     /// System-disk management state; defaults to ROOT/management, never a data member.
@@ -65,6 +77,28 @@ struct Args {
     pub(crate) smb_spool_recovery_reserve_bytes: u64,
 }
 
+impl Args {
+    fn workspace_limits(&self) -> Result<Option<storage_engine::RetainedWorkspaceLimits>> {
+        match (
+            self.max_retained_workspaces,
+            self.max_retained_workspaces_per_principal,
+            self.max_retained_workspace_metadata_bytes,
+            self.max_retained_workspace_metadata_bytes_per_principal,
+        ) {
+            (None, None, None, None) => Ok(None),
+            (Some(records), Some(principal_records), Some(bytes), Some(principal_bytes)) => {
+                Ok(Some(storage_engine::RetainedWorkspaceLimits {
+                    max_retained_workspaces: records.get(),
+                    max_retained_workspaces_per_principal: principal_records.get(),
+                    max_retained_workspace_metadata_bytes: bytes.get(),
+                    max_retained_workspace_metadata_bytes_per_principal: principal_bytes.get(),
+                }))
+            }
+            _ => Err("all four retained-workspace limits must be supplied together".into()),
+        }
+    }
+}
+
 fn main() -> std::process::ExitCode {
     let args = Args::parse();
     tracing::collector::fmt()
@@ -91,6 +125,7 @@ async fn run_with_runtime(args: Args) -> std::process::ExitCode {
 }
 
 async fn run(args: Args) -> Result<()> {
+    let retained_workspace_limits = args.workspace_limits()?;
     let Args {
         root,
         management_root,
@@ -115,6 +150,7 @@ async fn run(args: Args) -> Result<()> {
         smb_spool_bytes_per_account,
         smb_spool_bytes_total,
         smb_spool_recovery_reserve_bytes,
+        ..
     } = args;
     // Resolve operator-supplied relative paths without touching unavailable data members.
     let current = std::env::current_dir()?;
@@ -180,6 +216,7 @@ async fn run(args: Args) -> Result<()> {
             setup_disks: parse_setup_map(setup_disks, "--setup-disk")?,
             setup_configs: parse_setup_map(setup_configs, "--setup-config")?,
             allow_development_setup,
+            retained_workspace_limits,
         },
     )?;
     storage_server::serve(backend, auth, config).await

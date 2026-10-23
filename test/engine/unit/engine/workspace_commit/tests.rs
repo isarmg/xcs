@@ -4,8 +4,18 @@ use super::*;
 fn detached_snapshot_keeps_only_target_and_preserves_live_retained_evidence() {
     let temp = tempfile::tempdir().unwrap();
     let root = temp.path().join("state");
-    let config = Config::development([temp.path().join("primary")]);
-    let mut engine = Engine::initialize(&root, config).unwrap();
+    let mut config = Config::development([temp.path().join("primary")]);
+    config.max_retained_workspaces = 1;
+    config.max_retained_workspaces_per_principal = 1;
+    let limits = RetainedWorkspaceLimits {
+        max_retained_workspaces: 4,
+        max_retained_workspaces_per_principal: 2,
+        max_retained_workspace_metadata_bytes: config.max_retained_workspace_metadata_bytes * 2,
+        max_retained_workspace_metadata_bytes_per_principal: config
+            .max_retained_workspace_metadata_bytes_per_principal
+            * 2,
+    };
+    let mut engine = Engine::initialize_with_workspace_limits(&root, config, Some(limits)).unwrap();
     let repo = engine
         .create_repository("planning", "P01", 1, "alice", &new_id("op"))
         .unwrap();
@@ -52,6 +62,16 @@ fn detached_snapshot_keeps_only_target_and_preserves_live_retained_evidence() {
         .prepare_workspace_commit(request.clone(), None)
         .unwrap();
     let planning = &preparation.snapshot.engine;
+    assert_eq!(planning.retained_workspace_limits, Some(limits));
+    assert_eq!(
+        planning
+            .workspace_capacity("alice", true)
+            .global
+            .unwrap()
+            .records
+            .limit,
+        4
+    );
     assert_eq!(planning.workspaces.len(), 1);
     assert_eq!(
         canonical_json(&planning.workspace(&target.workspace_id).unwrap()).unwrap(),
@@ -89,7 +109,7 @@ fn detached_snapshot_keeps_only_target_and_preserves_live_retained_evidence() {
         .map(|(principal, _)| (principal, engine.workspace_capacity(principal, true)))
         .collect();
     drop(engine);
-    let mut engine = Engine::open(&root).unwrap();
+    let mut engine = Engine::open_with_workspace_limits(&root, Some(limits)).unwrap();
     assert_eq!(canonical_json(&engine.workspaces).unwrap(), committed);
     assert_eq!(engine.operation(&request.operation_id).unwrap(), result);
     let replay = engine

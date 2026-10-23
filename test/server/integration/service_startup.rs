@@ -208,3 +208,37 @@ fn default_state_directory_remains_private_for_later_web_setup() {
     }
     assert!(!directory.path().join("zxs-data/config.json").exists());
 }
+
+#[test]
+fn invalid_retained_workspace_flags_do_not_create_state() {
+    for flags in [
+        vec!["--max-retained-workspaces", "2"],
+        vec![
+            "--max-retained-workspaces",
+            "0",
+            "--max-retained-workspaces-per-principal",
+            "1",
+            "--max-retained-workspace-metadata-bytes",
+            "1",
+            "--max-retained-workspace-metadata-bytes-per-principal",
+            "1",
+        ],
+    ] {
+        let directory = tempfile::tempdir().unwrap();
+        let root = directory.path().join("pool");
+        let management = directory.path().join("management");
+        let output = Command::new(env!("CARGO_BIN_EXE_zxs"))
+            .arg("--root")
+            .arg(&root)
+            .arg("--management-root")
+            .arg(&management)
+            .env("TOKIO_WORKER_THREADS", "0")
+            .args(flags)
+            .output()
+            .unwrap();
+        assert_eq!(output.status.code(), Some(2), "{output:?}");
+        assert!(output.stdout.is_empty());
+        assert!(!String::from_utf8_lossy(&output.stderr).contains("TOKIO_WORKER_THREADS"));
+        assert_eq!(std::fs::read_dir(directory.path()).unwrap().count(), 0);
+    }
+}

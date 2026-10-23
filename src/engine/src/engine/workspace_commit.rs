@@ -186,6 +186,7 @@ impl Engine {
             // Planning reads only this workspace, with no workspace admission or recovery.
             workspaces: [(workspace.workspace_id.clone(), workspace.clone())].into(),
             workspace_budget: self.workspace_budget.clone(),
+            retained_workspace_limits: self.retained_workspace_limits,
             blocked: self.blocked,
             snapshot: self.snapshot.clone(),
             next_slot: self.next_slot,
