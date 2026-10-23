@@ -8,7 +8,7 @@
 
 `.github/workflows/release.yml` 在推送 `v*` 标签时运行；标签须为 `v` 加合法 SemVer，并与根 workspace 中第一方产品包版本一致。先提交版本与锁文件更新，并同步 `test/fixtures/command-line-cli.json` 中产品 `--version` 的固定回归快照，验证实际命令输出后再创建标签；独立构建工具的版本不随产品版本机械替换。`workflow_dispatch` 只演练构建，保留 `release-complete` artifact，不创建标签或公开 Release。
 
-发布流程执行源码、格式、严格 Clippy 与安全检查、业务测试、契约检查、正式 WASM 构建、真实浏览器冒烟和同提交的 Samba 4.23.0 SDK/FFI 检查。CI 与 Release 调用同一 SDK 工作流，发布组装等待其成功。质量门禁直接属于发布的 `verify` 依赖，失败会阻止公开版本。全部成功后校验产物集合，创建草稿、上传、下载核对 SHA-256，再公开。失败保留草稿；重试仅续传同一源码的本流程草稿，拒绝覆盖已公开版本。发布前后均核对标签提交。只有发布任务持有 `contents: write`。
+发布流程执行源码、格式、严格 Clippy 与安全检查、业务测试、契约检查、正式 WASM 构建、真实浏览器冒烟和同提交的 Samba 4.23.0 SDK/FFI 检查。CI 与 Release 调用同一 SDK 工作流，发布组装等待其成功。质量门禁直接属于发布的 `verify` 依赖，失败会阻止公开版本。全部成功后严格核对两个归档与 INSTALL.md、BUILD.txt、SHA256SUMS 组成的五文件集合；摘要清单必须完整且无重复，BUILD.txt 的版本和提交必须匹配发行目标。输入通过持有目录及不跟随链接的非阻塞文件句柄读取，生成已校验的私有上传快照，再创建草稿、上传、下载并复核同一集合、源码身份与 SHA-256，最后公开。失败保留草稿；重试仅续传同一源码的本流程草稿，拒绝覆盖已公开版本。发布前后均核对标签提交。只有发布任务持有 `contents: write`。
 
 普通 CI 的 `browser-smoke` 也在归档验收与模板浏览器检查成功后组装安装材料，上传保留 7 天的 `installation-candidate-linux-web` artifact，包含两个归档以及 `INSTALL.md`、`BUILD.txt`、`SHA256SUMS`。这是安装演练候选，不创建标签或公开 Release；该 artifact 的存在不代表其他并行 CI 门禁通过，也不等同于上面的完整 Release `workflow_dispatch` 演练。候选使用同次 CI 的检出提交和产物，部署前仍须核对 `BUILD.txt`、校验摘要并审阅整次 CI 结果。
 
@@ -52,4 +52,4 @@ Python 3 校验源码清单；安全扫描独立管理 cargo-audit，并在线�
 
 ## 发布故障回归
 
-`bash test/ci/release-publish.sh` 在临时仓库使用假的 `gh` 离线检查新建、草稿续传、503/403 拒绝创建、已公开版本拒绝覆盖、下载损坏拒绝公开。它纳入 `build-tools` suite，不会写入 GitHub。
+`bash test/ci/release-publish.sh` 在临时仓库使用假的 `gh` 离线检查新建、草稿续传、503/403 拒绝创建、已公开版本拒绝覆盖、远端额外文件、校验后本地输入变化以及下载损坏拒绝公开。它纳入 `build-tools` suite，不会写入 GitHub。

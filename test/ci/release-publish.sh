@@ -5,12 +5,15 @@ cd "$(dirname "${BASH_SOURCE[0]}")/../.."
 root=$(mktemp -d)
 trap 'rm -rf "$root"' EXIT
 mkdir -p "$root/.github/scripts" "$root/release-assets" "$root/bin" "$root/remote"
-cp .github/scripts/release-publish.sh "$root/.github/scripts/"
+cp .github/scripts/{release-publish.sh,verify-release-assets.py} "$root/.github/scripts/"
 git -C "$root" init -q
 git -C "$root" -c user.name=test -c user.email=test@example.invalid commit -qm fixture --allow-empty
 export MOCK_SHA="$(git -C "$root" rev-parse HEAD)" MOCK_ROOT="$root"
-printf 'actual fixture bytes\n' > "$root/release-assets/test.txt"
-(cd "$root/release-assets" && sha256sum test.txt > SHA256SUMS)
+for name in INSTALL.md zxs-0.1.0-x86_64-unknown-linux-gnu.tar.gz web-interface-0.1.0.tar.gz; do
+  printf 'actual fixture bytes\n' > "$root/release-assets/$name"
+done
+printf 'version=0.1.0\ncommit=%s\n' "$MOCK_SHA" > "$root/release-assets/BUILD.txt"
+(cd "$root/release-assets" && sha256sum -- * > SHA256SUMS)
 cat > "$root/bin/gh" <<'MOCK'
 #!/usr/bin/env bash
 set -euo pipefail
@@ -22,7 +25,9 @@ case "$1 $2" in
       *) echo 'HTTP/2.0 404 Not Found' ;;
     esac
     exit 1 ;;
-  'api repos/'*) echo "$MOCK_SHA" ;;
+  'api repos/'*)
+    if [[ "$MODE" == local-change ]]; then echo changed > "$MOCK_ROOT/release-assets/INSTALL.md"; fi
+    echo "$MOCK_SHA" ;;
   'release view')
     if [[ -f "$MOCK_ROOT/published" ]]; then
       echo false
@@ -36,23 +41,29 @@ case "$1 $2" in
       printf '{"isDraft":true,"body":"<!-- zxs-release-source:%s -->"}\n' "$MOCK_SHA"
     else exit 1; fi ;;
   'release create') touch "$MOCK_ROOT/created" ;;
-  'release upload') cp "$MOCK_ROOT"/release-assets/* "$MOCK_ROOT/remote/" ;;
+  'release upload')
+    shift 3
+    for path in "$@"; do
+      if [[ "$path" != --clobber ]]; then cp "$path" "$MOCK_ROOT/remote/"; fi
+    done
+    if [[ "$MODE" == remote-extra ]]; then echo extra > "$MOCK_ROOT/remote/.unlisted"; fi ;;
   'release download')
-    cp "$MOCK_ROOT"/remote/* "$5/"
-    if [[ "$MODE" == corrupt ]]; then echo bad >> "$5/test.txt"; fi ;;
+    cp -a "$MOCK_ROOT"/remote/. "$5/"
+    if [[ "$MODE" == corrupt ]]; then echo bad >> "$5/INSTALL.md"; fi ;;
   'release edit') touch "$MOCK_ROOT/published" ;;
   *) echo "Unexpected mock call: $*" >&2; exit 3 ;;
 esac
 MOCK
 chmod +x "$root/bin/gh"
 export PATH="$root/bin:$PATH" RELEASE_TAG=v0.1.0 RELEASE_PRERELEASE=false GH_REPO=test/repo
-for MODE in new resume network forbidden public foreign malformed corrupt; do
+for MODE in new resume network forbidden public foreign malformed corrupt remote-extra local-change; do
   export MODE
   rm -f "$root/created" "$root/published"
+  find "$root/remote" -mindepth 1 -maxdepth 1 -type f -delete
   status=0
   bash "$root/.github/scripts/release-publish.sh" > "$root/log" 2>&1 || status=$?
   case "$MODE" in
-    new|resume)
+    new|resume|local-change)
       if [[ "$status" != 0 || ! -f "$root/published" ]]; then cat "$root/log"; exit 1; fi ;;
     *)
       if [[ "$status" == 0 || -f "$root/published" ]]; then cat "$root/log"; exit 1; fi ;;

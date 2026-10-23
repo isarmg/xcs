@@ -28,13 +28,14 @@ def report():
 
 
 class CompareTests(unittest.TestCase):
-    def compare(self, before, after):
+    def compare(self, before, after, optimized=False):
         with tempfile.TemporaryDirectory(prefix="zxs-compare-") as folder:
             paths = [Path(folder) / name for name in ("before.json", "after.json")]
             for path, value in zip(paths, (before, after)):
                 path.write_text(json.dumps(value))
             return subprocess.run(
-                [sys.executable, str((Path(__file__).resolve().parents[3] / "tools/perf-check" / "compare.py")),
+                [sys.executable, *(["-O"] if optimized else []),
+                 str((Path(__file__).resolve().parents[3] / "tools/perf-check" / "compare.py")),
                  *(str(path) for path in paths), "--require-incremental"],
                 capture_output=True, text=True, check=False,
             )
@@ -66,6 +67,43 @@ class CompareTests(unittest.TestCase):
         before = report()
         before["samples"] = []
         self.assertNotEqual(self.compare(before, copy.deepcopy(before)).returncode, 0)
+
+
+    def test_optimization_cannot_disable_the_acceptance_gate(self):
+        self.assertEqual(self.compare(report(), report(), optimized=True).returncode, 0)
+        for mutate in (
+            lambda value: value["checks"].update(integrity_check=False),
+            lambda value: value.update(copies=99),
+            lambda value: value["samples"][-1]["sqlite_entity_writes"].update(inserts=10000),
+        ):
+            after = report()
+            mutate(after)
+            result = self.compare(report(), after, optimized=True)
+            self.assertNotEqual(result.returncode, 0)
+            self.assertNotIn("PASS:", result.stdout)
+
+    def test_invalid_counters_and_timings_cannot_hide_regressions(self):
+        for value in (-1, True, 1.5, float("nan"), float("inf"), "1"):
+            for key in ("inserts", "updates", "deletes"):
+                after = report()
+                after["samples"][-1]["sqlite_entity_writes"][key] = value
+                self.assertNotEqual(self.compare(report(), after).returncode, 0)
+            after = report()
+            after["samples"][-1]["save_us"] = value
+            self.assertNotEqual(self.compare(report(), after).returncode, 0)
+
+    def test_truncated_or_repeated_history_cannot_claim_bounded_growth(self):
+        for histories in ((1,), (1, 4), (1, 1, 4), (4, 2, 1), (1, 2, 5)):
+            before = report()
+            before["samples"] = [dict(before["samples"][0], history_versions=n) for n in histories]
+            self.assertNotEqual(self.compare(before, copy.deepcopy(before)).returncode, 0)
+
+    def test_real_reports_keep_the_incremental_gate(self):
+        root = Path(__file__).resolve().parents[3] / "tools/perf-check/results"
+        before = json.loads((root / "growth-baseline64.json").read_text())
+        after = json.loads((root / "growth-optimized64.json").read_text())
+        result = self.compare(before, after)
+        self.assertEqual(result.returncode, 0, result.stderr)
 
 
 if __name__ == "__main__":

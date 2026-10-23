@@ -2,15 +2,18 @@
 set -euo pipefail
 cd "$(dirname "${BASH_SOURCE[0]}")/../.."
 : "${RELEASE_TAG:?}" "${RELEASE_PRERELEASE:?}" "${GH_REPO:?}"
-# Never create a missing Git tag or silently release a tag moved during the build.
+[[ "$RELEASE_TAG" == v* && "$RELEASE_PRERELEASE" =~ ^(true|false)$ ]] || exit 1
 sha=$(git rev-parse HEAD)
+work=$(mktemp -d)
+trap 'rm -rf "$work"' EXIT
+python3 .github/scripts/verify-release-assets.py --version "${RELEASE_TAG#v}" \
+  --commit "$sha" --stage "$work/upload"
+# Never create a missing Git tag or silently release a tag moved during the build.
 remote_sha=$(gh api "repos/$GH_REPO/commits/$RELEASE_TAG" --jq .sha)
 test "$sha" = "$remote_sha"
-(cd release-assets && sha256sum --check SHA256SUMS)
 marker="<!-- zxs-release-source:$sha -->"
-notes=$(mktemp)
-existing=$(mktemp)
-trap 'rm -f "$notes" "$existing"' EXIT
+notes="$work/notes"
+existing="$work/existing"
 cat > "$notes" <<EOF
 $marker
 ZXS $RELEASE_TAG
@@ -47,15 +50,15 @@ else
   gh release create "$RELEASE_TAG" --verify-tag --draft --title "ZXS $RELEASE_TAG" \
     --notes-file "$notes" "${flags[@]}"
 fi
-gh release upload "$RELEASE_TAG" release-assets/* --clobber
+gh release upload "$RELEASE_TAG" "$work"/upload/* --clobber
 # Verify the server has exactly this release set, including its checksum manifest.
 # Downloading checks bytes, rather than assuming a successful upload means complete delivery.
-download=$(mktemp -d)
-trap 'rm -f "$notes" "$existing"; rm -rf "$download"' EXIT
+download="$work/download"
+mkdir "$download"
 gh release download "$RELEASE_TAG" --dir "$download"
-test "$(find "$download" -maxdepth 1 -type f | wc -l)" = "$(find release-assets -maxdepth 1 -type f | wc -l)"
-cmp release-assets/SHA256SUMS "$download/SHA256SUMS"
-(cd "$download" && sha256sum --check SHA256SUMS)
+cmp "$work/upload/SHA256SUMS" "$download/SHA256SUMS"
+python3 .github/scripts/verify-release-assets.py --directory "$download" \
+  --version "${RELEASE_TAG#v}" --commit "$sha"
 # Recheck the tag after upload. Until this succeeds the release remains a draft.
 test "$sha" = "$(gh api "repos/$GH_REPO/commits/$RELEASE_TAG" --jq .sha)"
 flags=()
