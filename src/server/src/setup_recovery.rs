@@ -1139,3 +1139,9 @@ fn read_preset(path: &Path) -> Result<Config, ApiError> {
     storage_contract::decode_strict(&bytes)
         .map_err(|_| ApiError::invalid("local setup preset is not a valid configuration"))
 }
+
+/// Deterministic test-only interruption after durable disk recovery.
+#[cfg(test)]
+pub(crate) fn after_next_restore(action: impl FnOnce() + 'static) {
+    tests::after_next_restore(action);
+}

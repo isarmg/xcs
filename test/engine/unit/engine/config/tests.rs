@@ -54,3 +54,38 @@ fn optional_backup_membership_does_not_require_three_voters() {
     config.disks[1].upstream_slot_id = None;
     assert!(validate_config(&config).is_err());
 }
+
+#[test]
+fn retained_workspace_limits_default_for_legacy_configuration_and_reject_zero() {
+    let config = Config::development(["/draft/only".into()]);
+    let mut value = json_codec::to_value(&config).unwrap();
+    for field in [
+        "max_retained_workspaces",
+        "max_retained_workspaces_per_principal",
+        "max_retained_workspace_metadata_bytes",
+        "max_retained_workspace_metadata_bytes_per_principal",
+    ] {
+        value.as_object_mut().unwrap().remove(field);
+    }
+    let restored: Config = json_codec::from_value(value).unwrap();
+    assert_eq!(restored.max_retained_workspaces, 4096);
+    assert_eq!(restored.max_retained_workspaces_per_principal, 1024);
+    assert_eq!(restored.max_retained_workspace_metadata_bytes, 128 << 20);
+    assert_eq!(
+        restored.max_retained_workspace_metadata_bytes_per_principal,
+        64 << 20
+    );
+    for field in 0..4 {
+        let mut invalid = restored.clone();
+        match field {
+            0 => invalid.max_retained_workspaces = 0,
+            1 => invalid.max_retained_workspaces_per_principal = 0,
+            2 => invalid.max_retained_workspace_metadata_bytes = 0,
+            _ => invalid.max_retained_workspace_metadata_bytes_per_principal = 0,
+        }
+        assert_eq!(
+            validate_config(&invalid).unwrap_err().code(),
+            "CONFIG_INVALID"
+        );
+    }
+}

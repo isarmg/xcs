@@ -254,3 +254,14 @@ fn inventory_rejects_linked_root_special_files_and_excessive_depth() {
         Err(Error::UnsafeFileType(_))
     ));
 }
+
+#[test]
+fn ancestor_owner_and_sticky_policy() {
+    assert!(trusted_ancestor(0, 0o755, 1000));
+    assert!(trusted_ancestor(0, 0o1777, 1000));
+    assert!(trusted_ancestor(1000, 0o700, 1000));
+    assert!(!trusted_ancestor(1000, 0o777, 1000));
+    assert!(!trusted_ancestor(2000, 0o700, 1000));
+    assert!(!trusted_ancestor(2000, 0o700, 0));
+    assert!(!trusted_ancestor(2000, 0o1777, 1000));
+}

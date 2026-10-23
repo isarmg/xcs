@@ -3574,7 +3574,11 @@ async fn engine_upload_generation_conflicts_reach_http_as_conflicts() {
             ws,
             &item,
             "file.txt",
-            &source,
+            &storage_server::UploadSource::from_file(
+                std::fs::File::open(&source).unwrap(),
+                u64::MAX,
+            )
+            .unwrap(),
             2,
         )
         .unwrap();

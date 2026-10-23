@@ -15,10 +15,10 @@ fn write_recovery_record(
     branch: &str,
     detached: Option<(&ApiError, bool)>,
 ) -> Result<(), ApiError> {
-    let parent = writer
-        .source
-        .parent()
-        .ok_or_else(|| ApiError::invalid("SMB staging parent missing"))?;
+    writer
+        .directory
+        .verify_identity()
+        .map_err(crate::upload_fs_error)?;
     // `published` describes the last reconciled operation, not all bytes
     // currently reachable through the live writable descriptor. Recovery must
     // reconcile these bytes even when no Dirty request was received.
@@ -42,20 +42,20 @@ fn write_recovery_record(
         value["detach_error"] = json!({"code": error.code, "message": error.message});
         value["retained_bytes_synced"] = json!(synced);
     }
-    let mut temporary = tempfile::Builder::new()
-        .prefix(".smb-work-")
-        .tempfile_in(parent)
-        .map_err(ApiError::io)?;
-    temporary
-        .write_all(&json_codec::to_vec(&value).map_err(ApiError::invalid)?)
-        .map_err(ApiError::io)?;
-    temporary.as_file().sync_all().map_err(ApiError::io)?;
-    temporary
-        .persist(writer.source.with_extension("work.json"))
-        .map_err(|error| ApiError::io(error.error))?;
-    File::open(parent)
-        .and_then(|directory| directory.sync_all())
-        .map_err(ApiError::io)
+    use platform_io::fs_safety::{AtomicFile, RelativePath};
+    let record = writer.source.with_extension("work.json");
+    let name = RelativePath::new(Path::new(
+        record
+            .file_name()
+            .ok_or_else(|| ApiError::invalid("SMB record filename missing"))?,
+    ))
+    .map_err(crate::upload_fs_error)?;
+    AtomicFile::replace(
+        &writer.directory,
+        &name,
+        &json_codec::to_vec(&value).map_err(ApiError::invalid)?,
+    )
+    .map_err(crate::upload_fs_error)
 }
 
 fn retain_detached(writer: &Writer, principal: &str, branch: &str, reason: &ApiError) {
@@ -293,6 +293,19 @@ impl Session {
             Err(error) if error.code == "NOT_FOUND" || error.code == "OPERATION_NOT_FOUND" => {}
             Err(error) => return Err(error),
         }
+        writer
+            .directory
+            .verify_payload(
+                &platform_io::fs_safety::EntryName::new(
+                    writer
+                        .source
+                        .file_name()
+                        .ok_or_else(|| ApiError::invalid("SMB source filename missing"))?,
+                )
+                .map_err(crate::upload_fs_error)?,
+                &writer.file,
+            )
+            .map_err(crate::upload_fs_error)?;
         writer.file.sync_all().map_err(ApiError::io)?;
         if writer.file.metadata().map_err(ApiError::io)?.len() > self.max_file_bytes {
             return Err(ApiError::limit("file exceeds SMB byte limit"));
@@ -302,7 +315,10 @@ impl Session {
             &writer.workspace.workspace_id,
             &writer.item_id,
             &writer.path,
-            &writer.source,
+            &crate::UploadSource::from_file(
+                writer.file.try_clone().map_err(ApiError::io)?,
+                self.max_file_bytes,
+            )?,
         )?;
         let result = self.shared.backend.call(
             crate::BackendAction::CommitWorkspaceInternal,

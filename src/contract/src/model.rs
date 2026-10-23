@@ -39,11 +39,39 @@ pub struct Config {
     #[serialization(with = "crate::u64_string")]
     pub max_workspace_bytes: u64,
     pub max_workspaces: usize,
+    /// Durable records, including committed and aborted recovery evidence.
+    #[serialization(default = "default_max_retained_workspaces")]
+    pub max_retained_workspaces: usize,
+    #[serialization(default = "default_max_retained_workspaces_per_principal")]
+    pub max_retained_workspaces_per_principal: usize,
+    /// Logical manifest bytes, charged once per record, with lifecycle headroom.
+    #[serialization(
+        default = "default_max_retained_workspace_metadata_bytes",
+        with = "crate::u64_string"
+    )]
+    pub max_retained_workspace_metadata_bytes: u64,
+    #[serialization(
+        default = "default_max_retained_workspace_metadata_bytes_per_principal",
+        with = "crate::u64_string"
+    )]
+    pub max_retained_workspace_metadata_bytes_per_principal: u64,
     pub max_entries: usize,
     #[serialization(with = "crate::u64_string")]
     pub metadata_reserve_bytes: u64,
     #[serialization(with = "crate::u64_string")]
     pub workspace_ttl_seconds: u64,
+}
+fn default_max_retained_workspaces() -> usize {
+    4096
+}
+fn default_max_retained_workspaces_per_principal() -> usize {
+    1024
+}
+fn default_max_retained_workspace_metadata_bytes() -> u64 {
+    128 << 20
+}
+fn default_max_retained_workspace_metadata_bytes_per_principal() -> u64 {
+    64 << 20
 }
 impl Config {
     /// Build a development draft with one primary and optional ordered backup tiers.
@@ -78,6 +106,11 @@ impl Config {
             max_file_bytes: 1 << 40,
             max_workspace_bytes: 1 << 40,
             max_workspaces: 128,
+            max_retained_workspaces: default_max_retained_workspaces(),
+            max_retained_workspaces_per_principal: default_max_retained_workspaces_per_principal(),
+            max_retained_workspace_metadata_bytes: default_max_retained_workspace_metadata_bytes(),
+            max_retained_workspace_metadata_bytes_per_principal:
+                default_max_retained_workspace_metadata_bytes_per_principal(),
             max_entries: 100_000,
             metadata_reserve_bytes: 64 << 20,
             workspace_ttl_seconds: 86_400,

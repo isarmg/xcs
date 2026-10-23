@@ -122,7 +122,7 @@ impl Backend for NamespaceFailure {
         workspace: &str,
         item: &str,
         path: &str,
-        source: &Path,
+        source: &crate::UploadSource,
     ) -> Result<Value, ApiError> {
         self.inner.upload(identity, workspace, item, path, source)
     }
@@ -490,7 +490,7 @@ impl Backend for PreparationFailure {
         workspace: &str,
         item: &str,
         path: &str,
-        source: &Path,
+        source: &crate::UploadSource,
     ) -> Result<Value, ApiError> {
         self.inner.upload(identity, workspace, item, path, source)
     }

@@ -29,9 +29,11 @@ impl Backend for TestBackend {
         workspace: &str,
         item: &str,
         path: &str,
-        source: &Path,
+        source: &crate::UploadSource,
     ) -> Result<Value, ApiError> {
-        let bytes = std::fs::read(source).map_err(ApiError::io)?;
+        let mut bytes = vec![0; source.size as usize];
+        std::os::unix::fs::FileExt::read_exact_at(&source.file, &mut bytes, 0)
+            .map_err(ApiError::io)?;
         Ok(
             json!({"workspace_id":workspace,"item_id":item,"path":path,"size":bytes.len().to_string(),"content_hash":blake3::hash(&bytes).to_hex().to_string()}),
         )
@@ -622,7 +624,7 @@ async fn disconnected_upload_keeps_its_claim_until_publication_and_status_are_du
             workspace: &str,
             item: &str,
             path: &str,
-            source: &Path,
+            source: &crate::UploadSource,
         ) -> Result<Value, ApiError> {
             if let Some(started) = self.started.lock().unwrap().take() {
                 let _ = started.send(());

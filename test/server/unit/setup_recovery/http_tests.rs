@@ -8,7 +8,6 @@ use service_stack::ServiceExt;
 use std::os::unix::fs::PermissionsExt;
 use std::{
     collections::BTreeMap,
-    path::Path,
     sync::{
         Arc,
         atomic::{AtomicUsize, Ordering},
@@ -38,7 +37,14 @@ impl Backend for Probe {
     fn call(&self, _: BackendAction, _: &Identity, _: Value) -> Result<Value, ApiError> {
         Err(ApiError::unsupported())
     }
-    fn upload(&self, _: &Identity, _: &str, _: &str, _: &str, _: &Path) -> Result<Value, ApiError> {
+    fn upload(
+        &self,
+        _: &Identity,
+        _: &str,
+        _: &str,
+        _: &str,
+        _: &crate::UploadSource,
+    ) -> Result<Value, ApiError> {
         Err(ApiError::unsupported())
     }
     fn content(&self, _: &Identity, _: &str) -> Result<Content, ApiError> {

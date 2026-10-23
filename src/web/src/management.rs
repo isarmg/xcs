@@ -87,7 +87,7 @@ fn accept(model: &mut Model, value: &Value) {
 pub(crate) fn load(state: RwSignal<State>) {
     let Some((epoch, generation)) = state
         .try_update(|s| {
-            if s.management.loading || s.logout_pending {
+            if s.management.loading || s.logout_pending || s.logout_unconfirmed {
                 return None;
             }
             s.management.loading = true;
@@ -105,6 +105,7 @@ pub(crate) fn load(state: RwSignal<State>) {
                 s.session_epoch == epoch
                     && s.management.generation == generation
                     && !s.logout_pending
+                    && !s.logout_unconfirmed
             })
             .unwrap_or(false)
         {

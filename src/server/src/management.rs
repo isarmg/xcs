@@ -1,7 +1,7 @@
 //! System-disk control plane. Engine recovery is optional and never gates HTTP.
 //! `management-auth.json` is primary; engine snapshots are disaster-recovery
-//! copies. A durable handover marker forbids automatically replaying an older
-//! engine copy after local credentials have been lost.
+//! copies. Only explicit authorized recovery can install them; background
+//! recovery and restarts never replace missing or damaged system credentials.
 use crate::{
     ApiError, Backend, BackendAction, Content, InternalDiskObservation,
     auth::{AuthStore, Identity},
@@ -179,8 +179,8 @@ pub fn open_service_with_options(
         AuthStore::unavailable(management_root)
     });
     if auth.is_available() {
-        // Fence legacy automatic recovery before accepting any local authority
-        // mutation, including when the data pool itself cannot be opened.
+        // Record local authority before accepting any credential mutation,
+        // including when the data pool itself cannot be opened.
         let claim = create_private_directory(data_root).and_then(|_| claim_authority(data_root));
         if let Err(error) = claim {
             tracing::warn!(code=%error.code,"cannot durably establish management authority");
@@ -316,44 +316,20 @@ impl Inner {
                 "management is not initialized",
             )
         })?;
-        // Engine locks and data I/O are always outside the system-auth mutex.
-        let recovered = if !crate::lock(&auth)?.is_available() {
-            backend.auth_snapshot()?
-        } else {
-            None
-        };
         {
             let mut auth = crate::lock(&auth)?;
+            // A recovered pool is evidence, never permission to install system
+            // credentials. In particular, disk restore may have completed before
+            // bootstrap authorization expired or was revoked. Neither an absent
+            // handover marker nor a restart may turn that rejection into consent.
             if !auth.is_available() {
-                if self
-                    .management_root
-                    .join("management-auth.json")
-                    .symlink_metadata()
-                    .is_ok()
-                    || self
-                        .data_root
-                        .join("management-authority.json")
-                        .symlink_metadata()
-                        .is_ok()
-                {
-                    return Err(ApiError::new(
-                        503,
-                        "AUTH_RECOVERY_REQUIRED",
-                        "system credentials require explicit local recovery",
-                    ));
-                }
-                let snapshot = recovered.ok_or_else(|| {
-                    ApiError::new(
-                        503,
-                        "AUTH_RECOVERY_REQUIRED",
-                        "no recovered account authority",
-                    )
-                })?;
-                claim_authority(&self.data_root)?;
-                *auth = AuthStore::migrate_management(&self.management_root, snapshot)?;
-            } else {
-                claim_authority(&self.data_root)?;
+                return Err(ApiError::new(
+                    503,
+                    "AUTH_RECOVERY_REQUIRED",
+                    "system credentials require explicit local recovery",
+                ));
             }
+            claim_authority(&self.data_root)?;
             let mut initial = auth.snapshot()?;
             initial["sessions"] = json!({});
             let last = Mutex::new(initial);
@@ -771,7 +747,7 @@ impl Backend for ManagementBackend {
         w: &str,
         item: &str,
         path: &str,
-        source: &Path,
+        source: &crate::UploadSource,
     ) -> Result<Value, ApiError> {
         self.inner.backend()?.upload(i, w, item, path, source)
     }
@@ -781,7 +757,7 @@ impl Backend for ManagementBackend {
         w: &str,
         item: &str,
         path: &str,
-        source: &Path,
+        source: &crate::UploadSource,
         g: u64,
     ) -> Result<Value, ApiError> {
         self.inner
@@ -821,3 +797,7 @@ impl Backend for ManagementBackend {
 #[cfg(test)]
 #[path = "../../../test/server/unit/management.rs"]
 mod management_tests;
+
+#[cfg(test)]
+#[path = "../../../test/server/unit/management_authority_tests.rs"]
+mod authority_tests;

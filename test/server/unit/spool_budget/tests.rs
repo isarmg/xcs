@@ -43,7 +43,7 @@ fn record(name: &str, principal: &str) -> UploadRecord {
 }
 #[test]
 fn reservation_settles_to_retained_bytes_not_success_or_declared_length() {
-    let root = tempfile::tempdir().unwrap();
+    let root = private_tempdir();
     let budget = SpoolBudget::recover(
         root.path(),
         limits(2 * METADATA_ALLOWANCE + 13, 2 * METADATA_ALLOWANCE + 13),
@@ -72,7 +72,7 @@ fn reservation_settles_to_retained_bytes_not_success_or_declared_length() {
 }
 #[test]
 fn concurrent_reservations_cannot_oversubscribe_account_or_pool() {
-    let root = tempfile::tempdir().unwrap();
+    let root = private_tempdir();
     let charge = METADATA_ALLOWANCE + 1;
     let budget = SpoolBudget::recover(root.path(), limits(2 * charge, 3 * charge)).unwrap();
     let barrier = Arc::new(std::sync::Barrier::new(9));
@@ -113,7 +113,7 @@ fn concurrent_reservations_cannot_oversubscribe_account_or_pool() {
 }
 #[test]
 fn recovery_counts_retained_generations_failed_unknown_and_orphan_bytes_once() {
-    let root = tempfile::tempdir().unwrap();
+    let root = private_tempdir();
     let config = limits(8 * METADATA_ALLOWANCE, 8 * METADATA_ALLOWANCE);
     let budget = SpoolBudget::recover(root.path(), config.clone()).unwrap();
     retained(&budget, "alice", "old.data", 20, b"abc");
@@ -140,7 +140,7 @@ fn recovery_counts_retained_generations_failed_unknown_and_orphan_bytes_once() {
 }
 #[test]
 fn unknown_owner_is_not_an_account_quota_escape_and_overbudget_startup_stays_readable() {
-    let root = tempfile::tempdir().unwrap();
+    let root = private_tempdir();
     fs::write(root.path().join("unattributed.data"), b"unknown").unwrap();
     let budget = SpoolBudget::recover(
         root.path(),
@@ -164,7 +164,7 @@ fn unknown_owner_is_not_an_account_quota_escape_and_overbudget_startup_stays_rea
 }
 #[test]
 fn headroom_accounts_for_concurrent_reservations_without_filling_a_disk() {
-    let root = tempfile::tempdir().unwrap();
+    let root = private_tempdir();
     let budget = SpoolBudget::recover(
         root.path(),
         limits(4 * METADATA_ALLOWANCE, 4 * METADATA_ALLOWANCE),
@@ -193,7 +193,7 @@ fn headroom_accounts_for_concurrent_reservations_without_filling_a_disk() {
 }
 #[test]
 fn directory_has_one_inventory_owner_and_aliases_are_rejected() {
-    let root = tempfile::tempdir().unwrap();
+    let root = private_tempdir();
     let config = limits(4 * METADATA_ALLOWANCE, 4 * METADATA_ALLOWANCE);
     let budget = SpoolBudget::recover(root.path(), config.clone()).unwrap();
     assert!(SpoolBudget::recover(root.path(), config.clone()).is_err());
@@ -204,7 +204,7 @@ fn directory_has_one_inventory_owner_and_aliases_are_rejected() {
 }
 #[test]
 fn sidecar_only_crash_remains_charged_and_rebuilds_without_a_payload() {
-    let root = tempfile::tempdir().unwrap();
+    let root = private_tempdir();
     let config = limits(2 * METADATA_ALLOWANCE, 2 * METADATA_ALLOWANCE);
     let budget = SpoolBudget::recover(root.path(), config.clone()).unwrap();
     let reservation = budget
@@ -216,4 +216,11 @@ fn sidecar_only_crash_remains_charged_and_rebuilds_without_a_payload() {
     drop(budget);
     let budget = SpoolBudget::recover(root.path(), config).unwrap();
     assert_eq!(total(&budget), METADATA_ALLOWANCE);
+}
+
+fn private_tempdir() -> tempfile::TempDir {
+    use std::os::unix::fs::PermissionsExt;
+    let directory = tempfile::tempdir().unwrap();
+    fs::set_permissions(directory.path(), fs::Permissions::from_mode(0o700)).unwrap();
+    directory
 }

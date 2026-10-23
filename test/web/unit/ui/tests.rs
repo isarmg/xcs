@@ -165,3 +165,30 @@ fn language_reload_preserves_storage_retry_admission_until_resolved() {
     state.management.recovering = true;
     assert!(!state.reload_blocked());
 }
+
+#[test]
+fn unconfirmed_logout_cannot_be_replaced_by_login_or_restore() {
+    let mut state = State {
+        principal: "original-admin".into(),
+        session_epoch: 7,
+        logout_unconfirmed: true,
+        ..Default::default()
+    };
+    for _ in 0..3 {
+        assert_eq!(begin_login(&mut state), None);
+        assert_eq!(begin_restore(&mut state), None);
+        assert_eq!(state.session_epoch, 7);
+        assert_eq!(state.principal, "original-admin");
+        assert_eq!(session_view(&state).phase, SessionPhase::LogoutUnconfirmed);
+        assert!(!state.session_active());
+    }
+    // Even stale authentication state cannot admit business work or hide retry.
+    state.authenticated = true;
+    assert!(!state.session_active());
+    assert_eq!(session_view(&state).phase, SessionPhase::LogoutUnconfirmed);
+    Owner::new().with(|| {
+        let state = RwSignal::new(state);
+        end_session(state, String::new());
+        state.update(|s| assert!(begin_login(s).is_some()));
+    });
+}

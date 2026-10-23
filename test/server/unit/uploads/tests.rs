@@ -12,7 +12,7 @@ fn test_budget(root: &Path) -> std::sync::Arc<crate::spool_budget::SpoolBudget> 
 }
 #[test]
 fn staging_guard_preserves_unpublished_bytes_until_and_after_last_job() {
-    let root = tempfile::tempdir().unwrap();
+    let root = private_tempdir();
     let budget = test_budget(root.path());
     let path = root.path().join("unpublished.data");
     let reservation = budget.reserve("alice", "unpublished.data", 10).unwrap();
@@ -28,7 +28,7 @@ fn staging_guard_preserves_unpublished_bytes_until_and_after_last_job() {
 
 #[test]
 fn uncertain_directory_sync_retains_bytes_and_blocks_fresh_admission_until_inventory() {
-    let root = tempfile::tempdir().unwrap();
+    let root = private_tempdir();
     let previous = root.path().join("previous.data");
     fs::write(&previous, b"previous").unwrap();
     let budget = test_budget(root.path());
@@ -75,7 +75,7 @@ fn uncertain_directory_sync_retains_bytes_and_blocks_fresh_admission_until_inven
 
 #[test]
 fn interrupted_upload_retains_and_checks_its_persisted_prefix() {
-    let dir = tempfile::tempdir().unwrap();
+    let dir = private_tempdir();
     fs::write(dir.path().join("data"), b"original partial").unwrap();
     let record = UploadRecord {
         workspace_id: "ws".into(),
@@ -103,7 +103,7 @@ fn interrupted_upload_retains_and_checks_its_persisted_prefix() {
 
 #[test]
 fn corrupt_or_oversized_progress_is_an_internal_state_error() {
-    let dir = tempfile::tempdir().unwrap();
+    let dir = private_tempdir();
     let path = dir.path().join(format!("{}.json", key("ws", "item")));
     for bytes in [
         b"{broken".to_vec(),
@@ -119,7 +119,7 @@ fn corrupt_or_oversized_progress_is_an_internal_state_error() {
 
 #[test]
 fn failed_atomic_progress_publication_cleans_up_its_temporary_file() {
-    let dir = tempfile::tempdir().unwrap();
+    let dir = private_tempdir();
     let record = UploadRecord {
         workspace_id: "ws".into(),
         item_id: "item".into(),
@@ -138,4 +138,41 @@ fn failed_atomic_progress_publication_cleans_up_its_temporary_file() {
     fs::create_dir(dir.path().join(format!("{}.json", key("ws", "item")))).unwrap();
     assert!(persist(dir.path(), &record).is_err());
     assert_eq!(fs::read_dir(dir.path()).unwrap().count(), 1);
+}
+
+#[test]
+fn replaced_http_payload_or_parent_cannot_be_submitted() {
+    use std::os::unix::fs::PermissionsExt;
+    for swap_parent in [false, true] {
+        let root = private_tempdir();
+        let spool = root.path().join("spool");
+        fs::create_dir(&spool).unwrap();
+        fs::set_permissions(&spool, fs::Permissions::from_mode(0o700)).unwrap();
+        let budget = test_budget(&spool);
+        let reservation = budget.reserve("alice", "upload.data", 8).unwrap();
+        let staged =
+            StagedFile::open_budgeted(spool.join("upload.data"), false, reservation).unwrap();
+        staged.write(b"original").unwrap();
+        if swap_parent {
+            fs::rename(&spool, root.path().join("moved")).unwrap();
+            fs::create_dir(&spool).unwrap();
+            fs::set_permissions(&spool, fs::Permissions::from_mode(0o700)).unwrap();
+        } else {
+            fs::rename(spool.join("upload.data"), spool.join("moved.data")).unwrap();
+        }
+        fs::write(spool.join("upload.data"), b"attacker").unwrap();
+        fs::set_permissions(spool.join("upload.data"), fs::Permissions::from_mode(0o600)).unwrap();
+        assert!(
+            staged
+                .source(8, blake3::hash(b"original").to_hex().to_string())
+                .is_err()
+        );
+    }
+}
+
+fn private_tempdir() -> tempfile::TempDir {
+    use std::os::unix::fs::PermissionsExt;
+    let directory = tempfile::tempdir().unwrap();
+    fs::set_permissions(directory.path(), fs::Permissions::from_mode(0o700)).unwrap();
+    directory
 }

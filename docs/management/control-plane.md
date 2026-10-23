@@ -24,6 +24,40 @@ Initialization completion is deliberately narrower than credential recovery: onl
 
 Locally provisioned configuration presets are identifiers, not browser-supplied paths or arbitrary JSON. Their files are not read during HTTP startup or preset listing. An authorized preview reads only the selected protected file, hides disk paths, and returns a configuration digest. Initialization checks that digest again before writing so a changed local preset cannot silently substitute another topology or policy.
 
+## Unconfirmed browser actions
+
+An interrupted account update leaves the current administration view write-fenced.
+Refreshing `/api/admin/accounts` is observation only: neither an old nor an updated
+snapshot proves that the original request has finished, and passwords are not
+represented in that snapshot. There is currently no durable, request-correlated
+account-operation receipt/status API, automatic replay, or online unlock action.
+Other operation IDs can still be resolved only by their own terminal receipts.
+
+For an unknown account update, do not issue an opposite update from another tab
+or bypass the fence by reloading. An operator must quiesce account writers, stop
+and restart the daemon so old queued/running requests cannot publish later, then
+check the authoritative account state using a valid administrator session. Verify
+credentials separately if the update changed a password; account-list equality
+is not password confirmation. Only after that reconciliation should a fresh
+management session issue further updates. Restarting does not undo a committed
+account change or reset authentication. Durable correlated account receipts and
+safe online reconciliation remain a separate protocol/persistence follow-up.
+
+When sign-out is unconfirmed, the current page retains the old credential solely
+for revocation retry. Login, session restore, setup and business actions in that
+page remain unavailable until sign-out succeeds or the server confirms the
+session is already unauthorized. A failed sign-out must not be replaced by a new
+login in the page holding that pending revocation.
+
+These browser fences and pending logout intent are in memory, not a durable or
+cross-tab protocol. App-owned language reloads are blocked, but a manual reload,
+closed tab, browser restart or independently opened tab can lose that local
+intent and attempt to restore a still-valid server cookie. None of those actions
+confirms logout or resolves an unknown account mutation. Keep the failed-logout
+page open and retry revocation; do not treat another login or a fresh page as
+proof that the earlier session was revoked. Persisted, cross-tab revocation intent
+is not implemented by this containment change.
+
 ## HTTP resource isolation
 
 Password verification runs outside the shared credential-state lock. Session

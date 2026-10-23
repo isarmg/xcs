@@ -188,6 +188,7 @@ impl Engine {
             config: self.config.clone(),
             state: self.state.clone(),
             workspaces: self.workspaces.clone(),
+            workspace_budget: self.workspace_budget.clone(),
             blocked: self.blocked,
             snapshot: self.snapshot.clone(),
             next_slot: self.next_slot,

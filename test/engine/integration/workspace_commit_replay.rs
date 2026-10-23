@@ -382,3 +382,449 @@ fn wire_replay_checks_request_message_and_fencing_against_body() {
 fn detached_wire_replay_checks_request_message_and_fencing_against_body() {
     assert_wire_request_binding(true);
 }
+
+#[test]
+fn workspace_mirrors_recover_single_corrupt_copy_without_rewriting_evidence() {
+    for damaged in [0, 1] {
+        let (_temp, mut engine, repository, request) = saved();
+        let receipt = engine.commit_workspace(request.clone()).unwrap();
+        let branch = engine.state().repositories[&repository]
+            .main_branch_id
+            .clone();
+        let pending = engine.create_workspace(&branch, "writer").unwrap();
+        engine
+            .stage_bytes(&pending.workspace_id, "pending", b"still pending")
+            .unwrap();
+        let mut pending_request = request.clone();
+        pending_request.workspace_id = pending.workspace_id.clone();
+        let manifest_paths =
+            request_paths(&engine, &request).map(|p| p.with_file_name("workspace.json"));
+        let pending_paths =
+            request_paths(&engine, &pending_request).map(|p| p.with_file_name("workspace.json"));
+        let receipts = request_paths(&engine, &request).map(|p| fs::read(p).unwrap());
+        let healthy = fs::read(&manifest_paths[1 - damaged]).unwrap();
+        let healthy_pending = fs::read(&pending_paths[1 - damaged]).unwrap();
+        let root = engine.root().to_owned();
+        drop(engine);
+        for path in [&manifest_paths[damaged], &pending_paths[damaged]] {
+            fs::write(path, b"{truncated").unwrap();
+        }
+        let mut engine = Engine::open(&root).unwrap();
+        assert_eq!(engine.commit_workspace(request.clone()).unwrap(), receipt);
+        let retained = engine.workspace(&pending.workspace_id).unwrap();
+        assert_eq!(retained.state, "open");
+        assert_eq!(
+            fs::read(&retained.files.values().next().unwrap().source_path).unwrap(),
+            b"still pending"
+        );
+        assert_eq!(fs::read(&manifest_paths[1 - damaged]).unwrap(), healthy);
+        assert_eq!(
+            fs::read(&pending_paths[1 - damaged]).unwrap(),
+            healthy_pending
+        );
+        assert_eq!(fs::read(&manifest_paths[damaged]).unwrap(), b"{truncated");
+        assert_eq!(fs::read(&pending_paths[damaged]).unwrap(), b"{truncated");
+        assert_eq!(
+            request_paths(&engine, &request).map(|p| fs::read(p).unwrap()),
+            receipts
+        );
+    }
+}
+
+#[test]
+fn workspace_mirrors_reject_both_corrupt_and_preserve_them() {
+    let (_temp, engine, _, request) = saved();
+    let paths = request_paths(&engine, &request).map(|p| p.with_file_name("workspace.json"));
+    let root = engine.root().to_owned();
+    drop(engine);
+    for path in &paths {
+        fs::write(path, b"{truncated").unwrap();
+    }
+    assert_eq!(
+        Engine::open(&root).err().unwrap().code(),
+        "RECOVERY_REQUIRED"
+    );
+    for path in paths {
+        assert_eq!(fs::read(path).unwrap(), b"{truncated");
+    }
+}
+
+#[test]
+fn workspace_mirrors_never_select_newest_or_first_conflicting_manifest() {
+    for changed in [0, 1] {
+        for field in ["owner", "content", "fence", "state", "identity"] {
+            let (_temp, engine, _, request) = saved();
+            let paths =
+                request_paths(&engine, &request).map(|p| p.with_file_name("workspace.json"));
+            let mut workspace = engine.workspace(&request.workspace_id).unwrap();
+            match field {
+                "owner" => workspace.principal = "someone-else".into(),
+                "content" => {
+                    workspace.files.values_mut().next().unwrap().content_hash = "0".repeat(64)
+                }
+                "fence" => workspace.fencing_token += 50,
+                "state" => workspace.state = "aborted".into(),
+                "identity" => workspace.workspace_id = new_id("ws"),
+                _ => unreachable!(),
+            }
+            let root = engine.root().to_owned();
+            drop(engine);
+            fs::write(&paths[changed], json_codec::to_vec(&workspace).unwrap()).unwrap();
+            let before = paths.clone().map(|p| fs::read(p).unwrap());
+            assert_eq!(
+                Engine::open(&root).err().unwrap().code(),
+                "RECOVERY_REQUIRED",
+                "{changed} {field}"
+            );
+            assert_eq!(paths.map(|p| fs::read(p).unwrap()), before);
+        }
+    }
+}
+
+#[test]
+fn workspace_mirrors_reconcile_only_published_state_and_fence_transition() {
+    for stale in [0, 1] {
+        let (_temp, mut engine, _, request) = saved();
+        let receipt = engine.commit_workspace(request.clone()).unwrap();
+        let paths = request_paths(&engine, &request).map(|p| p.with_file_name("workspace.json"));
+        let mut workspace = engine.workspace(&request.workspace_id).unwrap();
+        workspace.state = "open".into();
+        workspace.fencing_token = request.fencing_token;
+        let root = engine.root().to_owned();
+        drop(engine);
+        fs::write(&paths[stale], json_codec::to_vec(&workspace).unwrap()).unwrap();
+        let mut engine = Engine::open(&root).unwrap();
+        assert_eq!(
+            engine
+                .workspace(&request.workspace_id)
+                .unwrap()
+                .fencing_token,
+            request.fencing_token + 1
+        );
+        assert_eq!(engine.commit_workspace(request).unwrap(), receipt);
+    }
+}
+
+#[test]
+fn workspace_mirrors_reject_unsafe_mirror_instead_of_falling_back() {
+    for linked in [0, 1] {
+        let (temp, engine, _, request) = saved();
+        let paths = request_paths(&engine, &request).map(|p| p.with_file_name("workspace.json"));
+        let external = temp.path().join("external-workspace");
+        fs::copy(&paths[linked], &external).unwrap();
+        fs::remove_file(&paths[linked]).unwrap();
+        std::os::unix::fs::symlink(&external, &paths[linked]).unwrap();
+        let root = engine.root().to_owned();
+        drop(engine);
+        assert_eq!(Engine::open(&root).err().unwrap().code(), "UNSAFE_PATH");
+        assert!(
+            fs::symlink_metadata(&paths[linked])
+                .unwrap()
+                .file_type()
+                .is_symlink()
+        );
+    }
+}
+
+#[test]
+fn workspace_mirrors_require_content_evidence_for_degraded_recovery() {
+    let (_temp, engine, _, request) = saved();
+    let workspace = engine.workspace(&request.workspace_id).unwrap();
+    let paths = request_paths(&engine, &request).map(|p| p.with_file_name("workspace.json"));
+    fs::write(&paths[0], b"{truncated").unwrap();
+    let source = &workspace.files.values().next().unwrap().source_path;
+    // Published staging files are read-only. Simulate disk corruption by
+    // replacing the directory entry, rather than requiring write permission.
+    fs::remove_file(source).unwrap();
+    fs::write(source, b"wrong bytes").unwrap();
+    let root = engine.root().to_owned();
+    drop(engine);
+    assert_eq!(
+        Engine::open(&root).err().unwrap().code(),
+        "RECOVERY_REQUIRED"
+    );
+    assert_eq!(fs::read(&paths[0]).unwrap(), b"{truncated");
+}
+
+#[test]
+fn workspace_mirrors_reject_unsafe_staging_paths_and_request_copies() {
+    for target in ["source", "request", "directory"] {
+        let (temp, engine, _, request) = saved();
+        let workspace = engine.workspace(&request.workspace_id).unwrap();
+        let path = match target {
+            "source" => workspace.files.values().next().unwrap().source_path.clone(),
+            "request" => request_paths(&engine, &request)[0].clone(),
+            "directory" => request_paths(&engine, &request)[0]
+                .parent()
+                .unwrap()
+                .to_owned(),
+            _ => unreachable!(),
+        };
+        let external = temp.path().join("external");
+        fs::rename(&path, &external).unwrap();
+        std::os::unix::fs::symlink(&external, &path).unwrap();
+        let root = engine.root().to_owned();
+        drop(engine);
+        assert_eq!(
+            Engine::open(&root).err().unwrap().code(),
+            "UNSAFE_PATH",
+            "{target}"
+        );
+        assert!(fs::symlink_metadata(path).unwrap().file_type().is_symlink());
+    }
+}
+
+#[test]
+fn workspace_mirrors_do_not_resolve_unpublished_state_transition_by_fence() {
+    let (_temp, mut engine, repository, mut request) = saved();
+    let branch = engine.state().repositories[&repository]
+        .main_branch_id
+        .clone();
+    let workspace = engine.create_workspace(&branch, "writer").unwrap();
+    request.workspace_id = workspace.workspace_id.clone();
+    let paths = request_paths(&engine, &request).map(|p| p.with_file_name("workspace.json"));
+    let mut changed = workspace;
+    changed.state = "aborted".into();
+    changed.fencing_token += 1;
+    let root = engine.root().to_owned();
+    drop(engine);
+    fs::write(&paths[0], json_codec::to_vec(&changed).unwrap()).unwrap();
+    assert_eq!(
+        Engine::open(&root).err().unwrap().code(),
+        "RECOVERY_REQUIRED"
+    );
+}
+
+#[test]
+fn degraded_committed_workspace_requires_authoritative_receipt_binding() {
+    for field in ["owner", "branch", "base", "fence"] {
+        let (_temp, engine, _, request) = saved();
+        let paths = request_paths(&engine, &request).map(|p| p.with_file_name("workspace.json"));
+        let mut workspace = engine.workspace(&request.workspace_id).unwrap();
+        match field {
+            "owner" => workspace.principal = "not-the-published-owner".into(),
+            "branch" => workspace.branch_id = new_id("branch"),
+            "base" => workspace.base_head = new_id("commit"),
+            "fence" => workspace.fencing_token += 50,
+            _ => unreachable!(),
+        }
+        let root = engine.root().to_owned();
+        drop(engine);
+        fs::write(&paths[0], b"{truncated").unwrap();
+        fs::write(&paths[1], json_codec::to_vec(&workspace).unwrap()).unwrap();
+        assert_eq!(
+            Engine::open(&root).err().unwrap().code(),
+            "RECOVERY_REQUIRED",
+            "{field}"
+        );
+    }
+}
+
+#[test]
+fn historical_workspace_mirror_recovery_uses_published_plan() {
+    for damaged in [0, 1] {
+        let temp = tempfile::tempdir().unwrap();
+        let config = Config::development([
+            temp.path().join("primary"),
+            temp.path().join("backup"),
+            temp.path().join("tertiary"),
+        ]);
+        let mut engine = Engine::initialize(&temp.path().join("system"), config).unwrap();
+        let repo = engine
+            .create_repository("history", "P01", 1, "admin", &new_id("op"))
+            .unwrap();
+        let head = engine.state().branches[&repo.main_branch_id]
+            .head_commit_id
+            .clone();
+        let workspace = engine
+            .create_historical_workspace(&repo.main_branch_id, &head, "admin")
+            .unwrap();
+        engine
+            .stage_bytes(&workspace.workspace_id, "file", b"historical bytes")
+            .unwrap();
+        let plan = engine
+            .create_historical_save_plan(
+                &repo.history_tree_id,
+                storage_engine::HistoricalSaveOptions {
+                    source_commit_id: head,
+                    name: "recovered branch".into(),
+                    workspace_id: Some(workspace.workspace_id.clone()),
+                    primary_slot_id: None,
+                    target_copies: None,
+                },
+                "admin",
+            )
+            .unwrap();
+        let operation = new_id("op");
+        let receipt = engine
+            .commit_historical_save_plan(&plan.plan_id, "admin", &operation)
+            .unwrap();
+        let paths = [
+            engine
+                .root()
+                .join("workspaces")
+                .join(&workspace.workspace_id)
+                .join("workspace.json"),
+            engine.config().disks[0]
+                .root
+                .join("staging/workspaces")
+                .join(&workspace.workspace_id)
+                .join("workspace.json"),
+        ];
+        let root = engine.root().to_owned();
+        drop(engine);
+        fs::write(&paths[damaged], b"{truncated").unwrap();
+        let mut engine = Engine::open(&root).unwrap();
+        assert_eq!(
+            engine.workspace(&workspace.workspace_id).unwrap().state,
+            "committed"
+        );
+        assert_eq!(
+            engine
+                .commit_historical_save_plan(&plan.plan_id, "admin", &operation)
+                .unwrap(),
+            receipt
+        );
+        assert_eq!(fs::read(&paths[damaged]).unwrap(), b"{truncated");
+    }
+}
+
+#[test]
+fn partial_workspace_completion_uses_original_published_file_contexts() {
+    for stale in [0, 1] {
+        for forged in [false, true] {
+            let (_temp, mut engine, repository, _) = saved();
+            let branch = engine.state().repositories[&repository]
+                .main_branch_id
+                .clone();
+            let workspace = engine.create_workspace(&branch, "writer").unwrap();
+            engine
+                .stage_bytes(
+                    &workspace.workspace_id,
+                    "first-file",
+                    b"first file contents",
+                )
+                .unwrap();
+            engine
+                .seal_workspace(&workspace.workspace_id, "writer")
+                .unwrap();
+            let before = engine.workspace(&workspace.workspace_id).unwrap();
+            let request = CommitRequest {
+                workspace_id: workspace.workspace_id.clone(),
+                operation_id: new_id("op"),
+                principal: "writer".into(),
+                expected_head: workspace.base_head,
+                fencing_token: workspace.fencing_token,
+                message: "first file".into(),
+                request_digest: None,
+            };
+            let receipt = engine.commit_workspace(request.clone()).unwrap();
+            let mut completed = engine.workspace(&workspace.workspace_id).unwrap();
+            assert_ne!(
+                before.selected_file_contexts,
+                completed.selected_file_contexts
+            );
+            // A later public selection must not be used to reconstruct the
+            // original completion receipt from the earlier save.
+            let entry = engine
+                .list_tree(&branch)
+                .unwrap()
+                .into_iter()
+                .find(|entry| entry.path == "first-file")
+                .unwrap();
+            let alternative = engine
+                .create_file_branch(
+                    &entry.file_id,
+                    &entry.version_id,
+                    "later selection",
+                    "admin",
+                    &new_id("op"),
+                )
+                .unwrap();
+            engine
+                .select_file_branch(
+                    &entry.file_id,
+                    alternative.result["branch_id"].as_str().unwrap(),
+                    "admin",
+                    &new_id("op"),
+                )
+                .unwrap();
+            if forged {
+                completed
+                    .selected_file_contexts
+                    .get_mut(&format!("{repository}/first-file"))
+                    .unwrap()
+                    .branch_id = new_id("branch");
+            }
+            let paths =
+                request_paths(&engine, &request).map(|path| path.with_file_name("workspace.json"));
+            let root = engine.root().to_owned();
+            drop(engine);
+            fs::write(&paths[stale], json_codec::to_vec(&before).unwrap()).unwrap();
+            fs::write(&paths[1 - stale], json_codec::to_vec(&completed).unwrap()).unwrap();
+            if forged {
+                assert_eq!(
+                    Engine::open(&root).err().unwrap().code(),
+                    "RECOVERY_REQUIRED"
+                );
+            } else {
+                let mut engine = Engine::open(&root).unwrap();
+                assert_eq!(
+                    engine
+                        .workspace(&workspace.workspace_id)
+                        .unwrap()
+                        .selected_file_contexts,
+                    completed.selected_file_contexts
+                );
+                assert_eq!(engine.commit_workspace(request).unwrap(), receipt);
+            }
+        }
+    }
+}
+
+#[test]
+fn closing_a_published_workspace_does_not_reopen_its_old_fence_on_restart() {
+    let (_temp, mut engine, _, request) = saved();
+    engine
+        .abort_workspace(&request.workspace_id, "writer")
+        .unwrap();
+    let closed = engine.workspace(&request.workspace_id).unwrap();
+    let root = engine.root().to_owned();
+    drop(engine);
+    let engine = Engine::open(&root).unwrap();
+    let recovered = engine.workspace(&request.workspace_id).unwrap();
+    assert_eq!(recovered.state, "aborted");
+    assert_eq!(recovered.fencing_token, closed.fencing_token);
+}
+
+#[test]
+fn absent_primary_preserves_read_only_workspace_receipt_recovery() {
+    for empty_mountpoint in [false, true] {
+        let (temp, mut engine, _, request) = saved();
+        let receipt = engine.commit_workspace(request.clone()).unwrap();
+        let primary = engine.config().disks[0].root.clone();
+        let root = engine.root().to_owned();
+        drop(engine);
+        fs::rename(&primary, temp.path().join("offline-primary")).unwrap();
+        if empty_mountpoint {
+            fs::create_dir(&primary).unwrap();
+            fs::set_permissions(
+                &primary,
+                std::os::unix::fs::PermissionsExt::from_mode(0o700),
+            )
+            .unwrap();
+        }
+        let mut engine = Engine::open(&root).unwrap();
+        assert!(engine.is_read_only());
+        let replayed = engine.commit_workspace(request).unwrap();
+        assert_eq!(replayed.current_health, "UNAVAILABLE");
+        // Publication identity and protection-at-publish are immutable, while
+        // current health must reflect the now-absent primary.
+        let mut expected = receipt;
+        expected.current_health = "UNAVAILABLE".into();
+        assert_eq!(replayed, expected);
+        if empty_mountpoint {
+            assert_eq!(fs::read_dir(primary).unwrap().count(), 0);
+        }
+    }
+}

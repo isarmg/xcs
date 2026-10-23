@@ -48,7 +48,7 @@ impl State {
     /// Business work belongs only to a settled, authenticated session. Logout
     /// retains credentials for revocation retries, not for admitting new work.
     pub(crate) fn session_active(&self) -> bool {
-        self.authenticated && !self.logout_pending && !self.restoring
+        self.authenticated && !self.logout_pending && !self.logout_unconfirmed && !self.restoring
     }
 }
 
@@ -111,7 +111,7 @@ pub fn app() -> impl IntoView {
     let poller = send_wrapper::SendWrapper::new(poller);
     on_cleanup(move || drop(poller));
     let telemetry = gloo_timers::callback::Interval::new(5_000, move || {
-        if state.with_untracked(|s| !s.logout_pending && !s.restoring) {
+        if state.with_untracked(|s| !s.logout_pending && !s.logout_unconfirmed && !s.restoring) {
             management::load(state);
         }
         if state.with_untracked(|s| s.authenticated && s.page == "status") {
@@ -122,8 +122,9 @@ pub fn app() -> impl IntoView {
     on_cleanup(move || drop(telemetry));
     let session = Memo::new(move |_| state.with(session_view));
     let logout_pending = Memo::new(move |_| state.with(|s| s.logout_pending));
-    let login_pending =
-        Memo::new(move |_| state.with(|s| s.busy > 0 || s.restoring || s.logout_pending));
+    let login_pending = Memo::new(move |_| {
+        state.with(|s| s.busy > 0 || s.restoring || s.logout_pending || s.logout_unconfirmed)
+    });
     let login_failure = Memo::new(move |_| state.with(|s| s.login_failure.clone()));
     let on_login = Callback::new(move |credentials: LoginCredentials| {
         let Some(epoch) = state.try_update(begin_login).flatten() else {
@@ -131,7 +132,9 @@ pub fn app() -> impl IntoView {
         };
         spawn_local(async move {
             let result = api::login(&credentials.username, &credentials.password).await;
-            if !state.with_untracked(|s| s.session_epoch == epoch && !s.logout_pending) {
+            if !state.with_untracked(|s| {
+                s.session_epoch == epoch && !s.logout_pending && !s.logout_unconfirmed
+            }) {
                 return;
             }
             match result {
@@ -204,10 +207,10 @@ fn session_view(state: &State) -> SessionView {
     SessionView {
         phase: if state.restoring {
             SessionPhase::Loading
-        } else if state.authenticated {
-            SessionPhase::Authenticated
         } else if state.logout_unconfirmed {
             SessionPhase::LogoutUnconfirmed
+        } else if state.authenticated {
+            SessionPhase::Authenticated
         } else {
             SessionPhase::Anonymous
         },
@@ -233,7 +236,7 @@ fn session_view(state: &State) -> SessionView {
 // Session transitions own an epoch before their first asynchronous step.
 // Disable duplicate submissions at the action boundary as well as in the view.
 fn begin_login(state: &mut State) -> Option<u64> {
-    if state.busy > 0 || state.restoring || state.logout_pending {
+    if state.busy > 0 || state.restoring || state.logout_pending || state.logout_unconfirmed {
         return None;
     }
     state.busy = 1;
@@ -243,7 +246,7 @@ fn begin_login(state: &mut State) -> Option<u64> {
     Some(state.session_epoch)
 }
 fn begin_restore(state: &mut State) -> Option<u64> {
-    if state.busy > 0 || state.restoring || state.logout_pending {
+    if state.busy > 0 || state.restoring || state.logout_pending || state.logout_unconfirmed {
         return None;
     }
     state.restoring = true;
@@ -259,7 +262,9 @@ fn restore_session(state: RwSignal<State>) {
     management::load(state);
     spawn_local(async move {
         let result = api::restore().await;
-        if !state.with_untracked(|s| s.session_epoch == epoch && !s.logout_pending) {
+        if !state.with_untracked(|s| {
+            s.session_epoch == epoch && !s.logout_pending && !s.logout_unconfirmed
+        }) {
             return;
         }
         match result {

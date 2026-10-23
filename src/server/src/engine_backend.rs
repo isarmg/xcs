@@ -52,13 +52,6 @@ impl EngineBackend {
             .set_management_auth(auth);
         Ok(())
     }
-    pub(crate) fn auth_snapshot(&self) -> Result<Option<Value>, ApiError> {
-        Ok(self
-            .engine
-            .lock()
-            .map_err(|_| ApiError::new(500, "INTERNAL_ERROR", "storage engine requires restart"))?
-            .auth_state())
-    }
     pub(crate) fn replicate_auth(&self, snapshot: Value) -> Result<(), ApiError> {
         let mut engine = self
             .engine
@@ -1173,7 +1166,7 @@ impl Backend for EngineBackend {
         workspace: &str,
         _item: &str,
         path: &str,
-        source: &Path,
+        source: &crate::UploadSource,
     ) -> Result<Value, ApiError> {
         let engine = self
             .engine
@@ -1193,7 +1186,14 @@ impl Backend for EngineBackend {
                 ))
             })?;
         let plan = engine
-            .prepare_upload(workspace, _item, path, source, generation)
+            .prepare_upload_file(
+                workspace,
+                _item,
+                path,
+                source.file.try_clone().map_err(ApiError::io)?,
+                generation,
+                Some((source.size, source.hash.clone())),
+            )
             .map_err(error)?;
         drop(engine);
         let prepared = plan.execute().map_err(error)?;
@@ -1209,7 +1209,7 @@ impl Backend for EngineBackend {
         workspace: &str,
         item: &str,
         path: &str,
-        source: &Path,
+        source: &crate::UploadSource,
         generation: u64,
     ) -> Result<Value, ApiError> {
         let engine = self
@@ -1219,7 +1219,14 @@ impl Backend for EngineBackend {
         let current = current_protected_identity(&engine, identity)?;
         workspace_authorize(&engine, &current, workspace)?;
         let plan = engine
-            .prepare_upload(workspace, item, path, source, generation)
+            .prepare_upload_file(
+                workspace,
+                item,
+                path,
+                source.file.try_clone().map_err(ApiError::io)?,
+                generation,
+                Some((source.size, source.hash.clone())),
+            )
             .map_err(error)?;
         drop(engine);
         let prepared = plan.execute().map_err(error)?;

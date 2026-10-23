@@ -38,7 +38,7 @@ impl Backend for PausedBackend {
         workspace: &str,
         item: &str,
         path: &str,
-        source: &Path,
+        source: &crate::UploadSource,
     ) -> Result<Value, ApiError> {
         self.enter();
         self.inner.upload(identity, workspace, item, path, source)
@@ -49,7 +49,7 @@ impl Backend for PausedBackend {
         workspace: &str,
         item: &str,
         path: &str,
-        source: &Path,
+        source: &crate::UploadSource,
         generation: u64,
     ) -> Result<Value, ApiError> {
         self.enter();
@@ -258,7 +258,17 @@ impl Request {
                 .map(|_| ()),
             Self::Checksums => backend.checksums(identity, &fixture.version).map(|_| ()),
             Self::Upload => backend
-                .upload(identity, workspace, "new-item", "new.txt", &fixture.source)
+                .upload(
+                    identity,
+                    workspace,
+                    "new-item",
+                    "new.txt",
+                    &crate::UploadSource::from_file(
+                        std::fs::File::open(&fixture.source).unwrap(),
+                        u64::MAX,
+                    )
+                    .unwrap(),
+                )
                 .map(|_| ()),
             Self::UploadGeneration => backend
                 .upload_generation(
@@ -266,7 +276,11 @@ impl Request {
                     workspace,
                     "next-item",
                     "next.txt",
-                    &fixture.source,
+                    &crate::UploadSource::from_file(
+                        std::fs::File::open(&fixture.source).unwrap(),
+                        u64::MAX,
+                    )
+                    .unwrap(),
                     1,
                 )
                 .map(|_| ()),
@@ -539,5 +553,40 @@ fn private_disk_sampling_cannot_grant_public_monitoring_access() {
                 .is_ok()
         );
         assert!(fixture.snapshot() == before);
+    }
+}
+
+#[test]
+fn both_upload_adapters_bind_the_copied_snapshot_before_acceptance() {
+    for explicit_generation in [false, true] {
+        let fixture = Fixture::new(false, false);
+        let before = fixture.snapshot();
+        let item = new_id("entry");
+        let source =
+            crate::UploadSource::from_file(std::fs::File::open(&fixture.source).unwrap(), u64::MAX)
+                .unwrap();
+        // Simulate mutation through the original inode after transport hashing,
+        // not merely a pathname replacement. Copying must fail before acceptance.
+        std::fs::write(&fixture.source, b"bad upload").unwrap();
+        let result = if explicit_generation {
+            fixture.backend.upload_generation(
+                &fixture.identity,
+                &fixture.workspace.workspace_id,
+                &item,
+                "bound.txt",
+                &source,
+                1,
+            )
+        } else {
+            fixture.backend.upload(
+                &fixture.identity,
+                &fixture.workspace.workspace_id,
+                &item,
+                "bound.txt",
+                &source,
+            )
+        };
+        assert_eq!(result.unwrap_err().code, "CHECKSUM_MISMATCH");
+        assert_eq!(fixture.snapshot(), before);
     }
 }

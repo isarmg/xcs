@@ -9,7 +9,6 @@ use std::{
     collections::{BTreeMap, BTreeSet},
     io::Read,
     os::unix::{fs::PermissionsExt, net::UnixStream},
-    path::Path,
     sync::Arc,
 };
 use tokio::{
@@ -27,7 +26,14 @@ impl Backend for BackendProbe {
             _ => Err(ApiError::unsupported()),
         }
     }
-    fn upload(&self, _: &Identity, _: &str, _: &str, _: &str, _: &Path) -> Result<Value, ApiError> {
+    fn upload(
+        &self,
+        _: &Identity,
+        _: &str,
+        _: &str,
+        _: &str,
+        _: &crate::UploadSource,
+    ) -> Result<Value, ApiError> {
         Err(ApiError::unsupported())
     }
     fn content(&self, _: &Identity, _: &str) -> Result<Content, ApiError> {

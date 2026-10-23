@@ -106,3 +106,53 @@ fn inventory_rejects_hardlinks_and_advisory_lock_is_exclusive() {
         Err(Error::MultipleLinks(_))
     ));
 }
+
+#[cfg(unix)]
+#[test]
+fn trusted_spool_rejects_replaceable_ancestry_without_repairing_permissions() {
+    use std::os::unix::fs::PermissionsExt;
+    let root = tempfile::tempdir().unwrap();
+    let parent = root.path().join("writable");
+    fs::create_dir(&parent).unwrap();
+    fs::set_permissions(&parent, fs::Permissions::from_mode(0o777)).unwrap();
+    let private = PrivateDirectory::create(parent.join("private")).unwrap();
+    assert!(PrivateDirectory::open_trusted(private.path()).is_err());
+    assert!(PrivateDirectory::create_trusted(parent.join("new")).is_err());
+    assert!(!parent.join("new").exists());
+    assert_eq!(
+        fs::metadata(&parent).unwrap().permissions().mode() & 0o7777,
+        0o777
+    );
+    fs::set_permissions(&parent, fs::Permissions::from_mode(0o1777)).unwrap();
+    assert!(PrivateDirectory::open_trusted(private.path()).is_ok());
+    fs::set_permissions(&parent, fs::Permissions::from_mode(0o755)).unwrap();
+    assert!(PrivateDirectory::open_trusted(private.path()).is_ok());
+    assert!(PrivateDirectory::create_trusted(&parent).is_err());
+    assert_eq!(
+        fs::metadata(&parent).unwrap().permissions().mode() & 0o7777,
+        0o755
+    );
+}
+
+#[cfg(unix)]
+#[test]
+fn trusted_spool_payloads_remain_anchored_and_replacements_are_rejected() {
+    use std::io::Write;
+    let root = tempfile::tempdir().unwrap();
+    let path = root.path().join("private");
+    let held = PrivateDirectory::create_trusted(&path).unwrap();
+    let name = EntryName::new("data").unwrap();
+    let mut file = held.open_payload(&name, true).unwrap();
+    file.write_all(b"original").unwrap();
+    fs::rename(path.join("data"), path.join("old")).unwrap();
+    let mut replacement = held.open_payload(&name, true).unwrap();
+    replacement.write_all(b"replacement").unwrap();
+    assert!(held.verify_payload(&name, &file).is_err());
+    fs::rename(&path, root.path().join("moved")).unwrap();
+    PrivateDirectory::create_trusted(&path).unwrap();
+    assert!(held.verify_identity().is_err());
+    held.open_payload(&EntryName::new("anchored").unwrap(), true)
+        .unwrap();
+    assert!(root.path().join("moved/anchored").exists());
+    assert!(!path.join("anchored").exists());
+}

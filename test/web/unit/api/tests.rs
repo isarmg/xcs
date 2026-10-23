@@ -79,5 +79,16 @@ fn beginning_logout_invalidates_pending_login_without_losing_revocation_credenti
         assert_eq!(saved.token.as_deref(), Some("active-token"));
         assert_eq!(saved.csrf.as_deref(), Some("active-csrf"));
     });
+    // Transport failure locks the UI but must retain the exact credential for
+    // a later revocation retry, rather than replacing it with a new identity.
+    state.logout_pending = false;
+    state.logout_unconfirmed = true;
+    state.authenticated = false;
+    assert_eq!(crate::ui::begin_logout(&mut state), Some(2));
+    CREDENTIALS.with(|saved| {
+        let saved = saved.borrow();
+        assert_eq!(saved.token.as_deref(), Some("active-token"));
+        assert_eq!(saved.csrf.as_deref(), Some("active-csrf"));
+    });
     clear_session();
 }

@@ -186,42 +186,26 @@ fn response_error(error: ApiError, operation_id: Option<String>) -> Response {
     }
 }
 
+fn private_path_error(error: platform_io::fs_safety::Error) -> io::Error {
+    use platform_io::fs_safety::Error;
+    match error {
+        Error::Io(error)
+            if error.kind() == io::ErrorKind::NotADirectory
+                || error.raw_os_error() == Some(rustix::io::Errno::LOOP.raw_os_error()) =>
+        {
+            io::Error::new(io::ErrorKind::PermissionDenied, error)
+        }
+        Error::Io(error) => error,
+        error @ (Error::AbsolutePathRequired(_) | Error::UnsafeRelativePath(_)) => {
+            io::Error::new(io::ErrorKind::InvalidInput, error)
+        }
+        error => io::Error::new(io::ErrorKind::PermissionDenied, error),
+    }
+}
 fn private_directory(path: &Path) -> io::Result<()> {
-    if !path.is_absolute() {
-        return Err(io::Error::new(
-            io::ErrorKind::InvalidInput,
-            "absolute socket parent required",
-        ));
-    }
-    let mut current = PathBuf::from("/");
-    for part in path.components() {
-        if !matches!(part, Component::Normal(_) | Component::RootDir) {
-            return Err(io::Error::new(
-                io::ErrorKind::InvalidInput,
-                "noncanonical socket directory path",
-            ));
-        }
-        if let Component::Normal(part) = part {
-            current.push(part);
-            let metadata = fs::symlink_metadata(&current)?;
-            if !metadata.is_dir() || metadata.file_type().is_symlink() {
-                return Err(io::Error::new(
-                    io::ErrorKind::PermissionDenied,
-                    "socket path contains an alias",
-                ));
-            }
-        }
-    }
-    let metadata = fs::symlink_metadata(path)?;
-    if metadata.uid() != smb_protocol::protocol::effective_uid()
-        || metadata.mode() & 0o7777 != 0o700
-    {
-        return Err(io::Error::new(
-            io::ErrorKind::PermissionDenied,
-            "socket parent must be service-owned 0700",
-        ));
-    }
-    Ok(())
+    platform_io::fs_safety::PrivateDirectory::open_trusted(path)
+        .map(|_| ())
+        .map_err(private_path_error)
 }
 
 struct PreparedSocket {
@@ -239,20 +223,15 @@ fn prepare_socket(socket: &Path, limits: crate::SpoolLimits) -> io::Result<Prepa
         .parent()
         .ok_or_else(|| io::Error::new(io::ErrorKind::InvalidInput, "socket parent missing"))?;
     private_directory(parent)?;
-    let spool = parent.join("smb-spool");
-    match fs::create_dir(&spool) {
-        Ok(()) => fs::set_permissions(&spool, fs::Permissions::from_mode(0o700))?,
-        Err(error) if error.kind() == io::ErrorKind::AlreadyExists => {}
-        Err(error) => return Err(error),
-    };
-    private_directory(&spool)?;
-    let sentinel = spool.join("empty-directory");
-    match fs::create_dir(&sentinel) {
-        Ok(()) => fs::set_permissions(&sentinel, fs::Permissions::from_mode(0o700))?,
-        Err(error) if error.kind() == io::ErrorKind::AlreadyExists => {}
-        Err(error) => return Err(error),
-    };
-    private_directory(&sentinel)?;
+    use platform_io::fs_safety::{EntryName, PrivateDirectory};
+    let parent_handle = PrivateDirectory::open_trusted(parent).map_err(private_path_error)?;
+    let spool_handle = parent_handle
+        .create_child(&EntryName::new("smb-spool").map_err(private_path_error)?)
+        .map_err(private_path_error)?;
+    let spool = spool_handle.path().to_path_buf();
+    spool_handle
+        .create_child(&EntryName::new("empty-directory").map_err(private_path_error)?)
+        .map_err(private_path_error)?;
     let listener = std::os::unix::net::UnixListener::bind(socket)?;
     let metadata = fs::symlink_metadata(socket)?;
     let connections = Arc::new(Mutex::new(BTreeMap::new()));

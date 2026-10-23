@@ -111,11 +111,16 @@ impl Session {
                         "the file changed while its write handle was opening; reopen it",
                     ));
                 }
-                let temp = tempfile::Builder::new()
-                    .prefix(&format!("{}-", workspace.workspace_id))
-                    .tempfile_in(&self.shared.spool)
-                    .map_err(ApiError::io)?;
-                let (mut file, source) = temp.keep().map_err(|error| ApiError::io(error.error))?;
+                use platform_io::fs_safety::{EntryName, PrivateDirectory};
+                let directory = PrivateDirectory::open_trusted(&self.shared.spool)
+                    .map_err(crate::upload_fs_error)?;
+                let name =
+                    EntryName::new(format!("{}-{}", workspace.workspace_id, new_id("upload")))
+                        .map_err(crate::upload_fs_error)?;
+                let mut file = directory
+                    .open_payload(&name, true)
+                    .map_err(crate::upload_fs_error)?;
+                let source = directory.path().join(name.as_path());
                 pending_source = Some(source.clone());
                 let content = version
                     .as_deref()
@@ -158,7 +163,10 @@ impl Session {
                         &workspace.workspace_id,
                         &entry_id,
                         &path,
-                        &source,
+                        &crate::UploadSource::from_file(
+                            file.try_clone().map_err(ApiError::io)?,
+                            self.max_file_bytes,
+                        )?,
                     )?;
                     entry_id = field(&staged, "item_id")?.to_owned();
                 }
@@ -167,6 +175,7 @@ impl Session {
                 let writer = Writer {
                     reservation: pending_reservation.take().unwrap(),
                     file,
+                    directory,
                     source,
                     path: path.clone(),
                     item_id: entry_id.clone(),

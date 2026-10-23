@@ -85,3 +85,34 @@ fn invalid_success_and_early_not_found_preserve_review_and_uncertainty() {
     assert_eq!(model.plan, reviewed);
     assert!(model.reload_blocked());
 }
+
+#[test]
+fn account_snapshots_never_settle_an_interrupted_mutation() {
+    let mut model = Model::default();
+    reject(
+        &mut model,
+        "POST",
+        false,
+        "",
+        &api::Error {
+            code: "TRANSPORT".into(),
+            message: "response lost".into(),
+            status: 0,
+            retryable: false,
+            request_id: None,
+        },
+    );
+    assert_eq!(model.uncertain_operation, "unknown");
+    // Both an older snapshot and one showing the requested value are insufficient:
+    // neither identifies the original request or proves its password outcome.
+    for disabled in [false, true, false] {
+        let value = json_codec::json!({"accounts":[{"username":"reader", "admin":false, "disabled":disabled, "repositories":[]}]});
+        let value = response::Contract::new("GET", "/api/admin/accounts", None, "", "admin")
+            .validate(value)
+            .unwrap();
+        accept(&mut model, "GET", "/api/admin/accounts", false, value);
+        assert_eq!(model.accounts[0]["disabled"], disabled);
+        assert_eq!(model.uncertain_operation, "unknown");
+        assert!(model.reload_blocked());
+    }
+}

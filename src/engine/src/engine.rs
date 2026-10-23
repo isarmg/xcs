@@ -21,6 +21,7 @@ mod reads;
 pub use reads::{ContentReadPlan, RangeContent, WorkspaceReadPlan};
 mod recovery;
 mod recovery_checkpoint;
+mod workspace_budget;
 mod workspace_storage;
 use config::{acquire_locks, validate_config};
 
@@ -29,6 +30,7 @@ pub struct Engine {
     pub(crate) config: Config,
     pub(crate) state: State,
     pub(crate) workspaces: BTreeMap<String, Workspace>,
+    workspace_budget: workspace_budget::WorkspaceBudget,
     pub(crate) blocked: bool,
     pub(crate) snapshot: Option<String>,
     pub(crate) next_slot: u64,
@@ -170,6 +172,7 @@ impl Engine {
             config,
             state,
             workspaces: BTreeMap::new(),
+            workspace_budget: workspace_budget::WorkspaceBudget::default(),
             blocked: false,
             snapshot: None,
             next_slot: 1,
@@ -203,6 +206,7 @@ impl Engine {
                 ..State::default()
             },
             workspaces: BTreeMap::new(),
+            workspace_budget: workspace_budget::WorkspaceBudget::default(),
             blocked: false,
             snapshot: None,
             next_slot: 1,
@@ -213,7 +217,7 @@ impl Engine {
             _locks: locks,
             fault: None,
         };
-        engine.load_workspaces()?;
+        engine.seed_workspace_recovery()?;
         engine.recover_mode(complete_unpublished)?;
         engine.load_workspaces()?;
         engine.rebuild_index()?;

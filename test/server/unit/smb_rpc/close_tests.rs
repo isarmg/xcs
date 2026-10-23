@@ -73,7 +73,7 @@ impl Backend for CloseFailure {
         workspace: &str,
         item: &str,
         path: &str,
-        source: &Path,
+        source: &crate::UploadSource,
     ) -> Result<Value, ApiError> {
         self.uploads.fetch_add(1, Ordering::SeqCst);
         if self.enabled.load(Ordering::SeqCst) && matches!(self.failure, Failure::Upload) {

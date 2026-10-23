@@ -54,6 +54,10 @@ pub(super) fn validate_config(c: &Config) -> Result<()> {
         || c.max_workspace_bytes == 0
         || c.max_file_bytes > c.max_workspace_bytes
         || c.max_workspaces == 0
+        || c.max_retained_workspaces == 0
+        || c.max_retained_workspaces_per_principal == 0
+        || c.max_retained_workspace_metadata_bytes == 0
+        || c.max_retained_workspace_metadata_bytes_per_principal == 0
         || c.max_entries == 0
         || !SUPPORTED_CHECKSUM_CHUNK_BYTES.contains(&c.checksum_chunk_bytes)
     {

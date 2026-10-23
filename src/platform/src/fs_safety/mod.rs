@@ -76,6 +76,34 @@ pub struct PrivateDirectory {
 }
 
 impl PrivateDirectory {
+    /// Create missing private components and reject replacement-capable ancestry.
+    /// Root-owned standard ancestors and trusted sticky directories are allowed;
+    /// existing directories are validated, never chmodded or re-owned.
+    #[cfg(unix)]
+    pub fn create_trusted(path: impl AsRef<Path>) -> Result<Self, Error> {
+        unix::trusted_private_directory(path.as_ref(), true)
+    }
+    #[cfg(unix)]
+    pub fn open_trusted(path: impl AsRef<Path>) -> Result<Self, Error> {
+        unix::trusted_private_directory(path.as_ref(), false)
+    }
+    /// Open a private single-link payload relative to this held directory.
+    #[cfg(unix)]
+    pub fn open_payload(&self, name: &EntryName, create: bool) -> Result<File, Error> {
+        unix::open_payload(self, name, create)
+    }
+    /// Detect replacement without ever using the replacement as the payload.
+    #[cfg(unix)]
+    pub fn verify_payload(&self, name: &EntryName, held: &File) -> Result<(), Error> {
+        use std::os::unix::fs::MetadataExt;
+        self.verify_identity()?;
+        let named = self.open_payload(name, false)?.metadata()?;
+        let held = held.metadata()?;
+        if named.dev() != held.dev() || named.ino() != held.ino() {
+            return Err(Error::IdentityChanged(self.path.join(name.as_path())));
+        }
+        Ok(())
+    }
     /// Open an existing service-owned private directory for authorized offline
     /// administration. Unix requires effective uid 0 or the actual owner and
     /// exact 0700 permissions. Newly created files keep that owner's uid/gid;

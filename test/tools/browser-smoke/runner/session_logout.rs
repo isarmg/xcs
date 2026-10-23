@@ -27,7 +27,7 @@ pub(super) fn run(browser: &Browser, password: &str) -> Result<()> {
         let release;
         const gate = new Promise(resolve => release = resolve);
         const state = window.__zxsLogout = {
-            waiting: false, attempts: 0, writes: [], release,
+            waiting: false, attempts: 0, writes: [], loginAttempts: 0, revocationHeaders: [], release,
             restore: () => { window.fetch = originalFetch; }
         };
         window.fetch = async function(...args) {
@@ -37,11 +37,14 @@ pub(super) fn run(browser: &Browser, password: &str) -> Result<()> {
             const method = (args[1]?.method || request.method || 'GET').toUpperCase();
             if (path === '/api/auth/logout') {
                 state.attempts++;
+                state.revocationHeaders.push([request.headers.get('Authorization'), request.headers.get('X-CSRF-Token')]);
                 if (state.attempts === 1) {
                     state.waiting = true;
                     await gate;
                     throw new TypeError('Browser smoke: interrupted logout transport');
                 }
+            } else if (path === '/api/auth/login' || path === '/api/auth/me') {
+                state.loginAttempts++;
             } else if (path.startsWith('/api/') && !path.startsWith('/api/auth/')
                 && !['GET', 'HEAD'].includes(method)) {
                 state.writes.push({path, method});
@@ -87,6 +90,9 @@ pub(super) fn run(browser: &Browser, password: &str) -> Result<()> {
     browser.script("window.__zxsLogout.release(); return true")?;
     let retry = browser.button("Retry sign out", "重试退出")?;
     assert_language_reload_blocked(browser)?;
+    if browser.script("return !document.querySelector(\"input[autocomplete='current-password']\") && !document.querySelector('[data-setup-key]') && window.__zxsLogout.loginAttempts === 0")? != true {
+        return Err("unconfirmed logout exposed login/setup or restored a session".into());
+    }
     browser.click(&retry)?;
     browser.css("input[autocomplete='current-password']")?;
     wait_for("real logout retry settled", || {
@@ -107,6 +113,9 @@ pub(super) fn run(browser: &Browser, password: &str) -> Result<()> {
         != true
     {
         return Err("settled logout retained the language reload fence".into());
+    }
+    if browser.script("const h=window.__zxsLogout.revocationHeaders; return h.length===2 && !!h[0][1] && JSON.stringify(h[0])===JSON.stringify(h[1]) && window.__zxsLogout.loginAttempts===0")? != true {
+        return Err("logout retry lost the original revocation credentials".into());
     }
     drop(fixture);
     browser.keys(

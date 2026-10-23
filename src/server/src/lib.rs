@@ -44,6 +44,51 @@ use std::{
 };
 use transfer::{checksums, content, upload, upload_status, workspace_content};
 
+fn upload_fs_error(error: platform_io::fs_safety::Error) -> ApiError {
+    tracing::error!(%error, "upload filesystem boundary rejected");
+    ApiError::new(
+        500,
+        "UPLOAD_STATE_INVALID",
+        "local upload staging is unsafe or changed",
+    )
+}
+
+/// A held upload inode and the byte identity verified by the transport.
+/// Publication must check this identity before accepting the staged generation.
+pub struct UploadSource {
+    pub file: std::fs::File,
+    pub size: u64,
+    pub hash: String,
+}
+impl UploadSource {
+    pub fn from_file(file: std::fs::File, maximum: u64) -> Result<Self, ApiError> {
+        use std::os::unix::fs::FileExt;
+        platform_io::fs_safety::linux::SingleLinkRequirement::check(&file)
+            .map_err(crate::upload_fs_error)?;
+        let mut digest = blake3::Hasher::new();
+        let mut size = 0u64;
+        let mut buffer = [0u8; 65536];
+        loop {
+            let count = file.read_at(&mut buffer, size).map_err(ApiError::io)?;
+            if count == 0 {
+                break;
+            }
+            size = size
+                .checked_add(count as u64)
+                .ok_or_else(|| ApiError::limit("upload length overflow"))?;
+            if size > maximum {
+                return Err(ApiError::limit("upload exceeds byte limit"));
+            }
+            digest.update(&buffer[..count]);
+        }
+        Ok(Self {
+            file,
+            size,
+            hash: digest.finalize().to_hex().to_string(),
+        })
+    }
+}
+
 /// A successful content open must hold its core read lease until the body drops.
 pub struct Content {
     pub fallback_files: Vec<std::fs::File>,
@@ -155,13 +200,15 @@ pub trait Backend: Send + Sync {
         identity: &Identity,
         input: Value,
     ) -> Result<Value, ApiError>;
+    /// Consume the held inode with positional reads and verify its declared
+    /// size/hash against the copied snapshot before accepting any generation.
     fn upload(
         &self,
         identity: &Identity,
         workspace: &str,
         item: &str,
         path: &str,
-        source: &Path,
+        source: &crate::UploadSource,
     ) -> Result<Value, ApiError>;
     /// Return a fully verified raw descriptor (used by SMB and local consumers).
     fn content(&self, identity: &Identity, version: &str) -> Result<Content, ApiError>;
@@ -175,7 +222,7 @@ pub trait Backend: Send + Sync {
         workspace: &str,
         item: &str,
         path: &str,
-        source: &Path,
+        source: &crate::UploadSource,
         _generation: u64,
     ) -> Result<Value, ApiError> {
         self.upload(identity, workspace, item, path, source)
@@ -251,7 +298,7 @@ impl Backend for AuthorizedBackend {
         workspace: &str,
         item: &str,
         path: &str,
-        source: &Path,
+        source: &crate::UploadSource,
     ) -> Result<Value, ApiError> {
         self.backend
             .upload(&self.current(identity)?, workspace, item, path, source)
@@ -262,7 +309,7 @@ impl Backend for AuthorizedBackend {
         workspace: &str,
         item: &str,
         path: &str,
-        source: &Path,
+        source: &crate::UploadSource,
         generation: u64,
     ) -> Result<Value, ApiError> {
         self.backend.upload_generation(
@@ -332,28 +379,8 @@ impl ServerConfig {
         }
     }
     fn prepare_spool(&self) -> Result<(), ApiError> {
-        // Do not turn a rejected path into a usable spool or chmod its target.
-        // Strip trailing separators and `/.` before lstat: POSIX otherwise
-        // dereferences a final directory symlink despite symlink_metadata.
-        let spool_dir: PathBuf = self.spool_dir.components().collect();
-        match std::fs::symlink_metadata(&spool_dir) {
-            Ok(metadata) if !metadata.is_dir() => {
-                return Err(ApiError::invalid(
-                    "HTTP spool must be a directory, not a link or file",
-                ));
-            }
-            Ok(_) => (),
-            Err(error) if error.kind() == std::io::ErrorKind::NotFound => {
-                std::fs::create_dir_all(&self.spool_dir).map_err(ApiError::io)?;
-            }
-            Err(error) => return Err(ApiError::io(error)),
-        }
-        #[cfg(unix)]
-        {
-            use std::os::unix::fs::PermissionsExt;
-            std::fs::set_permissions(&self.spool_dir, std::fs::Permissions::from_mode(0o700))
-                .map_err(ApiError::io)?;
-        }
+        platform_io::fs_safety::PrivateDirectory::create_trusted(&self.spool_dir)
+            .map_err(crate::upload_fs_error)?;
         Ok(())
     }
     fn open_http_spool(&self) -> Option<Arc<spool_budget::SpoolBudget>> {

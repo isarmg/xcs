@@ -573,6 +573,96 @@ pub(super) fn bounded_inventory(
     Ok(result)
 }
 
+// A writable sticky directory protects entries owned by the service, but a
+// foreign owner can chmod/rename its own subtree even when it is currently 0700.
+fn trusted_ancestor(owner: u32, mode: u32, caller: u32) -> bool {
+    (owner == 0 || owner == caller) && (mode & 0o022 == 0 || mode & 0o1000 != 0)
+}
+
+pub(super) fn trusted_private_directory(
+    path: &Path,
+    create: bool,
+) -> Result<PrivateDirectory, Error> {
+    if !path.is_absolute() {
+        return Err(Error::AbsolutePathRequired(path.to_path_buf()));
+    }
+    let mut directory =
+        File::from(open("/", DIRECTORY_FLAGS, Mode::empty()).map_err(io::Error::from)?);
+    let mut current = std::path::PathBuf::from("/");
+    for component in path.components() {
+        let name = match component {
+            Component::RootDir => continue,
+            Component::Normal(name) => name,
+            _ => return Err(Error::UnsafeRelativePath(path.to_path_buf())),
+        };
+        let parent = fstat(&directory).map_err(io::Error::from)?;
+        if !trusted_ancestor(parent.st_uid, parent.st_mode, geteuid().as_raw()) {
+            return Err(Error::UnsafePermissions(current));
+        }
+        current.push(name);
+        let mut created = false;
+        let next = match openat(&directory, name, DIRECTORY_FLAGS, Mode::empty()) {
+            Ok(fd) => fd,
+            Err(rustix::io::Errno::NOENT) if create => {
+                match mkdirat(&directory, name, Mode::from_raw_mode(0o700)) {
+                    Ok(()) => created = true,
+                    Err(rustix::io::Errno::EXIST) => (),
+                    Err(error) => return Err(io::Error::from(error).into()),
+                }
+                openat(&directory, name, DIRECTORY_FLAGS, Mode::empty()).map_err(io::Error::from)?
+            }
+            Err(error) => return Err(io::Error::from(error).into()),
+        };
+        let next = File::from(next);
+        let stat = fstat(&next).map_err(io::Error::from)?;
+        if !trusted_ancestor(stat.st_uid, stat.st_mode, geteuid().as_raw()) {
+            return Err(Error::UnsafePermissions(current));
+        }
+        if created {
+            validate_private_directory(&next, &current)?;
+            next.sync_all()?;
+            directory.sync_all()?;
+        }
+        directory = next;
+    }
+    validate_private_directory(&directory, path)?;
+    Ok(PrivateDirectory {
+        path: path.to_path_buf(),
+        directory,
+        administration_owner: None,
+    })
+}
+
+pub(super) fn open_payload(
+    directory: &PrivateDirectory,
+    name: &EntryName,
+    create: bool,
+) -> Result<File, Error> {
+    let mut flags = OFlags::RDWR | OFlags::CLOEXEC | OFlags::NOFOLLOW | OFlags::NONBLOCK;
+    if create {
+        flags |= OFlags::CREATE | OFlags::EXCL;
+    }
+    let file = File::from(
+        openat(
+            &directory.directory,
+            name.as_os_str(),
+            flags,
+            Mode::from_raw_mode(0o600),
+        )
+        .map_err(io::Error::from)?,
+    );
+    let stat = fstat(&file).map_err(io::Error::from)?;
+    if FileType::from_raw_mode(stat.st_mode) != FileType::RegularFile || stat.st_nlink != 1 {
+        return Err(Error::UnsafeFileType(directory.path.join(name.as_path())));
+    }
+    if stat.st_uid != geteuid().as_raw() || stat.st_mode & 0o7777 != 0o600 {
+        return Err(Error::UnsafePermissions(
+            directory.path.join(name.as_path()),
+        ));
+    }
+    Ok(file)
+}
+
 #[cfg(test)]
 #[path = "../../../../test/platform/unit/fs_safety/unix/tests.rs"]
 mod tests;

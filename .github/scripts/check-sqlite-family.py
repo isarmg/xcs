@@ -124,6 +124,8 @@ def check(root):
             work = Path(temporary)
             package_manifest = prepare_package(root, work)
             lock(package_manifest, root)
+            execute(cargo_command("test", package_manifest, target, "--doc", "--features", "sqlite-bundled",
+                                  "types::Type"), root, minimum_tests=1)
             execute(cargo_command("test", package_manifest, target, "--lib", "--features", "sqlite-bundled"), root,
                     minimum_tests=10, required_tests=("direct_memory_transactions_savepoints_rollback_and_errors",
                                                      "filename_absolute_relative_unicode_percent_and_query_characters_are_literal",

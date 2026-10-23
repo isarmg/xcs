@@ -100,6 +100,11 @@ class SqliteFamily(unittest.TestCase):
         with patch.object(module, "execute") as execute, patch.object(module, "check_direct_dependencies"), \
                 contextlib.redirect_stdout(io.StringIO()):
             module.check(ROOT)
+        doctests = [call for call in execute.call_args_list if "--doc" in call.args[0]]
+        self.assertEqual(len(doctests), 1)
+        self.assertEqual(doctests[0].args[0][-4:],
+                         ["--doc", "--features", "sqlite-bundled", "types::Type"])
+        self.assertEqual(doctests[0].kwargs["minimum_tests"], 1)
         platform_tests = [call.args[0] for call in execute.call_args_list
                           if call.args[0][:2] == ["cargo", "test"] and "platform-io" in call.args[0]]
         self.assertEqual(len(platform_tests), 2)

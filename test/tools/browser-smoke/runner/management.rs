@@ -165,6 +165,8 @@ pub(super) fn setup(
     browser.keys(&browser.css("[data-setup-key]")?, &key)?;
     browser.click(&browser.button("Authorize and check disks", "验证授权并检查磁盘")?)?;
     browser.css("[data-setup-disk]")?;
+    browser.keys(&browser.css("[data-setup-user]")?, "fresh-admin")?;
+    reauthorize_identity(browser, "fresh-admin")?;
     let disks = browser.command(
         "POST",
         "/elements",
@@ -184,7 +186,6 @@ pub(super) fn setup(
         return Err("single-disk setup must explicitly warn about no redundancy".into());
     }
     browser.click(&browser.css("[data-setup-development]")?)?;
-    browser.keys(&browser.css("[data-setup-user]")?, "fresh-admin")?;
     browser.keys(&browser.css("[data-setup-password]")?, password)?;
     browser.click(&browser.css("[data-setup-confirm]")?)?;
     browser.click(&browser.button("Initialize new installation", "初始化新安装")?)?;
@@ -380,8 +381,30 @@ impl SetupFixture {
         })
     }
 }
+// Reauthorization unmounts and remounts the real setup form. Its visible
+// identity must remain exactly the model value that will create the account.
+fn reauthorize_identity(browser: &Browser, username: &str) -> Result<()> {
+    for _ in 0..2 {
+        browser.click(&browser.css("[data-setup-confirm]")?)?;
+        browser.script("window.__setupIdentityBeforeAuthorization = document.querySelector('[data-setup-user]'); return true")?;
+        browser.click(&browser.button("Authorize and check disks", "验证授权并检查磁盘")?)?;
+        browser.css("[data-setup-user]")?;
+        let expected = json_codec::to_string(username)?;
+        wait_for("reauthorized setup identity matches submission", || {
+            if browser.script(&format!("return document.querySelector('[data-setup-user]') !== window.__setupIdentityBeforeAuthorization && document.querySelector('[data-setup-user]')?.value === {expected} && !document.querySelector('[data-setup-confirm]').checked"))? == true {
+                Ok(())
+            } else {
+                Err("reauthorization changed the displayed administrator identity".into())
+            }
+        })?;
+        browser.script("delete window.__setupIdentityBeforeAuthorization; return true")?;
+    }
+    Ok(())
+}
 fn credentials_and_confirm(browser: &Browser, username: &str, password: &str) -> Result<()> {
-    browser.keys(&browser.css("[data-setup-user]")?, username)?;
+    let user = browser.css("[data-setup-user]")?;
+    browser.command("POST", &format!("/element/{user}/clear"), Some(json!({})))?;
+    browser.keys(&user, username)?;
     browser.keys(&browser.css("[data-setup-password]")?, password)?;
     browser.click(&browser.css("[data-setup-confirm]")?)?;
     Ok(())
@@ -539,7 +562,11 @@ fn complete_setup(
     let _server = fixture.launch(daemon, web, None)?;
     fixture.open(browser)?;
     browser.click(&browser.button("Complete interrupted initialization", "完成中断的初始化")?)?;
-    credentials_and_confirm(browser, "completion-admin", password)?;
+    browser.keys(&browser.css("[data-setup-user]")?, "completion-admin")?;
+    reauthorize_identity(browser, "completion-admin")?;
+    browser.click(&browser.button("Complete interrupted initialization", "完成中断的初始化")?)?;
+    browser.keys(&browser.css("[data-setup-password]")?, password)?;
+    browser.click(&browser.css("[data-setup-confirm]")?)?;
     browser.click(&browser.button("Confirm initialization completion", "确认补全初始化")?)?;
     fixture.ready()?;
     if fs::read(fixture.pool.join("config.json"))? != original_config {

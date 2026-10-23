@@ -3691,3 +3691,86 @@ fn history_export_rejects_conflicting_flat_shard_duplicates_without_repair() {
         );
     }
 }
+
+#[test]
+fn upload_preparation_reads_the_opened_inode_after_source_path_swap() {
+    let fixture = Fixture::new();
+    let mut engine = fixture.initialize();
+    let repo = repository(&mut engine, 1);
+    let workspace = engine
+        .create_workspace(&repo.main_branch_id, "admin")
+        .unwrap();
+    let input = fixture.temp.path().join("upload-input");
+    fs::write(&input, b"verified stream").unwrap();
+    let item = new_id("entry");
+    let hash = blake3::hash(b"verified stream").to_hex().to_string();
+    let mut source = fs::File::open(&input).unwrap();
+    std::io::Seek::seek(&mut source, std::io::SeekFrom::Start(4)).unwrap();
+    let plan = engine
+        .prepare_upload_file(
+            &workspace.workspace_id,
+            &item,
+            "prepared",
+            source.try_clone().unwrap(),
+            1,
+            Some((15, hash.clone())),
+        )
+        .unwrap();
+    fs::rename(&input, input.with_extension("held")).unwrap();
+    fs::write(&input, b"replacement bytes").unwrap();
+    let staged = engine.finish_upload(plan.execute().unwrap()).unwrap();
+    assert_eq!(std::io::Seek::stream_position(&mut source).unwrap(), 4);
+    assert_eq!(staged.size, 15);
+    assert_eq!(staged.content_hash, hash);
+    assert_eq!(fs::read(&staged.source_path).unwrap(), b"verified stream");
+}
+
+#[test]
+fn upload_preparation_rejects_copied_bytes_not_matching_verified_stream() {
+    for wrong_size in [false, true] {
+        let fixture = Fixture::new();
+        let mut engine = fixture.initialize();
+        let repo = repository(&mut engine, 1);
+        let workspace = engine
+            .create_workspace(&repo.main_branch_id, "admin")
+            .unwrap();
+        let input = fixture.temp.path().join("upload-input");
+        fs::write(&input, b"verified stream").unwrap();
+        let item = new_id("entry");
+        let plan = engine
+            .prepare_upload_file(
+                &workspace.workspace_id,
+                &item,
+                "prepared",
+                fs::File::open(&input).unwrap(),
+                1,
+                Some((
+                    if wrong_size { 14 } else { 15 },
+                    blake3::hash(b"verified stream").to_hex().to_string(),
+                )),
+            )
+            .unwrap();
+        if !wrong_size {
+            fs::write(&input, b"modified stream").unwrap();
+        }
+        assert_eq!(plan.execute().err().unwrap().code(), "CHECKSUM_MISMATCH");
+        assert!(
+            engine
+                .workspace(&workspace.workspace_id)
+                .unwrap()
+                .files
+                .is_empty()
+        );
+        let directory = engine.workspace_data_directory(&workspace).unwrap();
+        assert!(!directory.join(format!("{item}-1.full")).exists());
+        assert!(!fs::read_dir(directory).unwrap().any(|entry| {
+            entry
+                .unwrap()
+                .path()
+                .extension()
+                .is_some_and(|ext| ext == "prepared")
+        }));
+    }
+}
+#[path = "retained_workspace_budget.rs"]
+mod retained_workspace_budget;

@@ -2,8 +2,8 @@
 use crate::ApiError;
 use data_serialization::{Deserialize, Serialize};
 use std::{
-    fs::{self, OpenOptions},
-    io::{Read, Write},
+    fs,
+    io::{Read, Seek, Write},
     path::{Path, PathBuf},
 };
 
@@ -92,6 +92,8 @@ pub(crate) fn load(
 /// Retained files are never deleted merely because an HTTP request ended.
 pub(crate) struct StagedFile {
     writer: std::sync::Mutex<fs::File>,
+    directory: platform_io::fs_safety::PrivateDirectory,
+    name: platform_io::fs_safety::EntryName,
     // Dropped after the writer; settlement inventories the actual file length.
     reservation: crate::spool_budget::Reservation,
 }
@@ -102,30 +104,40 @@ impl StagedFile {
         reservation: crate::spool_budget::Reservation,
     ) -> Result<std::sync::Arc<Self>, ApiError> {
         reservation.persist_owner()?;
-        let mut options = OpenOptions::new();
-        options.append(true);
-        if !retry {
-            options.create_new(true);
-        }
-        #[cfg(unix)]
-        {
-            use std::os::unix::fs::OpenOptionsExt;
-            options
-                .mode(0o600)
-                .custom_flags(rustix::fs::OFlags::NOFOLLOW.bits() as i32);
-        }
-        let writer = options.open(&path).map_err(ApiError::io)?;
-        if !writer.metadata().map_err(ApiError::io)?.is_file() {
-            return Err(ApiError::new(
-                500,
-                "UPLOAD_STATE_INVALID",
-                "upload source is not a regular file",
-            ));
-        }
+        use platform_io::fs_safety::{EntryName, PrivateDirectory};
+        let directory = PrivateDirectory::open_trusted(
+            path.parent()
+                .ok_or_else(|| ApiError::invalid("upload parent missing"))?,
+        )
+        .map_err(crate::upload_fs_error)?;
+        let name = EntryName::new(
+            path.file_name()
+                .ok_or_else(|| ApiError::invalid("upload filename missing"))?,
+        )
+        .map_err(crate::upload_fs_error)?;
+        let mut writer = directory
+            .open_payload(&name, !retry)
+            .map_err(crate::upload_fs_error)?;
+        writer
+            .seek(std::io::SeekFrom::End(0))
+            .map_err(ApiError::io)?;
         Ok(std::sync::Arc::new(Self {
             writer: std::sync::Mutex::new(writer),
+            directory,
+            name,
             reservation,
         }))
+    }
+    pub fn source(&self, size: u64, hash: String) -> Result<crate::UploadSource, ApiError> {
+        let writer = crate::lock(&self.writer)?;
+        self.directory
+            .verify_payload(&self.name, &writer)
+            .map_err(crate::upload_fs_error)?;
+        Ok(crate::UploadSource {
+            file: writer.try_clone().map_err(ApiError::io)?,
+            size,
+            hash,
+        })
     }
     pub fn write(&self, bytes: &[u8]) -> Result<(), ApiError> {
         let mut writer = crate::lock(&self.writer)?;
@@ -147,7 +159,9 @@ pub(crate) fn persist_staged(
     record: &UploadRecord,
     staged: &StagedFile,
 ) -> Result<(), ApiError> {
-    persist_staged_with_sync(root, record, staged, || sync_directory(root))
+    persist_staged_with_sync(root, record, staged, || {
+        staged.directory.sync().map_err(crate::upload_fs_error)
+    })
 }
 fn sync_directory(root: &Path) -> Result<(), ApiError> {
     fs::File::open(root)
@@ -155,12 +169,19 @@ fn sync_directory(root: &Path) -> Result<(), ApiError> {
         .map_err(ApiError::io)
 }
 fn persist_staged_with_sync(
-    root: &Path,
+    _root: &Path,
     record: &UploadRecord,
     staged: &StagedFile,
     sync: impl FnOnce() -> Result<(), ApiError>,
 ) -> Result<(), ApiError> {
-    let result = persist_inner(root, record, || {}, sync);
+    let result = (|| {
+        staged
+            .directory
+            .verify_identity()
+            .map_err(crate::upload_fs_error)?;
+        let name = format!("{}.json", key(&record.workspace_id, &record.item_id));
+        persist_held(&staged.directory, &name, record, || {}, sync)
+    })();
     if result.is_err() {
         // A failed cleanup or directory sync can leave extra/uncertain metadata.
         // No fresh upload may assume that this evidence consumes no capacity.
@@ -172,6 +193,7 @@ fn persist_staged_with_sync(
 pub(crate) fn persist(root: &Path, record: &UploadRecord) -> Result<(), ApiError> {
     persist_inner(root, record, || {}, || sync_directory(root))
 }
+#[cfg(test)]
 fn persist_inner(
     root: &Path,
     record: &UploadRecord,
@@ -188,35 +210,32 @@ fn persist_at(
     published: impl FnOnce(),
     sync: impl FnOnce() -> Result<(), ApiError>,
 ) -> Result<(), ApiError> {
+    let directory = platform_io::fs_safety::PrivateDirectory::open_trusted(root)
+        .map_err(crate::upload_fs_error)?;
+    persist_held(&directory, name, record, published, sync)
+}
+fn persist_held(
+    directory: &platform_io::fs_safety::PrivateDirectory,
+    name: &str,
+    record: &UploadRecord,
+    published: impl FnOnce(),
+    sync: impl FnOnce() -> Result<(), ApiError>,
+) -> Result<(), ApiError> {
+    use platform_io::fs_safety::{AtomicFile, RelativePath};
     let bytes = json_codec::to_vec(record).map_err(ApiError::invalid)?;
     if bytes.len() > 16384 {
         return Err(ApiError::invalid("upload metadata exceeds limit"));
     }
-    let target = root.join(name);
-    let temporary = root.join(format!(
-        "{name}.tmp-{}",
-        authentication::random_token().map_err(ApiError::invalid)?
-    ));
-    let mut options = OpenOptions::new();
-    options.create_new(true).write(true);
-    #[cfg(unix)]
-    {
-        use std::os::unix::fs::OpenOptionsExt;
-        options.mode(0o600);
-    }
-    let mut file = options.open(&temporary).map_err(ApiError::io)?;
-    let result = (|| {
-        file.write_all(&bytes).map_err(ApiError::io)?;
-        file.sync_all().map_err(ApiError::io)?;
-        fs::rename(&temporary, target).map_err(ApiError::io)?;
-        published();
-        sync()
-    })();
-    if result.is_err() {
-        let _ = fs::remove_file(temporary);
-    }
-    result
+    AtomicFile::replace(
+        directory,
+        &RelativePath::new(name).map_err(crate::upload_fs_error)?,
+        &bytes,
+    )
+    .map_err(crate::upload_fs_error)?;
+    published();
+    sync()
 }
+
 pub(crate) fn status(record: &UploadRecord) -> json_codec::Value {
     json_codec::json!({"workspace_id":record.workspace_id,"item_id":record.item_id,"upload_generation":record.generation.to_string(),"logical_size":record.logical_size.to_string(),"content_hash":record.content_hash,"state":if record.state=="complete"{"COMPLETE"}else{"RECEIVING"},"durable_ranges":if record.persisted_bytes>0{vec![json_codec::json!({"offset":"0","length":record.persisted_bytes.to_string(),"content_hash":record.persisted_hash})]}else{vec![]},"sealed_manifest_hash":null})
 }

@@ -13,7 +13,7 @@ use std::{
         fd::{AsFd, OwnedFd},
         unix::fs::{FileExt, MetadataExt, PermissionsExt},
     },
-    path::{Component, Path, PathBuf},
+    path::{Path, PathBuf},
     sync::{Arc, Mutex},
 };
 use storage_contract::{Entry, Workspace, new_id, parse_u64_decimal};
@@ -57,6 +57,7 @@ enum Handle {
 struct Writer {
     reservation: budget::Lease,
     file: File,
+    directory: platform_io::fs_safety::PrivateDirectory,
     source: PathBuf,
     path: String,
     item_id: String,

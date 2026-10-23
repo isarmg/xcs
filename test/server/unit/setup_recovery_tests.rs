@@ -934,6 +934,10 @@ thread_local! {
         const { std::cell::RefCell::new(None) };
 }
 
+pub(super) fn after_next_restore(action: impl FnOnce() + 'static) {
+    AFTER_RESTORE.with(|hook| *hook.borrow_mut() = Some(Box::new(action)));
+}
+
 pub(super) fn after_restore() {
     if let Some(action) = AFTER_RESTORE.with(|hook| hook.borrow_mut().take()) {
         action();

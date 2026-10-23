@@ -260,7 +260,7 @@ impl Backend for PanickingBackend {
         _workspace: &str,
         _item: &str,
         _path: &str,
-        _source: &Path,
+        _source: &crate::UploadSource,
     ) -> Result<Value, ApiError> {
         panic!("private upload panic detail");
     }

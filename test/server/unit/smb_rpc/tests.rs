@@ -42,7 +42,7 @@ impl Backend for LostCommitReply {
                 &workspace.workspace_id,
                 &new_id("entry"),
                 "report.txt",
-                source.path(),
+                &crate::UploadSource::from_file(source.reopen().unwrap(), u64::MAX)?,
             )?;
             self.inner.call(crate::BackendAction::CommitWorkspaceInternal, identity, json!({
                 "workspace_id":workspace.workspace_id,"operation_id":new_id("op"),
@@ -68,7 +68,7 @@ impl Backend for LostCommitReply {
         workspace: &str,
         item: &str,
         path: &str,
-        source: &Path,
+        source: &crate::UploadSource,
     ) -> Result<Value, ApiError> {
         self.uploads.fetch_add(1, Ordering::SeqCst);
         self.inner.upload(identity, workspace, item, path, source)
@@ -1030,7 +1030,7 @@ fn external_same_file_change_rejects_rebase_and_preserves_work_bytes() {
             &workspace.workspace_id,
             &opened.entry_id,
             "report.txt",
-            &source,
+            &crate::UploadSource::from_file(File::open(&source).unwrap(), u64::MAX).unwrap(),
         )
         .unwrap();
     backend.call(crate::BackendAction::CommitWorkspaceInternal,&one.identity,json!({"workspace_id":workspace.workspace_id,"operation_id":new_id("op"),"expected_head":workspace.base_head,"fencing_token":workspace.fencing_token.to_string(),"message":"external app"})).unwrap();
@@ -1458,4 +1458,48 @@ fn hello_rejects_missing_write_reservations_before_admitting_a_session() {
         }
         assert_eq!(fs::read_dir(&shared.spool).unwrap().count(), 2);
     }
+}
+
+#[test]
+fn replaced_smb_source_or_spool_is_rejected_before_backend_publication() {
+    for swap_parent in [false, true] {
+        let (_temp, shared, backend, branch) = fixture();
+        let mut session = session(shared.clone(), &branch);
+        let (opened, file) = open_file(&mut session, true);
+        file.write_all_at(b"new", 0).unwrap();
+        session.dirty(opened.handle).unwrap();
+        let source = match &session.handles[&opened.handle] {
+            Handle::Write(writer) => writer.source.clone(),
+            _ => unreachable!(),
+        };
+        if swap_parent {
+            fs::rename(&shared.spool, shared.spool.with_extension("moved")).unwrap();
+            fs::create_dir(&shared.spool).unwrap();
+            fs::set_permissions(&shared.spool, fs::Permissions::from_mode(0o700)).unwrap();
+        } else {
+            fs::rename(&source, source.with_extension("moved")).unwrap();
+        }
+        fs::write(&source, b"bad").unwrap();
+        fs::set_permissions(&source, fs::Permissions::from_mode(0o600)).unwrap();
+        assert!(session.flush(opened.handle).is_err());
+        assert_eq!(backend.uploads.load(Ordering::SeqCst), 0);
+        let entry = session.find("report.txt").unwrap().unwrap();
+        let published = backend
+            .content(&session.identity, &entry.version_id)
+            .unwrap();
+        assert_eq!(published.hash, blake3::hash(b"old").to_hex().to_string());
+    }
+}
+
+#[test]
+fn smb_flush_preserves_the_clients_shared_descriptor_cursor() {
+    use std::io::{Seek, SeekFrom};
+    let (_temp, shared, _backend, branch) = fixture();
+    let mut session = session(shared, &branch);
+    let (opened, mut file) = open_file(&mut session, true);
+    file.seek(SeekFrom::Start(2)).unwrap();
+    file.write_all_at(b"new", 0).unwrap();
+    session.dirty(opened.handle).unwrap();
+    session.flush(opened.handle).unwrap();
+    assert_eq!(file.stream_position().unwrap(), 2);
 }

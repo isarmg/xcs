@@ -442,7 +442,7 @@ async fn upload_inner(
             "uploaded bytes do not match the declared hash; work data is retained",
         ));
     }
-    record.content_hash = Some(actual_hash);
+    record.content_hash = Some(actual_hash.clone());
     let backend = state.backend.clone();
     let owner = identity.clone();
     let ws = workspace.clone();
@@ -453,8 +453,9 @@ async fn upload_inner(
         // Keep its admission slot and per-item claim with publication itself,
         // including the final durable status, so a retry cannot race it.
         let _admission = admission;
+        let source = staged_file.source(expected_length, actual_hash)?;
         let staged =
-            backend.upload_generation(&owner, &ws, &item_id, &logical_path, &path, generation)?;
+            backend.upload_generation(&owner, &ws, &item_id, &logical_path, &source, generation)?;
         record.state = "complete".into();
         uploads::persist_staged(&spool, &record, &staged_file)?;
         Ok::<_, ApiError>(staged)

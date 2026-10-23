@@ -31,6 +31,7 @@ mod management;
 mod metadata;
 mod session_delivery;
 use metadata::{assert_metadata_only, metadata_edit, open_fixture_directory};
+mod account_outcome;
 mod file_viewports;
 mod session_logout;
 
@@ -313,6 +314,7 @@ fn exercise(
     assert_metadata_only(browser)?;
     println!("PASS administrator status page retains real telemetry controls");
     accessibility::run(browser)?;
+    account_outcome::run(browser, password)?;
     session_logout::run(browser, password)?;
     browser.click(&browser.button("Files", "文件")?)?;
     let stale_history = session_delivery::begin_paused_history(browser)?;

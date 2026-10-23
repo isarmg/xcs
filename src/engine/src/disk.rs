@@ -241,7 +241,7 @@ pub(crate) fn full_copy(
 }
 
 pub(crate) fn full_copy_held(
-    mut source: File,
+    source: File,
     directory: &OpenAt2Root,
     destination_name: &EntryName,
     chunk_bytes: u32,
@@ -269,7 +269,11 @@ pub(crate) fn full_copy_held(
         loop {
             let mut used = 0;
             while used < buf.len() {
-                let n = source.read(&mut buf[used..])?;
+                let n = std::os::unix::fs::FileExt::read_at(
+                    &source,
+                    &mut buf[used..],
+                    size + used as u64,
+                )?;
                 if n == 0 {
                     break;
                 }

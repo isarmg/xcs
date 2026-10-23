@@ -78676,7 +78676,7 @@
   },
   "initial_test_relocation_sha256": "791ad728a408677dd54ef98e3feaffe825c5fc5670e888440615933d9498ecc3",
   "lockfiles_sha256": {
-    "Cargo.lock": "08005206b5f73fc315a91c5cd289a900b825276f97bc7100754e466d28ad1437"
+    "Cargo.lock": "598a8fea4eb871c123a6a155b8458f4bce52143f8fb67030db1e35ea6c8c839b"
   },
   "manifests_sha256": {
     "Cargo.toml": "4fa15cfe7d2baf5436dbc9b9c42bd6acb37fa93bd5d03823f8d09715fe4e6e6e",
@@ -78918,7 +78918,7 @@
     "src/naming/Cargo.toml": "6599ac90d88b7a74eeb47444aa4fdad2002161798ae72cfe4b18e3d42eae1a9a",
     "src/platform/Cargo.toml": "6315b1efba0b551f24bf231da2c7a83d13ac64b5a2d0d13c99d281eb85eae1f0",
     "src/rescue/Cargo.toml": "8d5bd0f02eff46f12595c50064d4f801718b022f1bc37fc9e09f47dae31760d1",
-    "src/server/Cargo.toml": "f731d0326c6120887c050b5727cc44eefce4d854d91a95ab8ffb3cfe6dae2096",
+    "src/server/Cargo.toml": "5e2e03b350de8e67f63c8fe629354396ee6963c11656ba67463ec748af7ad558",
     "src/smb-vfs/Cargo.toml": "51a70ac5f679a92b4b781fdd3d92f4827eae29cf6548591f92749a7fcac26c7b",
     "src/smb/Cargo.toml": "0230542f6e28f238d877f417d3931941df428d65086cfe8d0005c15ebefcdb82",
     "src/web/Cargo.toml": "72540b25ed28ac3b9814fdde17baf447c7805351541fb47034c99a2b806cb2ed",
@@ -79001,7 +79001,7 @@
         "src/components/mod.rs": "2a437eef592817298b259e25b02e08d45dbbe055d341d8ee79a1525e5e0f74cb",
         "src/components/notification.rs": "3aa51be6aa9ebf6f96bbfcde20c067b29ddc81733361395bfa97929260907557",
         "src/components/select.rs": "6e6ba24ed3b2707242e67eecf906691061061948270d07210900150ba3f6faaa",
-        "src/components/shell.rs": "27d468f61cf33d23e61a58728398f11e78932f3f53e48f61b1488d9ee99b8eb7",
+        "src/components/shell.rs": "19463b6b68d404f6461af0e2dcecf08e00966dc7f222b97761ad22c3c0e8daeb",
         "src/components/state.rs": "fa0fb1063c77d3823f267acc184c0956897f5b685d173c0e789cc2649ae06012",
         "src/contours/controller.rs": "14f18e7de4c27674505855fdd0036794e623aaff88185e9fe8c32d429eaa64c2",
         "src/contours/geometry.rs": "88025d1e2cfc38aff75a80b5622d1e3568dac1bfd383d4e26a15bbd4c6d199d0",
@@ -80299,7 +80299,7 @@
         "src/query_engine/transaction.rs": "3b3bbe6960e1bd244e0f02b5474dc96a53308cdd57fe20205c43c50d221f7fec",
         "src/query_engine/type_info.rs": "d75095c7f1b1ea24b0ab32e03640f01671cef74b1a56b1f2e2f9ec0ad4534d3b",
         "src/query_engine/types/json.rs": "635fa0c60182bee309e48ff278fa346b093ed1e47a1ac6bf2bc24206e8a4e52d",
-        "src/query_engine/types/mod.rs": "d4eefbe91592cf4e4d1602f1f396aadd2faebc63d0331b0893f5eacee1b56d76",
+        "src/query_engine/types/mod.rs": "609acd3c7739531ab7a1d41797f41bd2cf6d735282400bab9046471330da98aa",
         "src/query_engine/types/non_zero.rs": "1d164a0e5df01e947304a630115075c394576643c72c583659df9992a18bf9af",
         "src/query_engine/types/text.rs": "cb0b12a819478a21e741eff4e6e71e30d5946fab374ee4ae783309ff9783f5a3",
         "src/query_engine/value.rs": "546f85b9e7eefea448f9908fba309e29f451e616c54a8bd64d493851b0b146d4",
@@ -80422,7 +80422,7 @@
         "src/query_engine/transaction.rs": "3b3bbe6960e1bd244e0f02b5474dc96a53308cdd57fe20205c43c50d221f7fec",
         "src/query_engine/type_info.rs": "d75095c7f1b1ea24b0ab32e03640f01671cef74b1a56b1f2e2f9ec0ad4534d3b",
         "src/query_engine/types/json.rs": "635fa0c60182bee309e48ff278fa346b093ed1e47a1ac6bf2bc24206e8a4e52d",
-        "src/query_engine/types/mod.rs": "d4eefbe91592cf4e4d1602f1f396aadd2faebc63d0331b0893f5eacee1b56d76",
+        "src/query_engine/types/mod.rs": "609acd3c7739531ab7a1d41797f41bd2cf6d735282400bab9046471330da98aa",
         "src/query_engine/types/non_zero.rs": "1d164a0e5df01e947304a630115075c394576643c72c583659df9992a18bf9af",
         "src/query_engine/types/text.rs": "cb0b12a819478a21e741eff4e6e71e30d5946fab374ee4ae783309ff9783f5a3",
         "src/query_engine/value.rs": "546f85b9e7eefea448f9908fba309e29f451e616c54a8bd64d493851b0b146d4",
@@ -97649,7 +97649,7 @@
         "src/query_engine/transaction.rs": "3b3bbe6960e1bd244e0f02b5474dc96a53308cdd57fe20205c43c50d221f7fec",
         "src/query_engine/type_info.rs": "d75095c7f1b1ea24b0ab32e03640f01671cef74b1a56b1f2e2f9ec0ad4534d3b",
         "src/query_engine/types/json.rs": "635fa0c60182bee309e48ff278fa346b093ed1e47a1ac6bf2bc24206e8a4e52d",
-        "src/query_engine/types/mod.rs": "d4eefbe91592cf4e4d1602f1f396aadd2faebc63d0331b0893f5eacee1b56d76",
+        "src/query_engine/types/mod.rs": "609acd3c7739531ab7a1d41797f41bd2cf6d735282400bab9046471330da98aa",
         "src/query_engine/types/non_zero.rs": "1d164a0e5df01e947304a630115075c394576643c72c583659df9992a18bf9af",
         "src/query_engine/types/text.rs": "cb0b12a819478a21e741eff4e6e71e30d5946fab374ee4ae783309ff9783f5a3",
         "src/query_engine/value.rs": "546f85b9e7eefea448f9908fba309e29f451e616c54a8bd64d493851b0b146d4",

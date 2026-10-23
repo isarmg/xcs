@@ -16,15 +16,12 @@ use std::{
     path::Path,
 };
 
-fn upload_fingerprint(path: &Path, maximum: u64) -> Result<(u64, String)> {
-    upload_fingerprint_file(open_regular(path)?, maximum)
-}
-fn upload_fingerprint_file(mut input: std::fs::File, maximum: u64) -> Result<(u64, String)> {
+fn upload_fingerprint_file(input: std::fs::File, maximum: u64) -> Result<(u64, String)> {
     let mut digest = blake3::Hasher::new();
     let mut size = 0u64;
     let mut buffer = [0u8; 65536];
     loop {
-        let n = input.read(&mut buffer)?;
+        let n = std::os::unix::fs::FileExt::read_at(&input, &mut buffer, size)?;
         if n == 0 {
             break;
         }
@@ -45,8 +42,9 @@ fn upload_fingerprint_file(mut input: std::fs::File, maximum: u64) -> Result<(u6
 fn preparation_fs_error(error: platform_io::fs_safety::Error) -> Error {
     Error::new("UNSAFE_PATH", error.to_string())
 }
-fn retained_upload_bytes(directory: &OpenAt2Root) -> Result<u64> {
+fn retained_upload_usage(directory: &OpenAt2Root) -> Result<(u64, usize)> {
     let mut retained = 0u64;
+    let mut generations = 0usize;
     let entries =
         rustix::fs::Dir::read_from(directory.directory()).map_err(std::io::Error::from)?;
     for entry in entries {
@@ -56,6 +54,9 @@ fn retained_upload_bytes(directory: &OpenAt2Root) -> Result<u64> {
             .extension()
             .is_some_and(|ext| ext == "full" || ext == "prepared")
         {
+            generations = generations.checked_add(1).ok_or_else(|| {
+                Error::new("RESOURCE_LIMIT", "retained generation count overflow")
+            })?;
             let relative = RelativePath::new(path).map_err(preparation_fs_error)?;
             retained = retained
                 .checked_add(
@@ -70,7 +71,7 @@ fn retained_upload_bytes(directory: &OpenAt2Root) -> Result<u64> {
                 })?;
         }
     }
-    Ok(retained)
+    Ok((retained, generations))
 }
 
 struct UploadPreparationClaim {
@@ -89,7 +90,8 @@ pub struct UploadPreparation {
     workspace: Workspace,
     item: String,
     path: String,
-    source: std::path::PathBuf,
+    source: std::fs::File,
+    expected_content: Option<(u64, String)>,
     generation: u64,
     base_version_id: Option<String>,
     directory: std::path::PathBuf,
@@ -124,6 +126,22 @@ impl Drop for PreparedUpload {
     }
 }
 impl UploadPreparation {
+    fn verify_content(&self, size: u64, hash: &str) -> Result<()> {
+        if self
+            .expected_content
+            .as_ref()
+            .is_some_and(|(expected_size, expected_hash)| {
+                *expected_size != size || expected_hash != hash
+            })
+        {
+            return Err(Error::new(
+                "CHECKSUM_MISMATCH",
+                "staged bytes differ from the verified upload",
+            ));
+        }
+        Ok(())
+    }
+
     /// Full-file I/O runs here, with no Engine reference or mutex guard.
     pub fn execute(self) -> Result<PreparedUpload> {
         let _keep_claim = &self.claim;
@@ -132,7 +150,9 @@ impl UploadPreparation {
             .as_ref()
             .filter(|old| old.dirty_generation == self.generation)
         {
-            let (size, hash) = upload_fingerprint(&self.source, self.max_file_bytes)?;
+            let (size, hash) =
+                upload_fingerprint_file(self.source.try_clone()?, self.max_file_bytes)?;
+            self.verify_content(size, &hash)?;
             if size != old.size || hash != old.content_hash {
                 return Err(Error::new(
                     "UPLOAD_GENERATION_CONFLICT",
@@ -156,12 +176,13 @@ impl UploadPreparation {
                     .map_err(preparation_fs_error)?,
                 self.max_file_bytes,
             )?;
-            if existing != upload_fingerprint(&self.source, self.max_file_bytes)? {
+            if existing != upload_fingerprint_file(self.source.try_clone()?, self.max_file_bytes)? {
                 return Err(Error::new(
                     "UPLOAD_GENERATION_CONFLICT",
                     "one upload generation cannot name different bytes",
                 ));
             }
+            self.verify_content(existing.0, &existing.1)?;
             return Ok(PreparedUpload {
                 plan: self,
                 size: existing.0,
@@ -181,12 +202,13 @@ impl UploadPreparation {
         let scratch_name = EntryName::new(scratch.file_name().expect("scratch filename"))
             .map_err(preparation_fs_error)?;
         let (size, hash, _) = full_copy_held(
-            open_regular(&prepared.plan.source)?,
+            prepared.plan.source.try_clone()?,
             &prepared.plan.directory_handle,
             &scratch_name,
             prepared.plan.chunk_bytes,
             prepared.plan.maximum,
         )?;
+        prepared.plan.verify_content(size, &hash)?;
         prepared.size = size;
         prepared.hash = hash;
         Ok(prepared)
@@ -565,8 +587,10 @@ impl Engine {
         self.finish_upload(prepared)
     }
 
-    /// Admission and snapshot only. The returned claim serializes preparation
-    /// within one workspace; different workspaces can copy/hash concurrently.
+    /// Trusted local path adapter: open the source once at admission. Network
+    /// transports must use `prepare_upload_file` with their verified length/hash.
+    /// The returned claim serializes preparation within one workspace; different
+    /// workspaces can copy/hash concurrently.
     pub fn prepare_upload(
         &self,
         workspace: &str,
@@ -575,8 +599,33 @@ impl Engine {
         source: &Path,
         generation: u64,
     ) -> Result<UploadPreparation> {
+        self.prepare_upload_file(
+            workspace,
+            item,
+            path,
+            open_regular(source)?,
+            generation,
+            None,
+        )
+    }
+
+    /// Keep the already opened source inode and bind copied bytes to the caller's
+    /// verified stream. Path replacement cannot retarget a preparation.
+    /// `None` is reserved for trusted local callers without a prior stream digest;
+    /// transport callers must provide both the expected length and hash.
+    pub fn prepare_upload_file(
+        &self,
+        workspace: &str,
+        item: &str,
+        path: &str,
+        source: std::fs::File,
+        generation: u64,
+        expected_content: Option<(u64, String)>,
+    ) -> Result<UploadPreparation> {
+        platform_io::fs_safety::linux::SingleLinkRequirement::check(&source)
+            .map_err(preparation_fs_error)?;
         let (w, base_entry) = self.validate_upload_target(workspace, item, path, generation)?;
-        let expected = open_regular(source)?.metadata()?.len();
+        let expected = source.metadata()?.len();
         if expected > self.config.max_file_bytes {
             return Err(Error::new(
                 "RESOURCE_LIMIT",
@@ -611,22 +660,25 @@ impl Engine {
         };
         let directory_handle =
             OpenAt2Root::open(&directory, MountPolicy::SameMount).map_err(preparation_fs_error)?;
-        let retained = retained_upload_bytes(&directory_handle)?;
+        let (retained, generations) = retained_upload_usage(&directory_handle)?;
         let target = directory.join(format!("{item}-{generation}.full"));
         let existing = target.try_exists()?;
-        if retained > self.config.max_workspace_bytes
+        if generations > self.config.max_entries
+            || (!existing && generations >= self.config.max_entries)
+            || retained > self.config.max_workspace_bytes
             || (!existing && retained.saturating_add(expected) > self.config.max_workspace_bytes)
         {
             return Err(Error::new(
                 "RESOURCE_LIMIT",
-                "new upload and retained generations exceed the workspace byte budget",
+                "new upload and retained generations exceed the workspace byte or count budget",
             ));
         }
         Ok(UploadPreparation {
             workspace: w,
             item: item.into(),
             path: path.into(),
-            source: source.into(),
+            source,
+            expected_content,
             generation,
             base_version_id: base_entry.map(|entry| entry.version_id),
             directory,
@@ -687,11 +739,11 @@ impl Engine {
                 "workspace data directory identity changed during preparation",
             ));
         }
-        let retained = retained_upload_bytes(&plan.directory_handle)?;
-        if retained > self.config.max_workspace_bytes {
+        let (retained, generations) = retained_upload_usage(&plan.directory_handle)?;
+        if retained > self.config.max_workspace_bytes || generations > self.config.max_entries {
             return Err(Error::new(
                 "RESOURCE_LIMIT",
-                "retained generations exceed the workspace byte budget",
+                "retained generations exceed the workspace byte or count budget",
             ));
         }
         if let Some(scratch) = &prepared.scratch {
@@ -1120,6 +1172,25 @@ impl Engine {
         }
         Ok(())
     }
+    /// Keep ordinary completion and restart reconstruction on one definition.
+    pub(crate) fn refresh_workspace_contexts(state: &State, completed: &mut Workspace) {
+        if let Some(repo) = state
+            .repositories
+            .values()
+            .find(|repo| repo.main_branch_id == completed.branch_id)
+        {
+            for file in completed.files.values() {
+                if let Some(context) = directory::context_at(state, &repo.repository_id, &file.path)
+                {
+                    completed.selected_file_contexts.insert(
+                        directory::context_key(&repo.repository_id, &file.path),
+                        context,
+                    );
+                }
+            }
+        }
+    }
+
     pub(crate) fn complete_workspace_commit(
         &mut self,
         w: Workspace,
@@ -1129,23 +1200,7 @@ impl Engine {
         // A first inherited save can create a public file branch. The same SMB
         // handle subsequently continues its own published destination; later
         // external selections are still fenced against this post-save receipt.
-        if let Some(repo) = self
-            .state
-            .repositories
-            .values()
-            .find(|r| r.main_branch_id == completed.branch_id)
-        {
-            for file in completed.files.values() {
-                if let Some(context) =
-                    directory::context_at(&self.state, &repo.repository_id, &file.path)
-                {
-                    completed.selected_file_contexts.insert(
-                        directory::context_key(&repo.repository_id, &file.path),
-                        context,
-                    );
-                }
-            }
-        }
+        Self::refresh_workspace_contexts(&self.state, &mut completed);
         completed.state = "committed".into();
         completed.fencing_token += 1;
         self.persist_workspace(&completed)?;

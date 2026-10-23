@@ -44,7 +44,14 @@ impl Backend for MonitorBackend {
     fn observe_disks(&self, _: &crate::InternalDiskObservation) -> Result<Value, ApiError> {
         Ok(json!({"disks":[]}))
     }
-    fn upload(&self, _: &Identity, _: &str, _: &str, _: &str, _: &Path) -> Result<Value, ApiError> {
+    fn upload(
+        &self,
+        _: &Identity,
+        _: &str,
+        _: &str,
+        _: &str,
+        _: &crate::UploadSource,
+    ) -> Result<Value, ApiError> {
         Err(ApiError::unsupported())
     }
     fn content(&self, _: &Identity, _: &str) -> Result<crate::Content, ApiError> {

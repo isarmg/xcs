@@ -27,9 +27,9 @@ zxs/
 │   ├── naming/                  # 命名规则、固定映射和合并后的 Unicode 规范化
 │   ├── platform/                # Linux 文件安全、SQLite 和凭据基础设施
 │   ├── engine/                  # 存储、历史、授权、发布及恢复
-│   ├── server/                  # HTTP、认证、流式内容和本机 SMB RPC
+│   ├── server/                  # zxs 服务入口、HTTP、认证、流式内容和本机 SMB RPC
 │   ├── client/                  # 运维 HTTP 会话、传输及完整性验证
-│   ├── admin/                   # zxs 服务和运维可执行入口
+│   ├── rescue/                  # zxs-rescue 本机维护与离线恢复入口
 │   ├── web/                     # 浏览器 WASM 产品界面、声明式样式与字体
 │   ├── interface/               # 生命周期、主题、组件与合并后的 CSR 原语
 │   ├── macros/                  # 界面过程宏编译目标
@@ -117,7 +117,9 @@ Web 界面 → web-interface（共享组件、生命周期和直接合入的 CSR
 界面编译 → view-macros（过程宏）
 服务端认证 / 平台凭据 → authentication（无 Linux 或数据库依赖）
 Web → HTTPS 业务 API
-本机 zxs → 服务启动 / 初始化 / 必要管理 / 离线恢复
+本机 zxs → storage-server 服务启动
+Web 管理界面 → HTTPS 管理 API（初始化、账户、磁盘和维护）
+本机 zxs-rescue → 未初始化配置草稿 / 系统与历史恢复 / 离线检查与导出
 保留的 storage-client 库 → HTTPS 业务 API + storage-contract（不再由 zxs 暴露）
 HTTP / 本机 SMB RPC → storage-engine
 Samba VFS → smb-protocol → 受保护 Unix socket
@@ -137,9 +139,9 @@ API 与 SMB 只映射认证主体、输入、句柄和传输错误。最终授�
 
 ## 20.3 离线工具
 
-`zxs offline-check <disk>` 验证本盘版本、内容清单、发布回执和带状态页包含证明的内容墓碑；不修改盘数据。`zxs offline-export <disk> <version> <output>` 独立验证后输出完整文件，拒绝覆盖已有目标。导出不修改目标父目录权限，失败不把未完成复制发布成完整文件。
+`zxs-rescue offline-check <disk>` 验证本盘版本、内容清单、发布回执和带状态页包含证明的内容墓碑；不修改盘数据。`zxs-rescue offline-export <disk> <version> <output>` 独立验证后输出完整文件，拒绝覆盖已有目标。导出不修改目标父目录权限，失败不把未完成复制发布成完整文件。
 
-`zxs-rescue --root <new-root> restore-system --disks <disk1> …` 从固定配置的至少 Q = floor(N/2)+1 个一致、可信的原元数据成员配置恢复系统目录，随后重放日志、恢复凭据控制状态及可发现的待提交工作区。它不会重新初始化数据盘，也不绕过设备身份核验。N ≥ 1，单成员池须核验唯一原成员；多成员池不能按幸存数降低 Q。正常写入仍须全部配置成员及发布闭包，不因一份 PUBLICATION 就放行。所有新初始化盘均保存配置锚，缺锚旧盘不兼容且不自动迁移。
+`zxs-rescue --root <new-root> restore-system --disks <disk1> …` 从固定配置的至少 Q = floor(N/2)+1 个一致、可信的原元数据成员配置恢复系统目录，随后重放日志、恢复凭据灾备快照及可发现的待提交工作区。该快照不构成管理面认证权威；守护进程启动和后台重试不会自动安装管理凭据。管理凭据恢复必须在另行准备的干净系统状态目录中，通过受当前本机 bootstrap 授权保护的 Web 恢复流程明确确认旧凭据风险；保留已恢复或部分恢复目录作为核验依据，不删除或覆盖现有权威。它不会重新初始化数据盘，也不绕过设备身份核验。N ≥ 1，单成员池须核验唯一原成员；多成员池不能按幸存数降低 Q。正常写入仍须全部配置成员及发布闭包，不因一份 PUBLICATION 就放行。所有新初始化盘均保存配置锚，缺锚旧盘不兼容且不自动迁移。
 
 离线工具不依赖在线服务或原服务器 SQLite。实际只恢复本盘持有且证明、字节均有效的版本，不推断全局最新状态。格式、设备或日志冲突必须明确失败；检查命令不得隐式修复或清理。
 
@@ -149,7 +151,7 @@ API 与 SMB 只映射认证主体、输入、句柄和传输错误。最终授�
 
 Rust 版本由根 `rust-toolchain.toml` 指定。所有组件、目标和工具共同使用根 `Cargo.lock`；在仓库根通过 `cargo ... -p <包名>` 选择编译目标。正式构建使用本仓库 Rust 源码与 `--locked --offline`，不在构建时下载 Rust 依赖；覆盖范围见[统一来源清单](THIRD_PARTY_RUST_SOURCES.md)，许可与来源规则见[集中合规说明](../compliance/README.md)。Linux 原生链接依赖和 Samba SDK 保持原有管理方式。
 
-模块测试靠近实现；跨入口浏览器、HTTP、CLI、故障及真实 SDK 证据记录在 `tests/` 与[实现报告](reports/implementation.md)。构建、模拟文件故障、真实设备断电、浏览器、SMB 互操作和发行产物是不同层级证据，禁止相互代替。
+单元与集成测试按组件集中在根 `test/`，模块单元测试通过显式路径接入实现；跨入口浏览器、HTTP、CLI、故障及真实 SDK 证据记录在 `test/` 与[实现报告](reports/implementation.md)。构建、模拟文件故障、真实设备断电、浏览器、SMB 互操作和发行产物是不同层级证据，禁止相互代替。
 
 契约变更同时更新类型、schema、固定样例、Rust 校验器和入口映射；只保留一份规则实现。禁止未经证据将第 22 章全部用例一次标记为通过。
 
