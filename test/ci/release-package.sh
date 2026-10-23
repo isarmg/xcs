@@ -40,8 +40,19 @@ legal.mkdir()
 (legal / "NOTICE.md").write_bytes((root / "compliance/NOTICE.md").read_bytes())
 PYFIXTURE
 python3 test/ci/web_dist_fixture.py "$fixture"
-RELEASE_VERSION=0.1.0 bash "$fixture/.github/scripts/release-package.sh"
+(umask 077; RELEASE_VERSION=0.1.0 bash "$fixture/.github/scripts/release-package.sh")
 for archive in "$fixture"/release-assets/*.tar.gz; do
+  python3 - "$archive" <<'PYMODES'
+import sys
+import tarfile
+with tarfile.open(sys.argv[1]) as archive:
+    for entry in archive:
+        assert entry.uid == entry.gid == 0, entry.name
+        assert not entry.mode & 0o022, entry.name
+        assert entry.mode & 0o044 == 0o044, entry.name
+        if entry.isdir():
+            assert entry.mode == 0o755, entry.name
+PYMODES
   output=$(mktemp -d "$fixture/extract.XXXXXX")
   tar -xzf "$archive" -C "$output"
   test -z "$(find "$output" -name browser-smoke -print -quit)"
@@ -50,9 +61,11 @@ for archive in "$fixture"/release-assets/*.tar.gz; do
   test ! -d "$output/tools"
   for path in compliance/NOTICE.md compliance/licenses/upstream/sample/LICENSE \
     compliance/provenance/origins.json docs/25-operation-manual.md \
-    docs/components/smb.md docs/templates/release-install.md; do
+    docs/components/smb.md docs/templates/release-install.md deploy/systemd/zxs.service; do
     cmp "$fixture/$path" "$output/$path"
   done
+  test "$(stat -c %a "$output/deploy/systemd")" = 755
+  test "$(stat -c %a "$output/deploy/systemd/zxs.service")" = 644
   python3 - "$output" <<'PY'
 from pathlib import Path
 import re

@@ -30,7 +30,7 @@ def prepare(root):
     spec = json.loads((ROOT / SPEC).read_text())
     for directory in spec["directories"]:
         (root / directory).mkdir(parents=True, exist_ok=True)
-    for relative in [*spec["files"], "README.md", "compliance/NOTICE.md", "docs/README.md",
+    for relative in [*spec["files"], "README.md", "compliance/NOTICE.md", "docs/README.md", "deploy/systemd/zxs.service",
                      "target/native/release/zxs", "target/native/release/zxs-rescue", "build/web/index.html", "build/web/boot.js",
                      "build/web/zxs.css", "build/web/styles/startup.css", "build/web/pkg/zxs.js",
                      "build/web/pkg/zxs_bg.wasm", "build/web/pkg/zxs_bg.wasm.gz"]:

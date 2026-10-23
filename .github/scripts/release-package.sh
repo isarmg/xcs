@@ -14,13 +14,13 @@ cd "$(dirname "${BASH_SOURCE[0]}")/../.."
 work=$(mktemp -d)
 trap 'rm -rf "$work"' EXIT
 python3 .github/scripts/verify-web-dist.py --root "$PWD" --stage "$work/snapshot"
-material=(compliance README.md docs)
-tar -czf "$work/native.tar.gz" \
+material=(compliance README.md docs deploy)
+tar --owner=0 --group=0 --numeric-owner --mode='u=rwX,go=rX' -czf "$work/native.tar.gz" \
   -C "$work/snapshot/native" zxs zxs-rescue -C "$work/snapshot/material" "${material[@]}"
 # Keep the verified browser tree (including its hashed legal subset) separate
 # from complete documentation/provenance, which is not a static asset tree.
 mv "$work/snapshot/web" "$work/snapshot/public"
-tar -czf "$work/web.tar.gz" \
+tar --owner=0 --group=0 --numeric-owner --mode='u=rwX,go=rX' -czf "$work/web.tar.gz" \
   -C "$work/snapshot" public -C "$work/snapshot/material" "${material[@]}"
 [[ ! -L release-assets ]]
 mkdir -p release-assets

@@ -3,9 +3,28 @@ set -euo pipefail
 cd "$(dirname "${BASH_SOURCE[0]}")/../.."
 : "${RELEASE_VERSION:?}"
 v="$RELEASE_VERSION"
-expected=("zxs-$v-x86_64-unknown-linux-gnu.tar.gz" "web-interface-$v.tar.gz")
-test "$(find release-assets -mindepth 1 -maxdepth 1 -type f | wc -l)" = 2
-for asset in "${expected[@]}"; do test -s "release-assets/$asset"; done
+# Reject unexpected entries, including hidden files, directories and symlinks,
+# before writing metadata or checksums into the release set.
+python3 - "$v" <<'PYVALIDATE'
+from pathlib import Path
+import re
+import stat
+import sys
+
+version = sys.argv[1]
+if not re.fullmatch(r"[0-9]+\.[0-9]+\.[0-9]+([-+][A-Za-z0-9.+-]+)?", version):
+    raise SystemExit("RELEASE_VERSION must be a safe version filename")
+assets = Path("release-assets")
+if not stat.S_ISDIR(assets.lstat().st_mode):
+    raise SystemExit("release-assets must be a real directory")
+expected = {f"zxs-{version}-x86_64-unknown-linux-gnu.tar.gz", f"web-interface-{version}.tar.gz"}
+if {path.name for path in assets.iterdir()} != expected:
+    raise SystemExit("Release directory must contain exactly the two expected archives")
+for name in expected:
+    info = (assets / name).lstat()
+    if not stat.S_ISREG(info.st_mode) or not info.st_size:
+        raise SystemExit(f"Release archive must be a nonempty regular file: {name}")
+PYVALIDATE
 {
   printf '# ZXS %s 安装\n\n' "$v"
   cat docs/templates/release-install.md

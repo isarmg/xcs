@@ -1,0 +1,57 @@
+"""Reject release-set redirection and extra inputs before generating metadata."""
+from pathlib import Path
+import os
+import shutil
+import subprocess
+import tempfile
+import unittest
+
+ROOT = Path(__file__).resolve().parents[2]
+
+
+class ReleaseAssembly(unittest.TestCase):
+    def setUp(self):
+        self.temporary = tempfile.TemporaryDirectory()
+        self.addCleanup(self.temporary.cleanup)
+        self.root = Path(self.temporary.name)
+        scripts = self.root / '.github/scripts'
+        scripts.mkdir(parents=True)
+        shutil.copy2(ROOT / '.github/scripts/release-assemble.sh', scripts)
+        self.assets = self.root / 'release-assets'
+        self.assets.mkdir()
+        for name in ('zxs-0.1.0-x86_64-unknown-linux-gnu.tar.gz', 'web-interface-0.1.0.tar.gz'):
+            (self.assets / name).write_bytes(b'archive fixture')
+
+    def reject(self, version='0.1.0'):
+        result = subprocess.run(['bash', str(self.root / '.github/scripts/release-assemble.sh')],
+                                env=os.environ | {'RELEASE_VERSION': version}, capture_output=True)
+        self.assertNotEqual(result.returncode, 0)
+        self.assertFalse((self.assets / 'INSTALL.md').exists())
+        self.assertFalse((self.assets / 'BUILD.txt').exists())
+        self.assertFalse((self.assets / 'SHA256SUMS').exists())
+
+    def test_unexpected_hidden_entry_is_not_ignored(self):
+        (self.assets / '.unreviewed').write_text('not a release asset')
+        self.reject()
+
+    def test_unexpected_directory_is_not_ignored(self):
+        (self.assets / 'extra').mkdir()
+        self.reject()
+
+    def test_archive_symlink_cannot_read_outside_release(self):
+        archive = self.assets / 'web-interface-0.1.0.tar.gz'
+        archive.rename(self.root / 'outside')
+        archive.symlink_to(self.root / 'outside')
+        self.reject()
+
+    def test_asset_directory_symlink_cannot_redirect_outputs(self):
+        self.assets.rename(self.root / 'outside')
+        self.assets.symlink_to(self.root / 'outside', target_is_directory=True)
+        self.reject()
+
+    def test_invalid_version_is_rejected_before_metadata(self):
+        self.reject('../outside')
+
+
+if __name__ == '__main__':
+    unittest.main()

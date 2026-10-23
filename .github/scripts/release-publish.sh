@@ -15,13 +15,13 @@ cat > "$notes" <<EOF
 $marker
 ZXS $RELEASE_TAG
 
-Portable tests, source/security checks, contract checks and production WASM/browser smoke passed for $sha.
+提交 $sha 已通过可移植测试、源码与安全检查、契约检查、正式 WASM 构建及浏览器冒烟。
 
-- Linux x86_64: direct zxs daemon and minimal zxs-rescue offline utility; normal setup and administration use Web.
-- Production Web static assets, including the build manifest.
-- SMB uses the separately built Samba VFS module and the pinned native Samba SDK.
+- Linux x86_64：直接运行的 zxs 守护进程与最小离线救援工具 zxs-rescue；正常初始化和管理使用 Web。
+- 正式 Web 静态资源，包含构建清单。
+- SMB 使用单独构建的 Samba VFS 模块及固定版本的原生 Samba SDK。
 
-Read INSTALL.md and BUILD.txt; verify SHA256SUMS before installation. These checks do not replace physical-disk and live Samba acceptance or promise bit-for-bit reproducibility.
+安装前请阅读 INSTALL.md 和 BUILD.txt，并完整校验 SHA256SUMS。上述检查不能替代物理盘与真实 Samba 验收，也不承诺位级可复现。
 EOF
 if gh release view "$RELEASE_TAG" --json isDraft,body > "$existing"; then
   # Retry only our own draft for this exact source; never mutate a published release.

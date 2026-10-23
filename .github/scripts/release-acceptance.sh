@@ -9,6 +9,8 @@ trap 'rm -rf "$work"' EXIT
 mkdir "$work/server" "$work/web"
 tar -xzf "release-assets/zxs-${RELEASE_VERSION}-x86_64-unknown-linux-gnu.tar.gz" -C "$work/server"
 tar -xzf "release-assets/web-interface-${RELEASE_VERSION}.tar.gz" -C "$work/web"
+test -f "$work/server/deploy/systemd/zxs.service"
+cmp "$work/server/deploy/systemd/zxs.service" "$work/web/deploy/systemd/zxs.service"
 test -f "$work/web/public/build-manifest.json"
 test -f "$work/web/docs/release.md"
 test -f "$work/web/compliance/NOTICE.md"

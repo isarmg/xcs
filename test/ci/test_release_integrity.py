@@ -39,6 +39,12 @@ class ReleaseIntegrity(unittest.TestCase):
             self.assertEqual(result.returncode, 0, result.stderr)
         self.assertEqual(len(list((self.root / "release-assets").glob("*.tar.gz"))), 2)
 
+    def test_missing_systemd_template_rejects_incomplete_installation_material(self):
+        (self.root / "deploy/systemd/zxs.service").unlink()
+        result = self.package()
+        self.assertNotEqual(result.returncode, 0)
+        self.assertFalse((self.root / "release-assets").exists())
+
     def test_missing_rescue_binary_rejects_partial_native_release(self):
         for name in ("zxs-rescue",):
             path = self.root / "target/native/release" / name
@@ -149,7 +155,7 @@ class ReleaseIntegrity(unittest.TestCase):
             validator.verify(self.root)
 
     def test_symlinks_in_outputs_source_ancestors_materials_and_binary_fail(self):
-        for relative in ("build/web/pkg/zxs.js", "Cargo.lock", "README.md", "target/native/release/zxs"):
+        for relative in ("build/web/pkg/zxs.js", "Cargo.lock", "README.md", "deploy/systemd/zxs.service", "target/native/release/zxs"):
             path = self.root / relative
             data, mode = path.read_bytes(), path.stat().st_mode
             path.unlink()
