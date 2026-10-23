@@ -100,6 +100,12 @@ class SuiteCoverageTests(unittest.TestCase):
         self.assertEqual(calls[-1], {"tool": "node", "args": [".github/scripts/check-evidence-probes.mjs"]})
         self.assertFalse(any("--metadata" in call["args"] for call in calls))
 
+    def test_dependency_documentation_is_verified_in_static_and_source_suites(self):
+        expected = {"tool": "python3", "args": ["tools/rust-sources/documentation.py", "verify"]}
+        for name in ("static", "rust-sources"):
+            with self.subTest(suite=name):
+                self.assertEqual(self.suite(name).count(expected), 1)
+
     def test_full_source_tool_regressions_run_only_in_source_shard(self):
         full_discovery = {
             "tool": "python3",

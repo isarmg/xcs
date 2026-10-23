@@ -11,6 +11,7 @@ case "${1:-}" in
     python3 .github/scripts/check-architecture.py
     python3 tools/rust-sources/manage.py verify
     python3 tools/rust-sources/architecture.py verify
+    python3 tools/rust-sources/documentation.py verify
     python3 -m unittest discover -s test/ci -p 'test_*.py'
     python3 -m unittest discover -s test/tools/perf-check -p 'test_*.py'
     for script in .github/scripts/*.sh test/ci/*.sh; do
@@ -23,6 +24,7 @@ case "${1:-}" in
   rust-sources)
     python3 tools/rust-sources/manage.py verify --metadata
     python3 tools/rust-sources/architecture.py verify
+    python3 tools/rust-sources/documentation.py verify
     python3 -m unittest discover -s test/tools/rust-sources -p 'test_*.py' -v
     python3 -m unittest discover -s test/ci -p 'test_offline_builds.py'
     python3 -m unittest discover -s test/ci -p 'test_check_suites.py'
@@ -69,6 +71,7 @@ case "${1:-}" in
   web-production)
     python3 tools/rust-sources/manage.py verify
     python3 tools/rust-sources/architecture.py verify
+    python3 tools/rust-sources/documentation.py verify
     ZXS_WEB_BINDGEN="$(bash .github/scripts/rust-build-tool.sh wasm-bindgen)"
     export ZXS_WEB_BINDGEN
     cargo run --locked --offline -p web-build -- build --product-root .

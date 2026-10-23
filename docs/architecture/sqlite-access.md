@@ -4,6 +4,44 @@
 
 维护的 `sqlite-access` 将原 SQLx facade、查询引擎和 SQLite 驱动合为一个 Cargo 包，而非三个改名包装包。原生 `libsqlite3-sys` 继续独立，因为它负责 SQLite C 构建与原生链接契约。
 
+## 从哪一层开始
+
+产品索引应使用 [platform-io 的连接策略](../../src/platform/src/sqlite/mod.rs)，由它配置 WAL、同步级别、外键、忙等待和原生安全限制。不要把下列驱动示例当成产品数据库的初始化或恢复流程；DDL、目录权限、备份与重建仍由引擎负责。
+
+编写驱动或独立工具时，可直接使用 `sqlite_access::{Connection, SqliteConnection}`：
+
+- `SqliteConnectOptions::new().filename(path)` 接收字面文件名，适合已获得 `Path` 的调用者；`.create_if_missing(true)` 才允许创建缺失文件。
+- `SqliteConnection::connect("sqlite::memory:")` 或字符串解析适合 SQLite URI。URI 编码和字面路径不是同一种输入，不要先手工百分号编码再交给 `.filename()`。
+- `query` 执行语句，`query_scalar` 读取单列，`query_as` 映射到实现 `FromRow` 的类型（如元组）；没有 `query!` / `query_as!` 或 `FromRow` 派生宏。
+- 数据值用 `.bind()`，不要拼接进 SQL；动态查询用 `QueryBuilder::push_bind`。占位符不能替代表名或列名，标识符应来自受控的结构。
+
+以下仅创建私有内存库，需要 `sqlite-bundled`，可由任意能驱动 future 的原生执行器调用，不要求 Tokio：
+
+```rust
+use sqlite_access::{Connection, SqliteConnection};
+
+async fn sqlite_example() -> Result<(), sqlite_access::Error> {
+    let mut connection = SqliteConnection::connect("sqlite::memory:").await?;
+    sqlite_access::query("CREATE TABLE notes (id INTEGER PRIMARY KEY, title TEXT NOT NULL)")
+        .execute(&mut connection).await?;
+
+    let mut transaction = connection.begin().await?;
+    sqlite_access::query("INSERT INTO notes (title) VALUES (?1)")
+        .bind("本地文档")
+        .execute(&mut *transaction).await?;
+    transaction.commit().await?;
+
+    let title: String = sqlite_access::query_scalar("SELECT title FROM notes WHERE id = ?1")
+        .bind(1_i64)
+        .fetch_one(&mut connection).await?;
+    assert_eq!(title, "本地文档");
+    connection.close().await?;
+    Ok(())
+}
+```
+
+`&mut *transaction` 是事务内真实连接的借用。`commit()` / `rollback()` 消耗事务，嵌套 `begin()` 使用 savepoint；未完成事务在 drop 时启动回滚。`fetch_one` 无行时返回 `RowNotFound`，允许不存在时使用 `fetch_optional`。需要确定工作线程与文件句柄已关闭时应显式 `.close().await`，包括产品错误清理路径，不能仅靠 drop 后立即移动数据库文件。完整错误路径可参考上述平台实现。
+
 <a id="module-boundaries"></a>
 
 ## 模块边界
@@ -40,7 +78,7 @@ JSON、UUID、regexp、离线元数据、序列化、位向量及 IP 地址类�
 
 ## 上游来源与验证
 
-来源为 https://github.com/launchbadge/sqlx 的 `sqlx`、`sqlx-core`、`sqlx-sqlite` 0.9.0，许可 MIT OR Apache-2.0。原始 manifest、许可证与源码哈希不可变地保留在 `compliance/provenance`；多来源收据记录每份生产文件及可逆外置测试适配。原上游文档不改名。
+来源为 SQLx 的 `sqlx`、`sqlx-core`、`sqlx-sqlite` 0.9.0，许可 MIT OR Apache-2.0。原始 [README](../upstream/sqlx-0.9.0/README.md)、[FAQ](../upstream/sqlx-0.9.0/FAQ.md) 和 [crate 文档](../upstream/sqlx-0.9.0/src/lib.md)可用于理解查询与绑定；其中其他数据库、宏、迁移和运行时选择示例不是本仓库用法。原始 manifest、许可证与源码哈希不可变地保留在 `compliance/provenance`；多来源收据记录每份生产文件及可逆外置测试适配。原上游文档不改名。
 
 SQLite 范围门禁构建真实消费者并拒绝删除的 API/特性。保留 regexp 测试使用不依赖运行时的 futures 执行器和隔离内存库，无隐式 SQLx 夹具。第一方测试覆盖超时、回滚、savepoint、Unicode 行诊断、语句缓存容量/驱逐、清空及池关闭。不操作用户数据库。
 

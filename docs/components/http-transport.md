@@ -4,6 +4,45 @@
 
 `http-transport` 提供 Hyper 协议引擎和共用协议类型的 `adapters`。客户端/服务端、运行时、连接池、代理及服务适配器均由显式特性控制，基础协议配置不启用 Tokio 网络或运行时。
 
+## 何时直接使用
+
+应用路由优先使用 [http-routing](http-routing.md)，普通 HTTP 客户端使用已有 `reqwest` 消费层；只有需要管理单条连接、I/O 适配、升级或协议参数时才直接操作传输层。
+
+分层 API 不应混用：
+
+- `http::{Request, Response, HeaderMap, StatusCode}` 是协议数据类型，不创建连接。
+- `http_transport::body::Incoming` 是接收到的流式正文；发送正文可使用 [http-body](http-body.md) 的 `Full`、`Empty` 或流适配器，后者需要 `utilities` 特性。
+- `http_transport::rt::{Read, Write}` 是传输引擎 I/O 契约；Tokio 的 socket 用 `adapters::rt::TokioIo` 包装。该包装不建立 TLS，也不负责解析 URL。
+- `client::conn::http1::handshake` 需要 `client,http1`，返回发送器和连接 future；必须持续轮询连接 future 才能推进请求。`server::conn::http1::Builder` 需要 `server,http1`，`serve_connection` 同样返回必须轮询的 future。
+- `http_transport::service::Service` 与 `service_stack::Service` 是不同协议。后者有 readiness 契约，接入时用 `adapters::service::TowerToHyperService`（`service-adapter`），而不是绕过 `poll_ready` 直接调用。
+
+下面配置一条调用方已经接受的 Tokio TCP 连接，需要 `http-transport` 的 `server,http1,tokio`，以及 `http-body/utilities`。它不绑定监听地址，也不自动添加路由、TLS 或应用鉴权：
+
+```rust
+use std::{convert::Infallible, time::Duration};
+use http_body::Full;
+use http_transport::{
+    adapters::rt::{TokioIo, TokioTimer},
+    body::Bytes,
+    server::conn::http1,
+    service::service_fn,
+    Response,
+};
+
+async fn serve_connection(stream: tokio::net::TcpStream) -> Result<(), http_transport::Error> {
+    let service = service_fn(|_request| async {
+        Ok::<_, Infallible>(Response::new(Full::new(Bytes::from_static(b"ok"))))
+    });
+    http1::Builder::new()
+        .timer(TokioTimer::new())
+        .header_read_timeout(Duration::from_secs(30))
+        .serve_connection(TokioIo::new(stream), service)
+        .await
+}
+```
+
+该最小服务不读取请求体；真实上传/下载必须单独设计正文大小、背压与取消策略。不要对不受信任的流无上限 `collect()`。丢弃未完成的 HTTP/1 请求会影响整个连接，不能假定连接可复用，更不能把客户端取消视为服务端操作回滚。
+
 <a id="maintained-scope"></a>
 
 ## 维护范围
@@ -44,4 +83,4 @@ HTTP/1.1 通用升级支持 101 响应、已缓冲字节保留、后续双向 I/
 
 ## 来源
 
-主来源为 Hyper 1.12.0 和 HyperUtil 0.1.21；分派/唤醒来源分别登记。原始版本、输入哈希、许可证、源码、基准和测试路径由不可变来源目录及整合凭据维护，包括未启用 HTTP/2 实现的逐字节归档。产品原生支持范围仍仅为 Linux amd64。
+主来源为 [Hyper 1.12.0](../upstream/hyper-1.12.0/README.md) 和 [HyperUtil 0.1.21](../upstream/hyper-util-0.1.21/README.md)；后者在本仓库对应 `http_transport::adapters`。上游 README 的 HTTP/2 或独立 `hyper_util` 示例应结合本页边界阅读；分派/唤醒来源分别登记。原始版本、输入哈希、许可证、源码、基准和测试路径由不可变来源目录及整合凭据维护，包括未启用 HTTP/2 实现的逐字节归档。产品原生支持范围仍仅为 Linux amd64。

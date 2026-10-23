@@ -61,3 +61,7 @@ python3 tools/rust-sources/collect_notices.py --output /tmp/rust-notice-review
 许可收集器默认只列出待复核项；`--fetch` 才从已登记的 Git commit 获取候选通知。结果写到仓库外，由维护者审查后再追加来源材料。安全入口为 [security.sh](../../.github/scripts/security.sh)：分别扫描[独立扫描器锁](../../.github/security-tools/cargo-audit-0.22.2.lock)、产品根锁和全部活动、已合并实现的原始上游身份锁。已退役或已升级替换的旧身份保留历史收据，不冒充当前产品依赖；升级后的活动身份继续扫描，不因改名、path 化、合并或本地修改豁免漏洞、维护警告或扫描不完整。
 
 扫描器在产品工作区之外按独立审阅锁构建，安装过程核对官方源码、原始锁及精确允许的锁变化；不增加产品工作区或产品锁文件。扫描使用隔离的固定策略，当前公告与 registry/yank 状态须实时读取，不能将工具缓存或历史通过结果当作本次安全结论。安装、网络要求和证据边界见[安全扫描器说明](../../.github/security-tools/README.md)。
+
+## 依赖文档导航
+
+[依赖文档](../dependencies/README.md)按当前职责聚合本地原文、维护说明及源码 API；不把退役来源或上游已删除能力列为可用接口。`python3 tools/rust-sources/documentation.py refresh` 更新索引，`verify` 检查内容与覆盖是否过期；静态及来源门禁都执行验证。上游原件与其来源收据继续受原有完整性规则保护。
