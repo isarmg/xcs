@@ -23,7 +23,7 @@ typed-builder-macro = {version = "0.23", path = "../foundation/code-generation/t
 console_error_panic_hook = {version = "0.1", path = "../foundation/diagnostics/console_error_panic_hook"}
 gloo-events = {version = "0.2", path = "../foundation/web-runtime/gloo-events"}
 gloo-timers = { version = "0.3", path = "../foundation/web-runtime/gloo-timers" }
-futures = { version = "0.3.34", path = "../foundation/concurrency/futures", default-features = false, features = ["async-await-macro", "channel", "executor", "io", "shared-state", "sink", "std", "utilities"] }
+futures = { version = "0.3.34", path = "../foundation/concurrency/futures", default-features = false, features = ["async-await-macro", "channel", "shared-state", "std", "utilities"] }
 js-sys = {version = "=0.3.106", path = "../foundation/web-runtime/js-sys"}
 send_wrapper = {version = "0.6", path = "../foundation/concurrency/send_wrapper"}
 data-serialization = { version = "1", features = ["derive"], path = "../foundation/data-storage/data-serialization"}

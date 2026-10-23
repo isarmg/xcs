@@ -51,7 +51,7 @@ path = "../../collections/erased"
 version = "0.3.34"
 path = "../../concurrency/futures"
 default-features = false
-features = ["async-await-macro", "channel", "executor", "io", "shared-state", "sink", "std", "utilities"]
+features = ["async-await-macro", "channel", "shared-state", "std", "utilities"]
 
 [dependencies.indexmap]
 version = "2.13"

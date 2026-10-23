@@ -431,3 +431,74 @@ async fn readers_discover_historical_primary_routes_by_history_identity_and_all_
     capture_wire("backup-mixed-routes.json", &actual);
     capture_wire("backup-route-disks.json", &disks);
 }
+
+#[tokio::test]
+async fn primary_and_backup_listings_keep_directory_first_unicode_order() {
+    let root = tempfile::tempdir().unwrap();
+    let app = application(root.path());
+    let admin = login(&app, "admin", "integration-test-password").await;
+    // Publish in a deliberately different order from the display order. Each
+    // directory contains a file so it is present in the backup projection too.
+    for path in [
+        "mixed/项目.txt",
+        "mixed/z-folder/child.txt",
+        "mixed/Éclair.txt",
+        "mixed/Étage/child.txt",
+        "mixed/Beta.txt",
+        "mixed/目录/child.txt",
+        "mixed/alpha.txt",
+        "mixed/z-last.txt",
+        "mixed/A-folder/child.txt",
+    ] {
+        manager_upload(&app, &admin, path, b"sorting fixture").await;
+    }
+    let primary = listing(&app, &admin, "P01", "mixed").await;
+    let repo = primary["context"]["repository_id"].as_str().unwrap();
+    configure(&app, &admin, repo, "mixed", "Sorted", "Sorted").await;
+    let expected = json!([
+        ["directory", "A-folder"],
+        ["directory", "z-folder"],
+        ["directory", "Étage"],
+        ["directory", "目录"],
+        ["file", "alpha.txt"],
+        ["file", "Beta.txt"],
+        ["file", "z-last.txt"],
+        ["file", "Éclair.txt"],
+        ["file", "项目.txt"]
+    ]);
+    for (slot, path) in [("P01", "mixed"), ("B01", "Sorted"), ("C01", "Sorted")] {
+        let response = listing(&app, &admin, slot, path).await;
+        let order = response["entries"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(|entry| json!([entry["kind"], entry["name"]]))
+            .collect::<Vec<_>>();
+        assert_eq!(json!(order), expected, "{slot}");
+        assert_eq!(response["directory_file_count"], "9", "{slot}");
+        let child = listing(&app, &admin, slot, &format!("{path}/étage")).await;
+        assert_eq!(child["entries"].as_array().unwrap().len(), 1, "{slot}");
+        assert_eq!(child["entries"][0]["name"], "child.txt", "{slot}");
+    }
+    let entry = primary["entries"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|entry| entry["name"] == "Éclair.txt")
+        .unwrap();
+    let query = url_encoding::form::Serializer::new(String::new())
+        .append_pair("repository_id", entry["repository_id"].as_str().unwrap())
+        .append_pair("path", "MIXED/éclair.TXT")
+        .finish();
+    let file = entry["file_id"].as_str().unwrap();
+    let history = success(
+        &app,
+        &admin,
+        "GET",
+        &format!("/api/file-manager/files/{file}/history?{query}"),
+        None,
+    )
+    .await;
+    assert_eq!(history["file_id"], entry["file_id"]);
+    assert_eq!(history["version_id"], entry["version_id"]);
+}

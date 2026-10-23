@@ -22,6 +22,20 @@ def cargo(*args, capture=False):
                           capture_output=capture, text=capture)
 
 
+def check_browser_futures_features():
+    """Inspect the actual browser build graph, excluding native and test-only edges."""
+    result = cargo('tree', '--locked', '--offline', '-p', 'web-app',
+                   '--target', 'wasm32-unknown-unknown', '--edges', 'normal,build',
+                   '--prefix', 'none', '--format', '{p}|{f}', capture=True)
+    if result.returncode:
+        raise AssertionError('browser dependency graph failed: ' + result.stderr)
+    features = [set(match.group(1).split(',')) for line in result.stdout.splitlines()
+                if (match := re.match(r'^futures v[^|]*\|([^\s]*)', line))]
+    forbidden = {'executor', 'thread-pool', 'io', 'sink'}
+    if not features or any(forbidden & selected for selected in features):
+        raise AssertionError(f'browser futures acquired unused capabilities: {features}')
+
+
 def check_reactive_units():
     """Compile the retained unit fixtures with their own test dependencies."""
     with tempfile.TemporaryDirectory(prefix='reactive-unit-') as temporary:
@@ -46,6 +60,7 @@ def check_reactive_units():
 
 
 def check():
+    check_browser_futures_features()
     check_reactive_units()
     TARGET.mkdir(parents=True, exist_ok=True)
     with tempfile.TemporaryDirectory(prefix='csr-scope-', dir=ROOT / 'target') as temporary:

@@ -316,7 +316,7 @@ queue_warning_seconds = 30
 
 `verification_mode` 是默认服务端校验模式，保留的受控 HTTP 客户端库支持完整性验证，产品 CLI 不提供正文传输或验证协商入口；SMB 客户端不需要实现本系统校验协议，由服务端在返回字节前校验。段参数仅对新版本生效；读取旧版本时以其描述为准。容量阈值与校验段默认值都是待实测的初始配置，不能宣称为适合所有设备的最优参数。
 
-项目未正式发布，只实现当前唯一存储格式，不提供可配置的旧格式读取列表或兼容分支。格式修改必须同步更新写入、恢复、校验和测试向量，不自动迁移真实数据。resource_limits 与 observability 的数值、计费口径和超限动作见[第 19.9 节](19-capacity-and-performance.md#s19-09)及[第 19.10 节](19-capacity-and-performance.md#s19-10)。告警秒数不是提交取消期限。
+只实现当前唯一存储格式，不提供可配置的旧格式读取列表或兼容分支。格式修改必须同步更新写入、恢复、校验和测试向量，不自动迁移真实数据。resource_limits 与 observability 的数值、计费口径和超限动作见[第 19.9 节](19-capacity-and-performance.md#s19-09)及[第 19.10 节](19-capacity-and-performance.md#s19-10)。告警秒数不是提交取消期限。
 
 <a id="s21-03"></a>
 

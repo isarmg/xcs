@@ -258,7 +258,7 @@ fn snapshot(state: &mut State, repository: &str, path: &str) -> Result<String> {
         .as_ref()
         .and_then(|id| state.directory_trees.get(id))
         && old.path == path
-        && canonical_json(&old.entries)? == canonical_json(&entries)?
+        && old.entries == entries
         && old.file_contexts == file_contexts
         && old.file_branches == files
         && old.inherited_files == inherited_files
@@ -505,6 +505,14 @@ pub(crate) fn namespace_locations(
     principal: &str,
     operation: &str,
 ) -> Result<()> {
+    // Workspace entries may not be sorted yet. Keep the first path match,
+    // just like `find`, without rescanning all siblings for every file.
+    let mut after_by_path = BTreeMap::new();
+    for entry in after {
+        after_by_path
+            .entry(entry.lookup_key.as_str())
+            .or_insert(entry);
+    }
     let original_contexts = before
         .iter()
         .filter(|e| e.kind == "file")
@@ -560,7 +568,7 @@ pub(crate) fn namespace_locations(
             renamed = true;
         }
         if !deleted
-            && let Some(current) = find(after, &moved.path).filter(|e| {
+            && let Some(current) = after_by_path.get(moved.lookup_key.as_str()).filter(|e| {
                 e.kind == "file" && e.entry_id == old.entry_id && e.file_id == old.file_id
             })
         {
@@ -901,7 +909,7 @@ pub(crate) fn select_change(
         && state.directory_tree_selections.get(&selected.directory_id)
             == Some(&selected.head_tree_id)
         && contexts_match
-        && canonical_json(&old_entries)? == canonical_json(&restored)?
+        && old_entries == restored
     {
         return Ok(
             json!({"directory_branch_id":branch_id,"branch_id":repo.main_branch_id,"commit_id":previous.commit_id,"no_change":true,"count":selected.file_branches.len().to_string()}),

@@ -67,3 +67,46 @@ fn selected_file_history_read_requires_an_active_session() {
         }
     });
 }
+
+#[test]
+fn a_failed_disk_refresh_invalidates_readiness_without_discarding_cached_rows() {
+    Owner::new().with(|| {
+        for disks in [
+            vec![],
+            vec![crate::files::model::Disk {
+                slot_id: "P01".into(),
+                online: true,
+                writable: true,
+                available_bytes: 4096,
+            }],
+        ] {
+            let state = RwSignal::new(State {
+                authenticated: true,
+                ..Default::default()
+            });
+            state.update(|s| {
+                s.files.disks = disks.clone();
+                s.files.disks_loaded = true;
+            });
+            fail_disk_load(
+                state,
+                api::Error {
+                    status: 503,
+                    code: "UNAVAILABLE".into(),
+                    message: "Transient disk listing failure".into(),
+                    retryable: true,
+                    request_id: None,
+                },
+            );
+            state.with_untracked(|s| {
+                assert!(
+                    !s.files.disks_loaded,
+                    "a later health poll must retry this read"
+                );
+                assert_eq!(s.files.disks, disks);
+                assert!(s.session_active());
+                assert_eq!(s.errors.len(), 1);
+            });
+        }
+    });
+}

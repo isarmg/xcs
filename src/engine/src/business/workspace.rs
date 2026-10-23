@@ -1163,13 +1163,18 @@ impl Engine {
                 let mut entries = current.entries.clone();
                 let commit_id = new_id("commit");
                 let mut written_files = Vec::new();
+                let mut written_paths = Vec::new();
                 for file in w.files.values() {
                     let existing = find(&entries, &file.path).cloned();
+                    // An insensitive lookup is not a rename. Keep the existing
+                    // display path; explicit namespace operations own renames.
+                    let path = existing.as_ref().map(|entry| entry.path.as_str()).unwrap_or(&file.path);
+                    written_paths.push(path.to_owned());
                     let file_id = existing.as_ref().map(|entry| entry.file_id.clone()).unwrap_or_else(|| new_id("file"));
-                    super::directory::prepare_file_write(engine,state,&w.branch_id,&file_id,&file.path,&request.principal,&request.operation_id)?;
-                    let file_context=directory::branch_context_at(state,&w.branch_id,&file.path);
+                    super::directory::prepare_file_write(engine,state,&w.branch_id,&file_id,path,&request.principal,&request.operation_id)?;
+                    let file_context=directory::branch_context_at(state,&w.branch_id,path);
                     let pending_source = file_context.as_ref().and_then(|c|state.branches.get(&c.branch_id)).and_then(|b|b.pending_file_versions.get(&file_id)).cloned()
-                        .or_else(||directory::unwritten_source_at(state,&w.branch_id,&file.path).map(str::to_owned));
+                        .or_else(||directory::unwritten_source_at(state,&w.branch_id,path).map(str::to_owned));
                     // A first write is a new branch-owned version even when its
                     // bytes equal the source or are genuinely empty.
                     if pending_source.is_none() && existing.as_ref().is_some_and(|entry| {
@@ -1178,17 +1183,17 @@ impl Engine {
                     }) {
                         continue;
                     }
-                    ensure_parents(&mut entries, &file.path)?;
+                    ensure_parents(&mut entries, path)?;
                     let source_ids:Vec<String> = pending_source.as_ref().cloned()
                         .or_else(|| existing.as_ref().map(|entry| entry.version_id.clone()))
                         .into_iter().collect();
                     let (primary, copies) = if let Some(placement) = wire.as_ref().and_then(|wire| wire.placements.get(&file.item_id)).cloned() {
                         placement
                     } else {
-                        engine.new_file_placement_for_file(&repo.repository_id,Some(&file_id), &file.path)?
+                        engine.new_file_placement_for_file(&repo.repository_id,Some(&file_id), path)?
                     };
                     let version = engine.build_version(
-                        state, pending, crate::business::VersionBuild { history: &branch.history_tree_id, file_id: &file_id, path: &file.path, source: &file.source_path, primary: &primary, copies, source_ids: source_ids.clone(), checkpoint: pending_source.is_some() },
+                        state, pending, crate::business::VersionBuild { history: &branch.history_tree_id, file_id: &file_id, path, source: &file.source_path, primary: &primary, copies, source_ids: source_ids.clone(), checkpoint: pending_source.is_some() },
                     )?;
                     if version.logical_size != file.size || version.content_hash != file.content_hash {
                         return Err(Error::new("CHECKSUM_MISMATCH", "workspace source changed after sealing"));
@@ -1197,24 +1202,24 @@ impl Engine {
                         file_paths::source_node(state,&file_id,source_ids.first().map(String::as_str).unwrap_or(""),node)?;
                         state.file_node_parents.insert(version.version_id.clone(),vec![node.clone()]);
                     }
-                    if let Some(repo)=state.repositories.values().find(|r|r.main_branch_id==w.branch_id)&& let Some(context)=state.file_contexts.get_mut(&directory::context_key(&repo.repository_id,&file.path)){context.node_id=None;}
+                    if let Some(repo)=state.repositories.values().find(|r|r.main_branch_id==w.branch_id)&& let Some(context)=state.file_contexts.get_mut(&directory::context_key(&repo.repository_id,path)){context.node_id=None;}
                     let entry = Entry {
                         entry_id: existing.as_ref().map(|entry| entry.entry_id.clone()).unwrap_or_else(|| file.item_id.clone()),
-                        path: file.path.clone(), name: file.path.rsplit('/').next().unwrap_or("").into(),
-                        lookup_key: name_policy::path_key(&file.path), kind: "file".into(),
+                        path: path.into(), name: path.rsplit('/').next().unwrap_or("").into(),
+                        lookup_key: name_policy::path_key(path), kind: "file".into(),
                         file_id: file_id.clone(), version_id: version.version_id, size: version.logical_size,
                     };
                     entries.retain(|previous| previous.lookup_key != entry.lookup_key);
                     entries.push(entry);
-                    state.file_locations.entry(file_id.clone()).or_insert_with(||file.path.clone());
-                    state.file_names.entry(file_id.clone()).or_insert_with(||file.path.rsplit('/').next().unwrap_or("").into());
+                    state.file_locations.entry(file_id.clone()).or_insert_with(||path.to_owned());
+                    state.file_names.entry(file_id.clone()).or_insert_with(||path.rsplit('/').next().unwrap_or("").into());
                     written_files.push(file_id);
                 }
                 let renamed_directories=directory::prepare_renamed_directories(state,&repo.repository_id,&current.entries,&w.namespace_operations)?;
                 apply_workspace_namespace(&mut entries, &current.entries, &w.namespace_operations)?;
                 super::directory::namespace_locations(state,&repo.repository_id,&current.entries,&entries,&w.namespace_operations,&request.principal,&request.operation_id)?;
                 validate_entries(&mut entries, engine.config.max_entries)?;
-                if canonical_json(&entries)? == canonical_json(&current.entries)? {
+                if entries == current.entries {
                     return Ok(json!({"commit_id":current.commit_id,"branch_id":branch.branch_id,"history_tree_id":branch.history_tree_id,"no_change":true}));
                 }
                 let live_files = entries.iter().filter(|entry| entry.kind == "file")
@@ -1237,8 +1242,8 @@ impl Engine {
                         super::file::publish_selected_file_at(state,&w.branch_id,Some(&path),&request.principal,&request.operation_id)?;
                     }
                 } else if repo.main_branch_id == w.branch_id {
-                    super::file::synchronize_directory_edits(state, &commit_id, &w.files.values().map(|f|f.path.clone()).collect::<Vec<_>>(), &request.principal, &request.operation_id)?;
-                    let changed_paths = w.files.values().map(|f|f.path.clone())
+                    super::file::synchronize_directory_edits(state, &commit_id, &written_paths, &request.principal, &request.operation_id)?;
+                    let changed_paths = written_paths.into_iter()
                         .chain(w.namespace_operations.iter().flat_map(|n| std::iter::once(n.path.clone()).chain(n.destination.clone())))
                         .chain(renamed_directories)
                         .collect::<Vec<_>>();

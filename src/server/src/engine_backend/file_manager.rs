@@ -275,8 +275,9 @@ pub(super) fn directory_branch_scopes(
     if let Some(path) = requested_path.filter(|path| !path.is_empty()) {
         name_policy::validate_path(path).map_err(ApiError::invalid)?;
     }
-    let requested_directory_id = requested_path.and_then(|path| {
-        if path.is_empty() {
+    let requested_key = requested_path.map(name_policy::path_key);
+    let requested_directory_id = requested_key.as_ref().and_then(|key| {
+        if key.is_empty() {
             return Some(repo.to_owned());
         }
         let namespace = engine.state().branches.get(&repository.main_branch_id)?;
@@ -286,9 +287,7 @@ pub(super) fn directory_branch_scopes(
             .get(&namespace.head_commit_id)?
             .entries
             .iter()
-            .find(|entry| {
-                entry.kind == "directory" && entry.lookup_key == name_policy::path_key(path)
-            })
+            .find(|entry| entry.kind == "directory" && entry.lookup_key == *key)
             .map(|entry| entry.entry_id.clone())
     });
     let mut scopes = engine
@@ -297,9 +296,9 @@ pub(super) fn directory_branch_scopes(
         .values()
         .filter(|branch| {
             branch.repository_id == repo
-                && requested_path.is_none_or(|path| {
+                && requested_key.as_ref().is_none_or(|key| {
                     requested_directory_id.as_ref().map_or_else(
-                        || name_policy::path_key(&branch.path) == name_policy::path_key(path),
+                        || name_policy::path_key(&branch.path) == *key,
                         |directory| &branch.directory_id == directory,
                     )
                 })
@@ -375,10 +374,11 @@ fn entries(engine: &Engine, identity: &Identity, input: &Value) -> Result<Value,
             default_branch_scope = within.is_empty();
             writable = authorize(identity, &repo, true, false).is_ok();
             let tree = engine.list_tree(&repo.main_branch_id).map_err(error)?;
+            let within_key = name_policy::path_key(&within);
             if !within.is_empty()
-                && !tree.iter().any(|e| {
-                    e.lookup_key == name_policy::path_key(&within) && e.kind == "directory"
-                })
+                && !tree
+                    .iter()
+                    .any(|e| e.lookup_key == within_key && e.kind == "directory")
             {
                 return Err(ApiError::new(
                     404,
@@ -402,7 +402,7 @@ fn entries(engine: &Engine, identity: &Identity, input: &Value) -> Result<Value,
             let selected_prefix = if within.is_empty() {
                 String::new()
             } else {
-                format!("{}/", name_policy::path_key(&within))
+                format!("{within_key}/")
             };
             directory_file_count = tree
                 .iter()
@@ -430,17 +430,15 @@ fn entries(engine: &Engine, identity: &Identity, input: &Value) -> Result<Value,
         Err(error) if root && matches!(error.status, 403 | 404) => {}
         Err(error) => return Err(error),
     }
-    // Directory-first stable ordering follows the source browser's comparison
-    // contract and deterministic name tiebreaker without filesystem disclosure.
-    values.sort_by(|a, b| {
-        let dir = |v: &Value| if v["kind"] == "directory" { 0 } else { 1 };
-        dir(a)
-            .cmp(&dir(b))
-            .then_with(|| {
-                name_policy::lookup_key(a["name"].as_str().unwrap_or(""))
-                    .cmp(&name_policy::lookup_key(b["name"].as_str().unwrap_or("")))
-            })
-            .then_with(|| a["name"].as_str().cmp(&b["name"].as_str()))
+    // Preserve directory-first ordering and the exact display-name tiebreaker,
+    // but normalize once per entry rather than on every comparison under the engine lock.
+    values.sort_by_cached_key(|entry| {
+        let name = entry["name"].as_str();
+        (
+            entry["kind"] != "directory",
+            name_policy::lookup_key(name.unwrap_or_default()),
+            name.map(str::to_owned),
+        )
     });
     Ok(
         json!({"slot_id":slot,"path":value,"writable":writable,"entries":values,"context":context,"directory_file_count":directory_file_count.to_string(),"directory_branches":directory_branches,"directory_branches_supported":directory_branches_supported,"default_branch_scope":default_branch_scope}),
@@ -470,13 +468,12 @@ fn file_history(engine: &Engine, identity: &Identity, input: &Value) -> Result<V
                 "file is not present in this repository context",
             ));
         }
+        let key = name_policy::path_key(path);
         Some(
             entries
                 .iter()
                 .find(|entry| {
-                    entry.kind == "file"
-                        && entry.file_id == file
-                        && entry.lookup_key == name_policy::path_key(path)
+                    entry.kind == "file" && entry.file_id == file && entry.lookup_key == key
                 })
                 .cloned()
                 .ok_or_else(|| {
@@ -492,9 +489,10 @@ fn file_history(engine: &Engine, identity: &Identity, input: &Value) -> Result<V
             .file_locations
             .get(file)
             .and_then(|path| {
-                entries.iter().find(|entry| {
-                    entry.file_id == file && entry.lookup_key == name_policy::path_key(path)
-                })
+                let key = name_policy::path_key(path);
+                entries
+                    .iter()
+                    .find(|entry| entry.file_id == file && entry.lookup_key == key)
             })
             .cloned()
             .or_else(|| entries.into_iter().find(|entry| entry.file_id == file))

@@ -34,6 +34,38 @@ class ReactiveCsrScope(unittest.TestCase):
             timers = self.manifest('src/' + package)['dependencies']['gloo-timers']
             self.assertNotIn('futures', timers.get('features', []))
 
+    def test_browser_futures_keep_executor_in_development_only(self):
+        for package in ('src/interface', 'src/foundation/web-runtime/view-renderer',
+                        'src/foundation/web-runtime/reactive-state'):
+            dependency = self.manifest(package)['dependencies']['futures']
+            self.assertFalse(dependency['default-features'])
+            self.assertFalse({'executor', 'thread-pool', 'io', 'sink'} & set(dependency['features']))
+        reactive = self.manifest('src/foundation/web-runtime/reactive-state')
+        self.assertEqual(reactive['dev-dependencies']['futures']['features'], ['executor'])
+
+    def test_browser_feature_gate_checks_target_graph_and_rejects_leaks(self):
+        spec = importlib.util.spec_from_file_location('csr_gate', ROOT / '.github/scripts/check-csr-scope.py')
+        gate = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(gate)
+        prefix = 'futures v0.3.34 (/source/futures)|'
+        selected = 'alloc,async-await,async-await-macro,channel,shared-state,std,utilities'
+        with mock.patch.object(gate, 'cargo') as cargo:
+            cargo.return_value = subprocess.CompletedProcess([], 0, prefix + selected + '\n', '')
+            gate.check_browser_futures_features()
+            cargo.assert_called_once_with(
+                'tree', '--locked', '--offline', '-p', 'web-app', '--target', 'wasm32-unknown-unknown',
+                '--edges', 'normal,build', '--prefix', 'none', '--format', '{p}|{f}', capture=True)
+            for feature in ('executor', 'thread-pool', 'io', 'sink'):
+                with self.subTest(feature=feature):
+                    cargo.return_value = subprocess.CompletedProcess([], 0, prefix + selected + ',' + feature, '')
+                    with self.assertRaises(AssertionError):
+                        gate.check_browser_futures_features()
+            for result in (subprocess.CompletedProcess([], 0, '', ''),
+                           subprocess.CompletedProcess([], 1, prefix + selected, 'resolution failed')):
+                cargo.return_value = result
+                with self.assertRaises(AssertionError):
+                    gate.check_browser_futures_features()
+
     def test_retained_unit_gate_uses_real_tests_and_test_only_builder(self):
         manifest = self.manifest('src/foundation/web-runtime/reactive-state')
         self.assertNotIn('typed-builder', manifest['dependencies'])

@@ -82,10 +82,9 @@ impl Engine {
             let d = self.disk(slot)?;
             validate_seal(&self.config, d)?;
             let free = available(&d.root)?;
-            let used = self.used_bytes(slot);
             let budget = d
                 .capacity_bytes
-                .map(|limit| limit.saturating_sub(used))
+                .map(|limit| limit.saturating_sub(self.used_bytes(slot)))
                 .unwrap_or(u64::MAX);
             if bytes.saturating_add(self.config.metadata_reserve_bytes) > free || *bytes > budget {
                 return Err(Error::new(

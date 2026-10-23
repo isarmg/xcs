@@ -408,3 +408,122 @@ fn a_directory_created_after_workspace_open_still_fences_new_file_staging() {
         "DIRECTORY_BRANCH_CONFLICT"
     );
 }
+
+#[test]
+fn content_save_with_equivalent_spelling_preserves_the_existing_display_path() {
+    for (original_path, lookup_path) in [
+        ("Report.TXT", "report.txt"),
+        ("Folder/Straße.txt", "FOLDER/STRASSE.txt"),
+    ] {
+        let (temporary, mut e, r) = fixture();
+        save(&mut e, &r, original_path, b"before");
+        let original = entries(&e, &r)[original_path].clone();
+        save(&mut e, &r, lookup_path, b"after");
+        let current = entries(&e, &r)[original_path].clone();
+        assert_eq!(current.file_id, original.file_id);
+        assert_eq!(current.entry_id, original.entry_id);
+        assert_ne!(current.version_id, original.version_id);
+        assert_eq!(body(&e, &current.version_id), b"after");
+        assert_eq!(e.state().file_locations[&current.file_id], original_path);
+        assert_eq!(e.state().file_names[&current.file_id], original.name);
+        assert_eq!(
+            e.state().versions[&current.version_id].creation_name,
+            original.name
+        );
+        assert!(e.state().file_path_nodes.is_empty());
+        let selected = &e.state().file_selections[&current.file_id];
+        assert!(e.list_tree(selected).unwrap().iter().any(|entry| {
+            entry.file_id == current.file_id && entry.version_id == current.version_id
+        }));
+        let versions = e.state().versions.len();
+        save(&mut e, &r, lookup_path, b"after");
+        assert_eq!(e.state().versions.len(), versions);
+        assert_eq!(entries(&e, &r)[original_path], current);
+        drop(e);
+        let mut e = Engine::open(&temporary.path().join("system")).unwrap();
+        assert_eq!(entries(&e, &r)[original_path], current);
+        // Explicit equivalent-key renames remain real metadata changes.
+        e.file_namespace(
+            &r.repository_id,
+            NamespaceOperation {
+                kind: "rename".into(),
+                path: original_path.into(),
+                destination: Some(lookup_path.into()),
+            },
+            "admin",
+            &new_id("op"),
+        )
+        .unwrap();
+        assert_eq!(entries(&e, &r)[lookup_path].version_id, current.version_id);
+        assert!(e.state().file_path_nodes.values().any(|node| {
+            node.file_id == current.file_id
+                && node.path == lookup_path
+                && node.version_id == current.version_id
+        }));
+    }
+}
+
+#[test]
+fn namespace_bookkeeping_uses_paths_and_keeps_the_first_match_in_unsorted_entries() {
+    let mut state = State::default();
+    let mut before = Vec::new();
+    for (path, file) in [
+        ("Z.txt", "shared"),
+        ("A.txt", "shared"),
+        ("Gone.txt", "removed"),
+    ] {
+        let key = name_policy::path_key(path);
+        before.push(Entry {
+            entry_id: path.into(),
+            path: path.into(),
+            name: path.into(),
+            lookup_key: key.clone(),
+            kind: "file".into(),
+            file_id: file.into(),
+            version_id: "version".into(),
+            size: 1,
+        });
+        state.file_contexts.insert(
+            format!("repo/{key}"),
+            FileContext {
+                node_id: Some(format!("node-{path}")),
+                selection_generation: 7,
+                branch_id: format!("branch-{path}"),
+                inherited_from: Some("inherited".into()),
+            },
+        );
+        state.file_selections.insert(file.into(), "branch".into());
+        state
+            .file_write_origins
+            .insert(file.into(), "inherited".into());
+    }
+    let mut after = vec![before[0].clone(), before[1].clone(), before[0].clone()];
+    after[0].version_id = "updated".into();
+    // A later same-key entry must not shadow the original match before
+    // namespace validation rejects duplicates at the caller.
+    after[2].entry_id = "different".into();
+    let expected = state.file_contexts.clone();
+    super::directory::namespace_locations(
+        &mut state,
+        "repo",
+        &before,
+        &after,
+        &[NamespaceOperation {
+            kind: "delete".into(),
+            path: "Gone.txt".into(),
+            destination: None,
+        }],
+        "admin",
+        "op",
+    )
+    .unwrap();
+    assert_eq!(state.file_contexts.len(), 2);
+    for key in ["repo/z.txt", "repo/a.txt"] {
+        assert_eq!(state.file_contexts.get(key), expected.get(key));
+    }
+    assert!(state.file_selections.contains_key("shared"));
+    assert!(state.file_write_origins.contains_key("shared"));
+    assert!(!state.file_selections.contains_key("removed"));
+    assert!(!state.file_write_origins.contains_key("removed"));
+    assert!(state.file_path_nodes.is_empty());
+}

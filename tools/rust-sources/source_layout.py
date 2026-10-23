@@ -1,7 +1,8 @@
 """Authenticated, identity-preserving foundation root layout.
 
 A layout is a live-filesystem projection, not an archive or compatibility tree.
-Old proof readers consume present bytes after reversing only recorded path edits.
+Old proof readers consume present bytes after reversing layout path edits.
+Evolved manifests retain their current non-path contents, not a frozen snapshot.
 History objects and source/origin labels are never translated.
 """
 from contextlib import contextmanager
@@ -437,7 +438,13 @@ class Layout:
             if path.startswith(prefix) and package['files_sha256'].get(path[len(prefix):]) != digest(data):
                 raise ValueError('upgraded logical source differs from authenticated current inventory: ' + path)
         if path in self.edits and not any(path.startswith(self.reverse[d] + '/') for d in self.upgraded_owners):
-            data = inverse(path, data, self.edits[path], self.moves)
+            edit = self.edits[path]
+            if PurePosixPath(path).name == 'Cargo.toml' and digest(data) != edit['after_sha256']:
+                # Ordinary manifest maintenance changes current bytes, not the
+                # immutable installation. Expose those edits to old proof readers.
+                data = rewrite(self.current_path(path), data, self.reverse)
+            else:
+                data = inverse(path, data, edit, self.moves)
         return data
 
     def inventory(self, directory):
@@ -471,6 +478,13 @@ class Layout:
         if self.corrections is not None:
             sha = self.corrections.project_hash(path, sha)
         edit = self.edits.get(path)
+        if edit is not None and PurePosixPath(path).name == 'Cargo.toml' and sha != edit['after_sha256']:
+            target = safe(self.root, self.current_path(path))
+            if not target.is_file() or target.stat().st_size > MAX_FILE_BYTES:
+                raise ValueError('missing or oversized live layout manifest: ' + path)
+            # Never replace a stale catalog hash with the latest filesystem hash.
+            if digest(target.read_bytes()) == sha:
+                return digest(self.read(path))
         return edit['before_sha256'] if edit is not None and sha == edit['after_sha256'] else sha
 
     def _project_package(self, package):
@@ -737,7 +751,12 @@ class Layout:
         if foundation_tests.exists() and self.inventory('test/foundation') != {p: sha for p, sha in all_external.items() if p.startswith('test/foundation/')}:
             raise ValueError('layout unattributed external foundation file')
         for path in self.edits:
-            self.read(path)
+            # Installation still certifies exact path-only changes, including
+            # manifests outside package inventories such as the root workspace.
+            target = safe(self.root, self.current_path(path))
+            if not target.is_file() or target.stat().st_size > MAX_FILE_BYTES:
+                raise ValueError('missing or oversized live layout file: ' + path)
+            inverse(path, target.read_bytes(), self.edits[path], self.moves)
         for directory, row in self.receipt['stationary_owners'].items():
             if (previous['packages'].get(directory) != row['package']
                     or [p for p in previous.get('merges', []) if p['directory'] == directory] != row['merged_packages']):

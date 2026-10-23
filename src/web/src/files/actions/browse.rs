@@ -26,11 +26,18 @@ pub(crate) fn load_disks(state: RwSignal<State>) {
                 s.files.disks = value;
                 s.files.disks_loaded = true;
             }),
-            Err(error) => fail(state, error),
+            Err(error) => fail_disk_load(state, error),
         }
         state.update(|s| s.files.loading_disks = false);
     });
 }
+fn fail_disk_load(state: RwSignal<State>, error: api::Error) {
+    // Preserve the last rows, but let healthy status polling retry a failed
+    // initial read or a failed refresh after storage recovery.
+    state.update(|s| s.files.disks_loaded = false);
+    fail(state, error);
+}
+
 pub(crate) fn open_disk(state: RwSignal<State>, slot: String) {
     state.update(|s| {
         s.page = crate::ui::Page::Files;

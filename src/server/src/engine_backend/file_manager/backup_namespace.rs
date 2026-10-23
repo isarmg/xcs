@@ -246,16 +246,13 @@ pub(super) fn entries(
         .filter(|(key, _)| key.starts_with(&prefix) && !key[prefix.len()..].contains('/'))
         .map(|(_, entry)| entry)
         .collect::<Vec<_>>();
-    values.sort_by(|left, right| {
-        let rank = |entry: &Value| if entry["kind"] == "directory" { 0 } else { 1 };
-        rank(left)
-            .cmp(&rank(right))
-            .then_with(|| {
-                name_policy::lookup_key(left["name"].as_str().unwrap_or_default()).cmp(
-                    &name_policy::lookup_key(right["name"].as_str().unwrap_or_default()),
-                )
-            })
-            .then_with(|| left["name"].as_str().cmp(&right["name"].as_str()))
+    values.sort_by_cached_key(|entry| {
+        let name = entry["name"].as_str();
+        (
+            entry["kind"] != "directory",
+            name_policy::lookup_key(name.unwrap_or_default()),
+            name.map(str::to_owned),
+        )
     });
     Ok(
         json!({"slot_id":slot,"path":path,"backup":true,"writable":false,"entries":values,"context":null,"directory_file_count":file_count.to_string(),"directory_branches":[],"directory_branches_supported":false,"default_branch_scope":false}),

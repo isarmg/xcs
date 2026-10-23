@@ -439,7 +439,6 @@ name = "futures"
 version = "0.3.34"
 dependencies = [
  "futures-macro",
- "memchr",
  "pin-project-lite",
  "slab",
 ]

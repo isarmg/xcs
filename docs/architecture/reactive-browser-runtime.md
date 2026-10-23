@@ -10,6 +10,8 @@
 
 工作区固定稳定版 Rust，支持 `.get()`、`.set()` 和稳定闭包转换；不提供 nightly signal 调用简写、服务端 hydration 或 subsecond 热重载模式。响应式图/owner、DOM 渲染和应用组件继续分开，各自具有独立的行为与测试契约。
 
+生产浏览器依赖只开启实际使用的 futures 异步工具、通道和共享状态，不启用其本地执行器、I/O 或 Sink 组合器。任务调度仍走统一浏览器执行器；`reactive-state` 文档测试需要的本地 executor 仅作为开发依赖，不能泄漏到 `web-app` 的正常构建图。CSR 门禁检查真实 WASM 依赖特性闭包。
+
 ## 状态读取与派生
 
 `RwSignal` 是 owner 管理的 arena 值，`ArcRwSignal` 是引用计数值。二者都使用 `reactive_state::prelude` 中的 trait 方法：`.get()` 读取并克隆，`.with(...)` 在借用期间读取，`.set(...)` 替换，`.update(...)` 原地修改并通知依赖。不需要建立响应式依赖时，使用相应 `*_untracked` 读取。不要跨 `.await` 保留 read/write guard。

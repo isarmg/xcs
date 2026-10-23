@@ -84,6 +84,14 @@ fn accept(model: &mut Model, value: &Value) {
     model.recovering = value["storage"]["recovering"] == true;
     model.failure = None;
 }
+fn needs_disk_refresh(state: &State, was_readable: bool) -> bool {
+    state.session_active()
+        && state.management.storage.readable()
+        // An authorized account may legitimately have no visible disks.
+        // Only an unfetched listing or restored storage needs an automatic read.
+        && (!was_readable || !state.files.disks_loaded)
+}
+
 pub(crate) fn load(state: RwSignal<State>) {
     let Some((epoch, generation)) = state
         .try_update(|s| {
@@ -127,9 +135,7 @@ pub(crate) fn load(state: RwSignal<State>) {
                     // A successful status check resolves the retry admission fence,
                     // not any outstanding data mutation's outcome.
                     s.management.retry_unknown = false;
-                    load_files = s.session_active()
-                        && s.management.storage.readable()
-                        && (!was_readable || s.files.disks.is_empty());
+                    load_files = needs_disk_refresh(s, was_readable);
                     if !s.management.storage.readable()
                         && matches!(s.page, crate::ui::Page::Files | crate::ui::Page::Details)
                     {

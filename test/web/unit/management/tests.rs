@@ -102,3 +102,57 @@ fn status_reads_wait_until_storage_retry_settles() {
         });
     });
 }
+
+#[test]
+fn an_empty_authorized_disk_list_does_not_poll_again_after_each_health_check() {
+    let mut state = State {
+        authenticated: true,
+        ..Default::default()
+    };
+    state.management.storage = Storage::Ready;
+    assert!(
+        needs_disk_refresh(&state, true),
+        "initial listing is still required"
+    );
+    state.files.disks_loaded = true;
+    for _ in 0..12 {
+        accept(
+            &mut state.management,
+            &json!({"authentication":"ready", "storage":{"state":"ready"}}),
+        );
+        assert!(
+            !needs_disk_refresh(&state, true),
+            "a successful empty listing is not an unfetched listing"
+        );
+    }
+}
+
+#[test]
+fn failed_disk_reads_retry_and_storage_recovery_refreshes_loaded_disks() {
+    let mut state = State {
+        authenticated: true,
+        ..Default::default()
+    };
+    state.management.storage = Storage::Ready;
+    // A failed first request does not mark the listing loaded.
+    assert!(needs_disk_refresh(&state, true));
+    state.files.disks_loaded = true;
+    for storage in [Storage::Ready, Storage::ReadOnly] {
+        state.management.storage = storage;
+        assert!(
+            needs_disk_refresh(&state, false),
+            "recovery refreshes even an empty list"
+        );
+    }
+    for storage in [
+        Storage::Unknown,
+        Storage::Unavailable,
+        Storage::RecoveryRequired,
+    ] {
+        state.management.storage = storage;
+        assert!(!needs_disk_refresh(&state, false));
+    }
+    state.management.storage = Storage::Ready;
+    state.authenticated = false;
+    assert!(!needs_disk_refresh(&state, false));
+}
