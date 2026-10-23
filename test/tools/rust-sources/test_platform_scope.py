@@ -20,7 +20,8 @@ class PlatformScope(unittest.TestCase):
             {("root-native", manager.NATIVE_TARGET), ("web", manager.WEB_TARGET),
              ("smb", manager.NATIVE_TARGET), ("build-tools", manager.NATIVE_TARGET),
              ("validation-tools", manager.NATIVE_TARGET), ("sqlite-pool-validation", manager.NATIVE_TARGET),
-             ("schema-async-validation", manager.NATIVE_TARGET)},
+             ("schema-async-validation", manager.NATIVE_TARGET),
+             ("optional-macro-validation", manager.NATIVE_TARGET)},
         )
 
     def test_sqlite_pool_validation_matches_the_real_retained_capability(self):
@@ -58,6 +59,22 @@ class PlatformScope(unittest.TestCase):
         self.assertNotIn("async-trait", renderer.get("dependencies", {}))
         gate = (ROOT / ".github/scripts/check-schema-validation.py").read_text()
         self.assertIn("resolve-async,jsonb-testkit,arbitrary-precision", gate)
+
+    def test_optional_macro_validation_is_not_a_default_product_member(self):
+        policy = manager.read_json(ROOT / manager.POLICY)
+        optional = next(profile for profile in policy["profiles"]
+                        if profile["id"] == "optional-macro-validation")
+        members = ["src/foundation/diagnostics/tracing-attributes",
+                   "src/foundation/networking/axum-macros"]
+        self.assertEqual(optional["manifests"], [path + "/Cargo.toml" for path in members])
+        self.assertEqual(optional["targets"], [manager.NATIVE_TARGET])
+        self.assertEqual(optional["role"], "compile")
+        self.assertIs(optional["production"], False)
+        workspace = tomllib.loads((ROOT / "Cargo.toml").read_text())["workspace"]
+        for member in members:
+            self.assertIn(member, policy["verification_members"])
+            self.assertIn(member, workspace["members"])
+            self.assertNotIn(member, workspace["default-members"])
 
     def test_linux_uapi_preserves_every_amd64_feature_and_binding(self):
         directory = ROOT / "src/foundation/platform/linux-raw-sys"
