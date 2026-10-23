@@ -458,10 +458,10 @@ fn apply(
                         moved = existing.clone();
                     } else {
                         let new_file = new_id("file");
-                        let (source_path, _) = engine.valid_replica(&member.version_id)?;
+                        let (source_path, original) = engine.valid_replica(&member.version_id)?;
                         let (primary, count) =
                             engine.new_file_placement(repository, &moved.path)?;
-                        let version = engine.build_version(
+                        let version = engine.build_copied_version(
                             state,
                             pending,
                             crate::business::VersionBuild {
@@ -474,6 +474,7 @@ fn apply(
                                 source_ids: Vec::new(),
                                 checkpoint: true,
                             },
+                            &original,
                         )?;
                         moved.entry_id = new_id("entry");
                         moved.file_id = new_file;

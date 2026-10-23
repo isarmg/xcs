@@ -52,7 +52,7 @@ fn data_count(root: &Path) -> usize {
 
 #[tokio::test]
 async fn completed_and_old_generations_use_quota_before_body_poll_and_survive_restart() {
-    let root = tempfile::tempdir().unwrap();
+    let root = crate::tests::private_tempdir();
     let limit = 2 * METADATA_ALLOWANCE + 8;
     let app = application_config(root.path(), config(root.path(), limit));
     let (token, _, _) = authenticated(&app).await;
@@ -122,7 +122,7 @@ async fn completed_and_old_generations_use_quota_before_body_poll_and_survive_re
 
 #[tokio::test]
 async fn interrupted_and_checksum_failed_bytes_remain_charged_after_restart() {
-    let root = tempfile::tempdir().unwrap();
+    let root = crate::tests::private_tempdir();
     let limit = 2 * METADATA_ALLOWANCE + 8;
     let app = application_config(root.path(), config(root.path(), limit));
     let (token, _, _) = authenticated(&app).await;
@@ -176,7 +176,7 @@ async fn interrupted_and_checksum_failed_bytes_remain_charged_after_restart() {
 
 #[tokio::test]
 async fn cancellation_settles_actual_unknown_tail_and_retry_never_overwrites_it() {
-    let root = tempfile::tempdir().unwrap();
+    let root = crate::tests::private_tempdir();
     let limit = METADATA_ALLOWANCE + 10;
     let app = application_config(root.path(), config(root.path(), limit));
     let (token, _, _) = authenticated(&app).await;
@@ -282,7 +282,7 @@ async fn cancellation_settles_actual_unknown_tail_and_retry_never_overwrites_it(
 
 #[tokio::test]
 async fn upload_idle_timeout_preserves_tail_and_allows_verified_retry() {
-    let root = tempfile::tempdir().unwrap();
+    let root = crate::tests::private_tempdir();
     let mut settings = config(root.path(), METADATA_ALLOWANCE + 10);
     settings.http_transfer_limits.idle_timeout = Duration::from_millis(50);
     let app = application_config(root.path(), settings);
@@ -337,7 +337,7 @@ async fn upload_idle_timeout_preserves_tail_and_allows_verified_retry() {
 
 #[tokio::test]
 async fn upload_total_timeout_retains_unfinished_evidence_despite_progress() {
-    let root = tempfile::tempdir().unwrap();
+    let root = crate::tests::private_tempdir();
     let mut settings = config(root.path(), METADATA_ALLOWANCE + 100);
     settings.http_transfer_limits.idle_timeout = Duration::from_millis(100);
     settings.http_transfer_limits.total_timeout = Duration::from_millis(180);
@@ -372,7 +372,7 @@ async fn upload_total_timeout_retains_unfinished_evidence_despite_progress() {
 
 #[tokio::test]
 async fn account_upload_slots_are_shared_across_items_and_released_on_cancel() {
-    let root = tempfile::tempdir().unwrap();
+    let root = crate::tests::private_tempdir();
     let app = application(root.path());
     let (token, _, _) = authenticated(&app).await;
     let hash = blake3::hash(b"").to_hex().to_string();
@@ -427,7 +427,7 @@ async fn account_upload_slots_are_shared_across_items_and_released_on_cancel() {
 
 #[tokio::test]
 async fn account_read_slots_remain_held_by_unconsumed_bodies() {
-    let root = tempfile::tempdir().unwrap();
+    let root = crate::tests::private_tempdir();
     let app = application(root.path());
     let (token, _, _) = authenticated(&app).await;
     let download = || {
@@ -455,7 +455,7 @@ async fn account_read_slots_remain_held_by_unconsumed_bodies() {
 
 #[tokio::test]
 async fn checksum_bodies_share_read_slots_and_expire_without_polling() {
-    let root = tempfile::tempdir().unwrap();
+    let root = crate::tests::private_tempdir();
     let mut config = ServerConfig::loopback(root.path());
     config.http_transfer_limits.idle_timeout = Duration::from_millis(100);
     let app = application_config(root.path(), config);

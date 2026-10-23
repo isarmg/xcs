@@ -22,7 +22,7 @@ async fn json(response: Response) -> Value {
 #[tokio::test]
 async fn unavailable_http_spool_isolates_only_upload_staging() {
     for failure in ["occupied", "occupied_parent", "locked", "invalid_inventory"] {
-        let root = tempfile::tempdir().unwrap();
+        let root = crate::tests::private_tempdir();
         let mut config = ServerConfig::loopback(root.path());
         let _owner = match failure {
             "occupied" => {
@@ -127,7 +127,7 @@ async fn unavailable_http_spool_isolates_only_upload_staging() {
 async fn rejected_spool_symlink_does_not_touch_its_target() {
     use std::os::unix::fs::{PermissionsExt, symlink};
     for suffix in ["plain", "slash", "dot"] {
-        let root = tempfile::tempdir().unwrap();
+        let root = crate::tests::private_tempdir();
         let target = root.path().join("target");
         std::fs::create_dir(&target).unwrap();
         std::fs::set_permissions(&target, std::fs::Permissions::from_mode(0o755)).unwrap();
@@ -158,7 +158,7 @@ async fn rejected_spool_symlink_does_not_touch_its_target() {
 #[tokio::test]
 async fn missing_or_rejected_web_assets_leave_management_apis_but_not_a_fake_ui() {
     for failure in ["missing", "empty", "ordinary_file", "oversized"] {
-        let root = tempfile::tempdir().unwrap();
+        let root = crate::tests::private_tempdir();
         let assets = root.path().join("web");
         if failure == "ordinary_file" {
             std::fs::write(&assets, "not a directory").unwrap();
@@ -232,7 +232,7 @@ async fn rejected_asset_links_and_special_files_never_enable_the_static_file_ser
         "compressed_link",
         "special_file",
     ] {
-        let root = tempfile::tempdir().unwrap();
+        let root = crate::tests::private_tempdir();
         let assets = root.path().join("web");
         let target = root.path().join("outside");
         std::fs::create_dir(&target).unwrap();
@@ -288,7 +288,7 @@ fn invalid_server_security_and_admission_configuration_still_fails_closed() {
         "upload_limit",
         "telemetry_link",
     ] {
-        let root = tempfile::tempdir().unwrap();
+        let root = crate::tests::private_tempdir();
         let mut config = ServerConfig::loopback(root.path());
         config.web_dir = Some(root.path().join("missing-web"));
         std::fs::write(&config.spool_dir, "unavailable").unwrap();

@@ -4,6 +4,7 @@
 
 | 报告 | 范围 |
 | --- | --- |
+| [首发准备专项审查](first-release-review-20261023.md) | 发行归档、安装候选、内容绑定、认证/SMB/Web 边界及首发待验收项 |
 | [系统性工程规范与代码质量审查](systematic-engineering-review-20261023.md) | 第一方架构门禁、中文规范与文档、认证/传输/SMB/Web 边界修复及验证限制 |
 | [语法、排版与 CPU 检测功能命名](syntax-cpu-naming-20261021.md) | 三个功能包名、生成路径与内部文件协调迁移、来源与 ABI 例外 |
 | [密码学公共接口整合](crypto-consolidation-20261021.md) | 单一摘要接口、BLAKE2 适配、合并来源与独立向量回归 |

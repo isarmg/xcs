@@ -92,7 +92,7 @@ struct Fixture {
 }
 impl Fixture {
     fn new(admin: bool, protected: bool) -> Self {
-        let root = tempfile::tempdir().unwrap();
+        let root = crate::tests::private_tempdir();
         let config = Config::development([
             root.path().join("primary"),
             root.path().join("secondary"),

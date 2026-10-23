@@ -5,6 +5,17 @@ use http_routing::{
 };
 use service_stack::ServiceExt;
 use std::time::Duration;
+// Authentication roots obey the same 0700 contract as deployed control state.
+// tempfile's default directory mode is 0777 filtered by umask, not 0700.
+pub(crate) fn private_tempdir() -> tempfile::TempDir {
+    let mut builder = tempfile::Builder::new();
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::PermissionsExt;
+        builder.permissions(std::fs::Permissions::from_mode(0o700));
+    }
+    builder.tempdir().unwrap()
+}
 struct TestBackend {
     path: PathBuf,
 }
@@ -71,7 +82,7 @@ fn application_config(root: &Path, config: ServerConfig) -> Router {
 
 #[tokio::test]
 async fn static_assets_never_shadow_unknown_api_routes_or_their_error_envelope() {
-    let root = tempfile::tempdir().unwrap();
+    let root = crate::tests::private_tempdir();
     let assets = root.path().join("web");
     std::fs::create_dir_all(assets.join("api")).unwrap();
     std::fs::write(assets.join("index.html"), b"<html>fixture</html>").unwrap();
@@ -124,7 +135,7 @@ async fn static_assets_never_shadow_unknown_api_routes_or_their_error_envelope()
 }
 #[test]
 fn router_prepares_a_fresh_nested_spool_before_monitor_cache_initialization() {
-    let root = tempfile::tempdir().unwrap();
+    let root = crate::tests::private_tempdir();
     let nested = root.path().join("fresh/nested/system");
     let auth = AuthStore::initialize(root.path(), "admin", "a-long-test-password").unwrap();
     let app = router(
@@ -144,7 +155,7 @@ fn router_prepares_a_fresh_nested_spool_before_monitor_cache_initialization() {
 
 #[test]
 fn an_unwritable_monitor_cache_does_not_prevent_the_business_router_starting() {
-    let root = tempfile::tempdir().unwrap();
+    let root = crate::tests::private_tempdir();
     let auth = AuthStore::initialize(root.path(), "admin", "a-long-test-password").unwrap();
     // A preexisting ordinary file deterministically prevents cache writes,
     // including when tests run as root and chmod would not deny access.
@@ -204,7 +215,7 @@ async fn authenticated(app: &Router) -> (String, String, String) {
 
 #[tokio::test]
 async fn cookie_mutations_require_csrf_and_foreign_origins_are_rejected() {
-    let root = tempfile::tempdir().unwrap();
+    let root = crate::tests::private_tempdir();
     let app = application(root.path());
     let (token, csrf, cookie) = authenticated(&app).await;
     let response = app
@@ -255,7 +266,7 @@ async fn cookie_mutations_require_csrf_and_foreign_origins_are_rejected() {
 
 #[tokio::test]
 async fn authenticated_range_download_returns_exact_immutable_bytes() {
-    let root = tempfile::tempdir().unwrap();
+    let root = crate::tests::private_tempdir();
     let app = application(root.path());
     let (token, _, _) = authenticated(&app).await;
     let response = app
@@ -282,7 +293,7 @@ async fn authenticated_range_download_returns_exact_immutable_bytes() {
 #[tokio::test(flavor = "current_thread")]
 async fn authentication_lock_wait_does_not_block_the_async_executor() {
     use std::sync::atomic::{AtomicBool, Ordering};
-    let root = tempfile::tempdir().unwrap();
+    let root = crate::tests::private_tempdir();
     let mut auth = AuthStore::initialize(root.path(), "admin", "a-long-test-password").unwrap();
     let token = auth.login("admin", "a-long-test-password").unwrap().token;
     let (started, waiting) = tokio::sync::oneshot::channel();
@@ -359,7 +370,7 @@ async fn authentication_lock_wait_does_not_block_the_async_executor() {
 
 #[tokio::test]
 async fn interrupted_upload_retains_durable_bytes_and_rejects_different_retry() {
-    let root = tempfile::tempdir().unwrap();
+    let root = crate::tests::private_tempdir();
     let app = application(root.path());
     let (token, _, _) = authenticated(&app).await;
     let stream = futures::stream::iter([
@@ -421,7 +432,7 @@ async fn interrupted_upload_retains_durable_bytes_and_rejects_different_retry() 
 
 #[tokio::test]
 async fn durable_retry_progress_appends_without_copying_the_same_generation() {
-    let root = tempfile::tempdir().unwrap();
+    let root = crate::tests::private_tempdir();
     let app = application(root.path());
     let (token, _, _) = authenticated(&app).await;
     let spool = root.path().join("api-spool");
@@ -465,7 +476,7 @@ async fn durable_retry_progress_appends_without_copying_the_same_generation() {
 
 #[tokio::test]
 async fn unpublished_retry_cleanup_covers_short_long_and_cancelled_bodies() {
-    let root = tempfile::tempdir().unwrap();
+    let root = crate::tests::private_tempdir();
     let app = application(root.path());
     let (token, _, _) = authenticated(&app).await;
     let bytes = vec![42u8; 2 * 1024 * 1024];
@@ -546,7 +557,7 @@ async fn unpublished_retry_cleanup_covers_short_long_and_cancelled_bodies() {
 
 #[tokio::test]
 async fn successful_new_generation_preserves_old_bytes_and_retry_reuses_its_file() {
-    let root = tempfile::tempdir().unwrap();
+    let root = crate::tests::private_tempdir();
     let app = application(root.path());
     let (token, _, _) = authenticated(&app).await;
     let spool = root.path().join("api-spool");
@@ -645,7 +656,7 @@ async fn disconnected_upload_keeps_its_claim_until_publication_and_status_are_du
             self.0.1.notify_all();
         }
     }
-    let root = tempfile::tempdir().unwrap();
+    let root = crate::tests::private_tempdir();
     let auth = AuthStore::initialize(root.path(), "admin", "a-long-test-password").unwrap();
     let (started, started_rx) = tokio::sync::oneshot::channel();
     let gate = Arc::new((Mutex::new(false), std::sync::Condvar::new()));

@@ -118,7 +118,7 @@ async fn overloaded(app: Router, path: &str) {
 
 #[tokio::test]
 async fn backend_admission_saturates_without_waiters_and_survives_http_cancellation() {
-    let root = tempfile::tempdir().unwrap();
+    let root = crate::tests::private_tempdir();
     let (app, gate, _release) = fixture(root.path(), 0, false);
     let mut jobs = Vec::new();
     for _ in 0..HTTP_BACKEND_SLOTS {
@@ -204,7 +204,7 @@ async fn backend_admission_releases_after_success_error_and_panic() {
         (1, StatusCode::CONFLICT),
         (2, StatusCode::INTERNAL_SERVER_ERROR),
     ] {
-        let root = tempfile::tempdir().unwrap();
+        let root = crate::tests::private_tempdir();
         let (app, gate, _release) = fixture(root.path(), outcome, true);
         for _ in 0..HTTP_BACKEND_SLOTS * 2 {
             assert_eq!(
@@ -220,7 +220,7 @@ async fn backend_admission_releases_after_success_error_and_panic() {
 // holder has an independent wall-clock escape so regressions cannot hang CI.
 #[tokio::test(flavor = "current_thread")]
 async fn management_status_remains_live_during_authentication_contention() {
-    let root = tempfile::tempdir().unwrap();
+    let root = crate::tests::private_tempdir();
     let gate = Arc::new(Gate {
         open: Mutex::new(true),
         changed: Condvar::new(),
@@ -285,7 +285,7 @@ async fn management_status_remains_live_during_authentication_contention() {
 
 #[tokio::test]
 async fn upload_status_retains_read_admission_after_cancellation() {
-    let root = tempfile::tempdir().unwrap();
+    let root = crate::tests::private_tempdir();
     let (app, gate, _release) = fixture(root.path(), 0, false);
     let path = "/api/workspaces/ws/files/item/upload-status";
     let mut jobs = Vec::new();

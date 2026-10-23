@@ -20,10 +20,11 @@ impl Engine {
             .fold(0u64, |sum, v| sum.saturating_add(v.logical_size))
     }
     pub(crate) fn valid_replica(&self, version_id: &str) -> Result<(PathBuf, FileVersion)> {
-        let (content, version, _) = self.verified_replica(version_id)?;
+        let (_, version, directory) = self.verified_replica(version_id)?;
+        let content = crate::container_storage::content_path(&directory, &version)?;
         Ok((content, version))
     }
-    fn verified_replica(&self, version_id: &str) -> Result<(PathBuf, FileVersion, PathBuf)> {
+    fn verified_replica(&self, version_id: &str) -> Result<(std::fs::File, FileVersion, PathBuf)> {
         if self
             .state
             .content_states
@@ -52,13 +53,13 @@ impl Engine {
             }
             let dir = version_dir(d, &version.history_tree_id, version_id);
             if verify_local_publication(&dir, version).is_ok()
-                && verify_payload(&dir, version).is_ok()
+                && let Ok(mut file) = verify_payload_held(&dir, version)
             {
-                return Ok((
-                    crate::container_storage::content_path(&dir, version)?,
-                    version.clone(),
-                    dir,
-                ));
+                // Keep the exact inode that passed complete verification. A
+                // second path open could select replacement, unverified bytes.
+                use std::io::{Seek, SeekFrom};
+                file.seek(SeekFrom::Start(0))?;
+                return Ok((file, version.clone(), dir));
             }
         }
         Err(Error::new(
@@ -67,8 +68,7 @@ impl Engine {
         ))
     }
     pub fn open_content(&self, version_id: &str) -> Result<OpenedContent> {
-        let (path, version) = self.valid_replica(version_id)?;
-        let file = open_regular(&path)?;
+        let (file, version, _) = self.verified_replica(version_id)?;
         let mut reads = self
             .reads
             .lock()
@@ -138,12 +138,20 @@ impl Engine {
             .open()
     }
     pub fn read_checksums(&self, version: &str) -> Result<Vec<u8>> {
-        let (_, _, directory) = self.verified_replica(version)?;
-        read_bytes(&directory.join("checksums.bin"), MAX_CHECKSUM_MANIFEST)
+        let (_, version, directory) = self.verified_replica(version)?;
+        let checks = read_bytes(&directory.join("checksums.bin"), MAX_CHECKSUM_MANIFEST)?;
+        // Bind the returned bytes too, not an earlier read of this pathname.
+        if blake3::hash(&checks).to_hex().as_str() != version.checksum_manifest_hash {
+            return Err(Error::new(
+                "CHECKSUM_MISMATCH",
+                "checksum manifest digest differs",
+            ));
+        }
+        Ok(checks)
     }
     pub fn export_version(&self, version_id: &str, destination: &Path) -> Result<()> {
-        let (path, version) = self.valid_replica(version_id)?;
-        verified_full_copy(open_regular(&path)?, destination, &version)
+        let (file, version, _) = self.verified_replica(version_id)?;
+        verified_full_copy(file, destination, &version)
     }
     pub fn check(&self) -> Result<CheckReport> {
         let mut result = CheckReport {
@@ -348,14 +356,18 @@ impl WorkspaceReadPlan {
     pub fn open(mut self) -> Result<OpenedContent> {
         let mut hash = blake3::Hasher::new();
         let mut buffer = [0; 65536];
+        let mut remaining = self.0.size;
         loop {
             let count = self.0.file.read(&mut buffer)?;
             if count == 0 {
                 break;
             }
+            remaining = remaining.checked_sub(count as u64).ok_or_else(|| {
+                Error::new("CHECKSUM_MISMATCH", "workspace full file length differs")
+            })?;
             hash.update(&buffer[..count]);
         }
-        if hash.finalize().to_hex().as_str() != self.0.content_hash {
+        if remaining != 0 || hash.finalize().to_hex().as_str() != self.0.content_hash {
             return Err(Error::new(
                 "CHECKSUM_MISMATCH",
                 "workspace full file was modified outside the engine",
@@ -366,3 +378,7 @@ impl WorkspaceReadPlan {
         Ok(self.0)
     }
 }
+
+#[cfg(test)]
+#[path = "../../../../test/engine/unit/engine/reads/tests.rs"]
+mod tests;

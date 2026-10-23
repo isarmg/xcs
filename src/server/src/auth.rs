@@ -3,6 +3,7 @@
 use crate::ApiError;
 use authentication as primitives;
 use data_serialization::{Deserialize, Serialize};
+use platform_io::fs_safety::{AdvisoryLock, EntryName, PrivateDirectory, RelativePath};
 use std::{
     collections::{BTreeMap, BTreeSet},
     fs::{self, OpenOptions},
@@ -141,7 +142,7 @@ pub struct AuthStore {
     path: PathBuf,
     db: Database,
     dummy_hash: String,
-    _lock: Option<fs::File>,
+    _lock: Option<AdvisoryLock>,
     local_authority: bool,
     backup: Option<BackupHook>,
     blocked: AtomicBool,
@@ -179,6 +180,36 @@ fn now() -> u64 {
         .duration_since(UNIX_EPOCH)
         .unwrap_or_default()
         .as_secs()
+}
+
+// Relative deployment paths remain supported, but resolving them never follows
+// symlinks or changes permissions on an existing directory.
+fn absolute_root(root: &Path) -> Result<PathBuf, ApiError> {
+    std::path::absolute(root).map_err(ApiError::io)
+}
+
+fn private_directory(root: &Path) -> Result<PrivateDirectory, ApiError> {
+    let root = absolute_root(root)?;
+    #[cfg(unix)]
+    let directory = PrivateDirectory::open_trusted(root);
+    #[cfg(not(unix))]
+    let directory = PrivateDirectory::open_existing(root);
+    directory.map_err(ApiError::invalid)
+}
+
+fn read_credentials(path: &Path) -> Result<Vec<u8>, ApiError> {
+    let directory = private_directory(
+        path.parent()
+            .ok_or_else(|| ApiError::invalid("missing credential parent"))?,
+    )?;
+    let name = EntryName::new(
+        path.file_name()
+            .ok_or_else(|| ApiError::invalid("missing credential name"))?,
+    )
+    .map_err(ApiError::invalid)?;
+    directory
+        .read_bounded(&name, MAX_STORE_BYTES)
+        .map_err(ApiError::invalid)
 }
 
 impl AuthStore {
@@ -247,17 +278,16 @@ impl AuthStore {
             repositories: account.repositories.clone(),
         })
     }
-    fn acquire_lock(root: &Path) -> Result<fs::File, ApiError> {
-        let mut options = OpenOptions::new();
-        options.read(true).write(true).create(true).truncate(false);
-        #[cfg(unix)]
-        {
-            use std::os::unix::fs::OpenOptionsExt;
-            options.mode(0o600);
-        }
-        let file = options.open(root.join("auth.lock")).map_err(ApiError::io)?;
-        file.try_lock().map_err(|_|ApiError::conflict("AUTH_STORE_BUSY","another process owns the credential store; use its authenticated administration API"))?;
-        Ok(file)
+    fn acquire_lock(root: &Path) -> Result<AdvisoryLock, ApiError> {
+        let directory = private_directory(root)?;
+        AdvisoryLock::acquire(&directory, &RelativePath::new("auth.lock").map_err(ApiError::invalid)?)
+            .map_err(|error| match error {
+                platform_io::fs_safety::Error::AlreadyLocked(_) => ApiError::conflict(
+                    "AUTH_STORE_BUSY",
+                    "another process owns the credential store; use its authenticated administration API",
+                ),
+                other => ApiError::invalid(other),
+            })
     }
     /// Create only through the explicit administrative setup command.
     pub fn initialize(root: &Path, username: &str, password: &str) -> Result<Self, ApiError> {
@@ -277,6 +307,8 @@ impl AuthStore {
         password: &str,
         management: bool,
     ) -> Result<Self, ApiError> {
+        let root = absolute_root(root)?;
+        let root = root.as_path();
         let path = root.join(if management {
             "management-auth.json"
         } else {
@@ -288,7 +320,13 @@ impl AuthStore {
                 "credentials already exist",
             ));
         }
-        fs::create_dir_all(root).map_err(ApiError::io)?;
+        #[cfg(unix)]
+        PrivateDirectory::create_trusted(absolute_root(root)?).map_err(ApiError::invalid)?;
+        #[cfg(not(unix))]
+        {
+            fs::create_dir_all(root).map_err(ApiError::io)?;
+            PrivateDirectory::open_existing(absolute_root(root)?).map_err(ApiError::invalid)?;
+        }
         let auth_lock = Self::acquire_lock(root)?;
         let username =
             primitives::normalize_administrator_username(username).map_err(ApiError::invalid)?;
@@ -343,6 +381,8 @@ impl AuthStore {
         authoritative: Option<json_codec::Value>,
         management: bool,
     ) -> Result<Self, ApiError> {
+        let root = absolute_root(root)?;
+        let root = root.as_path();
         let auth_lock = Self::acquire_lock(root)?;
         let path = root.join(if management {
             "management-auth.json"
@@ -372,7 +412,7 @@ impl AuthStore {
                     if metadata.len() > MAX_STORE_BYTES as u64 {
                         return Err(ApiError::invalid("credential store exceeds limit"));
                     }
-                    Some(fs::read(&path).map_err(ApiError::io)?)
+                    Some(read_credentials(&path)?)
                 }
             }
             Err(error) if error.kind() == std::io::ErrorKind::NotFound => None,

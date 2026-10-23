@@ -906,13 +906,37 @@ impl Engine {
         }
         let previous = w.files.get(item);
         let mut temporary = tempfile::NamedTempFile::new_in(&self.root)?;
-        if let Some(previous) = previous {
-            let mut source = open_regular(&previous.source_path)?;
-            std::io::copy(&mut source, &mut temporary)?;
+        let expected = if let Some(previous) = previous {
+            let source = open_regular(&previous.source_path)?;
+            std::io::copy(
+                &mut source.take(previous.size.saturating_add(1)),
+                &mut temporary,
+            )?;
+            Some((previous.size, previous.content_hash.clone()))
         } else if let Some(entry) = find(&base.entries, path) {
-            let (source, _) = self.valid_replica(&entry.version_id)?;
-            let mut source = open_regular(&source)?;
-            std::io::copy(&mut source, &mut temporary)?;
+            let source = self.open_content(&entry.version_id)?;
+            std::io::copy(
+                &mut (&source.file).take(source.size.saturating_add(1)),
+                &mut temporary,
+            )?;
+            Some((source.size, source.content_hash.clone()))
+        } else {
+            None
+        };
+        if let Some((size, hash)) = expected {
+            let digest = blake3::Hash::from_hex(&hash)
+                .map_err(|_| Error::new("CHECKSUM_MISMATCH", "invalid staged content digest"))?;
+            // Verify the copied snapshot before applying edits, so corruption
+            // (including changes during copying) cannot become authenticated
+            // untouched bytes in a new staged generation.
+            platform_io::payload::verify_full(
+                temporary.as_file_mut(),
+                platform_io::payload::Expectation {
+                    bytes: size,
+                    blake3: Some(digest),
+                },
+            )
+            .map_err(|error| Error::new("CHECKSUM_MISMATCH", error.to_string()))?;
         }
         temporary.seek(SeekFrom::Start(offset))?;
         temporary.write_all(bytes)?;
@@ -1287,6 +1311,24 @@ impl Engine {
         pending: &mut Vec<Prepared>,
         input: VersionBuild<'_>,
     ) -> Result<FileVersion> {
+        self.build_version_checked(state, pending, input, None)
+    }
+    pub(crate) fn build_copied_version(
+        &self,
+        state: &mut State,
+        pending: &mut Vec<Prepared>,
+        input: VersionBuild<'_>,
+        expected: &FileVersion,
+    ) -> Result<FileVersion> {
+        self.build_version_checked(state, pending, input, Some(expected))
+    }
+    fn build_version_checked(
+        &self,
+        state: &mut State,
+        pending: &mut Vec<Prepared>,
+        input: VersionBuild<'_>,
+        expected: Option<&FileVersion>,
+    ) -> Result<FileVersion> {
         let VersionBuild {
             history,
             file_id,
@@ -1340,6 +1382,14 @@ impl Engine {
             chunks,
         };
         let content_hash = full.finalize().to_hex().to_string();
+        if expected.is_some_and(|original| {
+            original.logical_size != size || original.content_hash != content_hash
+        }) {
+            return Err(Error::new(
+                "SOURCE_CHANGED",
+                "copied content differs from the published source version",
+            ));
+        }
         let (storage_name, created_at) =
             crate::container_storage::version_identity(state, file_id, path, &content_hash)?;
         let version = FileVersion {

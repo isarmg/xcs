@@ -45,7 +45,7 @@ fn seed_invalid(store: &mut AuthStore, count: usize) {
 
 #[test]
 fn invalid_sessions_do_not_exhaust_global_capacity_after_restart() {
-    let root = tempfile::tempdir().unwrap();
+    let root = crate::tests::private_tempdir();
     let mut store = AuthStore::initialize(root.path(), "admin", "capacity-test-password").unwrap();
     seed_invalid(&mut store, MAX_SESSIONS);
     store.persist(false).unwrap();
@@ -61,7 +61,7 @@ fn invalid_sessions_do_not_exhaust_global_capacity_after_restart() {
 
 #[test]
 fn one_account_cannot_consume_other_accounts_session_capacity() {
-    let root = tempfile::tempdir().unwrap();
+    let root = crate::tests::private_tempdir();
     let mut store = AuthStore::initialize(root.path(), "admin", "capacity-test-password").unwrap();
     add_account(&mut store, "reader", false);
     for index in 0..MAX_SESSIONS_PER_ACCOUNT {
@@ -92,7 +92,7 @@ fn one_account_cannot_consume_other_accounts_session_capacity() {
 #[test]
 fn failed_login_and_account_publication_restore_pruned_sessions_exactly() {
     for update_account in [false, true] {
-        let root = tempfile::tempdir().unwrap();
+        let root = crate::tests::private_tempdir();
         let mut store =
             AuthStore::initialize(root.path(), "admin", "capacity-test-password").unwrap();
         let active = store.finish_login(proof(&store, "admin")).unwrap();
@@ -126,7 +126,7 @@ fn failed_login_and_account_publication_restore_pruned_sessions_exactly() {
 
 #[test]
 fn account_updates_prune_all_invalid_records_but_keep_unrelated_sessions() {
-    let root = tempfile::tempdir().unwrap();
+    let root = crate::tests::private_tempdir();
     let mut store = AuthStore::initialize(root.path(), "admin", "capacity-test-password").unwrap();
     add_account(&mut store, "reader", false);
     seed_invalid(&mut store, 4);
@@ -147,7 +147,7 @@ fn account_updates_prune_all_invalid_records_but_keep_unrelated_sessions() {
 
 #[test]
 fn valid_sessions_still_obey_global_capacity() {
-    let root = tempfile::tempdir().unwrap();
+    let root = crate::tests::private_tempdir();
     let mut store = AuthStore::initialize(root.path(), "admin", "capacity-test-password").unwrap();
     for index in 0..MAX_SESSIONS {
         let username = format!("reader-{}", index / MAX_SESSIONS_PER_ACCOUNT);
@@ -174,7 +174,7 @@ fn valid_sessions_still_obey_global_capacity() {
 
 #[test]
 fn creating_an_account_does_not_revive_orphaned_sessions() {
-    let root = tempfile::tempdir().unwrap();
+    let root = crate::tests::private_tempdir();
     let mut store = AuthStore::initialize(root.path(), "admin", "capacity-test-password").unwrap();
     seed(&mut store, 0, "new-reader", 1, u64::MAX);
     store

@@ -99,7 +99,7 @@ fn supported_ranges_bound_chart_points_and_reject_other_strings() {
 
 #[test]
 fn monitoring_rechecks_current_administrator_instead_of_captured_role() {
-    let root = tempfile::tempdir().unwrap();
+    let root = crate::tests::private_tempdir();
     let mut auth =
         crate::auth::AuthStore::initialize(root.path(), "admin", "monitor-test-password").unwrap();
     auth.upsert_account(
@@ -152,7 +152,7 @@ async fn telemetry_admission_survives_cancellation_without_consuming_management_
             .unwrap()
             .status()
     }
-    let root = tempfile::tempdir().unwrap();
+    let root = crate::tests::private_tempdir();
     let config = crate::ServerConfig::loopback(root.path());
     config.prepare_spool().unwrap();
     let backend = Arc::new(MonitorBackend);

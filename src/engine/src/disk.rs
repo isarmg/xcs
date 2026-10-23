@@ -389,7 +389,7 @@ pub(crate) fn verify_payload(directory: &Path, version: &FileVersion) -> Result<
     verify_payload_held(directory, version).map(|_| ())
 }
 
-fn verify_payload_held(directory: &Path, version: &FileVersion) -> Result<File> {
+pub(crate) fn verify_payload_held(directory: &Path, version: &FileVersion) -> Result<File> {
     let checks = read_bytes(&directory.join("checksums.bin"), MAX_CHECKSUM_MANIFEST)?;
     if blake3::hash(&checks).to_hex().as_str() != version.checksum_manifest_hash {
         return Err(Error::new(
@@ -421,6 +421,13 @@ fn verify_payload_held(directory: &Path, version: &FileVersion) -> Result<File> 
         }
         full.update(&buf[..n]);
         remaining -= n as u64;
+    }
+    let mut extra = [0u8; 1];
+    if file.read(&mut extra)? != 0 || file.metadata()?.len() != version.logical_size {
+        return Err(Error::new(
+            "CHECKSUM_MISMATCH",
+            "payload length changed during verification",
+        ));
     }
     if full.finalize().to_hex().as_str() != version.content_hash {
         return Err(Error::new(

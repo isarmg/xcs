@@ -138,7 +138,7 @@ async fn stale_legacy_credentials_do_not_open_management_when_engine_fails() {
 }
 #[test]
 fn replica_failure_cannot_roll_back_revocation_or_password_change() {
-    let root = tempfile::tempdir().unwrap();
+    let root = crate::tests::private_tempdir();
     let mut auth =
         AuthStore::initialize_management(root.path(), "admin", "a-long-test-password").unwrap();
     let old = auth.login("admin", "a-long-test-password").unwrap();

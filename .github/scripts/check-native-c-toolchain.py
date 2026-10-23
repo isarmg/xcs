@@ -10,6 +10,7 @@ import runpy
 import sys
 import os
 import subprocess
+import shutil
 import tempfile
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -39,6 +40,35 @@ def check_preservation():
     active_source = (ROOT / "src/foundation/tooling/cc/src/lib.rs").read_text()
     assert "mod parallel" not in active_source and "parallel::" not in active_source
     assert not (ROOT / "src/foundation/find-msvc-tools").exists()
+
+
+def check_standalone_cc(work, environment):
+    # Keep relative source/test/doc paths intact without ever asking Cargo to
+    # create a lockfile inside the maintained source tree. A finally-unlink in
+    # the original directory still races concurrent provenance checks and can
+    # leave a child lock behind if the process is interrupted.
+    standalone = work / "cc-standalone"
+    standalone.mkdir()
+    # Bound Cargo workspace discovery even when the caller is itself a fixture
+    # workspace. cc is a normal member here, not a product build dependency.
+    (standalone / "Cargo.toml").write_text(
+        '[workspace]\nmembers = ["src/foundation/tooling/cc"]\nresolver = "2"\n')
+    (standalone / "rust-toolchain.toml").write_bytes((ROOT / "rust-toolchain.toml").read_bytes())
+    for relative in (
+        "src/foundation/tooling/cc",
+        "src/foundation/tooling/shell-tokenizer",
+        "test/foundation/cc",
+        "docs/upstream/cc-1.8.0",
+        "docs/upstream/shlex-2.0.1",
+    ):
+        source = ROOT / relative
+        # src/target is cc's real Rust module, not a Cargo output directory.
+        shutil.copytree(source, standalone / relative,
+                        ignore=lambda directory, names: [name for name in names
+                            if Path(directory) == source and name in {"Cargo.lock", "target"}])
+    cc_manifest = standalone / "src/foundation/tooling/cc/Cargo.toml"
+    subprocess.run(["cargo", "test", "--offline", "--manifest-path", str(cc_manifest)],
+                   cwd=standalone, env=environment, check=True)
 
 
 def check():
@@ -81,15 +111,7 @@ blake3 = {{ path = "{ROOT / 'src/foundation/cryptography/blake3'}" }}
         subprocess.run([artifacts["native-c-toolchain-regression"]], cwd=work, env=environment, check=True)
         # This standalone manifest tests the exact retained upstream unit tests
         # and doctests; -p cc at the root hits a Cargo build-dependency resolver bug.
-        cc_manifest = ROOT / "src/foundation/tooling/cc/Cargo.toml"
-        nested_lock = cc_manifest.with_name("Cargo.lock")
-        had_lock = nested_lock.exists()
-        try:
-            subprocess.run(["cargo", "test", "--offline", "--manifest-path", str(cc_manifest)],
-                           cwd=ROOT, env=environment, check=True)
-        finally:
-            if not had_lock:
-                nested_lock.unlink(missing_ok=True)
+        check_standalone_cc(work, environment)
         # Removed features must fail resolution rather than advertise unusable code.
         for feature in ("parallel", "jobserver"):
             result = subprocess.run(["cargo", "check", "--offline", "--features", f"cc/{feature}",

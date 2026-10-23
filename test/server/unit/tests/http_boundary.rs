@@ -28,7 +28,7 @@ async fn assert_error(
 
 #[tokio::test]
 async fn query_and_path_rejections_use_the_api_envelope_after_authorization() {
-    let root = tempfile::tempdir().unwrap();
+    let root = crate::tests::private_tempdir();
     let app = application(root.path());
     let (token, _, _) = authenticated(&app).await;
     for (method, path) in [
@@ -73,7 +73,7 @@ async fn query_and_path_rejections_use_the_api_envelope_after_authorization() {
 
 #[tokio::test]
 async fn routing_failures_keep_status_allow_and_error_fields() {
-    let root = tempfile::tempdir().unwrap();
+    let root = crate::tests::private_tempdir();
     let app = application(root.path());
     for (method, path, allowed) in [
         ("POST", "/api/capabilities", "GET,HEAD"),
@@ -136,7 +136,7 @@ async fn routing_failures_keep_status_allow_and_error_fields() {
 
 #[tokio::test]
 async fn bounded_json_routes_return_payload_too_large() {
-    let root = tempfile::tempdir().unwrap();
+    let root = crate::tests::private_tempdir();
     let app = application(root.path());
     let (token, _, _) = authenticated(&app).await;
     for (path, limit) in [
@@ -169,7 +169,7 @@ async fn bounded_json_routes_return_payload_too_large() {
 
 #[tokio::test]
 async fn head_errors_retain_status_and_headers_without_a_body() {
-    let root = tempfile::tempdir().unwrap();
+    let root = crate::tests::private_tempdir();
     let app = application(root.path());
     let (token, _, _) = authenticated(&app).await;
     for (path, status) in [
@@ -272,7 +272,7 @@ impl Backend for PanickingBackend {
 
 #[tokio::test]
 async fn blocking_task_panics_are_internal_errors_not_client_errors() {
-    let root = tempfile::tempdir().unwrap();
+    let root = crate::tests::private_tempdir();
     let auth = AuthStore::initialize(root.path(), "admin", "a-long-test-password").unwrap();
     let app = router(
         Arc::new(PanickingBackend),

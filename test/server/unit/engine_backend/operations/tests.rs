@@ -17,7 +17,7 @@ fn fixture() -> (
     Identity,
     Value,
 ) {
-    let root = tempfile::tempdir().unwrap();
+    let root = crate::tests::private_tempdir();
     let config = Config::development([
         root.path().join("d1"),
         root.path().join("d2"),

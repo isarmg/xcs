@@ -365,7 +365,7 @@ fn expired_attempts_are_removed_and_key_capacity_is_never_exceeded() {
 
 #[tokio::test]
 async fn authorization_admission_survives_cancellation_and_rejects_without_waiting() {
-    let root = tempfile::tempdir().unwrap();
+    let root = crate::tests::private_tempdir();
     let auth = Arc::new(Mutex::new(
         crate::auth::AuthStore::initialize(root.path(), "admin", "a-long-test-password").unwrap(),
     ));
@@ -473,7 +473,7 @@ impl crate::Backend for RetryProbe {
 
 #[tokio::test(flavor = "current_thread")]
 async fn storage_retry_auth_contention_never_blocks_runtime_or_releases_cancelled_capacity() {
-    let root = tempfile::tempdir().unwrap();
+    let root = crate::tests::private_tempdir();
     let mut store =
         crate::auth::AuthStore::initialize(root.path(), "admin", "a-long-test-password").unwrap();
     let login = store.login("admin", "a-long-test-password").unwrap();
@@ -550,7 +550,7 @@ async fn storage_retry_auth_contention_never_blocks_runtime_or_releases_cancelle
 
 #[tokio::test(flavor = "current_thread")]
 async fn storage_retry_rechecks_a_session_revoked_while_waiting_for_auth() {
-    let root = tempfile::tempdir().unwrap();
+    let root = crate::tests::private_tempdir();
     let mut store =
         crate::auth::AuthStore::initialize(root.path(), "admin", "a-long-test-password").unwrap();
     let login = store.login("admin", "a-long-test-password").unwrap();

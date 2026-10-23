@@ -1,0 +1,175 @@
+use super::*;
+use std::fs;
+
+fn fixture() -> (tempfile::TempDir, Engine, Workspace) {
+    let temp = tempfile::tempdir().unwrap();
+    let config = Config::development([
+        temp.path().join("p"),
+        temp.path().join("b"),
+        temp.path().join("t"),
+    ]);
+    let mut engine = Engine::initialize(&temp.path().join("state"), config).unwrap();
+    let repo = engine
+        .create_repository("reads", "P01", 3, "admin", &new_id("op"))
+        .unwrap();
+    let workspace = engine
+        .create_workspace(&repo.main_branch_id, "admin")
+        .unwrap();
+    engine
+        .stage_bytes(&workspace.workspace_id, "body", b"original")
+        .unwrap();
+    (temp, engine, workspace)
+}
+
+#[test]
+fn verified_replica_holds_checked_inode_and_rewinds_before_returning() {
+    let (_temp, mut engine, workspace) = fixture();
+    engine
+        .commit_workspace(CommitRequest {
+            workspace_id: workspace.workspace_id,
+            operation_id: new_id("op"),
+            principal: "admin".into(),
+            expected_head: workspace.base_head,
+            fencing_token: workspace.fencing_token,
+            message: "save".into(),
+            request_digest: None,
+        })
+        .unwrap();
+    let version_id = engine.list_tree(&workspace.branch_id).unwrap()[0]
+        .version_id
+        .clone();
+    let (mut held, version, directory) = engine.verified_replica(&version_id).unwrap();
+    let path = crate::container_storage::content_path(&directory, &version).unwrap();
+    let replacement = path.with_extension("replacement");
+    fs::write(&replacement, b"modified").unwrap();
+    fs::rename(replacement, &path).unwrap();
+    let mut bytes = Vec::new();
+    held.read_to_end(&mut bytes).unwrap();
+    assert_eq!(bytes, b"original");
+    // A new open must reject the damaged first replica and return a healthy copy.
+    bytes.clear();
+    engine
+        .open_content(&version_id)
+        .unwrap()
+        .file
+        .read_to_end(&mut bytes)
+        .unwrap();
+    assert_eq!(bytes, b"original");
+}
+
+#[test]
+fn workspace_read_rejects_length_mismatch_even_when_hash_matches() {
+    let (_temp, engine, workspace) = fixture();
+    let staged = engine.workspace(&workspace.workspace_id).unwrap();
+    let item = staged.files.keys().next().unwrap();
+    for size in [7, 9] {
+        let mut plan = engine
+            .prepare_workspace_content(&workspace.workspace_id, item, "admin")
+            .unwrap();
+        plan.0.size = size;
+        assert_eq!(plan.open().err().unwrap().code(), "CHECKSUM_MISMATCH");
+        assert!(engine.reads.lock().unwrap().is_empty());
+    }
+}
+
+#[test]
+fn partial_write_does_not_authenticate_corrupted_staging_bytes() {
+    let (_temp, mut engine, workspace) = fixture();
+    let before = engine.workspace(&workspace.workspace_id).unwrap();
+    let (item, staged) = before.files.iter().next().unwrap();
+    use std::os::unix::fs::PermissionsExt;
+    fs::set_permissions(&staged.source_path, fs::Permissions::from_mode(0o600)).unwrap();
+    for damaged in [&b"tampered"[..], &b"short"[..], &b"original-extra"[..]] {
+        fs::write(&staged.source_path, damaged).unwrap();
+        assert_eq!(
+            engine
+                .stage_range(&workspace.workspace_id, item, "body", 7, b"!", None)
+                .unwrap_err()
+                .code(),
+            "CHECKSUM_MISMATCH"
+        );
+        assert_eq!(
+            canonical_json(&engine.workspace(&workspace.workspace_id).unwrap()).unwrap(),
+            canonical_json(&before).unwrap()
+        );
+        assert_eq!(fs::read(&staged.source_path).unwrap(), damaged);
+        assert!(engine.reads.lock().unwrap().is_empty());
+    }
+    fs::write(&staged.source_path, b"original").unwrap();
+    let updated = engine
+        .stage_range(&workspace.workspace_id, item, "body", 7, b"!", None)
+        .unwrap();
+    assert_eq!(fs::read(updated.source_path).unwrap(), b"origina!");
+}
+
+#[test]
+fn partial_write_from_published_replica_keeps_verified_untouched_bytes() {
+    let (_temp, mut engine, workspace) = fixture();
+    engine
+        .commit_workspace(CommitRequest {
+            workspace_id: workspace.workspace_id,
+            operation_id: new_id("op"),
+            principal: "admin".into(),
+            expected_head: workspace.base_head,
+            fencing_token: workspace.fencing_token,
+            message: "save".into(),
+            request_digest: None,
+        })
+        .unwrap();
+    let next = engine
+        .create_workspace(&workspace.branch_id, "admin")
+        .unwrap();
+    let staged = engine
+        .stage_range(&next.workspace_id, &new_id("entry"), "body", 0, b"O", None)
+        .unwrap();
+    assert_eq!(fs::read(staged.source_path).unwrap(), b"Original");
+    assert!(engine.reads.lock().unwrap().is_empty());
+}
+
+#[test]
+fn copy_build_rejects_replacement_after_replica_verification_before_candidate_mutation() {
+    let (_temp, mut engine, workspace) = fixture();
+    engine
+        .commit_workspace(CommitRequest {
+            workspace_id: workspace.workspace_id,
+            operation_id: new_id("op"),
+            principal: "admin".into(),
+            expected_head: workspace.base_head,
+            fencing_token: workspace.fencing_token,
+            message: "save".into(),
+            request_digest: None,
+        })
+        .unwrap();
+    let id = engine.list_tree(&workspace.branch_id).unwrap()[0]
+        .version_id
+        .clone();
+    let (source, original) = engine.valid_replica(&id).unwrap();
+    let mut candidate = engine.state.clone();
+    let before = canonical_json(&candidate).unwrap();
+    let mut pending = Vec::new();
+    for replacement in [&b"modified"[..], &b"short"[..]] {
+        let substitute = source.with_extension("replacement");
+        fs::write(&substitute, replacement).unwrap();
+        fs::rename(&substitute, &source).unwrap();
+        let error = engine
+            .build_copied_version(
+                &mut candidate,
+                &mut pending,
+                crate::business::VersionBuild {
+                    history: &original.history_tree_id,
+                    file_id: &new_id("file"),
+                    path: "copy",
+                    source: &source,
+                    primary: &original.creation_primary_slot_id,
+                    copies: 3,
+                    source_ids: Vec::new(),
+                    checkpoint: true,
+                },
+                &original,
+            )
+            .unwrap_err();
+        assert_eq!(error.code(), "SOURCE_CHANGED");
+        assert_eq!(canonical_json(&candidate).unwrap(), before);
+        assert!(pending.is_empty());
+    }
+}

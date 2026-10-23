@@ -1,7 +1,7 @@
 use super::*;
 #[test]
 fn self_password_rotation_preserves_scope_revokes_sessions_and_survives_reopen() {
-    let dir = tempfile::tempdir().unwrap();
+    let dir = crate::tests::private_tempdir();
     let mut store = AuthStore::initialize(dir.path(), "admin", "a-long-test-password").unwrap();
     let repositories = BTreeSet::from(["repo-private".to_owned()]);
     store
@@ -34,7 +34,7 @@ fn self_password_rotation_preserves_scope_revokes_sessions_and_survives_reopen()
 
 #[test]
 fn rejected_password_rotation_keeps_credentials_and_session_intact() {
-    let dir = tempfile::tempdir().unwrap();
+    let dir = crate::tests::private_tempdir();
     let mut store = AuthStore::initialize(dir.path(), "admin", "a-long-test-password").unwrap();
     let session = store.login("admin", "a-long-test-password").unwrap();
     let before = store.snapshot().unwrap();
@@ -59,7 +59,7 @@ fn rejected_password_rotation_keeps_credentials_and_session_intact() {
 
 #[test]
 fn persisted_sessions_are_revoked_by_account_generation() {
-    let dir = tempfile::tempdir().unwrap();
+    let dir = crate::tests::private_tempdir();
     let mut store = AuthStore::initialize(dir.path(), "admin", "a-long-test-password").unwrap();
     let login = store.login("admin", "a-long-test-password").unwrap();
     drop(store);
@@ -75,7 +75,7 @@ fn persisted_sessions_are_revoked_by_account_generation() {
 }
 #[test]
 fn cannot_disable_last_administrator() {
-    let dir = tempfile::tempdir().unwrap();
+    let dir = crate::tests::private_tempdir();
     let mut store = AuthStore::initialize(dir.path(), "admin", "a-long-test-password").unwrap();
     assert!(
         store
@@ -85,7 +85,7 @@ fn cannot_disable_last_administrator() {
 }
 #[test]
 fn missing_local_credentials_restore_only_from_authoritative_snapshot() {
-    let root = tempfile::tempdir().unwrap();
+    let root = crate::tests::private_tempdir();
     let mut store = AuthStore::initialize(root.path(), "admin", "a-long-test-password").unwrap();
     let session = store.login("admin", "a-long-test-password").unwrap();
     let snapshot = store.snapshot().unwrap();
@@ -97,7 +97,7 @@ fn missing_local_credentials_restore_only_from_authoritative_snapshot() {
 }
 #[test]
 fn uncertain_backup_blocks_authentication_until_recovery() {
-    let root = tempfile::tempdir().unwrap();
+    let root = crate::tests::private_tempdir();
     let mut store = AuthStore::initialize(root.path(), "admin", "a-long-test-password").unwrap();
     let calls = Arc::new(std::sync::atomic::AtomicUsize::new(0));
     let count = calls.clone();
@@ -138,7 +138,7 @@ fn uncertain_backup_blocks_authentication_until_recovery() {
 
 #[test]
 fn detached_login_verification_cannot_cross_account_changes_or_recovery() {
-    let root = tempfile::tempdir().unwrap();
+    let root = crate::tests::private_tempdir();
     let mut store = AuthStore::initialize(root.path(), "admin", "a-long-test-password").unwrap();
     store
         .upsert_account(
@@ -198,7 +198,7 @@ fn detached_login_verification_cannot_cross_account_changes_or_recovery() {
 
 #[test]
 fn detached_login_challenge_keeps_unknown_disabled_and_wrong_password_rejected() {
-    let root = tempfile::tempdir().unwrap();
+    let root = crate::tests::private_tempdir();
     let mut store = AuthStore::initialize(root.path(), "admin", "a-long-test-password").unwrap();
     assert!(
         store
@@ -241,7 +241,7 @@ fn detached_login_challenge_keeps_unknown_disabled_and_wrong_password_rejected()
 
 #[test]
 fn account_refresh_preserves_internal_smb_binding_without_serializing_it() {
-    let root = tempfile::tempdir().unwrap();
+    let root = crate::tests::private_tempdir();
     let store = AuthStore::initialize(root.path(), "admin", "a-long-test-password").unwrap();
     let mut caller = store.identity_for_principal("admin").unwrap();
     caller.smb_binding = Some(SmbBinding {
@@ -256,5 +256,126 @@ fn account_refresh_preserves_internal_smb_binding_without_serializing_it() {
             .unwrap()
             .get("smb_binding")
             .is_none()
+    );
+}
+
+#[cfg(unix)]
+#[test]
+fn credential_lock_rejects_symlinks_hardlinks_and_public_files() {
+    use std::os::unix::fs::{PermissionsExt, symlink};
+    for kind in ["symlink", "hardlink", "public"] {
+        let root = crate::tests::private_tempdir();
+        let target = root.path().join("unrelated");
+        fs::write(&target, b"must remain unchanged").unwrap();
+        fs::set_permissions(&target, fs::Permissions::from_mode(0o600)).unwrap();
+        let path = root.path().join("auth.lock");
+        match kind {
+            "symlink" => symlink(&target, &path).unwrap(),
+            "hardlink" => fs::hard_link(&target, &path).unwrap(),
+            "public" => {
+                fs::write(&path, b"").unwrap();
+                fs::set_permissions(&path, fs::Permissions::from_mode(0o644)).unwrap();
+            }
+            _ => unreachable!(),
+        }
+        assert!(AuthStore::acquire_lock(root.path()).is_err(), "{kind}");
+        assert_eq!(fs::read(&target).unwrap(), b"must remain unchanged");
+    }
+}
+
+#[test]
+fn credential_reader_enforces_limit_on_open_descriptor() {
+    let root = crate::tests::private_tempdir();
+    let path = root.path().join("credential");
+    let mut options = OpenOptions::new();
+    options.write(true).create_new(true);
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::OpenOptionsExt;
+        options.mode(0o600);
+    }
+    options
+        .open(&path)
+        .unwrap()
+        .set_len(MAX_STORE_BYTES as u64 + 1)
+        .unwrap();
+    assert!(read_credentials(&path).is_err());
+}
+
+#[cfg(unix)]
+#[test]
+fn credential_control_files_reject_fifos_without_waiting_for_a_peer() {
+    use rustix::fs::{CWD, Mode, mkfifoat};
+    let root = crate::tests::private_tempdir();
+    mkfifoat(
+        CWD,
+        root.path().join("auth.lock"),
+        Mode::from_raw_mode(0o600),
+    )
+    .unwrap();
+    assert!(AuthStore::acquire_lock(root.path()).is_err());
+    let credential = root.path().join("auth.json");
+    mkfifoat(CWD, &credential, Mode::from_raw_mode(0o600)).unwrap();
+    assert!(read_credentials(&credential).is_err());
+}
+
+#[cfg(unix)]
+#[test]
+fn credential_initialization_creates_private_roots_but_never_repairs_existing_ones() {
+    use std::os::unix::fs::{PermissionsExt, symlink};
+    let parent = crate::tests::private_tempdir();
+    let root = parent.path().join("new").join("nested");
+    drop(AuthStore::initialize(&root, "admin", "a-long-test-password").unwrap());
+    for path in [&root, root.parent().unwrap()] {
+        assert_eq!(
+            fs::metadata(path).unwrap().permissions().mode() & 0o777,
+            0o700
+        );
+    }
+    let public = parent.path().join("public");
+    fs::create_dir(&public).unwrap();
+    fs::set_permissions(&public, fs::Permissions::from_mode(0o755)).unwrap();
+    assert!(AuthStore::initialize(&public, "admin", "a-long-test-password").is_err());
+    assert_eq!(
+        fs::metadata(&public).unwrap().permissions().mode() & 0o777,
+        0o755
+    );
+    assert!(!public.join("auth.lock").exists());
+    let alias = parent.path().join("alias");
+    symlink(&root, &alias).unwrap();
+    assert!(AuthStore::open(&alias).is_err());
+}
+
+#[test]
+fn credential_store_supports_relative_private_root() {
+    let mut builder = tempfile::Builder::new();
+    builder.prefix("auth-relative-");
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::PermissionsExt;
+        builder.permissions(std::fs::Permissions::from_mode(0o700));
+    }
+    let root = builder.tempdir_in(".").unwrap();
+    let path = root
+        .path()
+        .strip_prefix(std::env::current_dir().unwrap())
+        .unwrap_or(root.path());
+    let store = AuthStore::initialize(path, "admin", "a-long-test-password").unwrap();
+    drop(store);
+    assert!(AuthStore::open(path).is_ok());
+}
+
+#[cfg(unix)]
+#[test]
+fn credential_reopen_rejects_replaceable_ancestry_without_changing_it() {
+    use std::os::unix::fs::PermissionsExt;
+    let parent = crate::tests::private_tempdir();
+    let root = parent.path().join("private");
+    drop(AuthStore::initialize(&root, "admin", "a-long-test-password").unwrap());
+    fs::set_permissions(parent.path(), fs::Permissions::from_mode(0o777)).unwrap();
+    assert!(AuthStore::open(&root).is_err());
+    assert_eq!(
+        fs::metadata(parent.path()).unwrap().permissions().mode() & 0o777,
+        0o777
     );
 }

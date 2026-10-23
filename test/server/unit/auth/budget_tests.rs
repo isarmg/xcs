@@ -18,7 +18,7 @@ fn backup_counter(store: &mut AuthStore) -> Arc<AtomicUsize> {
 
 #[test]
 fn authoritative_snapshot_recovers_an_oversized_safe_local_file() {
-    let root = tempfile::tempdir().unwrap();
+    let root = crate::tests::private_tempdir();
     let mut store =
         AuthStore::initialize(root.path(), "admin", "credential-budget-password").unwrap();
     let login = store.login("admin", "credential-budget-password").unwrap();
@@ -37,7 +37,7 @@ fn authoritative_snapshot_recovers_an_oversized_safe_local_file() {
 
 #[test]
 fn oversized_authoritative_snapshot_never_replaces_existing_credentials() {
-    let root = tempfile::tempdir().unwrap();
+    let root = crate::tests::private_tempdir();
     let mut store =
         AuthStore::initialize(root.path(), "admin", "credential-budget-password").unwrap();
     let login = store.login("admin", "credential-budget-password").unwrap();
@@ -68,7 +68,7 @@ fn authoritative_recovery_preserves_local_file_safety_checks() {
     use std::os::unix::fs::{PermissionsExt, symlink};
 
     for kind in ["symlink", "hard_link", "public_mode"] {
-        let root = tempfile::tempdir().unwrap();
+        let root = crate::tests::private_tempdir();
         let store =
             AuthStore::initialize(root.path(), "admin", "credential-budget-password").unwrap();
         let snapshot = store.snapshot().unwrap();
@@ -101,7 +101,7 @@ fn authoritative_recovery_preserves_local_file_safety_checks() {
 
 #[test]
 fn oversized_account_update_is_rejected_before_backup_or_disk_changes() {
-    let root = tempfile::tempdir().unwrap();
+    let root = crate::tests::private_tempdir();
     let mut store =
         AuthStore::initialize(root.path(), "admin", "credential-budget-password").unwrap();
     let login = store.login("admin", "credential-budget-password").unwrap();
@@ -154,7 +154,7 @@ fn fill_to_limit(store: &mut AuthStore) {
 
 #[test]
 fn full_store_rejects_login_without_pruning_sessions_or_blocking_recovery() {
-    let root = tempfile::tempdir().unwrap();
+    let root = crate::tests::private_tempdir();
     let mut store =
         AuthStore::initialize(root.path(), "admin", "credential-budget-password").unwrap();
     let active = store.login("admin", "credential-budget-password").unwrap();
