@@ -44,7 +44,7 @@ class ConcurrentCollectionsGateTests(unittest.TestCase):
 
     def test_empty_nightly_compatibility_feature_is_removed(self):
         import tomllib
-        manifest = tomllib.loads((ROOT / "src/foundation/concurrent-collections/Cargo.toml").read_text())
+        manifest = tomllib.loads((ROOT / "src/foundation/concurrency/concurrent-collections/Cargo.toml").read_text())
         self.assertNotIn("nightly", manifest["features"])
         self.assertEqual(GATE.FEATURES, ((), ("alloc",), ("std",)))
         self.assertTrue(callable(GATE.check_removed_feature))

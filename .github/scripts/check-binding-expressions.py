@@ -21,7 +21,7 @@ def check(clang=False):
             (work / "Cargo.toml").write_text(
                 '[package]\nname="binding-expression-clang-tests"\nversion="0.0.0"\n'
                 'edition="2021"\n[workspace]\n[dependencies]\n'
-                f'clang-sys={{path="{ROOT / "src/foundation/clang-sys"}",features=["clang_11_0"]}}\n'
+                f'clang-sys={{path="{ROOT / "src/foundation/tooling/clang-sys"}",features=["clang_11_0"]}}\n'
                 '[[test]]\nname="clang"\n'
                 f'path="{ROOT / "test/foundation/bindgen/cexpr/tests/clang.rs"}"\n')
             common = ["--offline", "--manifest-path", str(work / "Cargo.toml")]

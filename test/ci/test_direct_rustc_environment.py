@@ -7,7 +7,10 @@ import tempfile
 import unittest
 from unittest.mock import patch
 
+import runpy
+
 ROOT = Path(__file__).resolve().parents[2]
+foundation_path = runpy.run_path(str(ROOT / '.github/scripts/foundation_paths.py'))['package_path']
 
 
 def load(name, relative):
@@ -73,7 +76,7 @@ class DirectRustcEnvironment(unittest.TestCase):
             self.assertEqual(len(calls), 27)
             for index, crate in enumerate(("sysinfo", "socket2", "mio")):
                 for call in calls[index * 9:(index + 1) * 9]:
-                    self.assertEqual(call["env"]["CARGO_MANIFEST_DIR"], str(ROOT / "src/foundation" / crate))
+                    self.assertEqual(call["env"]["CARGO_MANIFEST_DIR"], str(foundation_path(ROOT, crate)))
 
 
 if __name__ == "__main__":

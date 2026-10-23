@@ -56,7 +56,7 @@ class SynchronizationGateTests(unittest.TestCase):
             self.assertFalse((directory / 'tests/crypto_namespace.rs').exists())
 
     def test_no_std_and_low_level_boundaries(self):
-        manifest = tomllib.loads((ROOT / 'src/foundation/synchronization/Cargo.toml').read_text())
+        manifest = tomllib.loads((ROOT / 'src/foundation/concurrency/synchronization/Cargo.toml').read_text())
         self.assertEqual(manifest['features']['default'], ['locks'])
         self.assertNotIn('locks', manifest['features']['parking'])
         self.assertNotIn('std', manifest['features']['arc_lock'])

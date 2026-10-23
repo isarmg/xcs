@@ -9,7 +9,10 @@ import subprocess
 import tempfile
 import tomllib
 
+import runpy
+
 ROOT = Path(__file__).resolve().parents[2]
+foundation_path = runpy.run_path(str(ROOT / '.github/scripts/foundation_paths.py'))['package_path']
 TARGETS = ('x86_64-unknown-linux-gnu', 'wasm32-unknown-unknown')
 RETIRED_FEATURES = {
     'unicode-normalizer': ('utf16_iter', 'write16', 'harfbuzz_traits', 'datagen'),
@@ -85,7 +88,7 @@ def manifest_capability_violations(manifest, workspace_dependencies=None):
 def validate_capability_surface(root):
     workspace = tomllib.loads((root / 'Cargo.toml').read_text()).get('workspace', {}).get('dependencies', {})
     for name, expected in SUPPORTED_FEATURES.items():
-        manifest = tomllib.loads((root / 'src/foundation' / name / 'Cargo.toml').read_text())
+        manifest = tomllib.loads((foundation_path(root, name) / 'Cargo.toml').read_text())
         if set(manifest['features']) != set(expected):
             raise AssertionError('Unicode supported capability surface drift: ' + name)
     # Historical provenance manifests are immutable records, not retained consumers.
@@ -119,7 +122,7 @@ def capability_probe(root, temporary, name, label, features):
     (work / 'src/lib.rs').write_text('#![no_std]\npub use ' + name.replace('-', '_') + '::provider;\n')
     manifest = ('[package]\nname = "unicode-capability-probe"\nversion = "0.0.0"\n'
                 'edition = "2024"\n[workspace]\n[dependencies.' + name + ']\n'
-                'path = ' + json.dumps(str(root / 'src/foundation' / name)) + '\n'
+                'path = ' + json.dumps(str(foundation_path(root, name))) + '\n'
                 'default-features = false\nfeatures = ' + json.dumps(features) + '\n'
                 '[profile.dev]\ndebug = 0\nincremental = false\n')
     (work / 'Cargo.toml').write_text(manifest)
@@ -172,7 +175,7 @@ def validate_table_inputs(root, family):
     for source, expected in package['files_sha256'].items():
         if source.startswith('data/') or source == 'build.rs':
             target = record['file_routes'][old][source]['destination']
-            actual = hashlib.sha256((root / destination / target).read_bytes()).hexdigest()
+            actual = hashlib.sha256((foundation_path(root, 'unicode-' + family) / target).read_bytes()).hexdigest()
             if actual != expected:
                 raise AssertionError('generated Unicode table/build input changed: ' + source)
 
@@ -181,7 +184,7 @@ def check_family(root, temporary, target, family):
     validate_table_inputs(root, family)
     name = 'unicode-' + family
     crate = 'unicode_' + family
-    if (root / 'src/foundation' / (name.replace('unicode-', 'icu_') + '_data')).exists():
+    if (foundation_path(root, name.replace('unicode-', 'icu_') + '_data')).exists():
         raise AssertionError('retired generated-data source package remains')
     feature_sets = ((), ('compiled_data',)) if family == 'normalizer' else ((), ('alloc',), ('compiled_data',), ('compiled_data', 'alloc'))
     for features in feature_sets:
@@ -192,7 +195,7 @@ def check_family(root, temporary, target, family):
         lib.write_text('#![no_std]\npub use ' + crate + '::provider;\n')
         manifest = ('[package]\nname = "unicode-data-probe"\nversion = "0.0.0"\n'
                     'edition = "2024"\n[workspace]\n[dependencies.' + name + ']\n'
-                    'path = ' + json.dumps(str(root / 'src/foundation' / name)) + '\n'
+                    'path = ' + json.dumps(str(foundation_path(root, name))) + '\n'
                     'default-features = false\nfeatures = ' + json.dumps(features) + '\n'
                     '[profile.dev]\ndebug = 0\nincremental = false\n'
                     '[profile.test]\ndebug = 0\nincremental = false\n')
@@ -208,7 +211,7 @@ def check_family(root, temporary, target, family):
             run(root, check)
         if compiled:
             # Use the real unchanged generated tables, never a fabricated provider.
-            custom = dict(os.environ, ICU4X_DATA_DIR=str(root / 'src/foundation' / name / 'src/data'))
+            custom = dict(os.environ, ICU4X_DATA_DIR=str(foundation_path(root, name) / 'src/data'))
             run(root, check, env=custom)
         else:
             lib.write_text('#![no_std]\npub use ' + crate + '::provider::Baked;\n')
@@ -220,7 +223,7 @@ def check_family(root, temporary, target, family):
     features = ['compiled_data', 'utf8_iter'] if family == 'normalizer' else ['compiled_data', 'alloc']
     manifest = ('[package]\nname = "unicode-data-behavior"\nversion = "0.0.0"\n'
                 'edition = "2024"\n[workspace]\n[dependencies.' + name + ']\n'
-                'path = ' + json.dumps(str(root / 'src/foundation' / name)) + '\n'
+                'path = ' + json.dumps(str(foundation_path(root, name))) + '\n'
                 'default-features = false\nfeatures = ' + json.dumps(features) + '\n')
     source = root / ('test/unicode-data/' + family + '.rs')
     manifest += ('[[test]]\nname = "unicode_behavior"\npath = ' + json.dumps(str(source)) + '\n'

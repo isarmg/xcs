@@ -2,7 +2,7 @@
   "schema_version": 1,
   "owners": [
     {
-      "directory": "src/foundation/ring",
+      "directory": "src/foundation/cryptography/ring",
       "roots": [
         "test/foundation/ring"
       ],
@@ -64,7 +64,7 @@
         {
           "source": "src/foundation/ring/crypto/constant_time_test.c",
           "path": "test/foundation/ring/crypto/constant_time_test.c",
-          "sha256": "001d1989e764c84ad4c55244a3845d93648a2a53a024e6f4d92be0b3b2f1d4ef",
+          "sha256": "a70ca7b0cd8dd98711cee9ddff03f589dcb8f5e824712cf703b3fbbbc88ed349",
           "source_sha256_before": "bf5812781fb3fdd1e46ddc92124a74d821e77130af2593b22b196762e78607b9"
         },
         {
@@ -568,7 +568,7 @@
         {
           "source": "src/foundation/ring/tests/rsa_tests.rs",
           "path": "test/foundation/ring/tests/rsa_tests.rs",
-          "sha256": "22537d3a0de17f272074825d98443e8b31deab5c5fceb3ab78a8c8a07ba32d0d",
+          "sha256": "1d768494f1f205418fc685f580f977ac1ec742e32bb3a4da2a55d63e99a9844a",
           "source_sha256_before": "b01ce5b39d53e460771063372b4bc1ae107755fab348dd40b762a127b377f1be"
         },
         {

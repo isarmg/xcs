@@ -23,7 +23,7 @@ import tarfile
 import tempfile
 
 ROOT = Path(__file__).resolve().parents[2]
-LIBC = ROOT / "src/foundation/libc"
+LIBC = ROOT / "src/foundation/platform/libc"
 NATIVE = "x86_64-unknown-linux-gnu"
 WEB = "wasm32-unknown-unknown"
 VARIANTS = {"default": ["std"], "no_std": [], "extra_traits": ["std", "extra_traits"]}

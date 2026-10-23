@@ -11,6 +11,11 @@ import sys
 import tempfile
 import tomllib
 
+import runpy
+foundation_paths = runpy.run_path(str(Path(__file__).with_name('foundation_paths.py')))
+foundation_path = foundation_paths['package_path']
+rebase_dependency_paths = foundation_paths['rebase_dependency_paths']
+
 FEATURES = ((), ('std',), ('collector',), ('registry',), ('fmt',), ('env-filter',),
             ('pattern',), ('pattern', 'unicode'), ('log',), ('log-tracer',),
             ('json',), ('collector-default', 'env-filter', 'json', 'time', 'attributes', 'log'))
@@ -24,13 +29,13 @@ def run(root, args):
 
 
 def structure(root):
-    package = tomllib.loads((root / 'src/foundation/tracing/Cargo.toml').read_text())
+    package = tomllib.loads((root / 'src/foundation/diagnostics/tracing/Cargo.toml').read_text())
     assert package['package']['name'] == 'tracing'
     assert not {'interest-cache', 'local-time', 'valuable', 'async-await'} & package['features'].keys()
-    assert all(not (root / 'src/foundation' / name).exists() for name in ABSORBED)
+    assert all(not (foundation_path(root, name)).exists() for name in ABSORBED)
     assert not set(ABSORBED) & package['dependencies'].keys()
     assert not {'tracing-serde', 'lru'} & package['dependencies'].keys()
-    assert package['dependencies']['date-time']['path'] == '../date-time'
+    assert package['dependencies']['date-time']['path'] == '../../core-types/date-time'
     assert package['dependencies']['date-time']['optional']
     assert 'time' not in package['dependencies']
     assert 'dep:date-time' in package['features']['time']
@@ -46,7 +51,7 @@ def capabilities(root):
         shutil.copyfile(root / 'rust-toolchain.toml', d / 'rust-toolchain.toml')
         manifest = d / 'Cargo.toml'; source = d / 'src/lib.rs'
         for features in FEATURES:
-            manifest.write_text('[package]\nname="tracing-probe"\nversion="0.0.0"\nedition="2021"\n[workspace]\n[dependencies]\ntracing={path=' + json.dumps(str(root / 'src/foundation/tracing')) + ',default-features=false,features=' + json.dumps(features) + '}\n')
+            manifest.write_text('[package]\nname="tracing-probe"\nversion="0.0.0"\nedition="2021"\n[workspace]\n[dependencies]\ntracing={path=' + json.dumps(str(root / 'src/foundation/diagnostics/tracing')) + ',default-features=false,features=' + json.dumps(features) + '}\n')
             source.write_text('#![no_std]\npub fn instrument() { tracing::info!(answer = 42u64); }\n')
             run(root, ['cargo', 'generate-lockfile', '--offline', '--manifest-path', str(manifest)])
             for target in TARGETS:
@@ -69,11 +74,11 @@ def retained_tests(root):
     with tempfile.TemporaryDirectory(prefix='tracing-retained-tests-') as temp:
         snapshot = Path(temp)
         shutil.copyfile(root / 'rust-toolchain.toml', snapshot / 'rust-toolchain.toml')
-        for relative in ('src/foundation/tracing', 'test/foundation/tracing-family', 'test/tracing'):
+        for relative in ('src/foundation/diagnostics/tracing', 'test/foundation/tracing-family', 'test/tracing'):
             shutil.copytree(root / relative, snapshot / relative, ignore=shutil.ignore_patterns('Cargo.lock', 'target'))
-        manifest = snapshot / 'src/foundation/tracing/Cargo.toml'
+        manifest = snapshot / 'src/foundation/diagnostics/tracing/Cargo.toml'
         text = manifest.read_text()
-        text = re.sub(r'(?m)^path = "(\.\./[^"\n]+)"$', lambda m: 'path = ' + json.dumps(str((root / 'src/foundation/tracing' / m[1]).resolve())) if not m[1].startswith('../../../test/') else m[0], text)
+        text = rebase_dependency_paths(text, root / 'src/foundation/diagnostics/tracing')
         for p in sorted((snapshot / 'test/foundation/tracing-family/primitives/tests').glob('*.rs')):
             text += '\n[[test]]\nname=' + json.dumps('primitives-' + p.stem) + '\npath=' + json.dumps(str(p)) + '\n'
         for name in ('log_tracer', 'reexport_log_crate'):
@@ -89,7 +94,7 @@ def static_levels(root):
         d = Path(temp)
         shutil.copyfile(root / 'rust-toolchain.toml', d / 'rust-toolchain.toml')
         manifest = d / 'Cargo.toml'
-        manifest.write_text('[package]\nname="tracing-static-levels"\nversion="0.0.0"\nedition="2021"\n[workspace]\n[dependencies]\ntracing={path=' + json.dumps(str(root / 'src/foundation/tracing')) + ',default-features=false,features=["registry","max_level_warn","release_max_level_error"]}\n[[test]]\nname="static-levels"\npath=' + json.dumps(str(root / 'test/tracing/static_levels.rs')) + '\n')
+        manifest.write_text('[package]\nname="tracing-static-levels"\nversion="0.0.0"\nedition="2021"\n[workspace]\n[dependencies]\ntracing={path=' + json.dumps(str(root / 'src/foundation/diagnostics/tracing')) + ',default-features=false,features=["registry","max_level_warn","release_max_level_error"]}\n[[test]]\nname="static-levels"\npath=' + json.dumps(str(root / 'test/tracing/static_levels.rs')) + '\n')
         run(root, ['cargo', 'generate-lockfile', '--offline', '--manifest-path', str(manifest)])
         for profile in ([], ['--release']):
             run(root, ['cargo', 'test', '--locked', '--offline', '--manifest-path', str(manifest), *profile])
@@ -99,7 +104,7 @@ def parking_registry(root):
     with tempfile.TemporaryDirectory(prefix='tracing-parking-') as temp:
         shutil.copyfile(root / 'rust-toolchain.toml', Path(temp) / 'rust-toolchain.toml')
         manifest = Path(temp) / 'Cargo.toml'
-        manifest.write_text('[package]\nname="tracing-parking"\nversion="0.0.0"\nedition="2021"\n[workspace]\n[dependencies]\ntracing={path=' + json.dumps(str(root / 'src/foundation/tracing')) + ',default-features=false,features=["registry","parking"]}\n[[test]]\nname="parking"\npath=' + json.dumps(str(root / 'test/tracing/parking.rs')) + '\n')
+        manifest.write_text('[package]\nname="tracing-parking"\nversion="0.0.0"\nedition="2021"\n[workspace]\n[dependencies]\ntracing={path=' + json.dumps(str(root / 'src/foundation/diagnostics/tracing')) + ',default-features=false,features=["registry","parking"]}\n[[test]]\nname="parking"\npath=' + json.dumps(str(root / 'test/tracing/parking.rs')) + '\n')
         run(root, ['cargo', 'generate-lockfile', '--offline', '--manifest-path', str(manifest)])
         run(root, [sys.executable, str(root / '.github/scripts/check-rust-diagnostics.py'), '--', 'cargo', 'check', '--locked', '--offline', '--manifest-path', str(manifest), '--tests', '--message-format=json'])
         run(root, [sys.executable, str(root / '.github/scripts/check-rust-diagnostics.py'), '--', 'cargo', 'check', '--locked', '--offline', '--manifest-path', str(manifest), '--tests', '--target', 'wasm32-unknown-unknown', '--message-format=json'])

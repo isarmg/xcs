@@ -11,16 +11,17 @@ import tomllib
 import unittest
 
 ROOT = Path(__file__).resolve().parents[2]
+foundation_path = runpy.run_path(str(ROOT / '.github/scripts/foundation_paths.py'))['package_path']
 CHECKS = runpy.run_path(str(ROOT / 'test/ci/crypto_core_checks.py'))
 ARCHIVE_SHA256 = '27cad88e27ab5f5dbfaa6333f980486667667bac89f2f3109fe41b46c3071c19'
 
 
 class CryptographicCoreChecks(unittest.TestCase):
     def test_minimal_consumer_uses_only_supported_features(self):
-        manifest = tomllib.loads(CHECKS['manifest'](ROOT / 'src/foundation/cryptographic-core'))
+        manifest = tomllib.loads(CHECKS['manifest'](ROOT / 'src/foundation/cryptography/cryptographic-core'))
         self.assertEqual(set(manifest['dependencies']), {'cryptographic-core'})
         self.assertFalse(manifest['dependencies']['cryptographic-core']['default-features'])
-        core = tomllib.loads((ROOT / 'src/foundation/cryptographic-core/Cargo.toml').read_text())
+        core = tomllib.loads((ROOT / 'src/foundation/cryptography/cryptographic-core/Cargo.toml').read_text())
         self.assertEqual(core['package']['name'], 'cryptographic-core')
         self.assertEqual(core['features']['block-api'], [])
         self.assertEqual(set(manifest['features']), set(core['features']))
@@ -49,8 +50,8 @@ class CryptographicCoreChecks(unittest.TestCase):
                 self.assertIsNone(obsolete.search(path.read_text()), str(path))
                 self.assertIsNone(re.search(r'use\s+(?:crate|cryptographic_core)::\{\s*crate::', path.read_text()), str(path))
         for owner in ('cryptographic-core', 'blake2', 'sha2', 'hmac', 'blake3', 'argon2'):
-            for parent in ('src/foundation', 'test/foundation'):
-                for path in (ROOT / parent / owner).rglob('*.rs'):
+            for parent in (foundation_path(ROOT, owner), ROOT / 'test/foundation' / owner):
+                for path in parent.rglob('*.rs'):
                     self.assertIsNone(re.search(r"\bdigest::", path.read_text()), str(path))
 
     def test_three_original_implementations_remain_authenticated(self):
@@ -64,7 +65,7 @@ class CryptographicCoreChecks(unittest.TestCase):
         names = ('digest-0.11.3', 'block-buffer-0.12.1', 'crypto-common-0.2.2')
         self.assertEqual(set(archive['owners']), {'src/foundation/' + name for name in names})
         catalog = json.loads((ROOT / 'compliance/rust-sources.json').read_text())
-        current = catalog['packages']['src/foundation/cryptographic-core']
+        current = catalog['packages']['src/foundation/cryptography/cryptographic-core']
         retained = [current] + [row for row in catalog['merges'] if row['directory'] == current['directory']]
         self.assertEqual(len(retained), 3)
         for directory, original in archive['owners'].items():

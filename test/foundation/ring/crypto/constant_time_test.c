@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "../../../../src/foundation/ring/crypto/internal.h"
+#include "../../../../src/foundation/cryptography/ring/crypto/internal.h"
 
 int bssl_constant_time_test_main(void);
 

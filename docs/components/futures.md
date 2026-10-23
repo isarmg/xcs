@@ -4,7 +4,7 @@
 
 ## 编译边界
 
-`src/foundation/futures` 将同源的 facade、core、channel、executor、io、sink、task、util 八个运行时库整合为一个库包。`futures-macro` 仍是独立宿主过程宏目标；它不依赖运行时库，因此不会引入过程宏与目标代码的依赖环。`futures-intrusive` 不属于此次合并。
+`src/foundation/concurrency/futures` 将同源的 facade、core、channel、executor、io、sink、task、util 八个运行时库整合为一个库包。`futures-macro` 仍是独立宿主过程宏目标；它不依赖运行时库，因此不会引入过程宏与目标代码的依赖环。`futures-intrusive` 不属于此次合并。
 
 名称保留有明确语义的 `futures`，不引入品牌前缀、版本化目录、旧包别名或兼容壳。公共 API 按 `future`、`stream`、`sink`、`task`、`io`、`channel`、`executor` 划分。内部 `traits`、`task_support`、`sink_trait`、`io_traits` 保存实现边界而非重新复制算法。
 

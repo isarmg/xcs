@@ -31,7 +31,7 @@ mod tests {
 
     const OK_IF_POINT_COMPRESSION_SUPPORTED: Result<(), Error> = Ok(());
 
-    #[path = "../../../../../../../src/foundation/rustls-webpki/src/aws_lc_rs_algs/tests/alg_tests.rs"]
+    #[path = "../../../../../../../src/foundation/networking/rustls-webpki/src/aws_lc_rs_algs/tests/alg_tests.rs"]
     mod alg_tests;
 
     fn maybe_rsa() -> Result<(), Error> {

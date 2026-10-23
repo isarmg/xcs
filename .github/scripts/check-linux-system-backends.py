@@ -10,6 +10,7 @@ import subprocess
 import tempfile
 
 ROOT = Path(__file__).resolve().parents[2]
+foundation_path = runpy.run_path(str(ROOT / '.github/scripts/foundation_paths.py'))['package_path']
 matrix_environment = runpy.run_path(str(Path(__file__).with_name("backend_environment.py")))["matrix_environment"]
 TARGET = "x86_64-unknown-linux-gnu"
 CONSUMER = (ROOT / "test/ci/fixtures/linux-system-backends.rs").read_text()
@@ -17,7 +18,7 @@ CONSUMER = (ROOT / "test/ci/fixtures/linux-system-backends.rs").read_text()
 
 def check_target_contract(root, work):
     for crate in ("sysinfo", "socket2", "mio"):
-        source = (root / "src/foundation" / crate / "src/lib.rs").read_text()
+        source = (foundation_path(root, crate) / "src/lib.rs").read_text()
         guard = re.search(r"// Maintained native target contract;.*?compile_error!\(.*?\);", source, re.S)
         if guard is None:
             raise AssertionError(f"{crate}: missing native target contract")
@@ -40,15 +41,15 @@ def check_target_contract(root, work):
             command = ["rustc", str(probe_path), "--deny=warnings", "--emit=metadata", "-o", str(work / "probe.rmeta")]
             for key, value in [("os", target_os), ("arch", arch), ("pointer_width", width)]:
                 command += ["--cfg", f'probe_{key}="{value}"']
-            environment = os.environ | {"CARGO_MANIFEST_DIR": str((root / "src/foundation" / crate).resolve())}
+            environment = os.environ | {"CARGO_MANIFEST_DIR": str((foundation_path(root, crate)).resolve())}
             result = subprocess.run(command, env=environment, capture_output=True, text=True)
             if (result.returncode == 0) != allowed:
                 raise AssertionError(f"{crate}: wrong target contract for {target_os}/{arch}/{width}: {result.stderr}")
     for path in ("sysinfo/src/windows", "sysinfo/src/unix/apple", "sysinfo/src/unix/bsd", "socket2/src/sys/windows.rs", "mio/src/sys/windows"):
-        if (root / "src/foundation" / path).exists():
+        if (foundation_path(root, path)).exists():
             raise AssertionError(f"retired backend present: {path}")
     for path in ("mio/src/sys/unix/selector/poll.rs", "mio/src/sys/unix/waker/pipe.rs", "mio/src/sys/unix/pipe.rs", "mio/src/sys/shell/mod.rs", "sysinfo/src/unknown/mod.rs"):
-        if not (root / "src/foundation" / path).is_file():
+        if not (foundation_path(root, path)).is_file():
             raise AssertionError(f"required fallback missing: {path}")
 
 def check(root):
@@ -66,9 +67,9 @@ edition = "2021"
 [features]
 poll = ["mio/net", "mio/os-ext", "mio/os-poll"]
 [dependencies]
-sysinfo = {{ path = "{foundation / 'sysinfo'}", features = ["c-interface", "serialization", "multithread", "linux-netdevs", "linux-tmpfs", "debug"] }}
-socket2 = {{ path = "{foundation / 'socket2'}", features = ["all"] }}
-mio = {{ path = "{foundation / 'mio'}", default-features = false }}
+sysinfo = {{ path = "{root / 'src/foundation/platform/sysinfo'}", features = ["c-interface", "serialization", "multithread", "linux-netdevs", "linux-tmpfs", "debug"] }}
+socket2 = {{ path = "{root / 'src/foundation/networking/socket2'}", features = ["all"] }}
+mio = {{ path = "{root / 'src/foundation/concurrency/mio'}", default-features = false }}
 ''')
         (work / "src/lib.rs").write_text(CONSUMER)
         subprocess.run(["cargo", "generate-lockfile", "--offline", "--manifest-path",

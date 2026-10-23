@@ -8,8 +8,12 @@ import re
 import shutil
 import tempfile
 
+import runpy
+
 ROOT = Path(__file__).resolve().parents[2]
-MANIFEST = ROOT / 'src/foundation/schema-validation/Cargo.toml'
+rebase_dependency_paths = runpy.run_path(str(ROOT / '.github/scripts/foundation_paths.py'))['rebase_dependency_paths']
+foundation_path = runpy.run_path(str(ROOT / '.github/scripts/foundation_paths.py'))['package_path']
+MANIFEST = ROOT / 'src/foundation/data-storage/schema-validation/Cargo.toml'
 
 def run(*args):
     return subprocess.run(args, cwd=ROOT, env=dict(os.environ, CARGO_BUILD_JOBS=os.environ.get('CARGO_BUILD_JOBS', '2')), check=True)
@@ -49,14 +53,12 @@ def main():
     # using the exact retained implementation and real external fixtures.
     with tempfile.TemporaryDirectory(prefix='schema-capabilities-') as temporary:
         work = Path(temporary)
-        package = work / 'src/foundation/schema-validation'
+        package = work / 'src/foundation/data-storage/schema-validation'
         shutil.copytree(MANIFEST.parent, package)
         shutil.copytree(ROOT / 'test/foundation/schema-validation', work / 'test/foundation/schema-validation')
         shutil.copytree(ROOT / 'test/schema-validation', work / 'test/schema-validation')
         manifest = package / 'Cargo.toml'
-        text = re.sub(r'path = "\.\./([^/"\n]+)"',
-                      lambda m: 'path = ' + json.dumps(str(ROOT / 'src/foundation' / m[1])),
-                      manifest.read_text())
+        text = rebase_dependency_paths(manifest.read_text(), MANIFEST.parent)
         manifest.write_text(text + '\n[workspace]\n')
         check(manifest)
         probe = work / 'probe'

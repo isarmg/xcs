@@ -50,7 +50,7 @@ class BrowserFuturesRetirement(unittest.TestCase):
             self.assertNotIn('wasm-bindgen-futures', path.read_text(), str(path))
         script = (ROOT / '.github/scripts/check-csr-scope.py').read_text()
         self.assertNotIn('wasm-bindgen-futures', script)
-        macros = ROOT / 'src/foundation/wasm-binding-macros/src'
+        macros = ROOT / 'src/foundation/web-runtime/wasm-binding-macros/src'
         for name in ('ast.rs', 'codegen.rs', 'encode.rs', 'lib.rs'):
             self.assertNotIn('wasm_bindgen_futures', (macros / name).read_text())
         for path in macros.glob('*.rs'):
@@ -160,14 +160,14 @@ class BrowserFuturesRetirement(unittest.TestCase):
                 module.browser_check(output)
 
     def test_dispatch_preserves_std_without_enabling_eval(self):
-        manifest = tomllib.loads((ROOT / 'src/foundation/task-dispatch/Cargo.toml').read_text())
+        manifest = tomllib.loads((ROOT / 'src/foundation/concurrency/task-dispatch/Cargo.toml').read_text())
         dependency = manifest['dependencies']['js-sys']
-        self.assertEqual(dependency['path'], '../js-sys')
+        self.assertEqual(dependency['path'], '../../web-runtime/js-sys')
         self.assertTrue(dependency['optional'])
         self.assertFalse(dependency['default-features'])
         self.assertEqual(dependency['features'], ['std'])
         self.assertEqual(manifest['features']['wasm-bindgen'], ['dep:js-sys'])
-        js = tomllib.loads((ROOT / 'src/foundation/js-sys/Cargo.toml').read_text())
+        js = tomllib.loads((ROOT / 'src/foundation/web-runtime/js-sys/Cargo.toml').read_text())
         self.assertIn('wasm-bindgen/std', js['features']['std'])
 
 

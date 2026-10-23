@@ -70,5 +70,5 @@ class LoggingGate(unittest.TestCase):
         self.assertEqual(manifest['package']['name'], 'logging')
         self.assertEqual(set(manifest['features']), {'auto-color', 'color', 'default', 'kv', 'regex'})
         self.assertNotIn('env_filter', manifest['dependencies'])
-        self.assertEqual(manifest['dependencies']['terminal-style']['path'], '../terminal-style')
+        self.assertEqual(manifest['dependencies']['terminal-style']['path'], '../../tooling/terminal-style')
         self.assertEqual(manifest['dependencies']['regex']['features'], ['matcher', 'perf', 'std'])

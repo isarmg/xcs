@@ -11,7 +11,7 @@ ROOT = Path(__file__).resolve().parents[2]
 
 
 def check(root=ROOT):
-    manifest = tomllib.loads((root / 'src/foundation/schema-validation/Cargo.toml').read_text())
+    manifest = tomllib.loads((root / 'src/foundation/data-storage/schema-validation/Cargo.toml').read_text())
     forwarding = manifest['features']['arbitrary-precision']
     assert 'numeric/bigint' in forwarding
     assert 'json-codec/arbitrary_precision' in forwarding
@@ -29,8 +29,8 @@ edition = "2021"
 value-only = ["schema-validation/arbitrary-precision"]
 validator = ["schema-validation/validator", "schema-validation/arbitrary-precision"]
 [dependencies]
-schema-validation = {{ path = "{foundation / 'schema-validation'}", default-features = false, features = ["value", "json-codec"] }}
-json-codec = {{ path = "{foundation / 'json-codec'}" }}
+schema-validation = {{ path = "{root / 'src/foundation/data-storage/schema-validation'}", default-features = false, features = ["value", "json-codec"] }}
+json-codec = {{ path = "{root / 'src/foundation/data-storage/json-codec'}" }}
 [profile.dev]
 debug = 0
 incremental = false

@@ -10,6 +10,7 @@ import tempfile
 import tomllib
 
 ROOT = Path(__file__).resolve().parents[2]
+foundation_path = runpy.run_path(str(ROOT / '.github/scripts/foundation_paths.py'))['package_path']
 NATIVE = "x86_64-unknown-linux-gnu"
 WASM = "wasm32-unknown-unknown"
 
@@ -38,13 +39,12 @@ def check_source_paths(root):
 
 
 def check_private_family(root):
-    manifests = {name: tomllib.loads((root / 'src/foundation' / name / 'Cargo.toml').read_text())
+    manifests = {name: tomllib.loads((foundation_path(root, name) / 'Cargo.toml').read_text())
                  for name in ('data-serialization', 'serialization-derive')}
     validate_private_family(manifests)
 
 
 def manifest(root, no_std=False):
-    foundation = root / "src/foundation"
     dependencies = {
         "data-serialization": (['derive', 'alloc', 'rc', 'error-path'], not no_std),
         "json-codec": (['alloc'] if no_std else ['raw_value', 'arbitrary_precision'], not no_std),
@@ -59,7 +59,7 @@ def manifest(root, no_std=False):
     lines = ['[package]', 'name = "serialization-family-regression"', 'version = "0.0.0"',
              'edition = "2021"', '[workspace]', '[dependencies]']
     for name, (features, defaults) in dependencies.items():
-        lines.append(f'{name} = {{ path = {json.dumps(str(foundation / name))}, '
+        lines.append(f'{name} = {{ path = {json.dumps(str(foundation_path(root, name)))}, '
                      f'features = {json.dumps(features)}, default-features = {str(defaults).lower()} }}')
     return '\n'.join(lines) + '\n'
 

@@ -1,7 +1,11 @@
 #!/usr/bin/env python3
 """Check URL capabilities without workspace feature unification, then real consumers."""
 import json, os, pathlib, re, shutil, subprocess, tempfile
+import runpy
+
 ROOT=pathlib.Path(__file__).resolve().parents[2]
+rebase_dependency_paths = runpy.run_path(str(ROOT / '.github/scripts/foundation_paths.py'))['rebase_dependency_paths']
+foundation_path = runpy.run_path(str(ROOT / '.github/scripts/foundation_paths.py'))['package_path']
 def run(args, cwd=ROOT, success=True):
  p=subprocess.run(args,cwd=cwd,text=True,stdout=subprocess.PIPE,stderr=subprocess.STDOUT,timeout=600)
  if 'metadata' not in args: print(p.stdout, end='')
@@ -12,11 +16,11 @@ def run(args, cwd=ROOT, success=True):
 
 def retained_manifest(manifest, root):
  """Build the real retained-test manifest without changing production dependencies."""
- manifest=re.sub(r'path = "../([^"\n]+)"',lambda m:'path = '+json.dumps(str(root/'src/foundation'/m[1])),manifest)
- manifest+='\n[workspace]\n[dev-dependencies.json-codec]\npath='+json.dumps(str(root/'src/foundation/json-codec'))+'\n[dev-dependencies.data-serialization]\npath='+json.dumps(str(root/'src/foundation/data-serialization'))+'\nfeatures=["derive"]\n'
- manifest+='\n[dev-dependencies.serialization-derive]\npath='+json.dumps(str(root/'src/foundation/serialization-derive'))+'\n'
+ manifest=rebase_dependency_paths(manifest, root/'src/foundation/networking/url-encoding')
+ manifest+='\n[workspace]\n[dev-dependencies.json-codec]\npath='+json.dumps(str(root/'src/foundation/data-storage/json-codec'))+'\n[dev-dependencies.data-serialization]\npath='+json.dumps(str(root/'src/foundation/data-storage/data-serialization'))+'\nfeatures=["derive"]\n'
+ manifest+='\n[dev-dependencies.serialization-derive]\npath='+json.dumps(str(root/'src/foundation/data-storage/serialization-derive'))+'\n'
  for name,path,harness in [('url-unit','foundation/url-encoding/address/tests/unit.rs',True),('domain-unit','foundation/url-encoding/domain/tests/unitbis.rs',True),('url-wpt','foundation/url-encoding/address/tests/wpt.rs',False),('behavior','url-encoding/behavior.rs',True)]:
-  manifest+='\n[[test]]\nname='+json.dumps(name)+'\npath='+json.dumps('../../../test/'+path)+'\nharness='+str(harness).lower()+'\n'
+  manifest+='\n[[test]]\nname='+json.dumps(name)+'\npath='+json.dumps('../../../../test/'+path)+'\nharness='+str(harness).lower()+'\n'
  manifest+='\n[profile.dev]\ndebug=0\nincremental=false\n[profile.test]\ndebug=0\nincremental=false\n'
  return manifest
 
@@ -26,7 +30,7 @@ def check():
   tmp=pathlib.Path(tmp)
   for index,features in enumerate([[],['alloc'],['form'],['domain'],['parser'],['parser','std','serialization']]):
    p=tmp/str(index);(p/'src').mkdir(parents=True)
-   manifest='[package]\nname="url-capability-probe"\nversion="0.0.0"\nedition="2024"\n[workspace]\n[dependencies.url-encoding]\npath='+json.dumps(str(ROOT/'src/foundation/url-encoding'))+'\ndefault-features=false\nfeatures='+json.dumps(features)+'\n[profile.dev]\ndebug=0\nincremental=false\n'
+   manifest='[package]\nname="url-capability-probe"\nversion="0.0.0"\nedition="2024"\n[workspace]\n[dependencies.url-encoding]\npath='+json.dumps(str(ROOT/'src/foundation/networking/url-encoding'))+'\ndefault-features=false\nfeatures='+json.dumps(features)+'\n[profile.dev]\ndebug=0\nincremental=false\n'
    (p/'Cargo.toml').write_text(manifest);(p/'src/lib.rs').write_text('#![no_std]\npub fn encoded(b: u8) -> &\'static str { url_encoding::percent::percent_encode_byte(b) }\n')
    common=['--manifest-path',str(p/'Cargo.toml'),'--offline']
    run(['cargo','generate-lockfile',*common]);meta=json.loads(run(['cargo','metadata','--format-version','1','--locked',*common]))
@@ -39,7 +43,7 @@ def check():
    if not heavy:
     (p/'src/lib.rs').write_text('use url_encoding::address::Url;\n')
     out=run(cmd,success=False);assert 'E0432' in out and 'address' in out
-  mirror=tmp/'retained';pkg=mirror/'src/foundation/url-encoding';shutil.copytree(ROOT/'src/foundation/url-encoding',pkg)
+  mirror=tmp/'retained';pkg=mirror/'src/foundation/networking/url-encoding';shutil.copytree(ROOT/'src/foundation/networking/url-encoding',pkg)
   shutil.copytree(ROOT/'test/foundation/url-encoding',mirror/'test/foundation/url-encoding');shutil.copytree(ROOT/'test/url-encoding',mirror/'test/url-encoding')
   (pkg/'Cargo.toml').write_text(retained_manifest((pkg/'Cargo.toml').read_text(), ROOT))
   common=['--manifest-path',str(pkg/'Cargo.toml'),'--offline'];run(['cargo','generate-lockfile',*common])

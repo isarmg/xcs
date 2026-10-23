@@ -6,7 +6,10 @@ import json
 import subprocess
 import tempfile
 
+import runpy
+
 ROOT = Path(__file__).resolve().parents[2]
+foundation_path = runpy.run_path(str(ROOT / '.github/scripts/foundation_paths.py'))['package_path']
 FEATURES = {"terminal-style": ["output"], "rust-syntax": ["full"]}
 CONSUMER = (ROOT / "test/ci/fixtures/foundation-consumers.rs").read_text()
 
@@ -38,7 +41,7 @@ def check(root):
     with tempfile.TemporaryDirectory(prefix='foundation-consumers-', dir=root / 'target') as temporary:
         work = Path(temporary)
         (work / 'src').mkdir()
-        dependencies = '\n'.join(f'{name} = {{path = "{root / "src/foundation" / directory}", features = {json.dumps(FEATURES.get(name, []))}}}'
+        dependencies = '\n'.join(f'{name} = {{path = "{foundation_path(root, directory)}", features = {json.dumps(FEATURES.get(name, []))}}}'
                                  for name, directory in [('bindgen', 'bindgen'), ('terminal-style', 'terminal-style'),
                                                          ('rust-syntax', 'rust-syntax'),
                                                          ('winnow', 'winnow'), ('toml', 'toml')])

@@ -6,8 +6,8 @@ license = "Apache-2.0"
 
 
 [dependencies]
-semver = {version = "1", path = "../../src/foundation/semver"}
-toml = {version = "0.8.23", path = "../../src/foundation/toml"}
+semver = {version = "1", path = "../../src/foundation/tooling/semver"}
+toml = {version = "0.8.23", path = "../../src/foundation/data-storage/toml"}
 
 
 [lints.rust]

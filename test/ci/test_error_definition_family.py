@@ -4,10 +4,11 @@ import runpy
 import tomllib
 import unittest
 ROOT=Path(__file__).resolve().parents[2]
+foundation_path = runpy.run_path(str(ROOT / '.github/scripts/foundation_paths.py'))['package_path']
 CHECK=runpy.run_path(str(ROOT/'.github/scripts/check-error-definition-family.py'))
 class ErrorDefinitionFamily(unittest.TestCase):
     def manifests(self):
-        return {name:tomllib.loads((ROOT/'src/foundation'/name/'Cargo.toml').read_text()) for name in CHECK['NAMES']}
+        return {name:tomllib.loads((foundation_path(ROOT, name)/'Cargo.toml').read_text()) for name in CHECK['NAMES']}
     def test_current_family(self):
         CHECK['check_private_family'](ROOT)
     def test_version_skew_rejected(self):
@@ -22,7 +23,7 @@ class ErrorDefinitionFamily(unittest.TestCase):
             with self.assertRaises(AssertionError):CHECK['validate_private_family'](manifests)
     def test_stable_hidden_support(self):
         for path in ('error-definition/build.rs','error-definition-macros/src/lib.rs'):
-            text=(ROOT/'src/foundation'/path).read_text()
+            text=(foundation_path(ROOT, path)).read_text()
             self.assertIn('__derive_support',text)
             self.assertNotIn('CARGO_PKG_VERSION_PATCH',text)
             self.assertNotIn('__private',text)

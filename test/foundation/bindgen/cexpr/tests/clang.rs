@@ -5,7 +5,7 @@
 // <LICENSE-MIT or http://opensource.org/licenses/MIT>, at your
 // option. This file may not be copied, modified, or distributed
 // except according to those terms.
-#[path = "../../../../../src/foundation/bindgen/src/cexpr/mod.rs"]
+#[path = "../../../../../src/foundation/tooling/bindgen/src/cexpr/mod.rs"]
 mod cexpr;
 extern crate clang_sys;
 

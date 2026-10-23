@@ -9,6 +9,7 @@ import sys
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from external_tests import safe, inventory
 import proof_routing
+import source_layout
 
 RECEIPT = 'compliance/platform-test-relocation.json'
 RECEIPT_SHA256 = '6adb981c33cc4058bf9225072fe24a66047ef17f7020348d23152e75fb7169ca'
@@ -18,6 +19,7 @@ CORRECTIONS = 'compliance/platform-test-routing-corrections.json'
 CORRECTIONS_SHA256 = 'fca4cd432cb6a51db9bd74a33764339b3e1fb347b7ddb5d950e5b5020acee458'
 
 
+@source_layout.operation
 def corrected_view(root, view=None):
     view = view or proof_routing.load(root)
     """Reverse only authenticated subsequent routing fixes, preserving old receipts."""
@@ -142,6 +144,7 @@ def retired_view(root):
     return archived, roots
 
 
+@source_layout.operation
 def historical_reader(root):
     content = safe(root, RECEIPT).read_bytes()
     if hashlib.sha256(content).hexdigest() != RECEIPT_SHA256:

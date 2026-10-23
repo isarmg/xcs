@@ -3,6 +3,7 @@ import hashlib
 import json
 import os
 import re
+import source_layout
 from pathlib import Path
 
 MAPPINGS = 'compliance/external-tests'
@@ -39,8 +40,10 @@ def inventory(root, relative):
     return result
 
 
+@source_layout.operation
 def load(root, packages, renames=None, transfers=None):
     """Never learn new source bytes during refresh: verify explicit receipts first."""
+    transfers = source_layout.current_grants(root, transfers or {})
     directory = safe(root, MAPPINGS)
     if not directory.exists():
         return {}, {}
@@ -60,7 +63,7 @@ def load(root, packages, renames=None, transfers=None):
             if identity not in packages or identity in owners:
                 raise ValueError(f'unknown/duplicate external test owner: {identity}')
             from source_naming import source_prefixes
-            prefixes = source_prefixes(renames or {}, identity, packages[identity]['origin_directory'])
+            prefixes = source_layout.historical_prefixes(root, identity, packages[identity]['origin_directory'], renames or {})
             expected = {}
             for entry in owner['files']:
                 source, path = entry['source'], entry['path']
@@ -96,13 +99,14 @@ def load(root, packages, renames=None, transfers=None):
     return owners, receipts
 
 
-def check_removed(previous, current, owners, renames=None, trim_grants=None):
+def check_removed(previous, current, owners, renames=None, trim_grants=None, root=None):
     for directory, package in previous.items():
         if directory not in current or package.get('origin_directory') != current[directory].get('origin_directory'):
             continue
         removed = set(package.get('files_sha256', {})) - set(current[directory]['files_sha256'])
         from source_naming import source_prefixes
-        prefixes = source_prefixes(renames or {}, directory, package.get('origin_directory'))
+        prefixes = (source_layout.historical_prefixes(root, directory, package.get('origin_directory'), renames or {})
+                    if root is not None else source_prefixes(renames or {}, directory, package.get('origin_directory')))
         attributed = {path for path, value in (trim_grants or {}).get(directory, {}).items()
                       if package.get("files_sha256", {}).get(path) == value}
         for entry in owners.get(directory, {}).get('files', []):
@@ -168,7 +172,7 @@ def validate_archived(root, owner, package, removed=False, renames=None, transfe
             or not isinstance(owner.get('roots'), list) or not owner['roots']):
         raise ValueError(f'incomplete archived external test receipt: {directory}')
     from source_naming import source_prefixes
-    prefixes = source_prefixes(renames or {}, directory, package['origin_directory'])
+    prefixes = source_layout.historical_prefixes(root, directory, package['origin_directory'], renames or {})
     roots, paths = [], set()
     for relative in owner['roots']:
         path = safe(root, relative)

@@ -10,7 +10,10 @@ import tomllib
 import unittest
 from unittest.mock import patch
 
+import runpy
+
 ROOT = Path(__file__).resolve().parents[2]
+foundation_path = runpy.run_path(str(ROOT / '.github/scripts/foundation_paths.py'))['package_path']
 SPEC = importlib.util.spec_from_file_location("sqlite_family", ROOT / ".github/scripts/check-sqlite-family.py")
 module = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(module)
@@ -61,7 +64,7 @@ class SqliteFamily(unittest.TestCase):
             self.assertEqual(set(dependencies), {"sqlite-access"})
             self.assertEqual(manifest["features"]["sqlite-pool"], ["sqlite-access/pool"])
             for name, entry in {**dependencies, **manifest["dev-dependencies"]}.items():
-                self.assertEqual(Path(entry["path"]), ROOT / "src/foundation" / name)
+                self.assertEqual(Path(entry["path"]), foundation_path(ROOT, name))
             self.assertIn("workspace", manifest)
             self.assertEqual({row["path"] for row in manifest["test"]},
                              {str(ROOT / path) for path in module.INTEGRATION_TESTS.values()})
@@ -85,7 +88,7 @@ class SqliteFamily(unittest.TestCase):
             self.assertFalse((manifest.parent / "Cargo.lock").exists())
 
     def test_transaction_owns_the_original_source_without_a_pool_wrapper(self):
-        query_engine = ROOT / "src/foundation/sqlite-access/src/query_engine"
+        query_engine = ROOT / "src/foundation/data-storage/sqlite-access/src/query_engine"
         transaction = (query_engine / "transaction.rs").read_text()
         self.assertIn('#[path = "pool/maybe.rs"]\nmod connection;', transaction)
         self.assertTrue((query_engine / "pool/maybe.rs").is_file())

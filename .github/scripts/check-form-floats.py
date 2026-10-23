@@ -9,7 +9,10 @@ import tempfile
 
 from retired_sources import restore
 
+import runpy
+
 ROOT = Path(__file__).resolve().parents[2]
+foundation_path = runpy.run_path(str(ROOT / '.github/scripts/foundation_paths.py'))['package_path']
 
 
 
@@ -23,8 +26,8 @@ def differential():
                     'path=' + json.dumps(str(ROOT / 'test/architecture/form-floats/differential.rs')),
                     '[dependencies]']
         for name, path in [('ryu', work / 'src/foundation/ryu'),
-                           ('zmij', ROOT / 'src/foundation/zmij'),
-                           ('form-codec', ROOT / 'src/foundation/form-codec')]:
+                           ('zmij', ROOT / 'src/foundation/core-types/zmij'),
+                           ('form-codec', ROOT / 'src/foundation/data-storage/form-codec')]:
             manifest.append(f'{name}={{path={json.dumps(str(path))}}}')
         (work / 'Cargo.toml').write_text('\n'.join(manifest) + '\n')
         (work / 'rust-toolchain.toml').write_bytes((ROOT / 'rust-toolchain.toml').read_bytes())
@@ -52,9 +55,9 @@ def main():
         for name, features in [('form-codec', []), ('data-serialization', ['derive']),
                                ('serialization-derive', []), ('http-routing', ['form', 'query']),
                                ('http-body', ['utilities'])]:
-            manifest.append(f'{name}={{path={json.dumps(str(ROOT / "src/foundation" / name))},default-features=false,features={json.dumps(features)}}}')
+            manifest.append(f'{name}={{path={json.dumps(str(foundation_path(ROOT, name)))},default-features=false,features={json.dumps(features)}}}')
         manifest.extend(["[target.'cfg(not(target_arch = \"wasm32\"))'.dependencies]",
-                         f'reqwest={{path={json.dumps(str(ROOT / "src/foundation/reqwest"))},default-features=false}}'])
+                         f'reqwest={{path={json.dumps(str(ROOT / "src/foundation/networking/reqwest"))},default-features=false}}'])
         for name, path in [('behavior', 'test/architecture/form-floats/behavior.rs'),
                            ('serialize', 'test/foundation/form-codec/tests/test_serialize.rs'),
                            ('deserialize', 'test/foundation/form-codec/tests/test_deserialize.rs')]:

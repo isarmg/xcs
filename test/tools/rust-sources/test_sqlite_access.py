@@ -8,7 +8,7 @@ ROOT = Path(__file__).resolve().parents[3]
 
 class SqliteAccess(unittest.TestCase):
     def test_single_package_and_separate_native_binding(self):
-        base = ROOT / 'src/foundation'
+        base = ROOT / 'src/foundation/data-storage'
         self.assertTrue((base / 'sqlite-access/Cargo.toml').is_file())
         self.assertTrue((base / 'libsqlite3-sys/Cargo.toml').is_file())
         for name in ('sqlx', 'sqlx-core', 'sqlx-sqlite'):
@@ -18,7 +18,7 @@ class SqliteAccess(unittest.TestCase):
         self.assertFalse({'sqlx', 'sqlx-core', 'sqlx-sqlite'} & manifest['dependencies'].keys())
 
     def test_unsafe_is_confined_to_driver(self):
-        base = ROOT / 'src/foundation/sqlite-access/src'
+        base = ROOT / 'src/foundation/data-storage/sqlite-access/src'
         self.assertIn('#![deny(unsafe_code)]', (base / 'lib.rs').read_text())
         self.assertIn('#![forbid(unsafe_code)]', (base / 'query_engine/mod.rs').read_text())
         self.assertIn('#[allow(unsafe_code)]\npub mod sqlite;', (base / 'lib.rs').read_text())
@@ -27,7 +27,7 @@ class SqliteAccess(unittest.TestCase):
 
     def test_original_test_origins_remain_distinct(self):
         catalog = json.loads((ROOT / 'compliance/rust-sources.json').read_text())
-        owner = catalog['external_tests']['src/foundation/sqlite-access']
+        owner = catalog['external_tests']['src/foundation/data-storage/sqlite-access']
         self.assertEqual(len({item['origin_directory'] for item in owner['files']}), 3)
         for name in ('facade', 'query_engine', 'sqlite'):
             self.assertTrue((ROOT / 'test/foundation/sqlite-access' / name).is_dir())

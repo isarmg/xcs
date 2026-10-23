@@ -2,6 +2,7 @@
 import importlib.util
 import json
 import os
+import runpy
 from pathlib import Path
 import subprocess
 import tomllib
@@ -9,6 +10,7 @@ import unittest
 from unittest.mock import patch
 
 ROOT = Path(__file__).resolve().parents[2]
+foundation_path = runpy.run_path(str(ROOT / '.github/scripts/foundation_paths.py'))['package_path']
 SPEC = importlib.util.spec_from_file_location('async_notification_gate', ROOT / '.github/scripts/check-async-notification.py')
 gate = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(gate)
@@ -92,13 +94,13 @@ class AsyncNotificationGateTests(unittest.TestCase):
 
     def test_sqlite_does_not_request_locks(self):
         for name, locks in (('sqlite-access', False), ('reactive-state', True)):
-            manifest = tomllib.loads((ROOT / f'src/foundation/{name}/Cargo.toml').read_text())
+            manifest = tomllib.loads((foundation_path(ROOT, name) / 'Cargo.toml').read_text())
             dep = manifest['dependencies']['async-notification']
             self.assertEqual('locks' in dep.get('features', []), locks)
             self.assertTrue(dep['default-features'])
 
     def test_std_does_not_enable_locks(self):
-        features = tomllib.loads((ROOT / 'src/foundation/async-notification/Cargo.toml').read_text())['features']
+        features = tomllib.loads((ROOT / 'src/foundation/concurrency/async-notification/Cargo.toml').read_text())['features']
         self.assertEqual(features, {'default': ['std'], 'std': ['dep:parking'], 'locks': []})
 
     def test_negative_probe_requires_failure_and_diagnostic(self):

@@ -10,6 +10,7 @@ import json
 from pathlib import Path
 
 import external_tests
+import source_layout
 import external_transfers
 import source_consolidation
 
@@ -119,7 +120,7 @@ full content and live-inventory equality remain the proof loader's obligation.
                 path = source_consolidation._safe(root, row['path'])
                 if not path.is_file():
                     raise ValueError('missing active primary external projection file')
-                size += path.stat().st_size
+                size += source_layout.logical_size(root, row['path'])
                 if size > MAX_LIVE_BYTES:
                     raise ValueError('primary external projection byte bound exceeded')
                 primary_paths.add(row['path'])
@@ -146,8 +147,10 @@ This function never calls proof_routing.load or validates a following chain step
     return validate_bindings(root, (row,), catalog, prospective)[0]
 
 
+@source_layout.operation
 def validate_bindings(root, rows, catalog=None, prospective=False):
     """Check every binding and authenticate shared history once for this call."""
+    catalog = source_layout.project_catalog(root, catalog) if catalog is not None else None
     rows = tuple(rows)
     if rows and not prospective:
         if not isinstance(catalog, dict):

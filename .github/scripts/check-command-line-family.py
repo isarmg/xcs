@@ -11,6 +11,9 @@ import tempfile
 import tomllib
 from pathlib import Path
 
+import runpy
+foundation_path = runpy.run_path(str(Path(__file__).with_name('foundation_paths.py')))['package_path']
+
 
 N = {
     "clap": "command-line",
@@ -70,9 +73,9 @@ def reject_dependency_aliases(value):
 
 def check(root):
     for name in REMOVED_COMPONENTS:
-        assert not (root / "src/foundation" / name).exists(), f"unmerged source root: {name}"
-    runtime = root / "src/foundation/command-line/src/lib.rs"
-    suggestions = root / "src/foundation/command-line/src/parser/features/suggestions/mod.rs"
+        assert not (foundation_path(root, name)).exists(), f"unmerged source root: {name}"
+    runtime = root / "src/foundation/tooling/command-line/src/lib.rs"
+    suggestions = root / "src/foundation/tooling/command-line/src/parser/features/suggestions/mod.rs"
     assert "mod similarity;" in suggestions.read_text(), "missing private similarity module"
     assert not re.search(r"\bpub(?:\([^)]*\))?\s+mod\s+similarity", suggestions.read_text()), "similarity module became public"
     assert "similarity::jaro(v, pv.as_ref())" in suggestions.read_text(), "suggestions bypass moved Jaro implementation"
@@ -83,9 +86,9 @@ def check(root):
             reject_dependency_aliases(tomllib.loads(manifest.read_text()))
 
     for old, new in N.items():
-        assert not (root / "src/foundation" / old).exists(), f"old source root: {old}"
+        assert not (foundation_path(root, old)).exists(), f"old source root: {old}"
         assert not (root / "test/foundation" / old).exists(), f"old test root: {old}"
-        component = root / "src/foundation" / new
+        component = foundation_path(root, new)
         manifest = tomllib.loads((component / "Cargo.toml").read_text())
         assert manifest["package"]["name"] == new, f"package identity: {new}"
         assert manifest["lib"]["name"] == new.replace("-", "_"), f"library identity: {new}"
@@ -100,12 +103,12 @@ def check(root):
             ), f"old Rust path: {source}"
             assert not re.search(r"\b__clap\w*", text), f"old emitted identifier: {source}"
 
-    derive = (root / "src/foundation/command-derive/src/lib.rs").read_text()
+    derive = (root / "src/foundation/tooling/command-derive/src/lib.rs").read_text()
     assert "attributes(command, arg, group)" in derive, "missing context-specific helpers"
     assert not re.search(
         r"attributes\([^)]*\b(?:clap|structopt|command_line)\b", derive
     ), "old derive alias"
-    attributes = root / "src/foundation/command-derive/src/attr.rs"
+    attributes = root / "src/foundation/tooling/command-derive/src/attr.rs"
     if attributes.exists():
         assert not re.search(
             r'is_ident\("(?:clap|structopt|command_line)"\)', attributes.read_text()
@@ -116,11 +119,11 @@ def check(root):
         assert "command_line::" in source.read_text(), f"unmigrated consumer: {source}"
     catalog = json.loads((root / "compliance/rust-sources.json").read_text())
     for old, new in N.items():
-        origin = catalog["packages"]["src/foundation/" + new]["origin_directory"]
+        origin = catalog["packages"][foundation_path(root, new).relative_to(root).as_posix()]["origin_directory"]
         assert Path(origin).name.startswith(old + "-"), f"lost upstream origin: {new}"
     origins = {Path(row["origin_directory"]).name for row in
                [*catalog["packages"].values(), *catalog.get("merges", [])]
-               if row["directory"] == "src/foundation/command-line"}
+               if row["directory"] == "src/foundation/tooling/command-line"}
     assert {"clap-4.6.7", "clap_builder-4.6.7", "clap_lex-1.1.1"} <= origins, (
         "lost merged runtime upstream origin"
     )
@@ -132,12 +135,12 @@ def prepare_fixture(root, temporary):
     source.parent.mkdir()
     source.write_bytes((root / "test/command-line-family.rs").read_bytes())
     with source.open("a") as stream:
-        lexer = root / "src/foundation/command-line/src/lexer/mod.rs"
+        lexer = root / "src/foundation/tooling/command-line/src/lexer/mod.rs"
         stream.write("\n#[path = " + json.dumps(str(lexer)) + "]\nmod lexer;\n")
         stream.write((root / "test/command-line-lexer-examples.rs").read_text())
     dependencies = []
     for name in ("command-line",):
-        path = json.dumps(str(root / "src/foundation" / name))
+        path = json.dumps(str(foundation_path(root, name)))
         features = ', features = ["derive", "env"]' if name == "command-line" else ""
         dependencies.append(f"{name} = {{ path = {path}{features} }}")
     manifest = temporary / "Cargo.toml"
@@ -158,7 +161,7 @@ def prepare_fixture(root, temporary):
 
 def check_similarity_source_tests(root):
     """Run, and count, the retained source tests in the actual owning crate."""
-    component = root / "src/foundation/command-line"
+    component = root / "src/foundation/tooling/command-line"
     lock = component / "Cargo.lock"
     existed = lock.exists()
     manifest = component / "Cargo.toml"
@@ -220,10 +223,10 @@ def check_runtime_fixture(root):
 
 def check_unsafe_boundary(root):
     """Compile isolated copies of the actual runtime with forbidden code injected."""
-    original = root / "src/foundation/command-line"
+    original = root / "src/foundation/tooling/command-line"
     with tempfile.TemporaryDirectory(prefix="command-line-unsafe-probe-") as directory:
         snapshot = Path(directory)
-        component = snapshot / "src/foundation/command-line"
+        component = snapshot / "src/foundation/tooling/command-line"
         component.parent.mkdir(parents=True)
         shutil.copytree(original, component)
         (snapshot / "docs").symlink_to(root / "docs", target_is_directory=True)
@@ -283,7 +286,7 @@ fn debug_error_contains_real_backtrace() {
             'version="0.1.0"\nedition="2024"\n[workspace]\n[dependencies]\n'
         )
         for name in ("command-line", "command-derive"):
-            component = root / "src/foundation" / name
+            component = foundation_path(root, name)
             features = list(tomllib.loads((component / "Cargo.toml").read_text())["features"])
             text += (
                 name + " = { path = " + json.dumps(str(component))
@@ -306,7 +309,7 @@ fn debug_error_contains_real_backtrace() {
             bad = re.sub(
                 r'(?m)^' + re.escape(component) + r' = .*$',
                 component + " = { path = "
-                + json.dumps(str(root / "src/foundation" / component))
+                + json.dumps(str(foundation_path(root, component)))
                 + ", features = [" + json.dumps(feature) + "] }",
                 text,
             )

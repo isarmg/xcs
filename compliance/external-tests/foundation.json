@@ -1,7 +1,7 @@
 {
   "owners": [
     {
-      "directory": "src/foundation/ahash",
+      "directory": "src/foundation/core-types/ahash",
       "files": [
         {
           "path": "test/foundation/ahash/modules/src/hash_quality_test.rs",
@@ -93,7 +93,7 @@
       ]
     },
     {
-      "directory": "src/foundation/anyhow",
+      "directory": "src/foundation/diagnostics/anyhow",
       "files": [
         {
           "path": "test/foundation/anyhow/tests/common/mod.rs",
@@ -287,7 +287,7 @@
       ]
     },
     {
-      "directory": "src/foundation/argon2",
+      "directory": "src/foundation/cryptography/argon2",
       "files": [
         {
           "path": "test/foundation/argon2/tests/kat.rs",
@@ -319,7 +319,7 @@
       ]
     },
     {
-      "directory": "src/foundation/arrayvec",
+      "directory": "src/foundation/collections/arrayvec",
       "files": [
         {
           "path": "test/foundation/arrayvec/functions/src/char/test_encode_utf8_58.rs",
@@ -357,7 +357,7 @@
       ]
     },
     {
-      "directory": "src/foundation/async-notification",
+      "directory": "src/foundation/concurrency/async-notification",
       "files": [
         {
           "origin_directory": "vendor/rust/async-lock-3.4.2",
@@ -442,7 +442,7 @@
       ]
     },
     {
-      "directory": "src/foundation/async-trait",
+      "directory": "src/foundation/concurrency/async-trait",
       "files": [
         {
           "path": "test/foundation/async-trait/tests/compiletest.rs",
@@ -660,7 +660,7 @@
       ]
     },
     {
-      "directory": "src/foundation/autocfg",
+      "directory": "src/foundation/tooling/autocfg",
       "files": [
         {
           "path": "test/foundation/autocfg/modules/src/tests.rs",
@@ -704,7 +704,7 @@
       ]
     },
     {
-      "directory": "src/foundation/axum-macros",
+      "directory": "src/foundation/networking/axum-macros",
       "files": [
         {
           "path": "test/foundation/axum-macros/functions/src/debug_handler/ui_debug_handler_883.rs",
@@ -1696,7 +1696,7 @@
       ]
     },
     {
-      "directory": "src/foundation/base64",
+      "directory": "src/foundation/data-storage/base64",
       "files": [
         {
           "path": "test/foundation/base64/modules/src/engine/naive.rs",
@@ -1794,7 +1794,7 @@
       ]
     },
     {
-      "directory": "src/foundation/base64ct",
+      "directory": "src/foundation/cryptography/base64ct",
       "files": [
         {
           "path": "test/foundation/base64ct/modules/src/test_vectors.rs",
@@ -1874,12 +1874,12 @@
       ]
     },
     {
-      "directory": "src/foundation/bindgen",
+      "directory": "src/foundation/tooling/bindgen",
       "files": [
         {
           "origin_directory": "vendor/rust/cexpr-0.6.0",
           "path": "test/foundation/bindgen/cexpr/tests/clang.rs",
-          "sha256": "1b54f03f929c9f87d20565c70dcafcc463be906d106d71f2a9a8c9e4c5c69a77",
+          "sha256": "9b39948f93b85c1dc3f9a5cb0c9605958febde8d847cf2038e03fe5448a51269",
           "source": "src/foundation/cexpr/tests/clang.rs",
           "source_sha256_before": "5bb9807f35f760065d15cb9dfb7d8b79c2f734aef7ba5fe3737154155ed8ee73"
         },
@@ -2092,7 +2092,7 @@
       ]
     },
     {
-      "directory": "src/foundation/bit-set",
+      "directory": "src/foundation/collections/bit-set",
       "files": [
         {
           "path": "test/foundation/bit-set/unit/src/lib/tests_1105.rs",
@@ -2106,7 +2106,7 @@
       ]
     },
     {
-      "directory": "src/foundation/bit-vec",
+      "directory": "src/foundation/collections/bit-vec",
       "files": [
         {
           "path": "test/foundation/bit-vec/unit/src/lib/tests_1983.rs",
@@ -2120,7 +2120,7 @@
       ]
     },
     {
-      "directory": "src/foundation/blake2",
+      "directory": "src/foundation/cryptography/blake2",
       "files": [
         {
           "path": "test/foundation/blake2/tests/data/blake2b/fixed.blb",
@@ -2176,7 +2176,7 @@
       ]
     },
     {
-      "directory": "src/foundation/blake3",
+      "directory": "src/foundation/cryptography/blake3",
       "files": [
         {
           "path": "test/foundation/blake3/functions/src/hazmat/test_left_subtree_len_384.rs",
@@ -2292,7 +2292,7 @@
       ]
     },
     {
-      "directory": "src/foundation/bumpalo",
+      "directory": "src/foundation/collections/bumpalo",
       "files": [
         {
           "path": "test/foundation/bumpalo/unit/src/collections/raw_vec/tests_745.rs",
@@ -2312,7 +2312,7 @@
       ]
     },
     {
-      "directory": "src/foundation/bytecount",
+      "directory": "src/foundation/text-unicode/bytecount",
       "files": [
         {
           "path": "test/foundation/bytecount/tests/check.rs",
@@ -2326,7 +2326,7 @@
       ]
     },
     {
-      "directory": "src/foundation/bytes",
+      "directory": "src/foundation/collections/bytes",
       "files": [
         {
           "path": "test/foundation/bytes/tests/test_buf.rs",
@@ -2412,7 +2412,7 @@
       ]
     },
     {
-      "directory": "src/foundation/cc",
+      "directory": "src/foundation/tooling/cc",
       "files": [
         {
           "path": "test/foundation/cc/unit/src/build_env/tests_185.rs",
@@ -2468,7 +2468,7 @@
       ]
     },
     {
-      "directory": "src/foundation/cfg-if",
+      "directory": "src/foundation/tooling/cfg-if",
       "files": [
         {
           "path": "test/foundation/cfg-if/tests/xcrate.rs",
@@ -2488,11 +2488,11 @@
       ]
     },
     {
-      "directory": "src/foundation/clang-sys",
+      "directory": "src/foundation/tooling/clang-sys",
       "files": [
         {
           "path": "test/foundation/clang-sys/tests/build.rs",
-          "sha256": "6782349659900fa48ba5d8e53c96dc3d807735ba9059fbdf3e59e825a7a860e3",
+          "sha256": "615cc0d82b523faaec25a3e5ca37e5bb13108ff2697e7f6a39b87594b8c481d4",
           "source": "src/foundation/clang-sys/tests/build.rs",
           "source_sha256_before": "670427473ee671687f3c3e4521a2cdcfe05d84203d50ad6b5942d1dd216d537b"
         },
@@ -2514,7 +2514,7 @@
       ]
     },
     {
-      "directory": "src/foundation/cmov",
+      "directory": "src/foundation/cryptography/cmov",
       "files": [
         {
           "path": "test/foundation/cmov/tests/core_impls.rs",
@@ -2558,7 +2558,7 @@
       ]
     },
     {
-      "directory": "src/foundation/command-line",
+      "directory": "src/foundation/tooling/command-line",
       "files": [
         {
           "origin_directory": "vendor/rust/clap_builder-4.6.7",
@@ -2755,7 +2755,7 @@
       ]
     },
     {
-      "directory": "src/foundation/compression",
+      "directory": "src/foundation/data-storage/compression",
       "files": [
         {
           "origin_directory": "vendor/rust/simd-adler32-0.3.10",
@@ -3022,7 +3022,7 @@
       ]
     },
     {
-      "directory": "src/foundation/concurrent-collections",
+      "directory": "src/foundation/concurrency/concurrent-collections",
       "files": [
         {
           "origin_directory": "vendor/rust/crossbeam-deque-0.8.8",
@@ -3191,7 +3191,7 @@
       ]
     },
     {
-      "directory": "src/foundation/console_error_panic_hook",
+      "directory": "src/foundation/diagnostics/console_error_panic_hook",
       "files": [
         {
           "path": "test/foundation/console_error_panic_hook/tests/tests.rs",
@@ -3205,7 +3205,7 @@
       ]
     },
     {
-      "directory": "src/foundation/const-oid",
+      "directory": "src/foundation/cryptography/const-oid",
       "files": [
         {
           "path": "test/foundation/const-oid/tests/oid.rs",
@@ -3255,7 +3255,7 @@
       ]
     },
     {
-      "directory": "src/foundation/constant_time_eq",
+      "directory": "src/foundation/cryptography/constant_time_eq",
       "files": [
         {
           "path": "test/foundation/constant_time_eq/tests/count_instructions.rs",
@@ -3305,7 +3305,7 @@
       ]
     },
     {
-      "directory": "src/foundation/convert_case",
+      "directory": "src/foundation/text-unicode/convert_case",
       "files": [
         {
           "path": "test/foundation/convert_case/tests/macros.rs",
@@ -3349,7 +3349,7 @@
       ]
     },
     {
-      "directory": "src/foundation/cpu-feature-detect",
+      "directory": "src/foundation/platform/cpu-feature-detect",
       "files": [
         {
           "path": "test/foundation/cpu-feature-detect/tests/aarch64.rs",
@@ -3375,7 +3375,7 @@
       ]
     },
     {
-      "directory": "src/foundation/crc32fast",
+      "directory": "src/foundation/data-storage/crc32fast",
       "files": [
         {
           "path": "test/foundation/crc32fast/functions/src/combine/golden_43.rs",
@@ -3419,7 +3419,7 @@
       ]
     },
     {
-      "directory": "src/foundation/cryptographic-core",
+      "directory": "src/foundation/cryptography/cryptographic-core",
       "files": [
         {
           "origin_directory": "vendor/rust/block-buffer-0.12.1",
@@ -3448,7 +3448,7 @@
       ]
     },
     {
-      "directory": "src/foundation/ctutils",
+      "directory": "src/foundation/cryptography/ctutils",
       "files": [
         {
           "path": "test/foundation/ctutils/tests/proptests.rs",
@@ -3516,7 +3516,7 @@
       ]
     },
     {
-      "directory": "src/foundation/data-serialization",
+      "directory": "src/foundation/data-storage/data-serialization",
       "files": [
         {
           "origin_directory": "vendor/rust/serde_core-1.0.229",
@@ -3552,7 +3552,7 @@
       ]
     },
     {
-      "directory": "src/foundation/date-time",
+      "directory": "src/foundation/core-types/date-time",
       "files": [
         {
           "origin_directory": "vendor/rust/time-0.3.55",
@@ -4071,7 +4071,7 @@
       ]
     },
     {
-      "directory": "src/foundation/derive-where",
+      "directory": "src/foundation/code-generation/derive-where",
       "files": [
         {
           "path": "test/foundation/derive-where/modules/src/test/basic.rs",
@@ -4157,7 +4157,7 @@
       ]
     },
     {
-      "directory": "src/foundation/displaydoc",
+      "directory": "src/foundation/code-generation/displaydoc",
       "files": [
         {
           "path": "test/foundation/displaydoc/tests/compile_tests.rs",
@@ -4249,7 +4249,7 @@
       ]
     },
     {
-      "directory": "src/foundation/dom-helpers",
+      "directory": "src/foundation/web-runtime/dom-helpers",
       "files": [
         {
           "path": "test/foundation/dom-helpers/functions/src/macro_helpers/tracing_property/match_no_serialize_151.rs",
@@ -4275,7 +4275,7 @@
       ]
     },
     {
-      "directory": "src/foundation/either",
+      "directory": "src/foundation/core-types/either",
       "files": [
         {
           "path": "test/foundation/either/functions/src/lib/basic_1723.rs",
@@ -4331,7 +4331,7 @@
       ]
     },
     {
-      "directory": "src/foundation/email_address",
+      "directory": "src/foundation/networking/email_address",
       "files": [
         {
           "path": "test/foundation/email_address/unit/src/lib/serialization_tests_1197.rs",
@@ -4351,7 +4351,7 @@
       ]
     },
     {
-      "directory": "src/foundation/logging",
+      "directory": "src/foundation/diagnostics/logging",
       "files": [
         {
           "origin_directory": "vendor/rust/env_logger-0.11.11",
@@ -4394,7 +4394,7 @@
       ]
     },
     {
-      "directory": "src/foundation/erased",
+      "directory": "src/foundation/collections/erased",
       "files": [
         {
           "path": "test/foundation/erased/unit/src/erased_box/tests_77.rs",
@@ -4420,7 +4420,7 @@
       ]
     },
     {
-      "directory": "src/foundation/errno",
+      "directory": "src/foundation/platform/errno",
       "files": [
         {
           "path": "test/foundation/errno/functions/src/lib/check_description_116.rs",
@@ -4452,7 +4452,7 @@
       ]
     },
     {
-      "directory": "src/foundation/error-definition",
+      "directory": "src/foundation/diagnostics/error-definition",
       "files": [
         {
           "path": "test/foundation/error-definition/tests/compiletest.rs",
@@ -4976,7 +4976,7 @@
       ]
     },
     {
-      "directory": "src/foundation/fallible-iterator",
+      "directory": "src/foundation/collections/fallible-iterator",
       "files": [
         {
           "path": "test/foundation/fallible-iterator/functions/src/test/all_6.rs",
@@ -5224,7 +5224,7 @@
       ]
     },
     {
-      "directory": "src/foundation/fancy-regex",
+      "directory": "src/foundation/text-unicode/fancy-regex",
       "files": [
         {
           "path": "test/foundation/fancy-regex/tests/bytes/captures.rs",
@@ -5376,7 +5376,7 @@
       ]
     },
     {
-      "directory": "src/foundation/fastrand",
+      "directory": "src/foundation/core-types/fastrand",
       "files": [
         {
           "path": "test/foundation/fastrand/tests/char.rs",
@@ -5396,7 +5396,7 @@
       ]
     },
     {
-      "directory": "src/foundation/flag-set",
+      "directory": "src/foundation/core-types/flag-set",
       "files": [
         {
           "path": "test/foundation/flag-set/modules/src/tests.rs",
@@ -5614,7 +5614,7 @@
       ]
     },
     {
-      "directory": "src/foundation/fluent-uri",
+      "directory": "src/foundation/networking/fluent-uri",
       "files": [
         {
           "path": "test/foundation/fluent-uri/tests/convert.rs",
@@ -5658,7 +5658,7 @@
       ]
     },
     {
-      "directory": "src/foundation/flume",
+      "directory": "src/foundation/concurrency/flume",
       "files": [
         {
           "path": "test/foundation/flume/tests/after.rs",
@@ -5780,7 +5780,7 @@
       ]
     },
     {
-      "directory": "src/foundation/form-codec",
+      "directory": "src/foundation/data-storage/form-codec",
       "files": [
         {
           "path": "test/foundation/form-codec/tests/test_deserialize.rs",
@@ -5800,7 +5800,7 @@
       ]
     },
     {
-      "directory": "src/foundation/fraction",
+      "directory": "src/foundation/core-types/fraction",
       "files": [
         {
           "path": "test/foundation/fraction/modules/src/tests/mod.rs",
@@ -6078,7 +6078,7 @@
       ]
     },
     {
-      "directory": "src/foundation/futures",
+      "directory": "src/foundation/concurrency/futures",
       "files": [
         {
           "origin_directory": "vendor/rust/futures-channel-0.3.34",
@@ -6863,7 +6863,7 @@
       ]
     },
     {
-      "directory": "src/foundation/futures-intrusive",
+      "directory": "src/foundation/concurrency/futures-intrusive",
       "files": [
         {
           "path": "test/foundation/futures-intrusive/tests/manual_reset_event.rs",
@@ -6931,7 +6931,7 @@
       ]
     },
     {
-      "directory": "src/foundation/gimli",
+      "directory": "src/foundation/diagnostics/gimli",
       "files": [
         {
           "path": "test/foundation/gimli/modules/src/test_util.rs",
@@ -7143,7 +7143,7 @@
       ]
     },
     {
-      "directory": "src/foundation/glob",
+      "directory": "src/foundation/platform/glob",
       "files": [
         {
           "path": "test/foundation/glob/tests/glob-std.rs",
@@ -7163,7 +7163,7 @@
       ]
     },
     {
-      "directory": "src/foundation/gloo-events",
+      "directory": "src/foundation/web-runtime/gloo-events",
       "files": [
         {
           "path": "test/foundation/gloo-events/tests/web.rs",
@@ -7177,7 +7177,7 @@
       ]
     },
     {
-      "directory": "src/foundation/gloo-timers",
+      "directory": "src/foundation/web-runtime/gloo-timers",
       "files": [
         {
           "path": "test/foundation/gloo-timers/tests/node.rs",
@@ -7197,7 +7197,7 @@
       ]
     },
     {
-      "directory": "src/foundation/guardian",
+      "directory": "src/foundation/concurrency/guardian",
       "files": [
         {
           "path": "test/foundation/guardian/unit/src/lib/tests_569.rs",
@@ -7211,7 +7211,7 @@
       ]
     },
     {
-      "directory": "src/foundation/hash-table",
+      "directory": "src/foundation/collections/hash-table",
       "files": [
         {
           "path": "test/foundation/hash-table/tests/equivalent_trait.rs",
@@ -7309,7 +7309,7 @@
       ]
     },
     {
-      "directory": "src/foundation/hashlink",
+      "directory": "src/foundation/collections/hashlink",
       "files": [
         {
           "path": "test/foundation/hashlink/tests/linked_hash_map.rs",
@@ -7341,7 +7341,7 @@
       ]
     },
     {
-      "directory": "src/foundation/heck",
+      "directory": "src/foundation/text-unicode/heck",
       "files": [
         {
           "path": "test/foundation/heck/unit/src/kebab/tests_48.rs",
@@ -7397,7 +7397,7 @@
       ]
     },
     {
-      "directory": "src/foundation/hmac",
+      "directory": "src/foundation/cryptography/hmac",
       "files": [
         {
           "path": "test/foundation/hmac/tests/data/hmac_md5_rfc2104.blb",
@@ -7477,7 +7477,7 @@
       ]
     },
     {
-      "directory": "src/foundation/http",
+      "directory": "src/foundation/networking/http",
       "files": [
         {
           "path": "test/foundation/http/functions/src/extensions/test_extensions_324.rs",
@@ -7617,7 +7617,7 @@
       ]
     },
     {
-      "directory": "src/foundation/http-body",
+      "directory": "src/foundation/networking/http-body",
       "files": [
         {
           "origin_directory": "vendor/rust/http-body-1.1.0",
@@ -7709,7 +7709,7 @@
       ]
     },
     {
-      "directory": "src/foundation/http-range-header",
+      "directory": "src/foundation/networking/http-range-header",
       "files": [
         {
           "path": "test/foundation/http-range-header/unit/src/lib/tests_368.rs",
@@ -7723,7 +7723,7 @@
       ]
     },
     {
-      "directory": "src/foundation/http-routing",
+      "directory": "src/foundation/networking/http-routing",
       "files": [
         {
           "origin_directory": "vendor/rust/axum-0.8.9",
@@ -8074,7 +8074,7 @@
       ]
     },
     {
-      "directory": "src/foundation/http-transport",
+      "directory": "src/foundation/networking/http-transport",
       "files": [
         {
           "origin_directory": "vendor/rust/hyper-util-0.1.21",
@@ -8474,7 +8474,7 @@
       ]
     },
     {
-      "directory": "src/foundation/httparse",
+      "directory": "src/foundation/networking/httparse",
       "files": [
         {
           "path": "test/foundation/httparse/functions/src/simd/avx2/avx2_code_matches_header_value_chars_table_166.rs",
@@ -8554,7 +8554,7 @@
       ]
     },
     {
-      "directory": "src/foundation/httpdate",
+      "directory": "src/foundation/networking/httpdate",
       "files": [
         {
           "path": "test/foundation/httpdate/unit/src/lib/tests_64.rs",
@@ -8568,7 +8568,7 @@
       ]
     },
     {
-      "directory": "src/foundation/hybrid-array",
+      "directory": "src/foundation/core-types/hybrid-array",
       "files": [
         {
           "path": "test/foundation/hybrid-array/tests/ctutils.rs",
@@ -8618,7 +8618,7 @@
       ]
     },
     {
-      "directory": "src/foundation/hyper-rustls",
+      "directory": "src/foundation/networking/hyper-rustls",
       "files": [
         {
           "path": "test/foundation/hyper-rustls/unit/src/connector/all_tests_214.rs",
@@ -8638,7 +8638,7 @@
       ]
     },
     {
-      "directory": "src/foundation/icu_collections",
+      "directory": "src/foundation/text-unicode/icu_collections",
       "files": [
         {
           "path": "test/foundation/icu_collections/tests/char16trie.rs",
@@ -8970,7 +8970,7 @@
       ]
     },
     {
-      "directory": "src/foundation/icu_locale_core",
+      "directory": "src/foundation/text-unicode/icu_locale_core",
       "files": [
         {
           "path": "test/foundation/icu_locale_core/functions/src/data/test_data_locale_from_string_492.rs",
@@ -9206,7 +9206,7 @@
       ]
     },
     {
-      "directory": "src/foundation/icu_provider",
+      "directory": "src/foundation/text-unicode/icu_provider",
       "files": [
         {
           "path": "test/foundation/icu_provider/functions/src/hello_world/test_iter_373.rs",
@@ -9304,7 +9304,7 @@
       ]
     },
     {
-      "directory": "src/foundation/id-arena",
+      "directory": "src/foundation/collections/id-arena",
       "files": [
         {
           "path": "test/foundation/id-arena/tests/readme_up_to_date.rs",
@@ -9324,7 +9324,7 @@
       ]
     },
     {
-      "directory": "src/foundation/indexmap",
+      "directory": "src/foundation/collections/indexmap",
       "files": [
         {
           "path": "test/foundation/indexmap/functions/src/inner/assert_send_sync_700.rs",
@@ -9410,7 +9410,7 @@
       ]
     },
     {
-      "directory": "src/foundation/ipnet",
+      "directory": "src/foundation/networking/ipnet",
       "files": [
         {
           "path": "test/foundation/ipnet/unit/src/ipext/tests_744.rs",
@@ -9442,7 +9442,7 @@
       ]
     },
     {
-      "directory": "src/foundation/iterator-toolkit",
+      "directory": "src/foundation/collections/iterator-toolkit",
       "files": [
         {
           "path": "test/foundation/iterator-toolkit/functions/src/adaptors/mod/test_checked_binomial_854.rs",
@@ -9540,7 +9540,7 @@
       ]
     },
     {
-      "directory": "src/foundation/itoa",
+      "directory": "src/foundation/core-types/itoa",
       "files": [
         {
           "path": "test/foundation/itoa/tests/test.rs",
@@ -9554,7 +9554,7 @@
       ]
     },
     {
-      "directory": "src/foundation/json-codec",
+      "directory": "src/foundation/data-storage/json-codec",
       "files": [
         {
           "path": "test/foundation/json-codec/tests/compiletest.rs",
@@ -9570,7 +9570,7 @@
         },
         {
           "path": "test/foundation/json-codec/tests/lexical.rs",
-          "sha256": "8af87729418cf21c452278c6cfab8e4967e7db62579f2b7040c986e533c238be",
+          "sha256": "48ff67d45a6b7f79269b777adf61982b5a7db05f7b28b2c70e3748efa85d8c1e",
           "source": "src/foundation/serde_json/tests/lexical.rs",
           "source_sha256_before": "a863468815c2c1f1415b30eef42971604d860e6128e66c39d965322fbc567240"
         },
@@ -9814,7 +9814,7 @@
       ]
     },
     {
-      "directory": "src/foundation/lazy_static",
+      "directory": "src/foundation/concurrency/lazy_static",
       "files": [
         {
           "path": "test/foundation/lazy_static/tests/compile_fail/incorrect_visibility_restriction.rs",
@@ -9876,7 +9876,7 @@
       ]
     },
     {
-      "directory": "src/foundation/leb128",
+      "directory": "src/foundation/data-storage/leb128",
       "files": [
         {
           "path": "test/foundation/leb128/tests/quickchecks.rs",
@@ -9896,7 +9896,7 @@
       ]
     },
     {
-      "directory": "src/foundation/leb128fmt",
+      "directory": "src/foundation/data-storage/leb128fmt",
       "files": [
         {
           "path": "test/foundation/leb128fmt/unit/src/lib/tests_1399.rs",
@@ -9910,7 +9910,7 @@
       ]
     },
     {
-      "directory": "src/foundation/libc",
+      "directory": "src/foundation/platform/libc",
       "files": [
         {
           "path": "test/foundation/libc/tests/const_fn.rs",
@@ -9936,7 +9936,7 @@
       ]
     },
     {
-      "directory": "src/foundation/libloading",
+      "directory": "src/foundation/platform/libloading",
       "files": [
         {
           "path": "test/foundation/libloading/tests/constants.rs",
@@ -9986,7 +9986,7 @@
       ]
     },
     {
-      "directory": "src/foundation/libsqlite3-sys",
+      "directory": "src/foundation/data-storage/libsqlite3-sys",
       "files": [
         {
           "path": "test/foundation/libsqlite3-sys/unit/src/error/test_160.rs",
@@ -10000,7 +10000,7 @@
       ]
     },
     {
-      "directory": "src/foundation/linux-raw-sys",
+      "directory": "src/foundation/platform/linux-raw-sys",
       "files": [
         {
           "path": "test/foundation/linux-raw-sys/unit/src/lib/assertions_49.rs",
@@ -10014,7 +10014,7 @@
       ]
     },
     {
-      "directory": "src/foundation/litemap",
+      "directory": "src/foundation/collections/litemap",
       "files": [
         {
           "path": "test/foundation/litemap/functions/src/databake/test_baked_map_54.rs",
@@ -10064,7 +10064,7 @@
       ]
     },
     {
-      "directory": "src/foundation/log",
+      "directory": "src/foundation/diagnostics/log",
       "files": [
         {
           "path": "test/foundation/log/tests/integration.rs",
@@ -10120,7 +10120,7 @@
       ]
     },
     {
-      "directory": "src/foundation/matchit",
+      "directory": "src/foundation/networking/matchit",
       "files": [
         {
           "path": "test/foundation/matchit/tests/insert.rs",
@@ -10152,7 +10152,7 @@
       ]
     },
     {
-      "directory": "src/foundation/memchr",
+      "directory": "src/foundation/text-unicode/memchr",
       "files": [
         {
           "path": "test/foundation/memchr/modules/src/tests/memchr/mod.rs",
@@ -10298,7 +10298,7 @@
       ]
     },
     {
-      "directory": "src/foundation/micromap",
+      "directory": "src/foundation/collections/micromap",
       "files": [
         {
           "path": "test/foundation/micromap/tests/benchmark.rs",
@@ -10492,7 +10492,7 @@
       ]
     },
     {
-      "directory": "src/foundation/mime",
+      "directory": "src/foundation/networking/mime",
       "files": [
         {
           "path": "test/foundation/mime/functions/src/parse/test_lookup_tables_394.rs",
@@ -10530,11 +10530,11 @@
       ]
     },
     {
-      "directory": "src/foundation/mime_guess",
+      "directory": "src/foundation/networking/mime_guess",
       "files": [
         {
           "path": "test/foundation/mime_guess/unit/src/lib/tests_429.rs",
-          "sha256": "ecdf6d52404775b2addea20dfaf244fa7542b05270c4898eba746b0af3a84eab",
+          "sha256": "b80befa4ed7caffa8df66ac9e49a25c81dae689b79785e3e75c2313fa5a2de93",
           "source": "src/foundation/mime_guess/src/lib.rs",
           "source_sha256_before": "5e79013b6a7487c7ca51c628710db01216a99e7533ccd8adb0c690a010c70d10"
         }
@@ -10544,7 +10544,7 @@
       ]
     },
     {
-      "directory": "src/foundation/mio",
+      "directory": "src/foundation/concurrency/mio",
       "files": [
         {
           "path": "test/foundation/mio/functions/src/poll/as_raw_fd_794.rs",
@@ -10564,7 +10564,7 @@
       ]
     },
     {
-      "directory": "src/foundation/nu-ansi-term",
+      "directory": "src/foundation/tooling/nu-ansi-term",
       "files": [
         {
           "path": "test/foundation/nu-ansi-term/macros/ansi_test.rs",
@@ -10626,7 +10626,7 @@
       ]
     },
     {
-      "directory": "src/foundation/num-cmp",
+      "directory": "src/foundation/core-types/num-cmp",
       "files": [
         {
           "path": "test/foundation/num-cmp/modules/src/tests.rs",
@@ -10640,7 +10640,7 @@
       ]
     },
     {
-      "directory": "src/foundation/numeric",
+      "directory": "src/foundation/core-types/numeric",
       "files": [
         {
           "origin_directory": "vendor/rust/num-bigint-0.4.8",
@@ -11222,7 +11222,7 @@
       ]
     },
     {
-      "directory": "src/foundation/once_cell",
+      "directory": "src/foundation/concurrency/once_cell",
       "files": [
         {
           "path": "test/foundation/once_cell/functions/examples/reentrant_init_deadlocks/dummy_test_9.rs",
@@ -11290,7 +11290,7 @@
       ]
     },
     {
-      "directory": "src/foundation/parking",
+      "directory": "src/foundation/concurrency/parking",
       "files": [
         {
           "path": "test/foundation/parking/tests/loom.rs",
@@ -11310,7 +11310,7 @@
       ]
     },
     {
-      "directory": "src/foundation/password-hash",
+      "directory": "src/foundation/cryptography/password-hash",
       "files": [
         {
           "path": "test/foundation/password-hash/tests/encoding.rs",
@@ -11378,7 +11378,7 @@
       ]
     },
     {
-      "directory": "src/foundation/pastey",
+      "directory": "src/foundation/code-generation/pastey",
       "files": [
         {
           "path": "test/foundation/pastey/unit/src/segment/tests_386.rs",
@@ -11392,7 +11392,7 @@
       ]
     },
     {
-      "directory": "src/foundation/pin-project-lite",
+      "directory": "src/foundation/concurrency/pin-project-lite",
       "files": [
         {
           "path": "test/foundation/pin-project-lite/tests/auxiliary/mod.rs",
@@ -11826,7 +11826,7 @@
       ]
     },
     {
-      "directory": "src/foundation/pkg-config",
+      "directory": "src/foundation/tooling/pkg-config",
       "files": [
         {
           "path": "test/foundation/pkg-config/tests/escape.pc",
@@ -11870,7 +11870,7 @@
       ]
     },
     {
-      "directory": "src/foundation/potential_utf",
+      "directory": "src/foundation/text-unicode/potential_utf",
       "files": [
         {
           "path": "test/foundation/potential_utf/unit/src/uchar/test_291.rs",
@@ -11890,7 +11890,7 @@
       ]
     },
     {
-      "directory": "src/foundation/proc-macro2",
+      "directory": "src/foundation/code-generation/proc-macro2",
       "files": [
         {
           "path": "test/foundation/proc-macro2/tests/comments.rs",
@@ -11934,7 +11934,7 @@
       ]
     },
     {
-      "directory": "src/foundation/proc-macro2-diagnostics",
+      "directory": "src/foundation/code-generation/proc-macro2-diagnostics",
       "files": [
         {
           "path": "test/foundation/proc-macro2-diagnostics/tests/main.rs",
@@ -12038,7 +12038,7 @@
       ]
     },
     {
-      "directory": "src/foundation/quote",
+      "directory": "src/foundation/code-generation/quote",
       "files": [
         {
           "path": "test/foundation/quote/tests/compiletest.rs",
@@ -12142,7 +12142,7 @@
       ]
     },
     {
-      "directory": "src/foundation/random-generator-core",
+      "directory": "src/foundation/cryptography/random-generator-core",
       "files": [
         {
           "path": "test/foundation/random-generator-core/functions/src/le/test_read_34.rs",
@@ -12192,7 +12192,7 @@
       ]
     },
     {
-      "directory": "src/foundation/rayon",
+      "directory": "src/foundation/concurrency/rayon",
       "files": [
         {
           "path": "test/foundation/rayon/functions/src/delegate/indexed_example_88.rs",
@@ -12560,7 +12560,7 @@
       ]
     },
     {
-      "directory": "src/foundation/rayon-core",
+      "directory": "src/foundation/concurrency/rayon-core",
       "files": [
         {
           "path": "test/foundation/rayon-core/functions/src/broadcast/test/broadcast_after_spawn_249.rs",
@@ -12916,7 +12916,7 @@
       ]
     },
     {
-      "directory": "src/foundation/reactive-state",
+      "directory": "src/foundation/web-runtime/reactive-state",
       "files": [
         {
           "path": "test/foundation/reactive-state/tests/async_derived.rs",
@@ -12984,7 +12984,7 @@
       ]
     },
     {
-      "directory": "src/foundation/ref-cast",
+      "directory": "src/foundation/collections/ref-cast",
       "files": [
         {
           "path": "test/foundation/ref-cast/tests/compiletest.rs",
@@ -13154,7 +13154,7 @@
       ]
     },
     {
-      "directory": "src/foundation/regex",
+      "directory": "src/foundation/text-unicode/regex",
       "files": [
         {
           "origin_directory": "vendor/rust/regex-automata-0.4.18",
@@ -13911,7 +13911,7 @@
       ]
     },
     {
-      "directory": "src/foundation/reqwest",
+      "directory": "src/foundation/networking/reqwest",
       "files": [
         {
           "path": "test/foundation/reqwest/functions/src/redirect/test_redirect_policy_custom_388.rs",
@@ -13997,7 +13997,7 @@
       ]
     },
     {
-      "directory": "src/foundation/rstml",
+      "directory": "src/foundation/code-generation/rstml",
       "files": [
         {
           "path": "test/foundation/rstml/unit/src/node/atoms/test_304.rs",
@@ -14023,7 +14023,7 @@
       ]
     },
     {
-      "directory": "src/foundation/rust-source-format",
+      "directory": "src/foundation/code-generation/rust-source-format",
       "files": [
         {
           "path": "test/foundation/rust-source-format/tests/test.rs",
@@ -14043,7 +14043,7 @@
       ]
     },
     {
-      "directory": "src/foundation/rust-syntax",
+      "directory": "src/foundation/code-generation/rust-syntax",
       "files": [
         {
           "path": "test/foundation/rust-syntax/functions/src/drops/test_needs_drop_40.rs",
@@ -14215,7 +14215,7 @@
         },
         {
           "path": "test/foundation/rust-syntax/tests/test_precedence.rs",
-          "sha256": "dd834c342f1097d13010ce41e2cca7b3a8c9c939587ed5aac06b1567b33cc8be",
+          "sha256": "2a1d05f05dbed2b90e4675ab29f1086b40c66660976e5bb886e9a05bf5af685c",
           "source": "src/foundation/syn-3.0.9/tests/test_precedence.rs",
           "source_sha256_before": "fd6da10bb2414f1a6fc6d18dbbcd773bae9179b405abb06de5874f09848f3887"
         },
@@ -14291,7 +14291,7 @@
       ]
     },
     {
-      "directory": "src/foundation/rustc-demangle",
+      "directory": "src/foundation/diagnostics/rustc-demangle",
       "files": [
         {
           "path": "test/foundation/rustc-demangle/fixtures/early-recursion-limit",
@@ -14323,7 +14323,7 @@
       ]
     },
     {
-      "directory": "src/foundation/rustc-hash",
+      "directory": "src/foundation/core-types/rustc-hash",
       "files": [
         {
           "path": "test/foundation/rustc-hash/unit/src/lib/tests_329.rs",
@@ -14349,7 +14349,7 @@
       ]
     },
     {
-      "directory": "src/foundation/rustix",
+      "directory": "src/foundation/platform/rustix",
       "files": [
         {
           "path": "test/foundation/rustix/functions/src/weak/test_abi_133.rs",
@@ -14579,7 +14579,7 @@
       ]
     },
     {
-      "directory": "src/foundation/rustls",
+      "directory": "src/foundation/networking/rustls",
       "files": [
         {
           "path": "test/foundation/rustls/functions/src/client/test/cas_extension_in_client_hello_if_server_verifier_requests_it_183.rs",
@@ -14775,7 +14775,7 @@
         },
         {
           "path": "test/foundation/rustls/modules/src/msgs/handshake_test.rs",
-          "sha256": "82c5faa239e8a54e0222b7cad3b0d5f0f082b1e45141dc5986f0d08217b1e9ca",
+          "sha256": "befff6d400295b3516fbc3897344c0674fbc54eda11edeb6b72c3d5e63cdda5d",
           "source": "src/foundation/rustls/src/msgs/handshake_test.rs",
           "source_sha256_before": "52b2a5e1c375af5cd1e12c856fa8b2ba572314245c51ff71e1d11c69c129978c"
         },
@@ -14799,7 +14799,7 @@
         },
         {
           "path": "test/foundation/rustls/modules/src/verifybench.rs",
-          "sha256": "7dec256b0175ff028aa82be97d6a0babcd16b6f9103d7f0b668f959e2bb14c5e",
+          "sha256": "c7ce90cacbb74f49cb59ad90e2ffbe9ad1e72d04bca9b830dc558dfb6c649e56",
           "source": "src/foundation/rustls/src/verifybench.rs",
           "source_sha256_before": "f4ef5158bc5e86fb160f9d3fdab34d6a56d731440d422f6dfdd3f9ec5949a5a2"
         },
@@ -15097,7 +15097,7 @@
       ]
     },
     {
-      "directory": "src/foundation/rustls-pki-types",
+      "directory": "src/foundation/networking/rustls-pki-types",
       "files": [
         {
           "path": "test/foundation/rustls-pki-types/unit/src/base64/all_tests_533.rs",
@@ -15123,7 +15123,7 @@
       ]
     },
     {
-      "directory": "src/foundation/rustls-webpki",
+      "directory": "src/foundation/networking/rustls-webpki",
       "files": [
         {
           "path": "test/foundation/rustls-webpki/functions/src/alg_tests/self_signed_ml_dsa_44_557.rs",
@@ -15385,7 +15385,7 @@
         },
         {
           "path": "test/foundation/rustls-webpki/unit/src/aws_lc_rs_algs/tests_269.rs",
-          "sha256": "9a72cc605022c25ea2a6dd11bec3789bd61306cad486f611ef2a6a00d89d35d8",
+          "sha256": "6dddef5b07912ce15dfffa3785b6bcaf10f06b5820cf9edece6c898d4680020f",
           "source": "src/foundation/rustls-webpki/src/aws_lc_rs_algs.rs",
           "source_sha256_before": "dc61a889c73d63d630d0aa6cec07d11d0db5a7a08609966c88635a21f280e9e5"
         },
@@ -15421,7 +15421,7 @@
         },
         {
           "path": "test/foundation/rustls-webpki/unit/src/ring_algs/tests_213.rs",
-          "sha256": "e3e3611c1c3f21845b953aa8fd60060735492cf60f9acf1d911ba29833b729a1",
+          "sha256": "d3966bc686cec76f4ec25cc689fcc232955abd7fe2964516bdcbe54f24371ce7",
           "source": "src/foundation/rustls-webpki/src/ring_algs.rs",
           "source_sha256_before": "f6b17aa2e26442b6c940c5bf4b8e431a9e74152ba8b0573a3f74b99a73ba5412"
         },
@@ -15479,7 +15479,7 @@
       ]
     },
     {
-      "directory": "src/foundation/rustversion",
+      "directory": "src/foundation/tooling/rustversion",
       "files": [
         {
           "path": "test/foundation/rustversion/tests/compiletest.rs",
@@ -15501,7 +15501,7 @@
         },
         {
           "path": "test/foundation/rustversion/tests/test_parse.rs",
-          "sha256": "d094d0b95288ec6da34903efd1fd57b2e25f7b5878600b8ed57c58d2fbd5db1b",
+          "sha256": "606502803d689f1a7c78997a4c9e83b921985a79bc715c927dc15dd5f0056f47",
           "source": "src/foundation/rustversion/tests/test_parse.rs",
           "source_sha256_before": "f450e0a7f2391561484abb1b851124b5747755b76f945e121370adc710f2099d"
         },
@@ -15571,7 +15571,7 @@
       ]
     },
     {
-      "directory": "src/foundation/schema-validation",
+      "directory": "src/foundation/data-storage/schema-validation",
       "files": [
         {
           "origin_directory": "vendor/rust/jsonschema-0.58.6",
@@ -16766,7 +16766,7 @@
       ]
     },
     {
-      "directory": "src/foundation/scopeguard",
+      "directory": "src/foundation/collections/scopeguard",
       "files": [
         {
           "path": "test/foundation/scopeguard/unit/src/lib/tests_493.rs",
@@ -16780,7 +16780,7 @@
       ]
     },
     {
-      "directory": "src/foundation/semver",
+      "directory": "src/foundation/tooling/semver",
       "files": [
         {
           "path": "test/foundation/semver/tests/node/mod.rs",
@@ -16824,7 +16824,7 @@
       ]
     },
     {
-      "directory": "src/foundation/send_wrapper",
+      "directory": "src/foundation/concurrency/send_wrapper",
       "files": [
         {
           "path": "test/foundation/send_wrapper/unit/src/futures/tests_57.rs",
@@ -16844,7 +16844,7 @@
       ]
     },
     {
-      "directory": "src/foundation/serialization-derive",
+      "directory": "src/foundation/data-storage/serialization-derive",
       "files": [
         {
           "path": "test/foundation/serialization-derive/functions/src/internals/case/rename_fields_173.rs",
@@ -16864,7 +16864,7 @@
       ]
     },
     {
-      "directory": "src/foundation/service-stack",
+      "directory": "src/foundation/networking/service-stack",
       "files": [
         {
           "origin_directory": "vendor/rust/tower-0.5.3",
@@ -17068,7 +17068,7 @@
       ]
     },
     {
-      "directory": "src/foundation/sha2",
+      "directory": "src/foundation/cryptography/sha2",
       "files": [
         {
           "path": "test/foundation/sha2/tests/data/sha224_kat.blb",
@@ -17154,7 +17154,7 @@
       ]
     },
     {
-      "directory": "src/foundation/sharded-slab",
+      "directory": "src/foundation/collections/sharded-slab",
       "files": [
         {
           "path": "test/foundation/sharded-slab/modules/src/tests/custom_config.rs",
@@ -17210,7 +17210,7 @@
       ]
     },
     {
-      "directory": "src/foundation/shared-value",
+      "directory": "src/foundation/collections/shared-value",
       "files": [
         {
           "path": "test/foundation/shared-value/unit/src/lib/tests_613.rs",
@@ -17224,7 +17224,7 @@
       ]
     },
     {
-      "directory": "src/foundation/shell-tokenizer",
+      "directory": "src/foundation/tooling/shell-tokenizer",
       "files": [
         {
           "path": "test/foundation/shell-tokenizer/functions/src/bytes/test_invalid_utf8_469.rs",
@@ -17274,7 +17274,7 @@
       ]
     },
     {
-      "directory": "src/foundation/signal-hook-registry",
+      "directory": "src/foundation/concurrency/signal-hook-registry",
       "files": [
         {
           "path": "test/foundation/signal-hook-registry/tests/unregister_signal.rs",
@@ -17300,7 +17300,7 @@
       ]
     },
     {
-      "directory": "src/foundation/slab",
+      "directory": "src/foundation/collections/slab",
       "files": [
         {
           "path": "test/foundation/slab/tests/data_serialization.rs",
@@ -17320,7 +17320,7 @@
       ]
     },
     {
-      "directory": "src/foundation/slotmap",
+      "directory": "src/foundation/collections/slotmap",
       "files": [
         {
           "path": "test/foundation/slotmap/unit/src/basic/tests_1401.rs",
@@ -17364,7 +17364,7 @@
       ]
     },
     {
-      "directory": "src/foundation/smallvec",
+      "directory": "src/foundation/collections/smallvec",
       "files": [
         {
           "path": "test/foundation/smallvec/modules/src/tests.rs",
@@ -17378,7 +17378,7 @@
       ]
     },
     {
-      "directory": "src/foundation/socket2",
+      "directory": "src/foundation/networking/socket2",
       "files": [
         {
           "path": "test/foundation/socket2/functions/src/sys/unix/in6_addr_convertion_3092.rs",
@@ -17404,7 +17404,7 @@
       ]
     },
     {
-      "directory": "src/foundation/spin",
+      "directory": "src/foundation/concurrency/spin",
       "files": [
         {
           "path": "test/foundation/spin/unit/src/barrier/tests_183.rs",
@@ -17448,7 +17448,7 @@
       ]
     },
     {
-      "directory": "src/foundation/sqlite-access",
+      "directory": "src/foundation/data-storage/sqlite-access",
       "files": [
         {
           "origin_directory": "vendor/rust/sqlx-0.9.0",
@@ -17792,7 +17792,7 @@
       ]
     },
     {
-      "directory": "src/foundation/strum_macros",
+      "directory": "src/foundation/code-generation/strum_macros",
       "files": [
         {
           "path": "test/foundation/strum_macros/unit/src/helpers/case_style/tests_136.rs",
@@ -17806,7 +17806,7 @@
       ]
     },
     {
-      "directory": "src/foundation/subtle",
+      "directory": "src/foundation/cryptography/subtle",
       "files": [
         {
           "path": "test/foundation/subtle/tests/mod.rs",
@@ -17820,7 +17820,7 @@
       ]
     },
     {
-      "directory": "src/foundation/synchronization",
+      "directory": "src/foundation/concurrency/synchronization",
       "files": [
         {
           "origin_directory": "vendor/rust/parking_lot-0.12.5",
@@ -17905,7 +17905,7 @@
       ]
     },
     {
-      "directory": "src/foundation/synstructure",
+      "directory": "src/foundation/code-generation/synstructure",
       "files": [
         {
           "path": "test/foundation/synstructure/unit/src/lib/tests_2520.rs",
@@ -17919,7 +17919,7 @@
       ]
     },
     {
-      "directory": "src/foundation/sysinfo",
+      "directory": "src/foundation/platform/sysinfo",
       "files": [
         {
           "path": "test/foundation/sysinfo/tests/code_checkers/docs.rs",
@@ -18101,7 +18101,7 @@
       ]
     },
     {
-      "directory": "src/foundation/system-entropy",
+      "directory": "src/foundation/cryptography/system-entropy",
       "files": [
         {
           "path": "test/foundation/system-entropy/tests/mod.rs",
@@ -18121,7 +18121,7 @@
       ]
     },
     {
-      "directory": "src/foundation/task-dispatch",
+      "directory": "src/foundation/concurrency/task-dispatch",
       "files": [
         {
           "path": "test/foundation/task-dispatch/tests/already_set_error.rs",
@@ -18201,7 +18201,7 @@
       ]
     },
     {
-      "directory": "src/foundation/tempfile",
+      "directory": "src/foundation/platform/tempfile",
       "files": [
         {
           "path": "test/foundation/tempfile/tests/env.rs",
@@ -18239,7 +18239,7 @@
       ]
     },
     {
-      "directory": "src/foundation/terminal-style",
+      "directory": "src/foundation/tooling/terminal-style",
       "files": [
         {
           "origin_directory": "vendor/rust/anstyle-1.0.14",
@@ -18359,7 +18359,7 @@
       ]
     },
     {
-      "directory": "src/foundation/thread_local",
+      "directory": "src/foundation/concurrency/thread_local",
       "files": [
         {
           "path": "test/foundation/thread_local/functions/src/thread_id/test_thread_193.rs",
@@ -18379,7 +18379,7 @@
       ]
     },
     {
-      "directory": "src/foundation/throw_error",
+      "directory": "src/foundation/diagnostics/throw_error",
       "files": [
         {
           "path": "test/foundation/throw_error/unit/src/lib/tests_162.rs",
@@ -18393,7 +18393,7 @@
       ]
     },
     {
-      "directory": "src/foundation/tinystr",
+      "directory": "src/foundation/text-unicode/tinystr",
       "files": [
         {
           "path": "test/foundation/tinystr/functions/src/databake/test_51.rs",
@@ -18443,7 +18443,7 @@
       ]
     },
     {
-      "directory": "src/foundation/tinyvec",
+      "directory": "src/foundation/collections/tinyvec",
       "files": [
         {
           "path": "test/foundation/tinyvec/tests/arrayvec.rs",
@@ -18487,7 +18487,7 @@
       ]
     },
     {
-      "directory": "src/foundation/tokio",
+      "directory": "src/foundation/concurrency/tokio",
       "files": [
         {
           "origin_directory": "vendor/rust/tokio-1.53.3",
@@ -20861,11 +20861,11 @@
       ]
     },
     {
-      "directory": "src/foundation/tokio-rustls",
+      "directory": "src/foundation/networking/tokio-rustls",
       "files": [
         {
           "path": "test/foundation/tokio-rustls/modules/src/common/test_stream.rs",
-          "sha256": "a8bd4ccd16694b9b1cff01d243de8796467a255ded14091972cc43cd400dabcf",
+          "sha256": "3d4c415a9db153d32ce0c743550c12a47230b95ce3ff76cfe87672302a6c7a32",
           "source": "src/foundation/tokio-rustls/src/common/test_stream.rs",
           "source_sha256_before": "cfece8da03b19f748343718fba322c14652c5bbcf537ea4ef2402696ae58d0cd"
         }
@@ -20875,7 +20875,7 @@
       ]
     },
     {
-      "directory": "src/foundation/toml",
+      "directory": "src/foundation/data-storage/toml",
       "files": [
         {
           "origin_directory": "vendor/rust/toml_edit-0.22.27",
@@ -20995,7 +20995,7 @@
       ]
     },
     {
-      "directory": "src/foundation/tower-http",
+      "directory": "src/foundation/networking/tower-http",
       "files": [
         {
           "path": "test/foundation/tower-http/functions/src/services/fs/serve_dir/open_file/preferred_encoding_with_extension_359.rs",
@@ -21261,7 +21261,7 @@
       ]
     },
     {
-      "directory": "src/foundation/tracing",
+      "directory": "src/foundation/diagnostics/tracing",
       "files": [
         {
           "origin_directory": "vendor/rust/tracing-subscriber-0.3.23",
@@ -22207,7 +22207,7 @@
       ]
     },
     {
-      "directory": "src/foundation/tracing-attributes",
+      "directory": "src/foundation/diagnostics/tracing-attributes",
       "files": [
         {
           "path": "test/foundation/tracing-attributes/tests/async_fn.rs",
@@ -22335,7 +22335,7 @@
       ]
     },
     {
-      "directory": "src/foundation/typed-builder",
+      "directory": "src/foundation/code-generation/typed-builder",
       "files": [
         {
           "path": "test/foundation/typed-builder/tests/no_std.rs",
@@ -22361,7 +22361,7 @@
       ]
     },
     {
-      "directory": "src/foundation/typenum",
+      "directory": "src/foundation/core-types/typenum",
       "files": [
         {
           "path": "test/foundation/typenum/functions/src/private/test_double_inversion_261.rs",
@@ -22465,7 +22465,7 @@
       ]
     },
     {
-      "directory": "src/foundation/unicase",
+      "directory": "src/foundation/text-unicode/unicase",
       "files": [
         {
           "path": "test/foundation/unicase/functions/src/unicode/map/lookup_consistency_427.rs",
@@ -22497,7 +22497,7 @@
       ]
     },
     {
-      "directory": "src/foundation/unicode-general-category",
+      "directory": "src/foundation/text-unicode/unicode-general-category",
       "files": [
         {
           "path": "test/foundation/unicode-general-category/unit/src/lib/test_62.rs",
@@ -22511,7 +22511,7 @@
       ]
     },
     {
-      "directory": "src/foundation/unicode-ident",
+      "directory": "src/foundation/text-unicode/unicode-ident",
       "files": [
         {
           "path": "test/foundation/unicode-ident/tests/compare.rs",
@@ -22545,7 +22545,7 @@
         },
         {
           "path": "test/foundation/unicode-ident/tests/static_size.rs",
-          "sha256": "07f16d0341f4838c434013bafc2c6b52e4db69b5c7bb2bd1af449301df917bf4",
+          "sha256": "e673386898308030a4eea20c3737393825b46d23d36c6946e5e867125628974f",
           "source": "src/foundation/unicode-ident/tests/static_size.rs",
           "source_sha256_before": "3839bf677f957da8f3e88747db2abaef921dd0d0002e9490148ecb83fda2baf2"
         },
@@ -22579,7 +22579,7 @@
       ]
     },
     {
-      "directory": "src/foundation/unicode-normalizer",
+      "directory": "src/foundation/text-unicode/unicode-normalizer",
       "files": [
         {
           "origin_directory": "vendor/rust/icu_normalizer-2.3.0",
@@ -22601,7 +22601,7 @@
       ]
     },
     {
-      "directory": "src/foundation/unicode-properties",
+      "directory": "src/foundation/text-unicode/unicode-properties",
       "files": [
         {
           "origin_directory": "vendor/rust/icu_properties-2.3.0",
@@ -22637,7 +22637,7 @@
       ]
     },
     {
-      "directory": "src/foundation/unicode-segmentation",
+      "directory": "src/foundation/text-unicode/unicode-segmentation",
       "files": [
         {
           "path": "test/foundation/unicode-segmentation/functions/src/grapheme/test_grapheme_cursor_boundary_with_zwj_on_chunk_start_896.rs",
@@ -22717,7 +22717,7 @@
       ]
     },
     {
-      "directory": "src/foundation/untrusted",
+      "directory": "src/foundation/cryptography/untrusted",
       "files": [
         {
           "path": "test/foundation/untrusted/tests/tests.rs",
@@ -22731,7 +22731,7 @@
       ]
     },
     {
-      "directory": "src/foundation/url-encoding",
+      "directory": "src/foundation/networking/url-encoding",
       "files": [
         {
           "origin_directory": "vendor/rust/url-2.5.8",
@@ -22872,7 +22872,7 @@
       ]
     },
     {
-      "directory": "src/foundation/utf8_iter",
+      "directory": "src/foundation/text-unicode/utf8_iter",
       "files": [
         {
           "path": "test/foundation/utf8_iter/unit/src/report/tests_215.rs",
@@ -22886,7 +22886,7 @@
       ]
     },
     {
-      "directory": "src/foundation/uuid",
+      "directory": "src/foundation/core-types/uuid",
       "files": [
         {
           "path": "test/foundation/uuid/unit/src/external/borsh_support/borsh_tests_1.rs",
@@ -23026,7 +23026,7 @@
       ]
     },
     {
-      "directory": "src/foundation/version_check",
+      "directory": "src/foundation/tooling/version_check",
       "files": [
         {
           "path": "test/foundation/version_check/unit/src/date/tests_184.rs",
@@ -23052,7 +23052,7 @@
       ]
     },
     {
-      "directory": "src/foundation/view-alternatives",
+      "directory": "src/foundation/web-runtime/view-alternatives",
       "files": [
         {
           "path": "test/foundation/view-alternatives/unit/src/lib/tests_1012.rs",
@@ -23066,7 +23066,7 @@
       ]
     },
     {
-      "directory": "src/foundation/walrus",
+      "directory": "src/foundation/web-runtime/walrus",
       "files": [
         {
           "path": "test/foundation/walrus/unit/src/ir/traversals/tests_292.rs",
@@ -23128,7 +23128,7 @@
       ]
     },
     {
-      "directory": "src/foundation/wasm-bindgen",
+      "directory": "src/foundation/web-runtime/wasm-bindgen",
       "files": [
         {
           "path": "test/foundation/wasm-bindgen/unit/src/rt/mod/all_tests_458.rs",
@@ -23142,7 +23142,7 @@
       ]
     },
     {
-      "directory": "src/foundation/wasm-bindgen-cli-support",
+      "directory": "src/foundation/web-runtime/wasm-bindgen-cli-support",
       "files": [
         {
           "path": "test/foundation/wasm-bindgen-cli-support/fixtures/catch_handler_legacy.wat",
@@ -23336,7 +23336,7 @@
       ]
     },
     {
-      "directory": "src/foundation/wasm-bindgen-shared",
+      "directory": "src/foundation/web-runtime/wasm-bindgen-shared",
       "files": [
         {
           "path": "test/foundation/wasm-bindgen-shared/modules/src/schema_hash_approval.rs",
@@ -23350,7 +23350,7 @@
       ]
     },
     {
-      "directory": "src/foundation/wasm-binding-macros",
+      "directory": "src/foundation/web-runtime/wasm-binding-macros",
       "files": [
         {
           "origin_directory": "vendor/rust/wasm-bindgen-macro-support-0.2.129",
@@ -23379,7 +23379,7 @@
       ]
     },
     {
-      "directory": "src/foundation/wasm-encoder",
+      "directory": "src/foundation/web-runtime/wasm-encoder",
       "files": [
         {
           "path": "test/foundation/wasm-encoder/unit/src/core/code/tests_2425.rs",
@@ -23423,7 +23423,7 @@
       ]
     },
     {
-      "directory": "src/foundation/wasmparser",
+      "directory": "src/foundation/web-runtime/wasmparser",
       "files": [
         {
           "path": "test/foundation/wasmparser/functions/src/readers/core/types/can_fit_max_wasm_types_in_packed_index_67.rs",
@@ -23503,7 +23503,7 @@
       ]
     },
     {
-      "directory": "src/foundation/webpki-roots",
+      "directory": "src/foundation/networking/webpki-roots",
       "files": [
         {
           "path": "test/foundation/webpki-roots/tests/codegen.rs",
@@ -23541,7 +23541,7 @@
       ]
     },
     {
-      "directory": "src/foundation/winnow",
+      "directory": "src/foundation/text-unicode/winnow",
       "files": [
         {
           "path": "test/foundation/winnow/functions/examples/c_expression/parser/parse_example_116.rs",
@@ -23807,7 +23807,7 @@
       ]
     },
     {
-      "directory": "src/foundation/writeable",
+      "directory": "src/foundation/text-unicode/writeable",
       "files": [
         {
           "path": "test/foundation/writeable/functions/src/impls/test_string_impls_182.rs",
@@ -23863,7 +23863,7 @@
       ]
     },
     {
-      "directory": "src/foundation/yoke",
+      "directory": "src/foundation/collections/yoke",
       "files": [
         {
           "path": "test/foundation/yoke/functions/src/yoke/test_clone_818.rs",
@@ -23925,7 +23925,7 @@
       ]
     },
     {
-      "directory": "src/foundation/yoke-derive",
+      "directory": "src/foundation/collections/yoke-derive",
       "files": [
         {
           "path": "test/foundation/yoke-derive/unit/src/lifetimes/tests_43.rs",
@@ -23945,7 +23945,7 @@
       ]
     },
     {
-      "directory": "src/foundation/zerocopy",
+      "directory": "src/foundation/collections/zerocopy",
       "files": [
         {
           "path": "test/foundation/zerocopy/functions/src/byteorder/test_byteorder_traits_coverage_1589.rs",
@@ -24409,7 +24409,7 @@
       ]
     },
     {
-      "directory": "src/foundation/zerofrom-derive",
+      "directory": "src/foundation/collections/zerofrom-derive",
       "files": [
         {
           "path": "test/foundation/zerofrom-derive/unit/src/visitor/tests_61.rs",
@@ -24423,7 +24423,7 @@
       ]
     },
     {
-      "directory": "src/foundation/zeroize",
+      "directory": "src/foundation/cryptography/zeroize",
       "files": [
         {
           "path": "test/foundation/zeroize/tests/alloc.rs",
@@ -24449,7 +24449,7 @@
       ]
     },
     {
-      "directory": "src/foundation/zerotrie",
+      "directory": "src/foundation/collections/zerotrie",
       "files": [
         {
           "path": "test/foundation/zerotrie/functions/src/helpers/test_const_fmt_int_108.rs",
@@ -24547,7 +24547,7 @@
       ]
     },
     {
-      "directory": "src/foundation/zerovec",
+      "directory": "src/foundation/collections/zerovec",
       "files": [
         {
           "path": "test/foundation/zerovec/functions/src/map/databake/test_baked_borrowed_map_86.rs",
@@ -24783,7 +24783,7 @@
       ]
     },
     {
-      "directory": "src/foundation/zerovec-derive",
+      "directory": "src/foundation/collections/zerovec-derive",
       "files": [
         {
           "path": "test/foundation/zerovec-derive/tests/derive_ule_test.rs",
@@ -24809,7 +24809,7 @@
       ]
     },
     {
-      "directory": "src/foundation/zmij",
+      "directory": "src/foundation/core-types/zmij",
       "files": [
         {
           "path": "test/foundation/zmij/modules/src/tests.rs",

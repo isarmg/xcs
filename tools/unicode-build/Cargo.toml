@@ -6,4 +6,4 @@ license = "Apache-2.0"
 
 
 [dependencies]
-sha2 = {version = "0.11", path = "../../src/foundation/sha2"}
+sha2 = {version = "0.11", path = "../../src/foundation/cryptography/sha2"}

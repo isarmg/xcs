@@ -17,11 +17,11 @@ def run(arguments, env=None):
 def unit(directory, arguments):
     # Preserve CARGO_MANIFEST_DIR-based external includes without generating a
     # Cargo.lock inside the governed source package, even transiently.
-    source = ROOT / 'src/foundation' / directory
+    source = ROOT / 'src/foundation/cryptography' / directory
     with tempfile.TemporaryDirectory(prefix='entropy-unit-') as temporary:
         isolated = Path(temporary)
         shutil.copyfile(ROOT / "rust-toolchain.toml", isolated / "rust-toolchain.toml")
-        package = isolated / 'src/foundation' / directory
+        package = isolated / 'src/foundation/cryptography' / directory
         shutil.copytree(source, package)
         external = ROOT / 'test/foundation' / directory
         if external.is_dir():
@@ -46,7 +46,7 @@ def main():
     with tempfile.TemporaryDirectory(prefix='entropy-migration-') as temporary:
         shutil.copyfile(ROOT / 'rust-toolchain.toml', Path(temporary) / 'rust-toolchain.toml')
         manifest = Path(temporary) / 'Cargo.toml'
-        source = lambda name: json.dumps(str(ROOT / 'src/foundation' / name))
+        source = lambda name: json.dumps(str(ROOT / 'src/foundation/cryptography' / name))
         manifest.write_text(f'''[workspace]
 [package]
 name = "entropy-migration-probe"

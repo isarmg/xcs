@@ -12,7 +12,7 @@ edge stays optional; the property family has no inverse normalizer dependency.
 
 ## Source and provenance boundaries
 
-Each runtime lives in `src/foundation/unicode-*`; original external tests live under
+Each runtime lives in `src/foundation/text-unicode/unicode-*`; original external tests live under
 `test/foundation/unicode-*`. Additional product-focused checks are in
 `test/unicode-data`. Production code and generated tables are under
 `src`; the inherited build script remains at the Cargo package entrypoint.

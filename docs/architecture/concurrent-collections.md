@@ -1,6 +1,6 @@
 # Concurrent collections
 
-`src/foundation/concurrent-collections` is one Rust package with four explicit API
+`src/foundation/concurrency/concurrent-collections` is one Rust package with four explicit API
 namespaces: `utilities`, `epoch`, `queue`, and `deque`. It replaces the separate
 Crossbeam utility, reclamation, queue, and work-stealing packages. Rayon and SQLite access
 consume this same package, not compatibility aliases.

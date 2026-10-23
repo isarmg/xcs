@@ -25,7 +25,7 @@ version = "0.0.0"
 edition = "2021"
 [workspace]
 [dependencies]
-tokio = { path = ''' + json.dumps(str(root / 'src/foundation/tokio')) + ''', default-features = false }
+tokio = { path = ''' + json.dumps(str(root / 'src/foundation/concurrency/tokio')) + ''', default-features = false }
 ''')
         environment = dict(os.environ, CARGO_BUILD_JOBS='1', CARGO_PROFILE_DEV_DEBUG='0', CARGO_INCREMENTAL='0')
         environment.setdefault('CARGO_TARGET_DIR', str(root / 'target/runtime-join-map-consumer'))
@@ -49,7 +49,7 @@ tokio = { path = ''' + json.dumps(str(root / 'src/foundation/tokio')) + ''', def
 
         # This optional consumer owns retained internal file-body streaming, not Web UI.
         (work / 'Cargo.toml').write_text('[package]\nname="runtime-file-consumer"\nversion="0.0.0"\nedition="2021"\n[workspace]\n'
-            '[dependencies]\ntower-http={path=' + json.dumps(str(root / 'src/foundation/tower-http')) +
+            '[dependencies]\ntower-http={path=' + json.dumps(str(root / 'src/foundation/networking/tower-http')) +
             ',default-features=false,features=["fs"]}\n')
         (work / 'src/lib.rs').write_text('pub use tower_http::services::ServeDir;\n')
         cargo('generate-lockfile')

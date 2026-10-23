@@ -6,19 +6,23 @@ import unittest
 import sys
 sys.path.insert(0, str(Path(__file__).resolve().parents[3] / "tools/rust-sources"))
 from historical_test_sources import historical_reader
+import source_layout
 
 ROOT = Path(__file__).resolve().parents[3]
 PROOF = ROOT / 'docs/validation/evidence/foundation/linux-amd64-runtime-final-20261020.json'
 
 
 class RuntimePlatformScope(unittest.TestCase):
+    def setUp(self):
+        self.enterContext(source_layout.activate(source_layout.load(ROOT)))
+
     def test_retired_and_retained_source_inventory(self):
         proof = json.loads(PROOF.read_text())
         read = historical_reader(ROOT)
         self.assertEqual(len(proof['retired_files']), 60)
         self.assertEqual(sum(v['bytes'] for v in proof['retired_files'].values()), 223354)
         for path in proof['retired_files']:
-            self.assertFalse((ROOT / path).exists(), path)
+            self.assertFalse(source_layout.physical(ROOT, path).exists(), path)
         for path, expected in proof['retained_files_sha256'].items():
             self.assertEqual(hashlib.sha256(read(path)).hexdigest(), expected, path)
         for path, evidence in proof['changed_files'].items():
@@ -26,7 +30,7 @@ class RuntimePlatformScope(unittest.TestCase):
 
     def test_retired_random_overrides_fail_closed(self):
         # Removed 0.2/0.3 implementations stay authenticated by the pinned proof above.
-        crate = ROOT / 'src/foundation/system-entropy'
+        crate = source_layout.physical(ROOT, 'src/foundation/system-entropy')
         source = (crate / 'src/backends.rs').read_text()
         self.assertIn('this getrandom backend was retired', source)
         for backend in ('rndr', 'efi_rng', 'windows_legacy'):

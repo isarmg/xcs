@@ -11,14 +11,14 @@ name = "view_macros"
 proc-macro = true
 
 [dependencies]
-convert_case = {version = "0.11", path = "../foundation/convert_case"}
-html-escape = {version = "0.2", path = "../foundation/html-escape"}
-iterator-toolkit = {version = "0.14", path = "../foundation/iterator-toolkit"}
-rust-source-format = {version = "0.3", path = "../foundation/rust-source-format"}
-proc-macro2 = {version = "1", path = "../foundation/proc-macro2"}
-quote = {version = "1", path = "../foundation/quote"}
-rstml = {version = "0.13.1", path = "../foundation/rstml"}
-rust-syntax = { version = "3", features = ["full"], path = "../foundation/rust-syntax"}
+convert_case = {version = "0.11", path = "../foundation/text-unicode/convert_case"}
+html-escape = {version = "0.2", path = "../foundation/text-unicode/html-escape"}
+iterator-toolkit = {version = "0.14", path = "../foundation/collections/iterator-toolkit"}
+rust-source-format = {version = "0.3", path = "../foundation/code-generation/rust-source-format"}
+proc-macro2 = {version = "1", path = "../foundation/code-generation/proc-macro2"}
+quote = {version = "1", path = "../foundation/code-generation/quote"}
+rstml = {version = "0.13.1", path = "../foundation/code-generation/rstml"}
+rust-syntax = { version = "3", features = ["full"], path = "../foundation/code-generation/rust-syntax"}
 
 [dev-dependencies]
 # Run macro documentation in the same consumer context as the application.

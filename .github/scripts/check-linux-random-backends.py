@@ -11,6 +11,7 @@ import subprocess
 import tempfile
 
 ROOT = Path(__file__).resolve().parents[2]
+foundation_path = runpy.run_path(str(ROOT / '.github/scripts/foundation_paths.py'))['package_path']
 matrix_environment = runpy.run_path(str(Path(__file__).with_name("backend_environment.py")))["matrix_environment"]
 PACKAGES = ("system-entropy",)
 RETIRED = ("rndr", "efi_rng", "windows_legacy")
@@ -76,7 +77,7 @@ def main():
     base_env["RUSTFLAGS"] = "--deny=warnings"
     with tempfile.TemporaryDirectory(prefix="zxs-random-backends-") as directory:
         for package in PACKAGES:
-            source = ROOT / "src" / "foundation" / package
+            source = foundation_path(ROOT, package)
             isolated = Path(directory) / package
             isolated.mkdir()
             (isolated / "rust-toolchain.toml").write_bytes((ROOT / "rust-toolchain.toml").read_bytes())

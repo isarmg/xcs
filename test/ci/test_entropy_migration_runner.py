@@ -16,13 +16,13 @@ class EntropyMigrationRunner(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
             (root / "rust-toolchain.toml").write_text('[toolchain]\nchannel = "1.99.0"\n')
-            package = root / 'src/foundation/random-generator-core'
+            package = root / 'src/foundation/cryptography/random-generator-core'
             package.mkdir(parents=True)
             (package / 'Cargo.toml').write_text(
                 '[package]\nname="random-generator-core"\nversion="0.0.0"\n'
                 '[dependencies.system-entropy]\npath = "../system-entropy"\n')
             (package / 'Cargo.lock').write_bytes(b'original lock must not change')
-            for relative in ('src/foundation/random-generator-core/src/lib.rs',
+            for relative in ('src/foundation/cryptography/random-generator-core/src/lib.rs',
                              'test/foundation/random-generator-core/unit/test.rs',
                              'test/entropy/error.rs', 'docs/components/system-entropy.md'):
                 path = root / relative
@@ -36,11 +36,11 @@ class EntropyMigrationRunner(unittest.TestCase):
                 manifest = Path(arguments[arguments.index('--manifest-path') + 1])
                 self.assertFalse(manifest.is_relative_to(root))
                 self.assertIn('--offline', arguments)
-                self.assertIn(str(root / 'src/foundation/system-entropy'), manifest.read_text())
+                self.assertIn(str(root / 'src/foundation/cryptography/system-entropy'), manifest.read_text())
                 self.assertEqual((manifest.parent / 'src/lib.rs').read_text(), 'exact original material')
-                self.assertEqual((manifest.parents[3] / "rust-toolchain.toml").read_bytes(),
+                self.assertEqual((manifest.parents[4] / "rust-toolchain.toml").read_bytes(),
                                  (root / "rust-toolchain.toml").read_bytes())
-                external = manifest.parents[3] / 'test/foundation/random-generator-core/unit/test.rs'
+                external = manifest.parents[4] / 'test/foundation/random-generator-core/unit/test.rs'
                 self.assertEqual(external.read_text(), 'exact original material')
                 if arguments[0] == 'generate-lockfile':
                     manifest.with_name('Cargo.lock').write_bytes(b'isolated generated lock')

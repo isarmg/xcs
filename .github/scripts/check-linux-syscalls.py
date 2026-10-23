@@ -34,13 +34,13 @@ def libraries(output):
 
 def check(root):
     environment = matrix_environment()
-    rustix_environment = environment | {"CARGO_MANIFEST_DIR": str((root / "src/foundation/rustix").resolve())}
+    rustix_environment = environment | {"CARGO_MANIFEST_DIR": str((root / "src/foundation/platform/rustix").resolve())}
     fixture_environment = environment | {"CARGO_MANIFEST_DIR": str(root.resolve())}
     with tempfile.TemporaryDirectory(prefix="zxs-linux-syscalls-") as temporary:
         guard_test = str(Path(temporary) / "target-guard")
         subprocess.run([
             "rustc", "--edition=2021", "--test",
-            str(root / "src/foundation/rustix/build.rs"),
+            str(root / "src/foundation/platform/rustix/build.rs"),
             "--cfg", 'feature="std"', "--deny", "warnings", "-o", guard_test,
         ], cwd=root, env=rustix_environment, check=True)
         subprocess.run([guard_test], cwd=root, env=rustix_environment, check=True)

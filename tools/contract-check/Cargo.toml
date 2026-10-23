@@ -11,13 +11,13 @@ schema-async = ["schema-validation/resolve-async"]
 
 
 [dependencies]
-blake3 = {version = "1.8.7", path = "../../src/foundation/blake3"}
-schema-validation = { version = "=0.58.6", default-features = false, features = ["validator"], path = "../../src/foundation/schema-validation"}
-url-encoding = { path = "../../src/foundation/url-encoding", features = ["std"] }
-regex = {version = "1", path = "../../src/foundation/regex"}
-data-serialization = { version = "1", features = ["derive"], path = "../../src/foundation/data-serialization"}
-json-codec = {version = "1", path = "../../src/foundation/json-codec"}
-toml = {version = "0.8.23", path = "../../src/foundation/toml"}
+blake3 = {version = "1.8.7", path = "../../src/foundation/cryptography/blake3"}
+schema-validation = { version = "=0.58.6", default-features = false, features = ["validator"], path = "../../src/foundation/data-storage/schema-validation"}
+url-encoding = { path = "../../src/foundation/networking/url-encoding", features = ["std"] }
+regex = {version = "1", path = "../../src/foundation/text-unicode/regex"}
+data-serialization = { version = "1", features = ["derive"], path = "../../src/foundation/data-storage/data-serialization"}
+json-codec = {version = "1", path = "../../src/foundation/data-storage/json-codec"}
+toml = {version = "0.8.23", path = "../../src/foundation/data-storage/toml"}
 storage-contract.workspace = true
 
 [[test]]

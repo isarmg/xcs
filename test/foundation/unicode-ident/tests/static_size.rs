@@ -5,7 +5,7 @@ use std::mem::size_of_val;
 #[test]
 fn test_size() {
     #[allow(dead_code)]
-    #[path = "../../../../src/foundation/unicode-ident/src/tables.rs"]
+    #[path = "../../../../src/foundation/text-unicode/unicode-ident/src/tables.rs"]
     mod tables;
 
     let size = size_of_val(&tables::ASCII_START)

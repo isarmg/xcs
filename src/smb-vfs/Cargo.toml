@@ -12,11 +12,11 @@ default = ["smb-sdk"]
 smb-sdk = ["dep:bindgen"]
 
 [dependencies]
-blake3 = {version = "1.8.7", path = "../foundation/blake3"}
-libc = {version = "0.2", path = "../foundation/libc"}
-json-codec = {version = "1", path = "../foundation/json-codec"}
+blake3 = {version = "1.8.7", path = "../foundation/cryptography/blake3"}
+libc = {version = "0.2", path = "../foundation/platform/libc"}
+json-codec = {version = "1", path = "../foundation/data-storage/json-codec"}
 smb-protocol = { path = "../smb" }
 
 [build-dependencies]
-bindgen = { version = "0.72.1", optional = true, path = "../foundation/bindgen"}
-json-codec = {version = "1", path = "../foundation/json-codec"}
+bindgen = { version = "0.72.1", optional = true, path = "../foundation/tooling/bindgen"}
+json-codec = {version = "1", path = "../foundation/data-storage/json-codec"}

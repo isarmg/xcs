@@ -8,6 +8,7 @@ import tempfile
 import tomllib
 
 ROOT = Path(__file__).resolve().parents[2]
+foundation_path = runpy.run_path(str(ROOT / '.github/scripts/foundation_paths.py'))['package_path']
 
 
 def manifest(root):
@@ -31,13 +32,13 @@ zeroize = ["sha2/zeroize", "hmac/zeroize", "blake3/zeroize"]
 [lints.rust]
 unexpected_cfgs = {{level = "warn", check-cfg = ['cfg(feature, values("test_large_ram"))']}}
 [dependencies]
-blake2 = {{path = "{foundation / 'blake2'}", default-features = false}}
-argon2 = {{path = "{foundation / 'argon2'}", default-features = false}}
-password-hash = {{path = "{foundation / 'password-hash'}", default-features = false}}
-base64ct = {{path = "{foundation / 'base64ct'}", default-features = false}}
-sha2 = {{path = "{foundation / 'sha2'}", default-features = false}}
-hmac = {{path = "{foundation / 'hmac'}", default-features = false}}
-blake3 = {{path = "{foundation / 'blake3'}", default-features = false}}
+blake2 = {{path = "{root / 'src/foundation/cryptography/blake2'}", default-features = false}}
+argon2 = {{path = "{root / 'src/foundation/cryptography/argon2'}", default-features = false}}
+password-hash = {{path = "{root / 'src/foundation/cryptography/password-hash'}", default-features = false}}
+base64ct = {{path = "{root / 'src/foundation/cryptography/base64ct'}", default-features = false}}
+sha2 = {{path = "{root / 'src/foundation/cryptography/sha2'}", default-features = false}}
+hmac = {{path = "{root / 'src/foundation/cryptography/hmac'}", default-features = false}}
+blake3 = {{path = "{root / 'src/foundation/cryptography/blake3'}", default-features = false}}
 '''
 
 
@@ -51,7 +52,7 @@ def check_shared_stack(root, metadata):
         if obsolete in names:
             raise AssertionError(f'obsolete crypto provider returned: {obsolete}')
     for relative in ('digest-0.10.7', 'block-buffer-0.10.4', 'crypto-common-0.1.7', 'generic-array', 'digest-0.11.3', 'block-buffer-0.12.1', 'crypto-common-0.2.2', 'hash-traits', 'hash-block-buffer', 'cryptographic-traits'):
-        if (root / 'src/foundation' / relative).exists():
+        if (foundation_path(root, relative)).exists():
             raise AssertionError(f'removed standalone crypto package returned: {relative}')
 
 

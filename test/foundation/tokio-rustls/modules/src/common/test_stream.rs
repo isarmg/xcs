@@ -398,4 +398,4 @@ fn do_handshake(
 }
 
 // Share `utils` module with integration tests
-include!("../../../../../../src/foundation/tokio-rustls/tests/utils.rs");
+include!("../../../../../../src/foundation/networking/tokio-rustls/tests/utils.rs");

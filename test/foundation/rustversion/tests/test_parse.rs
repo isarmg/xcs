@@ -4,7 +4,7 @@
     clippy::must_use_candidate
 )]
 
-include!("../../../../src/foundation/rustversion/build/rustc.rs");
+include!("../../../../src/foundation/tooling/rustversion/build/rustc.rs");
 
 #[test]
 fn test_parse() {

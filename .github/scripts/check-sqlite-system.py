@@ -36,8 +36,8 @@ def check(root):
         (work / 'Cargo.toml').write_text(
             '[package]\nname="sqlite-system-consumer"\nversion="0.0.0"\nedition="2021"\n'
             '[workspace]\n[dependencies]\n'
-            f'sqlite-access={{path="{root / "src/foundation/sqlite-access"}",default-features=false,features=["sqlite-unbundled"]}}\n'
-            f'tokio={{path="{root / "src/foundation/tokio"}",default-features=false,features=["rt"]}}\n')
+            f'sqlite-access={{path="{root / "src/foundation/data-storage/sqlite-access"}",default-features=false,features=["sqlite-unbundled"]}}\n'
+            f'tokio={{path="{root / "src/foundation/concurrency/tokio"}",default-features=false,features=["rt"]}}\n')
         (work / 'src/main.rs').write_text('''use sqlite_access::Connection;
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     tokio::runtime::Builder::new_current_thread().enable_all().build()?.block_on(async {

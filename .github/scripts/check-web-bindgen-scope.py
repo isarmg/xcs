@@ -79,7 +79,7 @@ def check():
         manifest = work / 'Cargo.toml'
         manifest.write_text('[package]\nname="web-bindgen-scope"\nversion="0.0.0"\nedition="2021"\n'
                             '[workspace]\n[dependencies]\nwasm-bindgen-cli-support={path="' +
-                            str(ROOT / 'src/foundation/wasm-bindgen-cli-support') + '"}\n')
+                            str(ROOT / 'src/foundation/web-runtime/wasm-bindgen-cli-support') + '"}\n')
         source = work / 'src/lib.rs'
         source.write_text('pub fn generator() { let _ = wasm_bindgen_cli_support::Bindgen::new(); }')
         cargo('generate-lockfile', '--offline', '--manifest-path', str(manifest))
@@ -107,9 +107,9 @@ def check():
         fixture_manifest = fixture / 'Cargo.toml'
         fixture_manifest.write_text('[package]\nname="web-binding-contract-fixture"\nversion="0.0.0"\nedition="2021"\n'
                                     '[workspace]\n[lib]\ncrate-type=["cdylib"]\n[dependencies]\nwasm-bindgen={path="' +
-                                    str(ROOT / 'src/foundation/wasm-bindgen') + '"}\njs-sys={path="' +
-                                    str(ROOT / 'src/foundation/js-sys') + '",default-features=false,features=["std"]}\ntask-dispatch={path="' +
-                                    str(ROOT / 'src/foundation/task-dispatch') + '",features=["wasm-bindgen"]}\n')
+                                    str(ROOT / 'src/foundation/web-runtime/wasm-bindgen') + '"}\njs-sys={path="' +
+                                    str(ROOT / 'src/foundation/web-runtime/js-sys') + '",default-features=false,features=["std"]}\ntask-dispatch={path="' +
+                                    str(ROOT / 'src/foundation/concurrency/task-dispatch') + '",features=["wasm-bindgen"]}\n')
         (fixture / 'src/lib.rs').write_text((ROOT / 'test/tools/web-bindings/fixtures/contract.rs').read_text() + '\n' +
                                               (ROOT / 'test/wasm-binding-macros/async-runtime.rs').read_text() + '\n' +
                                               (ROOT / 'test/task-dispatch/browser.rs').read_text())

@@ -10,7 +10,7 @@ ROOT = Path(__file__).resolve().parents[3]
 
 class ProductionTemplates(unittest.TestCase):
     def test_bindgen_templates_stay_with_production_codegen(self):
-        codegen = ROOT / "src/foundation/bindgen/codegen"
+        codegen = ROOT / "src/foundation/tooling/bindgen/codegen"
         source = (codegen / "mod.rs").read_text()
         for name in ("bitfield_unit.rs", "bitfield_unit_raw_ref_macros.rs"):
             with self.subTest(template=name):
@@ -21,7 +21,7 @@ class ProductionTemplates(unittest.TestCase):
     def test_shared_template_is_not_classified_as_external_test_material(self):
         mapping = json.loads((ROOT / "compliance/external-tests/foundation.json").read_text())
         bindgen = next(owner for owner in mapping["owners"]
-                       if owner["directory"] == "src/foundation/bindgen")
+                       if owner["directory"] == "src/foundation/tooling/bindgen")
         originals = {entry["source"] for entry in bindgen["files"]}
         self.assertNotIn("src/foundation/bindgen/codegen/bitfield_unit.rs", originals)
         self.assertIn("src/foundation/bindgen/codegen/bitfield_unit_tests.rs", originals)

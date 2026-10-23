@@ -2,13 +2,16 @@
 """Compile capability boundaries and execute native terminal/CLI/logging consumers."""
 from pathlib import Path
 import json, os, re, subprocess, tempfile
+import runpy
+
 ROOT=Path(__file__).resolve().parents[2]
+foundation_path = runpy.run_path(str(ROOT / '.github/scripts/foundation_paths.py'))['package_path']
 
 def run(args, **kw):
     return subprocess.run(args,cwd=ROOT,check=True,**kw)
 
 def check():
-    manifest=ROOT/'src/foundation/terminal-style/Cargo.toml'
+    manifest=ROOT/'src/foundation/tooling/terminal-style/Cargo.toml'
     assert not (ROOT/'src/foundation/utf8parse').exists(), 'standalone UTF-8 package remains'
     assert not (ROOT/'test/foundation/utf8parse').exists(), 'UTF-8 tests not transferred'
     for base in ('src', 'tools'):
@@ -37,7 +40,7 @@ def check():
     assert len(metadata['resolve']['nodes'])==1, 'style default unexpectedly activates dependencies'
     with tempfile.TemporaryDirectory(prefix='terminal-consumers-') as temp:
         work=Path(temp);(work/'src').mkdir()
-        dep=lambda name: str(ROOT/'src/foundation'/name)
+        dep=lambda name: str(foundation_path(ROOT, name))
         base='[package]\nname="terminal-consumer-check"\nversion="0.0.0"\nedition="2021"\n[workspace]\n[dependencies]\n'
         (work/'Cargo.toml').write_text(base+f'terminal-style={{path="{dep("terminal-style")}",features=["output"]}}\ncommand-line={{path="{dep("command-line")}"}}\nlogging={{path="{dep("logging")}"}}\nlog={{path="{dep("log")}"}}\n')
         (work/'src/lib.rs').write_text((ROOT/'test/ci/fixtures/terminal-style-consumers.rs').read_text())
@@ -60,7 +63,7 @@ def check():
             result=subprocess.run(command+['--features','terminal-style/'+feature],cwd=ROOT,env=env,capture_output=True,text=True)
             assert result.returncode and 'does not have that feature' in result.stderr,result.stderr
 if __name__=='__main__':
-    lock = ROOT/'src/foundation/terminal-style/Cargo.lock'
+    lock = ROOT/'src/foundation/tooling/terminal-style/Cargo.lock'
     existed = lock.exists()
     try:
         check()

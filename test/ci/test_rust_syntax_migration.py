@@ -5,6 +5,7 @@ import tomllib
 import unittest
 
 ROOT = Path(__file__).resolve().parents[2]
+foundation_path = runpy.run_path(str(ROOT / '.github/scripts/foundation_paths.py'))['package_path']
 GATE = runpy.run_path(str(ROOT / '.github/scripts/check-rust-syntax-migration.py'))
 
 
@@ -17,7 +18,7 @@ class RustSyntaxMigrationGateTests(unittest.TestCase):
         syntax = manifest['dependencies']['rust-syntax']
         self.assertIn('full', syntax['features'])
         self.assertEqual((ROOT / 'src/macros' / syntax['path']).resolve(),
-                         ROOT / 'src/foundation/rust-syntax')
+                         ROOT / 'src/foundation/code-generation/rust-syntax')
         self.assertNotIn('attribute-derive', manifest['dependencies'])
         consumer = runpy.run_path(str(ROOT / '.github/scripts/check-foundation-consumers.py'))
         self.assertEqual(consumer['FEATURES']['rust-syntax'], ['full'])
@@ -41,12 +42,12 @@ class RustSyntaxMigrationGateTests(unittest.TestCase):
                  'rust-source-format': 'rust_source_format',
                  'cpu-feature-detect': 'cpu_feature_detect'}
         for package, library in roles.items():
-            path = ROOT / 'src/foundation' / package / 'Cargo.toml'
+            path = foundation_path(ROOT, package) / 'Cargo.toml'
             manifest = tomllib.loads(path.read_text())
             self.assertEqual(manifest['package']['name'], package)
             self.assertEqual(manifest['lib']['name'], library)
             self.assertNotIn(library, self.manifest['dependencies'])
-        formatter = tomllib.loads((ROOT / 'src/foundation/rust-source-format/Cargo.toml').read_text())
+        formatter = tomllib.loads((ROOT / 'src/foundation/code-generation/rust-source-format/Cargo.toml').read_text())
         self.assertEqual(formatter['package']['links'], 'rust_source_format')
         for obsolete in ('syn', 'prettyplease', 'cpufeatures'):
             self.assertNotIn(obsolete, self.manifest['dependencies'])

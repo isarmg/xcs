@@ -32,8 +32,8 @@ class PlatformScope(unittest.TestCase):
         self.assertEqual(manager.profile_features(ROOT, optional), ("platform-io/sqlite-pool",))
         self.assertTrue(all(not profile.get("features") for profile in policy["profiles"] if profile.get("production")))
         platform = tomllib.loads((ROOT / "src/platform/Cargo.toml").read_text())
-        driver = tomllib.loads((ROOT / "src/foundation/sqlite-access/Cargo.toml").read_text())
-        notification = tomllib.loads((ROOT / "src/foundation/async-notification/Cargo.toml").read_text())
+        driver = tomllib.loads((ROOT / "src/foundation/data-storage/sqlite-access/Cargo.toml").read_text())
+        notification = tomllib.loads((ROOT / "src/foundation/concurrency/async-notification/Cargo.toml").read_text())
         self.assertIn("sqlite-access/pool", platform["features"]["sqlite-pool"])
         self.assertIn("dep:async-notification", driver["features"]["pool"])
         self.assertTrue(driver["dependencies"]["async-notification"]["optional"])
@@ -54,13 +54,13 @@ class PlatformScope(unittest.TestCase):
         tool = tomllib.loads((ROOT / "tools/contract-check/Cargo.toml").read_text())
         self.assertEqual(tool["features"]["schema-async"], ["schema-validation/resolve-async"])
         self.assertNotIn("schema-async", tool["features"].get("default", []))
-        renderer = tomllib.loads((ROOT / "src/foundation/view-renderer/Cargo.toml").read_text())
+        renderer = tomllib.loads((ROOT / "src/foundation/web-runtime/view-renderer/Cargo.toml").read_text())
         self.assertNotIn("async-trait", renderer.get("dependencies", {}))
         gate = (ROOT / ".github/scripts/check-schema-validation.py").read_text()
         self.assertIn("resolve-async,jsonb-testkit,arbitrary-precision", gate)
 
     def test_linux_uapi_preserves_every_amd64_feature_and_binding(self):
-        directory = ROOT / "src/foundation/linux-raw-sys"
+        directory = ROOT / "src/foundation/platform/linux-raw-sys"
         manifest = tomllib.loads((directory / "Cargo.toml").read_text())
         source = (directory / "src/lib.rs").read_text()
         modules = re.findall(r'#\[cfg\(feature = "([^"]+)"\)\]\n(?:#\[cfg\([^\n]+\)\]\n)?#\[path = "([^"]+)"\]\npub mod ([^;]+);', source)
@@ -73,7 +73,7 @@ class PlatformScope(unittest.TestCase):
         self.assertEqual({path.name for path in (directory / "src").iterdir() if path.is_dir()}, {"x86_64"})
         # The local dispatch changes, but retained generated ABI definitions do not.
         catalog = manager.read_json(ROOT / manager.CATALOG)
-        package = catalog["packages"]["src/foundation/linux-raw-sys"]
+        package = catalog["packages"]["src/foundation/platform/linux-raw-sys"]
         origin = manager.origins(ROOT)[package["origin_directory"]]
         for _, relative, _ in modules:
             original = "src/" + relative
@@ -84,7 +84,7 @@ class PlatformScope(unittest.TestCase):
 
     def test_msvc_discovery_is_removed_without_dropping_provenance(self):
         self.assertFalse((ROOT / "src/foundation/vcpkg").exists())
-        for relative in ("src/foundation/libsqlite3-sys/Cargo.toml", "src/foundation/sqlite-access/Cargo.toml", "src/foundation/libsqlite3-sys/build.rs"):
+        for relative in ("src/foundation/data-storage/libsqlite3-sys/Cargo.toml", "src/foundation/data-storage/sqlite-access/Cargo.toml", "src/foundation/data-storage/libsqlite3-sys/build.rs"):
             self.assertNotIn("vcpkg", (ROOT / relative).read_text().lower())
         records = manager.origins(ROOT)
         retired = [item for item in records.values() if item["upstream"]["name"] == "vcpkg"]

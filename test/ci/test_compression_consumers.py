@@ -25,7 +25,7 @@ class CompressionConsumerTests(unittest.TestCase):
         gate = self.harness('check-serialization-family.py')
         manifest = tomllib.loads(gate['manifest'](ROOT))
         dependency = manifest['dependencies']['compression']
-        self.assertEqual(dependency['path'], str(ROOT / 'src/foundation/compression'))
+        self.assertEqual(dependency['path'], str(ROOT / 'src/foundation/data-storage/compression'))
         self.assertEqual(dependency['features'], ['serialization'])
         self.assert_local_dependencies_resolve(manifest)
         no_std = tomllib.loads(gate['manifest'](ROOT, no_std=True))
@@ -42,7 +42,7 @@ class CompressionConsumerTests(unittest.TestCase):
         manifest = tomllib.loads(path.read_text())
         dependency = manifest['dependencies']['compression']
         self.assertEqual((path.parent / dependency['path']).resolve(),
-                         (ROOT / 'src/foundation/compression').resolve())
+                         (ROOT / 'src/foundation/data-storage/compression').resolve())
         self.assertEqual(set(dependency['features']), {'streams', 'simd', 'runtime-detection'})
         for old in ('flate2', 'miniz_oxide', 'adler2', 'simd-adler32'):
             self.assertNotIn(old, manifest['dependencies'])

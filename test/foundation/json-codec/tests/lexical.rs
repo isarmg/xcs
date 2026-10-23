@@ -24,7 +24,7 @@
 
 extern crate alloc;
 
-#[path = "../../../../src/foundation/json-codec/src/lexical/mod.rs"]
+#[path = "../../../../src/foundation/data-storage/json-codec/src/lexical/mod.rs"]
 mod lexical;
 
 #[path = "lexical/algorithm.rs"]

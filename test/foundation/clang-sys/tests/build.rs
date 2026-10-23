@@ -11,14 +11,14 @@ use std::sync::Mutex;
 use tempfile::TempDir;
 
 #[macro_use]
-#[path = "../../../../src/foundation/clang-sys/build/macros.rs"]
+#[path = "../../../../src/foundation/tooling/clang-sys/build/macros.rs"]
 mod macros;
 
-#[path = "../../../../src/foundation/clang-sys/build/common.rs"]
+#[path = "../../../../src/foundation/tooling/clang-sys/build/common.rs"]
 mod common;
-#[path = "../../../../src/foundation/clang-sys/build/dynamic.rs"]
+#[path = "../../../../src/foundation/tooling/clang-sys/build/dynamic.rs"]
 mod dynamic;
-#[path = "../../../../src/foundation/clang-sys/build/static.rs"]
+#[path = "../../../../src/foundation/tooling/clang-sys/build/static.rs"]
 mod r#static;
 
 #[derive(Debug, Default)]

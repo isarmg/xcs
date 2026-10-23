@@ -7,7 +7,11 @@ import shutil
 import subprocess
 import tempfile
 
+import runpy
+
 ROOT = Path(__file__).resolve().parents[2]
+rebase_dependency_paths = runpy.run_path(str(ROOT / '.github/scripts/foundation_paths.py'))['rebase_dependency_paths']
+foundation_path = runpy.run_path(str(ROOT / '.github/scripts/foundation_paths.py'))['package_path']
 TARGETS = ("x86_64-unknown-linux-gnu", "wasm32-unknown-unknown")
 FEATURE_SETS = ((), ("utilities",), ("channel",), ("full",))
 
@@ -48,7 +52,7 @@ def check_minimal(root, temporary, target_dir):
             "pub fn hint() -> http_body::SizeHint { http_body::SizeHint::with_exact(4) }\n",
             encoding="utf-8",
         )
-        dependency = json.dumps(str(root / "src/foundation/http-body"))
+        dependency = json.dumps(str(root / "src/foundation/networking/http-body"))
         (work / "Cargo.toml").write_text(
             '[package]\nname = "http-body-feature-probe"\nversion = "0.0.0"\n'
             'edition = "2021"\n[workspace]\n[dependencies.http-body]\n'
@@ -77,22 +81,18 @@ def check_retained_tests(root, temporary, target_dir):
     # A disposable manifest adds only already-maintained local test providers.
     # Product manifests and the root lock file are not modified.
     mirror = temporary / "retained"
-    package = mirror / "src/foundation/http-body"
-    shutil.copytree(root / "src/foundation/http-body", package)
+    package = mirror / "src/foundation/networking/http-body"
+    shutil.copytree(root / "src/foundation/networking/http-body", package)
     shutil.copytree(root / "test/foundation/http-body", mirror / "test/foundation/http-body")
     manifest = (package / "Cargo.toml").read_text(encoding="utf-8")
-    manifest = re.sub(
-        r'path = "\.\./([^"\n]+)"',
-        lambda match: "path = " + json.dumps(str(root / "src/foundation" / match[1])),
-        manifest,
-    )
+    manifest = rebase_dependency_paths(manifest, root / "src/foundation/networking/http-body")
     manifest += (
         '\n[workspace]\n[dev-dependencies.futures]\n'
-        f'path = {json.dumps(str(root / "src/foundation/futures"))}\ndefault-features = false\nfeatures = ["std", "utilities", "async-await-macro", "shared-state"]\n'
+        f'path = {json.dumps(str(root / "src/foundation/concurrency/futures"))}\ndefault-features = false\nfeatures = ["std", "utilities", "async-await-macro", "shared-state"]\n'
         '[dev-dependencies.tokio]\n'
-        f'path = {json.dumps(str(root / "src/foundation/tokio"))}\nfeatures = ["full"]\n'
+        f'path = {json.dumps(str(root / "src/foundation/concurrency/tokio"))}\nfeatures = ["full"]\n'
         '[[test]]\nname = "is_end_stream"\n'
-        'path = "../../../test/foundation/http-body/tests/is_end_stream.rs"\n'
+        'path = "../../../../test/foundation/http-body/tests/is_end_stream.rs"\n'
         '[profile.dev]\ndebug = 0\nincremental = false\n'
         '[profile.test]\ndebug = 0\nincremental = false\n'
     )
@@ -107,9 +107,9 @@ def check_retained_tests(root, temporary, target_dir):
 
 def check(root):
     root = Path(root).resolve()
-    for retired in ("src/foundation/http-body-util", "test/foundation/http-body-util"):
-        if (root / retired).exists():
-            raise AssertionError(f"absorbed HTTP body utility root remains: {retired}")
+    for retired in (foundation_path(root, "http-body-util"), root / "test/foundation/http-body-util"):
+        if retired.exists():
+            raise AssertionError(f"absorbed HTTP body utility root remains: {retired.relative_to(root)}")
     temporary_root = root / "target/scope-consumers"
     temporary_root.mkdir(parents=True, exist_ok=True)
     target_dir = root / "target/http-body-consumers"

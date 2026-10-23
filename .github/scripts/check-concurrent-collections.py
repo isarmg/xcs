@@ -6,7 +6,10 @@ import shutil
 import subprocess
 import tempfile
 
+import runpy
+
 ROOT = Path(__file__).resolve().parents[2]
+foundation_path = runpy.run_path(str(ROOT / '.github/scripts/foundation_paths.py'))['package_path']
 TARGETS = ('x86_64-unknown-linux-gnu', 'wasm32-unknown-unknown')
 FEATURES = ((), ('alloc',), ('std',))
 INTEGRATIONS = tuple(('utilities', name) for name in
@@ -31,7 +34,7 @@ def check_features(root, temporary, target):
         manifest = work / 'Cargo.toml'
         manifest.write_text('[package]\nname="concurrency-feature-probe"\nversion="0.0.0"\n'
             'edition="2021"\n[workspace]\n[dependencies.concurrent-collections]\npath='
-            + json.dumps(str(root / 'src/foundation/concurrent-collections'))
+            + json.dumps(str(root / 'src/foundation/concurrency/concurrent-collections'))
             + '\ndefault-features=false\nfeatures=' + json.dumps(features) + '\n' + PROFILE)
         source = '#![no_std]\npub fn padding()->usize {core::mem::align_of::<concurrent_collections::utilities::CachePadded<u8>>()}\n'
         if 'alloc' in features or 'std' in features:
@@ -58,7 +61,7 @@ def check_removed_feature(root, temporary):
     (work / 'src/lib.rs').write_text('')
     manifest = work / 'Cargo.toml'
     manifest.write_text('[package]\nname="removed-feature-probe"\nversion="0.0.0"\nedition="2021"\n[workspace]\n[dependencies.concurrent-collections]\npath='
-        + json.dumps(str(root / 'src/foundation/concurrent-collections'))
+        + json.dumps(str(root / 'src/foundation/concurrency/concurrent-collections'))
         + '\ndefault-features=false\nfeatures=["nightly"]\n')
     result = run(['cargo', 'generate-lockfile', '--offline', '--manifest-path', str(manifest)], negative=True)
     if 'nightly' not in result.stderr or 'does not have' not in result.stderr:
@@ -67,9 +70,9 @@ def check_removed_feature(root, temporary):
 
 def check_retained(root, temporary, target):
     mirror = temporary / 'retained'
-    package = mirror / 'src/foundation/concurrent-collections'
+    package = mirror / 'src/foundation/concurrency/concurrent-collections'
     tests = mirror / 'test/foundation/concurrent-collections'
-    shutil.copytree(root / 'src/foundation/concurrent-collections', package)
+    shutil.copytree(root / 'src/foundation/concurrency/concurrent-collections', package)
     shutil.copytree(root / 'test/foundation/concurrent-collections', tests)
     manifest = package / 'Cargo.toml'
     manifest.write_text(manifest.read_text() + '\n[workspace]\n' + PROFILE)
@@ -84,7 +87,7 @@ def check_retained(root, temporary, target):
     (work / 'src/lib.rs').write_text('')
     text = '[package]\nname="concurrency-integration-probe"\nversion="0.0.0"\nedition="2021"\n[workspace]\n' + PROFILE
     for name in ('concurrent-collections', 'rayon', 'rustversion'):
-        text += '\n[dependencies.' + name + ']\npath=' + json.dumps(str(root / 'src/foundation' / name)) + '\n'
+        text += '\n[dependencies.' + name + ']\npath=' + json.dumps(str(foundation_path(root, name))) + '\n'
     for module, name in INTEGRATIONS:
         text += '\n[[test]]\nname="retained_' + name + '"\npath=' + json.dumps(str(root / 'test/foundation/concurrent-collections' / module / 'tests' / (name + '.rs'))) + '\n'
     text += '\n[[test]]\nname="consumer_semantics"\npath=' + json.dumps(str(root / 'test/tools/concurrent-collections/semantics.rs')) + '\n'

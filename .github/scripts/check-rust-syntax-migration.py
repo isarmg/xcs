@@ -9,6 +9,7 @@ import sys
 import tempfile
 
 ROOT = Path(__file__).resolve().parents[2]
+foundation_path = runpy.run_path(str(ROOT / '.github/scripts/foundation_paths.py'))['package_path']
 TARGET = 'x86_64-unknown-linux-gnu'
 
 
@@ -62,7 +63,7 @@ def manifest():
     lines = ['[package]', 'name = "syntax-migration-regression"', 'version = "0.0.0"',
              'edition = "2024"', 'autobins = false', '[lib]', 'test = false', 'doctest = false', '[workspace]', '[dependencies]']
     for name, (directory, features) in deps.items():
-        lines.append(f'{name} = {{ path = {json.dumps(str(ROOT / "src/foundation" / directory))}, features = {json.dumps(features)} }}')
+        lines.append(f'{name} = {{ path = {json.dumps(str(foundation_path(ROOT, directory)))}, features = {json.dumps(features)} }}')
     for name, relative in [('migration', 'test/ci/fixtures/rust-syntax-migration.rs'),
                            ('typed-builder-main', 'test/foundation/typed-builder/tests/tests.rs'),
                            ('typed-builder-no-std', 'test/foundation/typed-builder/tests/no_std.rs'),
@@ -84,7 +85,7 @@ def main():
     include = Path(subprocess.check_output(['cc', '-print-file-name=include'], text=True).strip())
     if not (include / 'stdarg.h').is_file():
         raise RuntimeError(f'C compiler resource stdarg.h unavailable: {include}')
-    sqlite = ROOT / 'src/foundation/libsqlite3-sys/sqlite3'
+    sqlite = ROOT / 'src/foundation/data-storage/libsqlite3-sys/sqlite3'
     if not (sqlite / 'sqlite3ext.h').is_file():
         raise RuntimeError('bundled SQLite extension headers missing')
     environment['BINDGEN_EXTRA_CLANG_ARGS'] = f'-I{sqlite} -isystem {include}'

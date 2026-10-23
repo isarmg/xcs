@@ -6,7 +6,10 @@ import tempfile
 import unittest
 from unittest import mock
 from pathlib import Path
+import runpy
+
 ROOT = Path(__file__).resolve().parents[2]
+foundation_path = runpy.run_path(str(ROOT / '.github/scripts/foundation_paths.py'))['package_path']
 spec = importlib.util.spec_from_file_location('gate', ROOT / '.github/scripts/check-command-line-family.py')
 gate = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(gate)
@@ -19,12 +22,12 @@ class NamingGate(unittest.TestCase):
         self.root = Path(self.tmp.name)
         packages = {}
         for old, new in gate.N.items():
-            p = self.root / 'src/foundation' / new
+            p = self.root / 'src/foundation/tooling' / new
             (p / 'src').mkdir(parents=True)
             (p / 'Cargo.toml').write_text(f'''[package]\nname="{new}"\n[lib]\nname="{new.replace('-', '_')}"\n''')
             (p / 'src/lib.rs').write_text('attributes(command, arg, group)' if new == 'command-derive' else 'mod lexer;')
-            packages['src/foundation/' + new] = {'directory': 'src/foundation/' + new, 'origin_directory': old + '-4.6.7'}
-        suggestions = self.root / 'src/foundation/command-line/src/parser/features/suggestions/mod.rs'
+            packages['src/foundation/tooling/' + new] = {'directory': 'src/foundation/tooling/' + new, 'origin_directory': old + '-4.6.7'}
+        suggestions = self.root / 'src/foundation/tooling/command-line/src/parser/features/suggestions/mod.rs'
         suggestions.parent.mkdir(parents=True)
         suggestions.write_text('mod similarity;\nfn compare(v: &str, pv: &String) -> f64 { similarity::jaro(v, pv.as_ref()) }\n')
         for component in ('server', 'rescue'):
@@ -32,19 +35,19 @@ class NamingGate(unittest.TestCase):
             p.parent.mkdir(parents=True, exist_ok=True)
             p.write_text('use command_line::Parser;')
         (self.root / 'compliance').mkdir()
-        (self.root / 'compliance/rust-sources.json').write_text(json.dumps({'packages': packages, 'merges': [{'directory': 'src/foundation/command-line', 'origin_directory': origin} for origin in ('clap_builder-4.6.7', 'clap_lex-1.1.1')]}))
+        (self.root / 'compliance/rust-sources.json').write_text(json.dumps({'packages': packages, 'merges': [{'directory': 'src/foundation/tooling/command-line', 'origin_directory': origin} for origin in ('clap_builder-4.6.7', 'clap_lex-1.1.1')]}))
 
     def test_accepts_functional_identity(self):
         self.assertEqual(gate.check(self.root), 2)
 
     def test_rejects_missing_private_similarity_module(self):
-        path = self.root / 'src/foundation/command-line/src/parser/features/suggestions/mod.rs'
+        path = self.root / 'src/foundation/tooling/command-line/src/parser/features/suggestions/mod.rs'
         path.write_text(path.read_text().replace('mod similarity;', 'mod other;'))
         with self.assertRaisesRegex(AssertionError, 'missing private similarity module'):
             gate.check(self.root)
 
     def test_rejects_public_similarity_module(self):
-        path = self.root / 'src/foundation/command-line/src/parser/features/suggestions/mod.rs'
+        path = self.root / 'src/foundation/tooling/command-line/src/parser/features/suggestions/mod.rs'
         original = path.read_text()
         for visibility in ('pub', 'pub(crate)'):
             with self.subTest(visibility=visibility):
@@ -53,7 +56,7 @@ class NamingGate(unittest.TestCase):
                     gate.check(self.root)
 
     def test_rejects_bypassed_moved_similarity_implementation(self):
-        path = self.root / 'src/foundation/command-line/src/parser/features/suggestions/mod.rs'
+        path = self.root / 'src/foundation/tooling/command-line/src/parser/features/suggestions/mod.rs'
         path.write_text(path.read_text().replace('similarity::jaro(v, pv.as_ref())', '0.0'))
         with self.assertRaisesRegex(AssertionError, 'suggestions bypass moved Jaro implementation'):
             gate.check(self.root)
@@ -61,7 +64,7 @@ class NamingGate(unittest.TestCase):
     def test_rejects_removed_capabilities(self):
         for name in ('unicode', 'wrap_help', 'unstable-markdown'):
             with self.subTest(feature=name):
-                path = self.root / 'src/foundation/command-line/Cargo.toml'
+                path = self.root / 'src/foundation/tooling/command-line/Cargo.toml'
                 before = path.read_text()
                 path.write_text(before + '[features]\n' + name + '=[]\n')
                 with self.assertRaisesRegex(AssertionError, 'unsupported capability reintroduced'):
@@ -74,7 +77,7 @@ class NamingGate(unittest.TestCase):
             gate.check(self.root)
 
     def test_rejects_public_lexer(self):
-        (self.root / 'src/foundation/command-line/src/lib.rs').write_text('pub mod lexer;')
+        (self.root / 'src/foundation/tooling/command-line/src/lib.rs').write_text('pub mod lexer;')
         with self.assertRaisesRegex(AssertionError, 'lexer exposed'):
             gate.check(self.root)
 
@@ -92,17 +95,17 @@ class NamingGate(unittest.TestCase):
             gate.check(self.root)
 
     def test_rejects_legacy_emitted_path(self):
-        (self.root / 'src/foundation/command-derive/src/lib.rs').write_text('attributes(command, arg, group) impl clap::Parser for X {}')
+        (self.root / 'src/foundation/tooling/command-derive/src/lib.rs').write_text('attributes(command, arg, group) impl clap::Parser for X {}')
         with self.assertRaisesRegex(AssertionError, 'old Rust path'):
             gate.check(self.root)
 
     def test_rejects_legacy_attribute(self):
-        (self.root / 'src/foundation/command-derive/src/lib.rs').write_text('attributes(command, arg, group) attributes(clap)')
+        (self.root / 'src/foundation/tooling/command-derive/src/lib.rs').write_text('attributes(command, arg, group) attributes(clap)')
         with self.assertRaisesRegex(AssertionError, 'old derive alias'):
             gate.check(self.root)
 
     def test_rejects_dependency_alias(self):
-        p = self.root / 'src/foundation/command-line/Cargo.toml'
+        p = self.root / 'src/foundation/tooling/command-line/Cargo.toml'
         p.write_text(p.read_text() + '[dependencies.clap]\npackage="command-line"\npath="../command-line"\n')
         with self.assertRaisesRegex(AssertionError, 'old dependency alias'):
             gate.check(self.root)
@@ -187,7 +190,7 @@ class NamingGate(unittest.TestCase):
     def test_rejects_erased_origin(self):
         p = self.root / 'compliance/rust-sources.json'
         d = json.loads(p.read_text())
-        d['packages']['src/foundation/command-line']['origin_directory'] = 'command-line'
+        d['packages']['src/foundation/tooling/command-line']['origin_directory'] = 'command-line'
         p.write_text(json.dumps(d))
         with self.assertRaisesRegex(AssertionError, 'lost upstream origin'):
             gate.check(self.root)

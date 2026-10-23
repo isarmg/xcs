@@ -49,7 +49,7 @@ cryptographic-core = {path = "''' + core.as_posix() + '''", default-features = f
 
 def check(root, environment):
     """Never mutate maintained sources, including for negative lint tests."""
-    core = root / 'src/foundation/cryptographic-core'
+    core = root / 'src/foundation/cryptography/cryptographic-core'
     with tempfile.TemporaryDirectory(prefix='zxs-crypto-core-') as temporary:
         work = Path(temporary)
         (work / 'src').mkdir()

@@ -13,15 +13,28 @@ SPEC.loader.exec_module(GATE)
 
 
 class InactiveHttpSources(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.historical = 'src/foundation/http-routing'
+        layout = GATE.source_layout.load(ROOT)
+        cls.frozen_evidence = tuple(layout.receipt['frozen_evidence'])
+        with GATE.source_layout.activate(layout):
+            cls.original_sources = {
+                relative: GATE.source_layout.read(ROOT, cls.historical + '/' + relative)
+                for relative in (*GATE.INACTIVE_SOURCES, 'Cargo.toml', 'src/lib.rs', 'src/extract/mod.rs')
+            }
+
     def setUp(self):
         self.temp = tempfile.TemporaryDirectory()
         self.addCleanup(self.temp.cleanup)
         self.root = Path(self.temp.name)
-        self.component = self.root / 'src/foundation/http-routing'
-        for relative in (*GATE.INACTIVE_SOURCES, 'Cargo.toml', 'src/lib.rs', 'src/extract/mod.rs'):
+        # A small pre-layout fixture exercises the original byte contract. The
+        # real repository check below independently exercises authenticated moves.
+        self.component = self.root / self.historical
+        for relative, original in self.original_sources.items():
             target = self.component / relative
             target.parent.mkdir(parents=True, exist_ok=True)
-            shutil.copyfile(ROOT / 'src/foundation/http-routing' / relative, target)
+            target.write_bytes(original)
 
     def check(self):
         GATE.verify_inactive_sources(self.root)
@@ -33,12 +46,37 @@ class InactiveHttpSources(unittest.TestCase):
 
     def test_current_catalog_retains_exact_source_identity(self):
         catalog = json.loads((ROOT / 'compliance/rust-sources.json').read_text())
-        owner = catalog['packages']['src/foundation/http-routing']
-        for relative, expected in GATE.INACTIVE_SOURCES.items():
-            self.assertEqual(owner['files_sha256'][relative], expected)
+        owner = catalog['packages']['src/foundation/networking/http-routing']
+        with GATE.source_layout.activate(GATE.source_layout.load(ROOT)):
+            for relative, expected in GATE.INACTIVE_SOURCES.items():
+                current = ROOT / owner['directory'] / relative
+                self.assertEqual(owner['files_sha256'][relative], GATE.hashlib.sha256(current.read_bytes()).hexdigest())
+                original = GATE.source_layout.read(ROOT, 'src/foundation/http-routing/' + relative)
+                self.assertEqual(GATE.hashlib.sha256(original).hexdigest(), expected)
         for relative, expected in catalog['provenance_sha256'].items():
             if '/axum-0.8.9/' in relative:
                 self.assertEqual(GATE.hashlib.sha256((ROOT / relative).read_bytes()).hexdigest(), expected)
+
+    def test_unrecorded_path_only_edit_is_rejected_by_layout_receipt(self):
+        grouped = self.root / 'grouped'
+        catalog = json.loads((ROOT / 'compliance/rust-sources.json').read_text())
+        receipt = GATE.source_layout.receipt_path(catalog[GATE.source_layout.KEY])
+        files = ['compliance/rust-sources.json', receipt, *self.frozen_evidence]
+        owner = 'src/foundation/networking/http-routing'
+        files += [owner + '/' + relative for relative in
+                  (*GATE.INACTIVE_SOURCES, 'Cargo.toml', 'src/lib.rs', 'src/extract/mod.rs')]
+        for relative in files:
+            target = grouped / relative
+            target.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copyfile(ROOT / relative, target)
+        GATE.verify_inactive_sources(grouped)
+        path = grouped / owner / 'src/extract/multipart.rs'
+        before = path.read_bytes()
+        changed = before.replace(b'/../../../../test/', b'/../../../test/')
+        self.assertNotEqual(before, changed)
+        path.write_bytes(changed)
+        with self.assertRaisesRegex(ValueError, 'changed or missing'):
+            GATE.verify_inactive_sources(grouped)
 
     def test_changed_bytes_rejected_for_each_source(self):
         for relative in GATE.INACTIVE_SOURCES:

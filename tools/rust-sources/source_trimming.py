@@ -10,6 +10,7 @@ import json
 import re
 
 import external_tests
+import source_layout
 
 KEY = 'source_trims'
 HASHES = 'source_trim_records_sha256'
@@ -57,7 +58,7 @@ def _validate_record(root, row, packages, forbidden):
         if (not isinstance(path, str) or path in seen
                 or not (path == 'build.rs' or (path.startswith('src/') and path.endswith('.rs')))):
             raise ValueError('duplicate or non-production source trim path')
-        target = external_tests.safe(root, directory + '/' + path)
+        target = source_layout.physical(root, directory + '/' + path)
         if any(part in ('test', 'tests', 'benches', 'examples') for part in path.split('/')):
             raise ValueError('test material cannot use production source trimming')
         value = entry['sha256_before']
@@ -77,6 +78,7 @@ def forbidden_owners(catalog):
             | {row['directory'] for row in catalog.get('merges', [])})
 
 
+@source_layout.historical_catalog
 def validate(root, catalog):
     records = catalog.get(KEY, {})
     if not isinstance(records, dict) or hashes(records) != catalog.get(HASHES, {}):

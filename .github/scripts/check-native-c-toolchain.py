@@ -28,15 +28,15 @@ def check_preservation():
         assert hashlib.sha256(base64.b64decode(record["files"][path], validate=True)).hexdigest() == digest, path
     for path, digest in record["license_materials_sha256"].items():
         assert hashlib.sha256((ROOT / path).read_bytes()).hexdigest() == digest, path
-    manifest = tomllib.loads((ROOT / "src/foundation/cc/Cargo.toml").read_text())
+    manifest = tomllib.loads((ROOT / "src/foundation/tooling/cc/Cargo.toml").read_text())
     assert not {"parallel", "jobserver"} & manifest.get("features", {}).keys()
     assert "find-msvc-tools" not in manifest.get("dependencies", {})
     # Existing guards do not permit partial source retirement. Keep these
     # original files byte-exact but unreachable, without advertising a feature.
     for path, digest in expected.items():
         if path.startswith("src/foundation/cc/src/parallel/"):
-            assert hashlib.sha256((ROOT / path).read_bytes()).hexdigest() == digest, path
-    active_source = (ROOT / "src/foundation/cc/src/lib.rs").read_text()
+            assert hashlib.sha256((ROOT / path.replace("src/foundation/cc/", "src/foundation/tooling/cc/", 1)).read_bytes()).hexdigest() == digest, path
+    active_source = (ROOT / "src/foundation/tooling/cc/src/lib.rs").read_text()
     assert "mod parallel" not in active_source and "parallel::" not in active_source
     assert not (ROOT / "src/foundation/find-msvc-tools").exists()
 
@@ -53,9 +53,9 @@ version = "0.0.0"
 edition = "2021"
 [workspace]
 [dependencies]
-cc = {{ path = "{ROOT / 'src/foundation/cc'}" }}
-shell-tokenizer = {{ path = "{ROOT / 'src/foundation/shell-tokenizer'}" }}
-blake3 = {{ path = "{ROOT / 'src/foundation/blake3'}" }}
+cc = {{ path = "{ROOT / 'src/foundation/tooling/cc'}" }}
+shell-tokenizer = {{ path = "{ROOT / 'src/foundation/tooling/shell-tokenizer'}" }}
+blake3 = {{ path = "{ROOT / 'src/foundation/cryptography/blake3'}" }}
 ''')
         (work / "src/main.rs").write_bytes((ROOT / "test/ci/fixtures/native-c-toolchain.rs").read_bytes())
         environment = os.environ | {"CARGO_BUILD_JOBS": "1", "CARGO_PROFILE_DEV_DEBUG": "0"}
@@ -81,7 +81,7 @@ blake3 = {{ path = "{ROOT / 'src/foundation/blake3'}" }}
         subprocess.run([artifacts["native-c-toolchain-regression"]], cwd=work, env=environment, check=True)
         # This standalone manifest tests the exact retained upstream unit tests
         # and doctests; -p cc at the root hits a Cargo build-dependency resolver bug.
-        cc_manifest = ROOT / "src/foundation/cc/Cargo.toml"
+        cc_manifest = ROOT / "src/foundation/tooling/cc/Cargo.toml"
         nested_lock = cc_manifest.with_name("Cargo.lock")
         had_lock = nested_lock.exists()
         try:

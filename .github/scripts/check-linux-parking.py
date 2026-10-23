@@ -25,7 +25,7 @@ version = "0.0.0"
 edition = "2021"
 [workspace]
 [dependencies]
-synchronization = {{ path = "{foundation / 'synchronization'}", default-features = false, features = ["parking"] }}
+synchronization = {{ path = "{root / 'src/foundation/concurrency/synchronization'}", default-features = false, features = ["parking"] }}
 ''')
         (work / 'src/lib.rs').write_text(CONSUMER)
         subprocess.run(["cargo", "generate-lockfile", "--offline", "--manifest-path",

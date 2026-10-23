@@ -18,13 +18,32 @@ ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(ROOT / 'tools/rust-sources'))
 import benchmark_relocation as relocation
 import manage
+import source_layout
 
 
 class BenchmarkRelocation(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.receipt = relocation.read(ROOT)
-        cls.catalog = json.loads((ROOT / 'compliance/rust-sources.json').read_text())
+        current = json.loads((ROOT / 'compliance/rust-sources.json').read_text())
+        # These tests isolate the earlier benchmark transaction. Reconstruct its
+        # logical source view only from authenticated CURRENT grouped bytes.
+        # No historical archive substitutes for a missing current source file.
+        layout = source_layout.load(ROOT)
+        with source_layout.activate(layout):
+            cls.catalog = source_layout.project_catalog(ROOT, current)
+            cls.catalog.pop(source_layout.KEY, None)
+            paths = [relocation.PATH, *cls.receipt['frozen_evidence']]
+            for item in cls.receipt['packages']:
+                paths.extend([item['directory'], 'test/foundation/' + item['directory'].rsplit('/', 1)[1]])
+            cls.fixture_bytes = {}
+            for relative in paths:
+                physical = source_layout.physical(ROOT, relative)
+                if physical.is_dir():
+                    for logical in source_layout.inventory(ROOT, relative):
+                        cls.fixture_bytes[logical] = source_layout.read(ROOT, logical)
+                else:
+                    cls.fixture_bytes[relative] = source_layout.read(ROOT, relative)
         # Construct the exact supported after view even during a pre-refresh run.
         cls.catalog[relocation.KEY] = relocation.RECEIPT
         for item in cls.receipt['packages']:
@@ -40,16 +59,10 @@ class BenchmarkRelocation(unittest.TestCase):
         self.addCleanup(self.tmp.cleanup)
         self.root = Path(self.tmp.name)
         self.cat = deepcopy(self.catalog)
-        paths = [relocation.PATH, *self.receipt['frozen_evidence']]
-        for item in self.receipt['packages']:
-            paths.extend([item['directory'], 'test/foundation/' + item['directory'].rsplit('/', 1)[1]])
-        for relative in paths:
-            src = ROOT / relative; dst = self.root / relative
+        for relative, data in self.fixture_bytes.items():
+            dst = self.root / relative
             dst.parent.mkdir(parents=True, exist_ok=True)
-            if src.is_dir():
-                shutil.copytree(src, dst)
-            else:
-                shutil.copyfile(src, dst)
+            dst.write_bytes(data)
         self.item = self.receipt['packages'][0]
         self.route = self.item['routes'][0]
 

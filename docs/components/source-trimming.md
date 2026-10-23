@@ -28,8 +28,10 @@ Git review is the external trust anchor; these hashes are integrity checks, not
 signatures against a party able to replace the entire catalog.
 
 Trimming merged/consolidated owners is deliberately unsupported. Renaming,
-moving, upgrading, consolidating or retiring an owner with trim history requires
-a future explicit chain-aware adapter. Do not remove receipts or retain dead
+upgrading, consolidating or retiring an owner with trim history requires
+a future explicit chain-aware adapter. The separately authenticated Foundation
+functional-directory layout is supported by its root-relocation adapter; it preserves
+trim receipts and checks prohibited-file absence at the current grouped location. Do not remove receipts or retain dead
 stubs to circumvent this boundary.
 
 The governance module performs no builds and writes no source files. Run

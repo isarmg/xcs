@@ -8,11 +8,11 @@ ROOT = Path(__file__).resolve().parents[2]
 
 class TaskDispatchContracts(unittest.TestCase):
     def test_only_supported_backends_are_advertised(self):
-        manifest = tomllib.loads((ROOT / 'src/foundation/task-dispatch/Cargo.toml').read_text())
+        manifest = tomllib.loads((ROOT / 'src/foundation/concurrency/task-dispatch/Cargo.toml').read_text())
         self.assertEqual(set(manifest['features']), {'tokio', 'wasm-bindgen', 'futures-executor'})
         self.assertEqual(manifest['dependencies']['futures']['features'], ['channel', 'std'])
         self.assertEqual(manifest['features']['futures-executor'], ['futures/thread-pool'])
-        source = (ROOT / 'src/foundation/task-dispatch/src/lib.rs').read_text()
+        source = (ROOT / 'src/foundation/concurrency/task-dispatch/src/lib.rs').read_text()
         for retired in ('CustomExecutor', 'init_glib', 'init_async_executor', 'no_op_spawn', 'debug_assertions'):
             self.assertNotIn(retired, source)
 

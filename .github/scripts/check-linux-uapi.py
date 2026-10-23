@@ -11,7 +11,7 @@ TARGET = "x86_64-unknown-linux-gnu"
 
 
 def check(root):
-    directory = root / "src/foundation/linux-raw-sys"
+    directory = root / "src/foundation/platform/linux-raw-sys"
     # Direct rustc does not provide Cargo's per-package compile-time context.
     environment = os.environ | {"CARGO_MANIFEST_DIR": str(directory.resolve())}
     manifest = tomllib.loads((directory / "Cargo.toml").read_text(encoding="utf-8"))

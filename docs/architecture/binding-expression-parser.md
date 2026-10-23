@@ -1,7 +1,7 @@
 # Binding expression parser consolidation
 
 The host-only C binding path now owns its C expression parser at
-`src/foundation/bindgen/src/cexpr`. It replaces the former package chain
+`src/foundation/tooling/bindgen/src/cexpr`. It replaces the former package chain
 `bindgen → cexpr → nom → minimal-lexical` with one package, not three renamed
 or forwarded dependencies. `clang-sys` remains a separate ABI boundary.
 The three removed source trees contained 47 files / 614,895 bytes; the owned

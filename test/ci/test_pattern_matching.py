@@ -16,16 +16,16 @@ class PatternGateTests(unittest.TestCase):
     def test_fixture_only_rewrites_dependency_paths(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory) / 'root'
-            source = root / 'src/foundation/regex'
+            source = root / 'src/foundation/text-unicode/regex'
             source.mkdir(parents=True)
-            text = '[dependencies.memchr]\npath = "../memchr"\n[[test]]\npath = "../../../test/regex-family/retained_regressions.rs"\n'
+            text = '[dependencies.memchr]\npath = "../memchr"\n[[test]]\npath = "../../../../test/regex-family/retained_regressions.rs"\n'
             (source / 'Cargo.toml').write_text(text)
             for relative in ('test/foundation/regex', 'test/regex-family'):
                 (root / relative).mkdir(parents=True)
             output = GATE.fixture(root, Path(directory) / 'fixture')
             content = output.read_text()
-            self.assertIn(str(root / 'src/foundation/memchr'), content)
-            self.assertIn('path = "../../../test/regex-family/retained_regressions.rs"', content)
+            self.assertIn(str(root / 'src/foundation/text-unicode/memchr'), content)
+            self.assertIn('path = "../../../../test/regex-family/retained_regressions.rs"', content)
             self.assertEqual((source / 'Cargo.toml').read_text(), text)
             self.assertFalse((source / 'Cargo.lock').exists())
 

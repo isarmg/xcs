@@ -13,6 +13,7 @@ import re
 import tomllib
 
 import external_tests
+import source_layout
 
 HEX = re.compile(r'[0-9a-f]{64}')
 NAME = re.compile(r'[a-z][a-z0-9]*(?:-[a-z0-9]+)*')
@@ -129,6 +130,7 @@ def _external(root, before, after, package, destination):
         raise ValueError('renamed external fragment outside owned roots')
 
 
+@source_layout.historical_catalog
 def validate_history(root, catalog, check_manifests=True):
     """Authenticate append-only catalog receipts, without requiring old files."""
     records = catalog.get('renames', {})
@@ -177,7 +179,7 @@ def validate_history(root, catalog, check_manifests=True):
                 or (new in catalog.get('packages', {}) and new in catalog.get('retired', {}))):
             raise ValueError('renamed current directory/name identity drift')
         if check_manifests and new in catalog.get('packages', {}):
-            manifest = tomllib.loads((_path(root, new) / 'Cargo.toml').read_text())['package']
+            manifest = tomllib.loads(source_layout.read(root, new + '/Cargo.toml').decode())['package']
             if manifest.get('name') != record['destination_name']:
                 raise ValueError('renamed manifest name drift; explicit migration required')
         if old in catalog.get('packages', {}) or old in catalog.get('retired', {}):

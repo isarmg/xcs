@@ -11,6 +11,7 @@ import tempfile
 import tomllib
 
 ROOT = Path(__file__).resolve().parents[2]
+foundation_path = runpy.run_path(str(ROOT / '.github/scripts/foundation_paths.py'))['package_path']
 TARGETS = ('x86_64-unknown-linux-gnu', 'wasm32-unknown-unknown')
 FEATURES = ('std', 'alloc', 'formatting', 'parsing', 'large-dates', 'serialization',
             'serialization-human-readable', 'serialization-well-known', 'wasm-bindgen')
@@ -29,15 +30,15 @@ SERIALIZATION_PROFILES = (('serialization',), ('serialization-human-readable',),
 
 
 def structure(root):
-    manifest = tomllib.loads((root / 'src/foundation/date-time/Cargo.toml').read_text())
+    manifest = tomllib.loads((root / 'src/foundation/core-types/date-time/Cargo.toml').read_text())
     assert manifest['package']['name'] == 'date-time'
     assert manifest['lib']['name'] == 'date_time'
     assert set(manifest['features']) == {'default', *FEATURES}
     assert manifest['features']['default'] == ['std']
     for old in ABSORBED:
-        assert not (root / 'src/foundation' / old).exists(), old
+        assert not (foundation_path(root, old)).exists(), old
         assert old not in manifest.get('dependencies', {}), old
-    source = (root / 'src/foundation/date-time/src/lib.rs').read_text()
+    source = (root / 'src/foundation/core-types/date-time/src/lib.rs').read_text()
     assert '#![no_std]' in source
     for module in PRIVATE:
         assert re.search(r'^mod ' + module + ';$', source, re.M), module
@@ -45,17 +46,17 @@ def structure(root):
 
 def manifest(root, fixture='contracts'):
     dependencies = {
-        'date-time': {'path': str(root / 'src/foundation/date-time'), 'default-features': False},
-        'data-serialization': {'path': str(root / 'src/foundation/data-serialization'),
+        'date-time': {'path': str(root / 'src/foundation/core-types/date-time'), 'default-features': False},
+        'data-serialization': {'path': str(root / 'src/foundation/data-storage/data-serialization'),
                                'default-features': False, 'optional': fixture == 'contracts'},
     }
     if fixture != 'contracts':
         dependencies['date-time']['features'] = ['std']
         dependencies['data-serialization']['features'] = ['derive']
-        dependencies['json-codec'] = {'path': str(root / 'src/foundation/json-codec')}
+        dependencies['json-codec'] = {'path': str(root / 'src/foundation/data-storage/json-codec')}
     if fixture == 'tracing':
         dependencies['date-time']['features'] += ['formatting', 'parsing']
-        dependencies['tracing'] = {'path': str(root / 'src/foundation/tracing'),
+        dependencies['tracing'] = {'path': str(root / 'src/foundation/diagnostics/tracing'),
                                    'default-features': False, 'features': ['time', 'fmt', 'json']}
     lines = ['[package]', f'name = "date-time-{fixture}-probe"', 'version = "0.0.0"',
              'edition = "2024"', '[workspace]', '[features]', 'default = []']

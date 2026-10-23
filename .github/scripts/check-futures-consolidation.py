@@ -8,7 +8,11 @@ import shutil
 import subprocess
 import tempfile
 
+import runpy
+
 ROOT = Path(__file__).resolve().parents[2]
+rebase_dependency_paths = runpy.run_path(str(ROOT / '.github/scripts/foundation_paths.py'))['rebase_dependency_paths']
+foundation_path = runpy.run_path(str(ROOT / '.github/scripts/foundation_paths.py'))['package_path']
 TARGETS = ("x86_64-unknown-linux-gnu", "wasm32-unknown-unknown")
 FEATURE_SETS = ((), ("alloc",), ("std",), ("sink",), ("channel",),
                 ("utilities",), ("utilities", "alloc"), ("utilities", "std"),
@@ -96,7 +100,7 @@ def check_features(root, temporary, target_dir):
         (work / "Cargo.toml").write_text(
             '[package]\nname="futures-probe"\nversion="0.0.0"\nedition="2021"\n'
             '[workspace]\nresolver="2"\n[dependencies.futures]\n'
-            f'path={json.dumps(str(root / "src/foundation/futures"))}\n'
+            f'path={json.dumps(str(root / "src/foundation/concurrency/futures"))}\n'
             f'default-features=false\nfeatures={json.dumps(features)}\n'
             '[profile.dev]\ndebug=0\nincremental=false\n'
         )
@@ -153,12 +157,11 @@ def validate_retained_output(output, integration_targets):
 
 def check_retained_tests(root, temporary, target_dir):
     mirror = temporary / "retained"
-    package = mirror / "src/foundation/futures"
-    shutil.copytree(root / "src/foundation/futures", package)
+    package = mirror / "src/foundation/concurrency/futures"
+    shutil.copytree(root / "src/foundation/concurrency/futures", package)
     shutil.copytree(root / "test/foundation/futures", mirror / "test/foundation/futures")
     manifest = (package / "Cargo.toml").read_text()
-    manifest = re.sub(r'path = "\.\./([^"\n]+)"',
-                      lambda match: "path = " + json.dumps(str(root / "src/foundation" / match[1])), manifest)
+    manifest = rebase_dependency_paths(manifest, root / "src/foundation/concurrency/futures")
     manifest += '\n[workspace]\nresolver="2"\n[profile.dev]\ndebug=0\nincremental=false\n[profile.test]\ndebug=0\nincremental=false\n'
     found_unavailable = set()
     count = 0
@@ -168,7 +171,7 @@ def check_retained_tests(root, temporary, target_dir):
             found_unavailable.add(relative)
             continue
         name = test.relative_to(mirror / "test/foundation/futures").as_posix().replace("/", "_").removesuffix(".rs").replace("-", "_")
-        manifest += f'\n[[test]]\nname={json.dumps(name)}\npath={json.dumps("../../../" + relative)}\n'
+        manifest += f'\n[[test]]\nname={json.dumps(name)}\npath={json.dumps("../../../../" + relative)}\n'
         count += 1
     if found_unavailable != set(UNAVAILABLE_TESTS):
         raise AssertionError("dormant upstream test inventory drifted")
@@ -184,9 +187,9 @@ def check_retained_tests(root, temporary, target_dir):
 def check(root):
     root = Path(root).resolve()
     for name in ABSORBED:
-        for prefix in ("src/foundation", "test/foundation"):
-            if (root / prefix / name).exists():
-                raise AssertionError(f"absorbed source root remains: {prefix}/{name}")
+        for path in (foundation_path(root, name), root / "test/foundation" / name):
+            if path.exists():
+                raise AssertionError(f"absorbed source root remains: {path.relative_to(root)}")
     temporary_root = root / "target/scope-consumers"
     temporary_root.mkdir(parents=True, exist_ok=True)
     target_dir = Path(os.environ.get("CARGO_TARGET_DIR", root / "target/futures-consumers"))

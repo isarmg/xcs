@@ -26,7 +26,7 @@ class LinuxSyscallsCheck(unittest.TestCase):
             checker.check(Path("/repo"))
         self.assertEqual(run.call_count, 8)
         guard = run.call_args_list[0].args[0]
-        self.assertIn("/repo/src/foundation/rustix/build.rs", guard)
+        self.assertIn("/repo/src/foundation/platform/rustix/build.rs", guard)
         self.assertEqual(run.call_args_list[1].args[0], [guard[guard.index("-o") + 1]])
         for offset, features in ((2, "rustix/all-apis"), (5, "rustix/all-apis,rustix/use-libc")):
             cargo = run.call_args_list[offset].args[0]
@@ -46,7 +46,7 @@ class LinuxSyscallsCheck(unittest.TestCase):
                     checker.check(Path("/repo"))
                 for offset in (0, 1):
                     self.assertEqual(run.call_args_list[offset].kwargs["env"]["CARGO_MANIFEST_DIR"],
-                                     "/repo/src/foundation/rustix")
+                                     "/repo/src/foundation/platform/rustix")
                 for offset in (3, 4, 6, 7):
                     self.assertEqual(run.call_args_list[offset].kwargs["env"]["CARGO_MANIFEST_DIR"], "/repo")
                 self.assertEqual(dict(os.environ), inherited)

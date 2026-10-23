@@ -26,8 +26,8 @@ def check(root):
             'edition = "2021"',
             '[workspace]',
             '[dependencies]',
-            'memchr = { path = ' + json.dumps(str(root / "src/foundation/memchr")) + ' }',
-            'tokio = { path = ' + json.dumps(str(root / "src/foundation/tokio")) + ', features = ["full"] }',
+            'memchr = { path = ' + json.dumps(str(root / "src/foundation/text-unicode/memchr")) + ' }',
+            'tokio = { path = ' + json.dumps(str(root / "src/foundation/concurrency/tokio")) + ', features = ["full"] }',
         ]
         (work / "Cargo.toml").write_text("\n".join(manifest) + "\n", encoding="utf-8")
         (work / "src/lib.rs").write_text(CONSUMER, encoding="utf-8")

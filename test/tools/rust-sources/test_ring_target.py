@@ -18,6 +18,20 @@ SPEC.loader.exec_module(checker)
 
 
 class CurrentRingTarget(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        # Authenticate the repository once; every mutation test below receives a
+        # new independent physical copy of this exact logical source snapshot.
+        # No test mutates the repository or shares a writable fixture tree.
+        layout = checker.source_layout.load(checker.ROOT)
+        with checker.source_layout.activate(layout):
+            view = checker.proof_routing.load(checker.ROOT)
+            cls.source_fixture = {
+                relative: view.read(relative)
+                for base in (str(checker.RING), 'test/foundation/ring')
+                for relative in view.inventory(base)
+            }
+
     def setUp(self):
         # Keep repeated source copies off small /tmp tmpfs, as with the matrix.
         parent = checker.ROOT / 'target/ring-target-proof-tests'
@@ -28,12 +42,10 @@ class CurrentRingTarget(unittest.TestCase):
         # This fixture exercises the frozen pre-routing pruning proof. Read its
         # exact bytes through authenticated routing, then isolate the registry.
         # Real current routing remains covered by live metadata and routing tests.
-        view = checker.proof_routing.load(checker.ROOT)
-        for base in (str(checker.RING), 'test/foundation/ring'):
-            for relative in view.inventory(base):
-                destination = self.root / relative
-                destination.parent.mkdir(parents=True, exist_ok=True)
-                destination.write_bytes(view.read(relative))
+        for relative, data in self.source_fixture.items():
+            destination = self.root / relative
+            destination.parent.mkdir(parents=True, exist_ok=True)
+            destination.write_bytes(data)
         routing = mock.patch.object(checker.proof_routing, 'RECEIPTS', ())
         routing.start()
         self.addCleanup(routing.stop)

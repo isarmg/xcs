@@ -13,22 +13,22 @@ sqlite-pool = ["sqlite-access/pool", "dep:tokio"]
 
 [dependencies]
 blake3.workspace = true
-futures = { version = "0.3.34", path = "../foundation/futures", default-features = false, features = ["executor", "std"] }
-system-entropy = {version = "0.4", path = "../foundation/system-entropy"}
-libc = {version = "0.2", path = "../foundation/libc"}
-libsqlite3-sys = { version = "=0.37.0", features = ["bundled"], path = "../foundation/libsqlite3-sys"}
-rustix = { version = "1.1.5", features = ["fs", "process"], path = "../foundation/rustix"}
+futures = { version = "0.3.34", path = "../foundation/concurrency/futures", default-features = false, features = ["executor", "std"] }
+system-entropy = {version = "0.4", path = "../foundation/cryptography/system-entropy"}
+libc = {version = "0.2", path = "../foundation/platform/libc"}
+libsqlite3-sys = { version = "=0.37.0", features = ["bundled"], path = "../foundation/data-storage/libsqlite3-sys"}
+rustix = { version = "1.1.5", features = ["fs", "process"], path = "../foundation/platform/rustix"}
 data-serialization.workspace = true
 json-codec.workspace = true
-sha2 = {version = "0.11.0", path = "../foundation/sha2"}
-sqlite-access = { version = "=0.9.0", default-features = false, features = ["sqlite-bundled"], path = "../foundation/sqlite-access"}
+sha2 = {version = "0.11.0", path = "../foundation/cryptography/sha2"}
+sqlite-access = { version = "=0.9.0", default-features = false, features = ["sqlite-bundled"], path = "../foundation/data-storage/sqlite-access"}
 tempfile.workspace = true
 error-definition.workspace = true
-tokio = { version = "1.53.2", default-features = false, features = ["rt"], optional = true, path = "../foundation/tokio"}
-zeroize = {version = "1.8", path = "../foundation/zeroize"}
+tokio = { version = "1.53.2", default-features = false, features = ["rt"], optional = true, path = "../foundation/concurrency/tokio"}
+zeroize = {version = "1.8", path = "../foundation/cryptography/zeroize"}
 
 [dev-dependencies]
-tokio = { version = "1.53.2", default-features = false, features = ["rt-multi-thread", "macros"], path = "../foundation/tokio" }
+tokio = { version = "1.53.2", default-features = false, features = ["rt-multi-thread", "macros"], path = "../foundation/concurrency/tokio" }
 
 [lints.rust]
 unsafe_code = "deny"

@@ -1,6 +1,6 @@
 #[cfg(test)]
 mod tests {
-    include!("../../../../../../src/foundation/mime_guess/src/mime_types.rs");
+    include!("../../../../../../src/foundation/networking/mime_guess/src/mime_types.rs");
 
     use super::{expect_mime, from_ext, from_path, get_mime_extensions_str};
     #[allow(deprecated, unused_imports)]

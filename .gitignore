@@ -109,12 +109,12 @@ ehthumbs.db
 Desktop.ini
 
 # 经原始来源哈希核验的编译输入：精确例外，不放行整个基础源码目录。
-!/src/foundation/cc/src/target/
-/src/foundation/cc/src/target/*
-!/src/foundation/cc/src/target/apple.rs
-!/src/foundation/cc/src/target/generated.rs
-!/src/foundation/cc/src/target/llvm.rs
-!/src/foundation/cc/src/target/parser.rs
+!/src/foundation/tooling/cc/src/target/
+/src/foundation/tooling/cc/src/target/*
+!/src/foundation/tooling/cc/src/target/apple.rs
+!/src/foundation/tooling/cc/src/target/generated.rs
+!/src/foundation/tooling/cc/src/target/llvm.rs
+!/src/foundation/tooling/cc/src/target/parser.rs
 !/test/foundation/sqlite-access/facade/tests/.env
 
 # 外置的 cc 目标解析单元测试属于源码，不是 target 编译缓存。

@@ -2,13 +2,16 @@
 """Exercise the actual host proc macro, target runtime, and removed API boundary."""
 from pathlib import Path
 import os, shutil, subprocess, tempfile, tomllib
+import runpy
+
 ROOT = Path(__file__).resolve().parents[2]
+foundation_path = runpy.run_path(str(ROOT / '.github/scripts/foundation_paths.py'))['package_path']
 def check():
-    macro = ROOT / 'src/foundation/wasm-binding-macros'
+    macro = ROOT / 'src/foundation/web-runtime/wasm-binding-macros'
     manifest = tomllib.loads((macro/'Cargo.toml').read_text())
     assert manifest['features'] == {'strict-macro': [], 'extra-traits': []}
     for old in ('wasm-bindgen-macro', 'wasm-bindgen-macro-support'):
-        assert not (ROOT/'src/foundation'/old).exists()
+        assert not (foundation_path(ROOT, old)).exists()
     env = dict(os.environ)
     env.setdefault('CARGO_BUILD_JOBS', '2')
     env.pop('WASM_BINDGEN_USE_JS_SYS', None)
@@ -22,7 +25,7 @@ def check():
     # Mirror only the governed package/test tree to avoid creating a nested lock.
     # Every dependency remains the real repository source, never a stub.
     with tempfile.TemporaryDirectory(prefix='zxs-wasm-host-') as temporary:
-        work=Path(temporary);mirror=work/'src/foundation/wasm-binding-macros'
+        work=Path(temporary);mirror=work/'src/foundation/web-runtime/wasm-binding-macros'
         shutil.copytree(macro, mirror)
         shutil.copytree(ROOT/'test/foundation/wasm-binding-macros', work/'test/foundation/wasm-binding-macros')
         shutil.copytree(ROOT/'test/wasm-binding-macros', work/'test/wasm-binding-macros')
@@ -39,7 +42,7 @@ def check():
     with tempfile.TemporaryDirectory(prefix='zxs-wasm-macro-') as temporary:
         work=Path(temporary);(work/'src').mkdir()
         manifest=work/'Cargo.toml';source=work/'src/lib.rs'
-        manifest.write_text('[package]\nname="wasm-macro-contract"\nversion="0.0.0"\nedition="2021"\n[workspace]\n[features]\nstrict=["wasm-bindgen/strict-macro"]\n[dependencies]\nwasm-bindgen={path="'+str(ROOT/'src/foundation/wasm-bindgen')+'"}\nwasm-binding-macros={path="'+str(macro)+'"}\njs-sys={path="'+str(ROOT/'src/foundation/js-sys')+'",default-features=false,features=["std"]}\n')
+        manifest.write_text('[package]\nname="wasm-macro-contract"\nversion="0.0.0"\nedition="2021"\n[workspace]\n[features]\nstrict=["wasm-bindgen/strict-macro"]\n[dependencies]\nwasm-bindgen={path="'+str(ROOT/'src/foundation/web-runtime/wasm-bindgen')+'"}\nwasm-binding-macros={path="'+str(macro)+'"}\njs-sys={path="'+str(ROOT/'src/foundation/web-runtime/js-sys')+'",default-features=false,features=["std"]}\n')
         flags=['--offline','--manifest-path',str(manifest)]
         source.write_text('');run(['generate-lockfile',*flags]);flags+=['--locked']
         source.write_text((ROOT/'test/wasm-binding-macros/native.rs').read_text())

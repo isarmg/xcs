@@ -17,7 +17,7 @@ class LinuxUapiCheck(unittest.TestCase):
         temporary = tempfile.TemporaryDirectory(prefix="linux-uapi-check-test-")
         self.addCleanup(temporary.cleanup)
         self.root = Path(temporary.name)
-        self.directory = self.root / "src/foundation/linux-raw-sys"
+        self.directory = self.root / "src/foundation/platform/linux-raw-sys"
         self.directory.mkdir(parents=True)
         self.manifest = self.directory / "Cargo.toml"
         self.manifest.write_text(

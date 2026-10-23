@@ -25,7 +25,7 @@ ZXS 是面向独立硬盘管理的文件存储项目，由一台 Linux amd64 服
 
 [文档目录](docs/README.md)：本地运行、操作手册、设计规范、构建与发布、实现状态及验证记录。
 
-项目采用一个 Git 仓库、一个根 Cargo 工作区和一个根 `Cargo.lock`。自有应用和工具统一从根工作区构建；`src/foundation/` 仅保存纳入同一依赖图的基础源码组件，没有自己的 Git 仓库、工作区或锁文件。基础组件通过本地路径依赖使用根锁文件统一解析。
+项目采用一个 Git 仓库、一个根 Cargo 工作区和一个根 `Cargo.lock`。自有应用和工具统一从根工作区构建；`src/foundation/` 仅保存纳入同一依赖图的基础源码组件，没有自己的 Git 仓库、工作区或锁文件。基础组件通过本地路径依赖使用根锁文件统一解析，并按 [12 类职能父目录](docs/architecture/foundation-groups.md) 组织；分类不改变包身份或依赖数量。
 
 目录与内部包名按职责命名，例如 `src/engine` 的 `storage-engine`、`src/interface` 的 `web-interface`、`src/naming` 的 `name-policy`，工具入口使用 `web-build`、`web-bindings` 等职责名称。目录和组件合并规则见[单仓库结构](docs/monorepo.md)。所有说明文档集中到 `docs/`；全部许可证、版权通知与来源收据集中到 [compliance/](compliance/README.md)，原始来源、版本、提交、归档校验和和迁移映射继续保留。
 

@@ -32,7 +32,7 @@ def main():
             (work / 'Cargo.toml').write_text(
                 '[package]\nname="service-stack-contract"\nversion="0.0.0"\nedition="2021"\n'
                 '[workspace]\n[dependencies.service-stack]\n'
-                f'path={json.dumps(str(ROOT / "src/foundation/service-stack"))}\n'
+                f'path={json.dumps(str(ROOT / "src/foundation/networking/service-stack"))}\n'
                 f'default-features=false\nfeatures={json.dumps(features)}\n'
                 '[[test]]\nname="behavior"\npath="test/behavior.rs"\nrequired-features=["service-stack/util"]\n'
             )
@@ -55,8 +55,8 @@ def main():
         (work / 'Cargo.toml').write_text(
             '[package]\nname="service-stack-consumers"\nversion="0.0.0"\nedition="2021"\n'
             '[workspace]\n[dependencies]\n'
-            f'http-routing={{path={json.dumps(str(ROOT / "src/foundation/http-routing"))},default-features=false,features=["http1","tokio","json"]}}\n'
-            f'reqwest={{path={json.dumps(str(ROOT / "src/foundation/reqwest"))},default-features=false}}\n'
+            f'http-routing={{path={json.dumps(str(ROOT / "src/foundation/networking/http-routing"))},default-features=false,features=["http1","tokio","json"]}}\n'
+            f'reqwest={{path={json.dumps(str(ROOT / "src/foundation/networking/reqwest"))},default-features=false}}\n'
         )
         (work / 'src/lib.rs').write_text(
             'pub fn router() -> http_routing::Router { http_routing::Router::new().route("/", http_routing::routing::get(|| async { "ok" })) }\n'

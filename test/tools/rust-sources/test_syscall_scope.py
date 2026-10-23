@@ -12,13 +12,13 @@ ROOT = manager.ROOT
 
 class SyscallScope(unittest.TestCase):
     def test_amd64_assembly_is_unchanged_and_other_dispatches_are_gone(self):
-        directory = ROOT / "src/foundation/rustix"
+        directory = ROOT / "src/foundation/platform/rustix"
         arch = directory / "src/backend/linux_raw/arch"
         self.assertEqual({path.name for path in arch.iterdir()}, {"mod.rs", "x86_64.rs"})
         dispatch = (arch / "mod.rs").read_text()
         self.assertIn('#[path = "x86_64.rs"]', dispatch)
         self.assertNotIn("target_arch", dispatch)
-        package = manager.read_json(ROOT / manager.CATALOG)["packages"]["src/foundation/rustix"]
+        package = manager.read_json(ROOT / manager.CATALOG)["packages"]["src/foundation/platform/rustix"]
         origin = manager.origins(ROOT)[package["origin_directory"]]
         relative = "src/backend/linux_raw/arch/x86_64.rs"
         self.assertEqual(manager.digest((directory / relative).read_bytes()),
@@ -26,7 +26,7 @@ class SyscallScope(unittest.TestCase):
         self.assertTrue((directory / "src/backend/libc/mod.rs").is_file())
 
     def test_manifest_preserves_raw_and_libc_backends_inside_native_boundary(self):
-        manifest = tomllib.loads((ROOT / "src/foundation/rustix/Cargo.toml").read_text())
+        manifest = tomllib.loads((ROOT / "src/foundation/platform/rustix/Cargo.toml").read_text())
         self.assertEqual(len(manifest["target"]), 2)
         for expression, table in manifest["target"].items():
             for required in ('target_os = "linux"', 'target_arch = "x86_64"', 'target_pointer_width = "64"'):

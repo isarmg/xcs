@@ -13,9 +13,9 @@ def check(root):
     root = Path(root).resolve()
     temporary_root = root / "target" / "scope-consumers"
     temporary_root.mkdir(parents=True, exist_ok=True)
-    runtime = json.dumps(str(root / "src/foundation/tokio"))
-    service = json.dumps(str(root / "src/foundation/service-stack"))
-    futures = json.dumps(str(root / "src/foundation/futures"))
+    runtime = json.dumps(str(root / "src/foundation/concurrency/tokio"))
+    service = json.dumps(str(root / "src/foundation/networking/service-stack"))
+    futures = json.dumps(str(root / "src/foundation/concurrency/futures"))
     adapters = json.dumps(str(root / "test/ci/fixtures/runtime-adapters.rs"))
     fixture = json.dumps(str(root / "test/ci/fixtures/runtime-join-map.rs"))
     manifest = f'''[package]

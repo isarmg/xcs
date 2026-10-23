@@ -7,18 +7,21 @@ import subprocess
 import tempfile
 import tomllib
 
+import runpy
+
 ROOT = Path(__file__).resolve().parents[2]
+foundation_path = runpy.run_path(str(ROOT / '.github/scripts/foundation_paths.py'))['package_path']
 FEATURES = ('std', 'alloc', 'integer', 'iter', 'complex', 'bigint', 'rational', 'collection', 'serialization')
 REMOVED = ('libm', 'rand', 'arbitrary', 'quickcheck', 'rkyv', 'bytecheck', 'bytemuck', 'i128', 'num-bigint-std')
 
 
 def check(root=ROOT):
-    source = root / 'src/foundation/numeric'
+    source = root / 'src/foundation/core-types/numeric'
     manifest = tomllib.loads((source / 'Cargo.toml').read_text())
     assert set(manifest['features']) == {'default', *FEATURES}
     assert manifest['features']['default'] == ['std']
     for old in ('num', 'num-traits', 'num-integer', 'num-iter', 'num-complex', 'num-rational', 'num-bigint'):
-        assert not (root / 'src/foundation' / old).exists(), old
+        assert not (foundation_path(root, old)).exists(), old
     with tempfile.TemporaryDirectory(prefix='zxs-numeric-') as folder:
         work = Path(folder)
         (work / 'src').mkdir()

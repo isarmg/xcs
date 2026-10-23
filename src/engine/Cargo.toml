@@ -14,7 +14,7 @@ blake3.workspace = true
 rustix.workspace = true
 sqlite-access.workspace = true
 tempfile.workspace = true
-date-time = { version = "=0.3.55", features = ["formatting", "parsing"], path = "../foundation/date-time"}
+date-time = { version = "=0.3.55", features = ["formatting", "parsing"], path = "../foundation/core-types/date-time"}
 
 [[test]]
 name = "branch_alias_operations"
@@ -37,9 +37,9 @@ name = "workspace_upload_retries"
 path = "../../test/engine/integration/workspace_upload_retries.rs"
 
 [dev-dependencies]
-hash-table = { version = "0.17.1", path = "../foundation/hash-table" }
-hashlink = { version = "0.11.0", path = "../foundation/hashlink" }
-sqlite-access = { version = "0.9.0", default-features = false, path = "../foundation/sqlite-access" }
+hash-table = { version = "0.17.1", path = "../foundation/collections/hash-table" }
+hashlink = { version = "0.11.0", path = "../foundation/collections/hashlink" }
+sqlite-access = { version = "0.9.0", default-features = false, path = "../foundation/data-storage/sqlite-access" }
 
 [[test]]
 name = "hash_table_compatibility"

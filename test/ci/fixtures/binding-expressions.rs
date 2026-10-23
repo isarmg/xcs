@@ -3,10 +3,10 @@
 #[cfg(parser_reference)]
 extern crate cexpr;
 #[cfg(not(parser_reference))]
-#[path = "../../../src/foundation/bindgen/src/cexpr/mod.rs"]
+#[path = "../../../src/foundation/tooling/bindgen/src/cexpr/mod.rs"]
 mod cexpr;
 #[allow(dead_code)]
-#[path = "../../../src/foundation/bindgen/src/cexpr/parser.rs"]
+#[path = "../../../src/foundation/tooling/bindgen/src/cexpr/parser.rs"]
 mod parser;
 use std::cell::Cell;
 use std::collections::HashMap;

@@ -6,4 +6,4 @@ license.workspace = true
 rust-version.workspace = true
 [dependencies]
 storage-contract.workspace = true
-tinyvec = { path = "../foundation/tinyvec", version = "1", features = ["alloc"] }
+tinyvec = { path = "../foundation/collections/tinyvec", version = "1", features = ["alloc"] }

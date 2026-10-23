@@ -124,7 +124,9 @@ fn inventory_tracks_cargo_configuration_and_toolchain() {
         let after = source_inventory(&fixture.0).unwrap();
         assert_ne!(before, after, "{file} must invalidate the build inventory");
     }
-    let dependency = fixture.0.join("src/foundation/reactive-state/src/lib.rs");
+    let dependency = fixture
+        .0
+        .join("src/foundation/web-runtime/reactive-state/src/lib.rs");
     fs::create_dir_all(dependency.parent().unwrap()).unwrap();
     fs::write(&dependency, "upstream").unwrap();
     let before = source_inventory(&fixture.0).unwrap();

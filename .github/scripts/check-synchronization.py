@@ -6,7 +6,10 @@ from pathlib import Path
 import subprocess
 import tempfile
 
+import runpy
+
 ROOT = Path(__file__).resolve().parents[2]
+foundation_path = runpy.run_path(str(ROOT / '.github/scripts/foundation_paths.py'))['package_path']
 FIXTURES = ROOT / 'test/ci/fixtures/synchronization'
 FEATURE_MATRIX = (
     (),
@@ -37,7 +40,7 @@ def run(arguments, directory, expected_success=True, diagnostic=None):
 
 
 def dependency(name, features=(), defaults=False):
-    path = json.dumps(str(ROOT / 'src/foundation' / name))
+    path = json.dumps(str(foundation_path(ROOT, name)))
     feature_list = json.dumps(list(features))
     default_features = 'true' if defaults else 'false'
     return (

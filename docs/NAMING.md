@@ -22,17 +22,11 @@
 
 ## 领域分层
 
-领域首先作为命名和审查分类，**不是本轮已经实施的目录搬迁**。当前统一的 `src/foundation/<职责>` 平面布局可以继续使用，避免在源码治理工具尚不支持时再增加一层路径变化。
+当前 Foundation 按主要职责采用 `src/foundation/<职能组>/<包名>` 两层布局。219 个包各归入一个父目录，目录分类不等于包合并，也不修改 Cargo 包名、版本或原始来源。完整分类与维护规则见 [Foundation 职能目录](architecture/foundation-groups.md)。
 
-| 领域 | 典型职责 |
-| --- | --- |
-| 数据与编码 | 序列化、JSON、文本编码、集合、迭代器 |
-| 系统与执行 | 系统调用、异步运行时、文件操作、随机熵 |
-| 安全与密码 | 摘要算法、密码派生、证书验证、TLS |
-| 网络与服务 | HTTP 传输、路由、中间件、客户端 |
-| 数据库与存储 | 数据库访问、SQLite 驱动、原生绑定 |
-| 界面与浏览器 | 响应式状态、视图渲染、DOM 辅助、浏览器绑定 |
-| 编译与开发工具 | Rust 语法解析、过程宏、源代码格式化、构建工具 |
+职能组为 concurrency、collections、cryptography、data-storage、networking、platform、text-unicode、code-generation、tooling、diagnostics、core-types、web-runtime。领域专用宏与其运行时同组；通用代码生成工具独立分类。
+
+以下分批迁移表记录当时的命名变更，表中包名不隐含当前父目录；实际路径以当前来源清单和职能目录为准。历史原始路径、来源收据及许可证不随分类改写。
 
 ## 首批实施：六个单版本组件
 

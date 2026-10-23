@@ -8,8 +8,9 @@ SPEC = importlib.util.spec_from_file_location("libc_source_manager", (Path(__fil
 manager = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(manager)
 from historical_test_sources import historical_reader
+import source_layout
 
-LIBC = manager.ROOT / "src/foundation/libc"
+LIBC = manager.ROOT / "src/foundation/platform/libc"
 DISPATCH_EDITS = {
     "build.rs", "src/lib.rs", "src/new/mod.rs", "src/unix/mod.rs",
     "src/unix/linux_like/mod.rs", "src/unix/linux_like/linux/arch/mod.rs",
@@ -19,6 +20,9 @@ DISPATCH_EDITS = {
 
 
 class LibcPlatformScope(unittest.TestCase):
+    def setUp(self):
+        self.enterContext(source_layout.activate(source_layout.load(manager.ROOT)))
+
     def test_platform_directories_and_dispatch_agree(self):
         expected = {
             "src": {"new", "unix"},
@@ -44,7 +48,7 @@ class LibcPlatformScope(unittest.TestCase):
 
     def test_retained_upstream_code_changes_only_at_dispatch_boundaries(self):
         catalog = manager.read_json(manager.ROOT / manager.CATALOG)
-        package = catalog["packages"]["src/foundation/libc"]
+        package = catalog["packages"][LIBC.relative_to(manager.ROOT).as_posix()]
         origin = manager.origins(manager.ROOT)[package["origin_directory"]]
         originals = origin["original_files_sha256"]
         read = historical_reader(manager.ROOT)
@@ -54,7 +58,7 @@ class LibcPlatformScope(unittest.TestCase):
             if relative in DISPATCH_EDITS:
                 continue
             self.assertIn(relative, originals)
-            self.assertEqual(manager.digest(read(path.relative_to(manager.ROOT).as_posix())), originals[relative], relative)
+            self.assertEqual(manager.digest(read("src/foundation/libc/" + relative)), originals[relative], relative)
             retained.append(relative)
         self.assertGreater(len(retained), 100)
         for required in (

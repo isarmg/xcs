@@ -9,25 +9,28 @@ import subprocess
 import tempfile
 import tomllib
 
+import runpy
+
 ROOT = Path(__file__).resolve().parents[2]
+foundation_path = runpy.run_path(str(ROOT / '.github/scripts/foundation_paths.py'))['package_path']
 FEATURES = ('std', 'alloc', 'codec', 'streams', 'simd', 'runtime-detection', 'block-boundary', 'serialization')
 REMOVED = ('any_c_zlib', 'any_impl', 'any_zlib', 'cloudflare_zlib', 'miniz-sys', 'miniz_oxide', 'rust_backend', 'zlib', 'zlib-default', 'zlib-ng', 'zlib-ng-compat', 'nightly', 'rustc-dep-of-std', 'zlib-rs', 'const-generics', 'with-alloc', 'runtime_detection')
 MATRIX = ('', 'std', 'alloc', 'codec', 'codec,alloc', 'simd', 'simd,std', 'codec,simd', 'streams', 'streams,simd,runtime-detection', 'block-boundary', 'serialization', ','.join(FEATURES))
 
 
 def check(root=ROOT):
-    source = root / 'src/foundation/compression'
+    source = root / 'src/foundation/data-storage/compression'
     manifest = tomllib.loads((source / 'Cargo.toml').read_text())
     assert set(manifest['features']) == {'default', *FEATURES}
     assert manifest['features']['default'] == []
     for old in ('flate2', 'miniz_oxide', 'adler2', 'simd-adler32'):
-        assert not (root / 'src/foundation' / old).exists(), old
+        assert not (foundation_path(root, old)).exists(), old
     # No copied/fake dependency providers. Only this package and its external tests
     # are mirrored so Cargo cannot create locks or doctest files in governed trees.
     with tempfile.TemporaryDirectory(prefix='zxs-compression-') as folder:
         work = Path(folder)
         shutil.copyfile(root / 'rust-toolchain.toml', work / 'rust-toolchain.toml')
-        mirror = work / 'src/foundation/compression'
+        mirror = work / 'src/foundation/data-storage/compression'
         shutil.copytree(source, mirror)
         for relative in ('test/compression', 'test/foundation/compression'):
             shutil.copytree(root / relative, work / relative)
@@ -81,7 +84,7 @@ path = "{mirror}"
 default-features = false
 features = ["serialization"]
 [dependencies.json-codec]
-path = "{root / 'src/foundation/json-codec'}"
+path = "{root / 'src/foundation/data-storage/json-codec'}"
 [[test]]
 name = "checkpoint"
 path = "{root / 'test/compression/serialization.rs'}"

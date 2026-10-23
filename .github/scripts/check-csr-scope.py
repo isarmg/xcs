@@ -10,7 +10,10 @@ import subprocess
 import tempfile
 import tomllib
 
+import runpy
+
 ROOT = Path(__file__).resolve().parents[2]
+rebase_dependency_paths = runpy.run_path(str(ROOT / '.github/scripts/foundation_paths.py'))['rebase_dependency_paths']
 TARGET = Path(os.environ.get('CARGO_TARGET_DIR', ROOT / 'target/csr-template-check'))
 
 
@@ -24,14 +27,12 @@ def check_reactive_units():
     with tempfile.TemporaryDirectory(prefix='reactive-unit-') as temporary:
         snapshot = Path(temporary)
         shutil.copyfile(ROOT / 'rust-toolchain.toml', snapshot / 'rust-toolchain.toml')
-        for relative in ('src/foundation/reactive-state', 'test/foundation/reactive-state/unit'):
+        for relative in ('src/foundation/web-runtime/reactive-state', 'test/foundation/reactive-state/unit'):
             shutil.copytree(ROOT / relative, snapshot / relative,
                             ignore=shutil.ignore_patterns('Cargo.lock', 'target'))
-        manifest = snapshot / 'src/foundation/reactive-state/Cargo.toml'
-        source_package = ROOT / 'src/foundation/reactive-state'
-        text = re.sub(r'(?m)^path = "(\.\./[^"\n]+)"$',
-                      lambda match: 'path = ' + json.dumps(str((source_package / match[1]).resolve())),
-                      manifest.read_text())
+        manifest = snapshot / 'src/foundation/web-runtime/reactive-state/Cargo.toml'
+        source_package = ROOT / 'src/foundation/web-runtime/reactive-state'
+        text = rebase_dependency_paths(manifest.read_text(), source_package)
         manifest.write_text(text + '\n[workspace]\n')
         cargo('generate-lockfile', '--offline', '--manifest-path', str(manifest))
         for features in ([], ['--features', 'effects']):
@@ -53,13 +54,13 @@ def check():
         manifest = work / 'Cargo.toml'
         manifest.write_text('[package]\nname="csr-template-contract"\nversion="0.0.0"\nedition="2021"\n'
                             '[workspace]\n[lib]\ncrate-type=["cdylib", "rlib"]\n[dependencies]\n' + '\n'.join([
-            'view-renderer={path="' + str(ROOT / 'src/foundation/view-renderer') + '",features=["reactive-state","shared-value"]}',
-            'dom-helpers={path="' + str(ROOT / 'src/foundation/dom-helpers') + '"}',
-            'reactive-state={path="' + str(ROOT / 'src/foundation/reactive-state') + '",features=["effects"]}',
-            'wasm-bindgen={path="' + str(ROOT / 'src/foundation/wasm-bindgen') + '"}',
-            'js-sys={path="' + str(ROOT / 'src/foundation/js-sys') + '"}',
+            'view-renderer={path="' + str(ROOT / 'src/foundation/web-runtime/view-renderer') + '",features=["reactive-state","shared-value"]}',
+            'dom-helpers={path="' + str(ROOT / 'src/foundation/web-runtime/dom-helpers') + '"}',
+            'reactive-state={path="' + str(ROOT / 'src/foundation/web-runtime/reactive-state') + '",features=["effects"]}',
+            'wasm-bindgen={path="' + str(ROOT / 'src/foundation/web-runtime/wasm-bindgen') + '"}',
+            'js-sys={path="' + str(ROOT / 'src/foundation/web-runtime/js-sys') + '"}',
 
-            'web-sys={path="' + str(ROOT / 'src/foundation/web-sys') + '",features=["Window","Document","HtmlInputElement","Event"]}',
+            'web-sys={path="' + str(ROOT / 'src/foundation/web-runtime/web-sys') + '",features=["Window","Document","HtmlInputElement","Event"]}',
         ]) + '\n')
         source = work / 'src/lib.rs'
         source.write_text((ROOT / 'test/tools/web-bindings/fixtures/csr-template.rs').read_text())
@@ -139,10 +140,10 @@ catch(error) { document.body.textContent=JSON.stringify({status:'failed',message
                 if not result.returncode or 'does not have that feature' not in result.stderr:
                     raise AssertionError(f'{qualified} accepted or failed for another reason: {result.stderr}')
         policy = json.loads((ROOT / 'tools/rust-sources/web-scope.json').read_text())
-        declared = tomllib.loads((ROOT / 'src/foundation/web-sys/Cargo.toml').read_text())['features']
+        declared = tomllib.loads((ROOT / 'src/foundation/web-runtime/web-sys/Cargo.toml').read_text())['features']
         if set(declared) != set(policy['web_sys_features']):
             raise AssertionError('web-sys feature policy drift')
-        generated = {p.stem.removeprefix('gen_') for p in (ROOT / 'src/foundation/web-sys/src/features').glob('gen_*.rs')}
+        generated = {p.stem.removeprefix('gen_') for p in (ROOT / 'src/foundation/web-runtime/web-sys/src/features').glob('gen_*.rs')}
         if generated != set(declared) - {'default', 'std'}:
             raise AssertionError('web-sys source/feature closure drift')
         record = {

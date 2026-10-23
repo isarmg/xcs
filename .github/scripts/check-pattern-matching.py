@@ -9,7 +9,11 @@ import subprocess
 import tempfile
 import tomllib
 
+import runpy
+
 ROOT = Path(__file__).resolve().parents[2]
+rebase_dependency_paths = runpy.run_path(str(ROOT / '.github/scripts/foundation_paths.py'))['rebase_dependency_paths']
+foundation_path = runpy.run_path(str(ROOT / '.github/scripts/foundation_paths.py'))['package_path']
 REMOVED = ("arbitrary", "pattern", "unstable", "use_std", "perf-cache")
 WASM = ("", "syntax", "syntax,unicode", "dfa-search", "literal", "literal,literal-perf",
         "nfa-thompson", "nfa-pikevm,syntax", "dfa-build,syntax", "hybrid,syntax",
@@ -50,14 +54,13 @@ def run(command, env, expected=True, needle=None):
 
 
 def fixture(root, work):
-    package = work / "src/foundation/regex"
-    shutil.copytree(root / "src/foundation/regex", package)
+    package = work / "src/foundation/text-unicode/regex"
+    shutil.copytree(root / "src/foundation/text-unicode/regex", package)
     for relative in ("test/foundation/regex", "test/regex-family"):
         shutil.copytree(root / relative, work / relative)
     manifest = package / "Cargo.toml"
     text = manifest.read_text()
-    text = re.sub(r'path = "\.\./([^/"\n]+)"',
-                  lambda m: "path = " + json.dumps(str(root / "src/foundation" / m[1])), text)
+    text = rebase_dependency_paths(text, root / "src/foundation/text-unicode/regex")
     manifest.write_text(text + "\n[workspace]\n")
     return manifest
 
@@ -96,14 +99,14 @@ def main():
         run(["cargo", "test", *common, "--all-features", "--doc"], env)
         probe = work / "probe"
         for name, features, source, success, needle in BOUNDARIES:
-            dep = '[dependencies.regex]\npath = ' + json.dumps(str(ROOT / "src/foundation/regex"))
+            dep = '[dependencies.regex]\npath = ' + json.dumps(str(ROOT / "src/foundation/text-unicode/regex"))
             dep += '\ndefault-features = false\nfeatures = ' + json.dumps(features) + '\n'
             probe_manifest(probe, dep)
             (probe / "src/lib.rs").write_text(source + "\n")
             run(["cargo", "check", "--offline", "--manifest-path", str(probe / "Cargo.toml")], env, success, needle)
             print(f"Regex capability boundary: {name}", flush=True)
         for feature in REMOVED:
-            dep = '[dependencies.regex]\npath = ' + json.dumps(str(ROOT / "src/foundation/regex"))
+            dep = '[dependencies.regex]\npath = ' + json.dumps(str(ROOT / "src/foundation/text-unicode/regex"))
             dep += '\ndefault-features = false\nfeatures = ' + json.dumps([feature]) + '\n'
             probe_manifest(probe, dep)
             run(["cargo", "check", "--offline", "--manifest-path", str(probe / "Cargo.toml")], env,
@@ -111,7 +114,7 @@ def main():
         consumers = work / "consumers"
         deps = ""
         for name in ("regex", "tracing", "fancy-regex", "schema-validation"):
-            deps += f"[dependencies.{name}]\npath = " + json.dumps(str(ROOT / "src/foundation" / name)) + "\n"
+            deps += f"[dependencies.{name}]\npath = " + json.dumps(str(foundation_path(ROOT, name))) + "\n"
             if name == "schema-validation":
                 deps += 'default-features = false\nfeatures = ["pattern"]\n'
             if name == "tracing":

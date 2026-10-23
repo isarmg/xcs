@@ -45,8 +45,8 @@ def lock(manifest, root):
 
 def prepare_package(root, work):
     """Only the maintained package/tests are copied; dependencies remain real providers."""
-    original = root / "src/foundation/sqlite-access"
-    package = work / "src/foundation/sqlite-access"
+    original = root / "src/foundation/data-storage/sqlite-access"
+    package = work / "src/foundation/data-storage/sqlite-access"
     shutil.copytree(original, package, ignore=shutil.ignore_patterns("Cargo.lock", "target", "__pycache__"))
     for tests in FAMILY_TEST_ROOTS:
         shutil.copytree(root / tests, work / tests)
@@ -71,11 +71,11 @@ def consumer_manifest(root, work, features):
     (work / "src").mkdir(parents=True, exist_ok=True)
     text = ('[package]\nname="sqlite-family-consumer"\nversion="0.0.0"\nedition="2021"\n'
             '[workspace]\nresolver="2"\n[features]\nsqlite-pool=["sqlite-access/pool"]\n[dependencies]\n'
-            f'sqlite-access={{path={json.dumps(str(root / "src/foundation/sqlite-access"))},default-features=false,features={json.dumps(features)}}}\n'
+            f'sqlite-access={{path={json.dumps(str(root / "src/foundation/data-storage/sqlite-access"))},default-features=false,features={json.dumps(features)}}}\n'
             '[dev-dependencies]\n'
-            f'tokio={{path={json.dumps(str(root / "src/foundation/tokio"))},default-features=false,features=["macros","rt","time","sync"]}}\n'
-            f'hash-table={{path={json.dumps(str(root / "src/foundation/hash-table"))}}}\n'
-            f'hashlink={{path={json.dumps(str(root / "src/foundation/hashlink"))}}}\n')
+            f'tokio={{path={json.dumps(str(root / "src/foundation/concurrency/tokio"))},default-features=false,features=["macros","rt","time","sync"]}}\n'
+            f'hash-table={{path={json.dumps(str(root / "src/foundation/collections/hash-table"))}}}\n'
+            f'hashlink={{path={json.dumps(str(root / "src/foundation/collections/hashlink"))}}}\n')
     for name, path in INTEGRATION_TESTS.items():
         text += f'[[test]]\nname={json.dumps(name)}\npath={json.dumps(str(root / path))}\n'
     manifest.write_text(text)
@@ -114,7 +114,7 @@ def check(root):
     root = root.resolve()
     root_lock = root / "Cargo.lock"
     original_lock = root_lock.read_bytes()
-    maintained_source = root / "src/foundation/sqlite-access"
+    maintained_source = root / "src/foundation/data-storage/sqlite-access"
     original_source = {p.relative_to(maintained_source).as_posix(): hashlib.sha256(p.read_bytes()).hexdigest()
                        for p in maintained_source.rglob("*") if p.is_file()}
     (root / "target").mkdir(exist_ok=True)

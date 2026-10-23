@@ -11,6 +11,7 @@ import tempfile
 import tomllib
 
 ROOT = Path(__file__).resolve().parents[2]
+foundation_path = runpy.run_path(str(ROOT / '.github/scripts/foundation_paths.py'))['package_path']
 PROFILES = {'core': [], 'alloc': ['alloc'], 'rc': ['alloc', 'rc'],
             'derive': ['derive'], 'path': ['error-path'],
             'std': ['std'], 'full': ['std', 'derive', 'rc', 'error-path']}
@@ -18,16 +19,16 @@ TARGETS = ('x86_64-unknown-linux-gnu', 'wasm32-unknown-unknown')
 
 
 def manifest(root, features, tests=False):
-    data = root / 'src/foundation/data-serialization'
+    data = root / 'src/foundation/data-storage/data-serialization'
     result = ('[package]\nname="serialization-consolidation-probe"\nversion="0.0.0"\n'
               'edition="2021"\n[workspace]\n[dependencies]\n'
               f'data-serialization={{path={json.dumps(str(data))}, default-features=false, '
               f'features={json.dumps(features)}}}\n')
     if tests:
-        result += 'log={path='+json.dumps(str(root/'src/foundation/log'))+',features=["serialization"]}\n'
-        result += 'url-encoding={path='+json.dumps(str(root/'src/foundation/url-encoding'))+',default-features=false,features=["parser","std","serialization"]}\n'
-        result += 'fraction={path='+json.dumps(str(root/'src/foundation/fraction'))+',default-features=false,features=["with-serialization-support"]}\n'
-        result += 'json-codec={path=' + json.dumps(str(root / 'src/foundation/json-codec')) + ',features=["arbitrary_precision","raw_value"]}\n'
+        result += 'log={path='+json.dumps(str(root/'src/foundation/diagnostics/log'))+',features=["serialization"]}\n'
+        result += 'url-encoding={path='+json.dumps(str(root/'src/foundation/networking/url-encoding'))+',default-features=false,features=["parser","std","serialization"]}\n'
+        result += 'fraction={path='+json.dumps(str(root/'src/foundation/core-types/fraction'))+',default-features=false,features=["with-serialization-support"]}\n'
+        result += 'json-codec={path=' + json.dumps(str(root / 'src/foundation/data-storage/json-codec')) + ',features=["arbitrary_precision","raw_value"]}\n'
     return result
 
 
@@ -46,14 +47,14 @@ def source(profile):
 
 
 def validate_source(root):
-    package = root / 'src/foundation/data-serialization'
+    package = root / 'src/foundation/data-storage/data-serialization'
     data = tomllib.loads((package / 'Cargo.toml').read_text())
     if data['package'].get('build') is not False or (package / 'build.rs').exists():
         raise AssertionError('unified serialization must not execute an obsolete build script')
     if data['package']['rust-version'] != '1.99':
         raise AssertionError('modern compiler assumptions require the project toolchain minimum')
     for name in ('serialization-core', 'serialization-error-path'):
-        if (root / 'src/foundation' / name).exists():
+        if (foundation_path(root, name)).exists():
             raise AssertionError('old serialization package remains')
     if (package / 'src/core').exists():
         raise AssertionError('duplicate documentation-only implementation remains')
@@ -118,11 +119,11 @@ def check(root=ROOT):
         package=stage/'src/foundation/serialization-source-tests'
         package.mkdir(parents=True)
         shutil.copytree(root/'test/foundation/data-serialization',stage/'test/foundation/data-serialization')
-        main=tomllib.loads((root/'src/foundation/data-serialization/Cargo.toml').read_text())
+        main=tomllib.loads((root/'src/foundation/data-storage/data-serialization/Cargo.toml').read_text())
         text=manifest(root,PROFILES['full'],tests=True).replace('serialization-consolidation-probe','serialization-source-tests')
-        text+='serialization-derive={path='+json.dumps(str(root/'src/foundation/serialization-derive'))+'}\n'
-        text+='itoa={path='+json.dumps(str(root/'src/foundation/itoa'))+'}\n'
-        text+='[lib]\npath='+json.dumps(str(root/'src/foundation/data-serialization/src/lib.rs'))+'\n'
+        text+='serialization-derive={path='+json.dumps(str(root/'src/foundation/data-storage/serialization-derive'))+'}\n'
+        text+='itoa={path='+json.dumps(str(root/'src/foundation/core-types/itoa'))+'}\n'
+        text+='[lib]\npath='+json.dumps(str(root/'src/foundation/data-storage/data-serialization/src/lib.rs'))+'\n'
         text+='[features]\ndefault=["std","derive","rc","error-path"]\nstd=["alloc"]\nalloc=[]\nderive=[]\nrc=[]\nerror-path=["alloc"]\n'
         (package/'Cargo.toml').write_text(text)
         run_cargo(['generate-lockfile','--offline','--manifest-path',str(package/'Cargo.toml')],root,env)

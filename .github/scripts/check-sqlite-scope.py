@@ -5,7 +5,10 @@ import subprocess
 import tempfile
 import tomllib
 
+import runpy
+
 ROOT = Path(__file__).resolve().parents[2]
+foundation_path = runpy.run_path(str(ROOT / '.github/scripts/foundation_paths.py'))['package_path']
 REMOVED = {
     "sqlite-access": ["any", "migrate", "sqlx-toml", "runtime-tokio", "runtime-smol",
                       "tls-none", "tls-rustls", "_rt-tokio", "_tls-rustls"],
@@ -24,7 +27,7 @@ NEGATIVE = [
 
 def check(root):
     for package, retired in REMOVED.items():
-        manifest = tomllib.loads((root / 'src/foundation' / package / 'Cargo.toml').read_text())
+        manifest = tomllib.loads((foundation_path(root, package) / 'Cargo.toml').read_text())
         features = manifest.get('features', {})
         assert not set(retired).intersection(features), (package, features)
         assert not any(name.startswith(('runtime-', '_rt-', 'tls-', '_tls-')) for name in features)
@@ -33,7 +36,7 @@ def check(root):
         work = Path(temporary)
         (work / 'src').mkdir()
         declarations = '\n'.join(
-            f'{name} = {{path = "{root / "src/foundation" / name}"{extra}}}'
+            f'{name} = {{path = "{foundation_path(root, name)}"{extra}}}'
             for name, extra in [('sqlite-access', ', features = ["sqlite-bundled"]')])
         manifest = work / 'Cargo.toml'
         manifest.write_text('[package]\nname = "sqlite-api-scope"\nversion = "0.0.0"\nedition = "2021"\n'

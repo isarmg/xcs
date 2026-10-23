@@ -21,6 +21,7 @@ import zipfile
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import proof_routing
+import source_layout
 
 ROOT = Path(__file__).resolve().parents[2]
 RING = Path('src/foundation/ring')
@@ -37,6 +38,7 @@ RELOCATION = Path('compliance/ring-test-relocation.json')
 RELOCATION_SHA256 = '178ec0e2f7a74909cd037f3d2eda20ef50911d305effcd78311267addb273a5c'
 
 
+@source_layout.operation
 def relocated_sources(root):
     """Authenticate exact live inventories and reverse only pinned routing edits."""
     view = proof_routing.load(root)
@@ -255,6 +257,7 @@ def historical_sources(root):
     return read
 
 
+@source_layout.operation
 def current_ring(root, view=None):
     """Read the actual Cargo identity, never a reconstructed historical manifest."""
     if view is None:
@@ -269,6 +272,7 @@ def current_ring(root, view=None):
     return view, package, manifest
 
 
+@source_layout.operation
 def verify_current_targets(root, proof):
     """Resolve live manifest targets back to the authenticated logical inventory."""
     view, package, manifest = current_ring(root)
@@ -302,6 +306,7 @@ def verify_current_targets(root, proof):
     return wanted
 
 
+@source_layout.operation
 def verify(root=ROOT):
     historical = historical_sources(root)
     proof = json.loads((root / PROOF).read_text())
@@ -404,6 +409,7 @@ def run_case(root, mode, target_dir, profile, features):
     print(f'RING PASS {mode}/{profile}/{features}', flush=True)
 
 
+@source_layout.operation
 def verify_generated(root, target_dir, profile):
     view, package, _ = current_ring(root)
     pregenerated = checked_path(root, view.current_path(str(RING / 'pregenerated')))

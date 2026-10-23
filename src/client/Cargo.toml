@@ -6,13 +6,13 @@ license.workspace = true
 rust-version.workspace = true
 
 [dependencies]
-reqwest = { version = "0.12.28", default-features = false, features = ["json", "rustls-tls", "stream"], path = "../foundation/reqwest"}
+reqwest = { version = "0.12.28", default-features = false, features = ["json", "rustls-tls", "stream"], path = "../foundation/networking/reqwest"}
 data-serialization.workspace = true
 json-codec.workspace = true
 error-definition.workspace = true
-tokio = { version = "1.53.2", features = ["fs", "io-util", "adapters-io"], path = "../foundation/tokio"}
-futures = { version = "0.3.34", path = "../foundation/futures", default-features = false, features = ["async-await-macro", "shared-state", "std", "utilities"] }
-url-encoding = { path = "../foundation/url-encoding", default-features = false, features = ["std", "parser"] }
+tokio = { version = "1.53.2", features = ["fs", "io-util", "adapters-io"], path = "../foundation/concurrency/tokio"}
+futures = { version = "0.3.34", path = "../foundation/concurrency/futures", default-features = false, features = ["async-await-macro", "shared-state", "std", "utilities"] }
+url-encoding = { path = "../foundation/networking/url-encoding", default-features = false, features = ["std", "parser"] }
 blake3.workspace = true
 storage-contract = { path = "../contract" }
 tempfile.workspace = true
@@ -21,11 +21,11 @@ tempfile.workspace = true
 rustix.workspace = true
 
 [dev-dependencies]
-tokio = { version = "1.53.2", features = ["macros", "rt-multi-thread", "net", "io-util", "sync", "time"], path = "../foundation/tokio"}
-rustls-webpki = { version = "0.103.16", features = ["ring"], path = "../foundation/rustls-webpki" }
-rustls-pki-types = { version = "1", path = "../foundation/rustls-pki-types" }
-webpki-roots = { version = "1.0.10", path = "../foundation/webpki-roots" }
-rustls = { version = "0.23", default-features = false, features = ["ring", "std", "tls12"], path = "../foundation/rustls" }
+tokio = { version = "1.53.2", features = ["macros", "rt-multi-thread", "net", "io-util", "sync", "time"], path = "../foundation/concurrency/tokio"}
+rustls-webpki = { version = "0.103.16", features = ["ring"], path = "../foundation/networking/rustls-webpki" }
+rustls-pki-types = { version = "1", path = "../foundation/networking/rustls-pki-types" }
+webpki-roots = { version = "1.0.10", path = "../foundation/networking/webpki-roots" }
+rustls = { version = "0.23", default-features = false, features = ["ring", "std", "tls12"], path = "../foundation/networking/rustls" }
 
 [[test]]
 name = "tls_trust_regression"

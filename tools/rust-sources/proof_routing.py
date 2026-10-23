@@ -13,6 +13,7 @@ import tomllib
 from pathlib import Path
 
 from external_tests import safe, inventory
+import source_layout
 
 # Append only. Each digest names compliance/proof-routing/<digest>.json.gz.
 # Register only reviewed, exact routing transactions.
@@ -148,21 +149,21 @@ class View:
             return self.bytes[path]
         if self._touched(path):
             raise ValueError('unmapped path in active proof owner')
-        return safe(self.root, path).read_bytes()
+        return source_layout.read(self.root, path)
 
     def inventory(self, root):
         root = str(root); safe(self.root, root)
         if root in self.roots:
             return {p: digest(b) for p, b in self.bytes.items() if p.startswith(root + '/')}
-        return inventory(self.root, root)
+        return source_layout.inventory(self.root, root)
 
     def current_path(self, path):
         path = str(path); safe(self.root, path)
         if path in self.forward:
-            return self.forward[path]
+            return source_layout.current_path(self.root, self.forward[path])
         # Roots are used by Cargo and development-marker checks too.
         if path in self.packages:
-            return self.packages[path]['directory']
+            return source_layout.current_path(self.root, self.packages[path]['directory'])
         matches = set()
         for old, current in self.forward.items():
             if old.startswith(path + '/'):
@@ -171,23 +172,26 @@ class View:
                     raise ValueError('nonuniform current proof directory mapping')
                 matches.add(current[:-len(suffix)])
         if len(matches) == 1:
-            return matches.pop()
+            return source_layout.current_path(self.root, matches.pop())
         if self._touched(path):
             raise ValueError('unmapped current proof path')
-        return path
+        return source_layout.current_path(self.root, path)
 
     def baseline_path(self, path):
         path = str(path); safe(self.root, path)
+        layout = source_layout.load(self.root)
+        path = layout.historical_path(path) if layout else path
         return self.backward.get(path, path)
 
     def current_package(self, directory):
         directory = str(directory)
         if directory in self.packages:
-            return self.packages[directory]
-        manifest = tomllib.loads(safe(self.root, directory + '/Cargo.toml').read_text())['package']
-        return dict(directory=directory, name=manifest['name'], version=manifest['version'])
+            return dict(self.packages[directory], directory=source_layout.current_path(self.root, self.packages[directory]['directory']))
+        manifest = tomllib.loads(source_layout.read(self.root, directory + '/Cargo.toml').decode())['package']
+        return dict(directory=source_layout.current_path(self.root, directory), name=manifest['name'], version=manifest['version'])
 
 
+@source_layout.historical_catalog
 def load(root, catalog=None, prospective=False):
     """Return authenticated baseline live bytes; prospective is only for refresh authorization."""
     root = Path(root); view = View(root)
@@ -298,33 +302,19 @@ def load(root, catalog=None, prospective=False):
         physical_expected = projection['inventory'] if projection else expected
         live_roots = projection['roots'] if projection else live_roots
         paths = set()
-        for base in live_roots:
-            directory_path = safe(root, base)
-            if not directory_path.is_dir():
-                raise ValueError('missing active proof root')
-            for parent, directories, names in os.walk(directory_path, followlinks=False):
-                for name in directories + names:
-                    p = (Path(parent) / name).relative_to(root).as_posix()
-                    path = safe(root, p)
-                    if path.is_file():
-                        if p in paths or p in all_current:
-                            raise ValueError('overlapping active proof owners')
-                        paths.add(p); live_bytes += path.stat().st_size
-                        if len(paths) > MAX_FILES or live_bytes > MAX_LIVE_BYTES:
-                            raise ValueError('active proof live material bound exceeded')
-                    elif not path.is_dir():
-                        raise ValueError('special file in active proof root')
-        if paths != set(physical_expected):
-            raise ValueError('active proof current inventory/content drift')
         current = {}
-        for p in sorted(paths):
-            with safe(root, p).open('rb') as stream:
-                data = stream.read(MAX_LIVE_BYTES + 1)
-                if len(data) > MAX_LIVE_BYTES or stream.read(1):
+        for base in live_roots:
+            logical = source_layout.inventory(root, base)
+            for p in logical:
+                if p in paths or p in all_current:
+                    raise ValueError('overlapping active proof owners')
+                data = source_layout.read(root, p)
+                paths.add(p); live_bytes += len(data)
+                if len(paths) > MAX_FILES or live_bytes > MAX_LIVE_BYTES:
                     raise ValueError('active proof live material bound exceeded')
-            if digest(data) != physical_expected[p]:
-                raise ValueError('active proof current inventory/content drift')
-            current[p] = data
+                current[p] = data
+        if paths != set(physical_expected) or any(digest(data) != physical_expected[p] for p, data in current.items()):
+            raise ValueError('active proof current inventory/content drift')
         all_current.update(current)
         # Foreign-origin imports remain authenticated physical material, never
         # members of the pinned primary's historical inverse bijection.

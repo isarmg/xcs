@@ -45,7 +45,7 @@ The full automata unit harness still requires the absent real `quickcheck` and `
 - 42 native feature configurations and 14 WASM configurations passed, including every retained individual feature, full features and allocation-free DFA search.
 - 8 positive/negative API-boundary probes and 5 removed-feature rejection probes passed.
 
-These results do not claim execution of unavailable quickcheck/regex-test suites. The pre-existing nightly syntax benchmark is preserved at `src/foundation/regex/benches/syntax.rs`, explicitly unregistered on the stable toolchain, rather than silently discarded or presented as a passing test.
+These results do not claim execution of unavailable quickcheck/regex-test suites. The pre-existing nightly syntax benchmark is preserved at `src/foundation/text-unicode/regex/benches/syntax.rs`, explicitly unregistered on the stable toolchain, rather than silently discarded or presented as a passing test.
 
 ## Maintained verification
 

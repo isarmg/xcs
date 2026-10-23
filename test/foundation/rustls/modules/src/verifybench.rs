@@ -39,8 +39,8 @@ mod benchmarks {
             provider::default_provider(),
             "reddit.com",
             &[
-                include_bytes!("../../../../../src/foundation/rustls/src/testdata/cert-reddit.0.der"),
-                include_bytes!("../../../../../src/foundation/rustls/src/testdata/cert-reddit.1.der"),
+                include_bytes!("../../../../../src/foundation/networking/rustls/src/testdata/cert-reddit.0.der"),
+                include_bytes!("../../../../../src/foundation/networking/rustls/src/testdata/cert-reddit.1.der"),
             ],
         );
         b.iter(|| ctx.verify_once());
@@ -52,9 +52,9 @@ mod benchmarks {
             provider::default_provider(),
             "github.com",
             &[
-                include_bytes!("../../../../../src/foundation/rustls/src/testdata/cert-github.0.der"),
-                include_bytes!("../../../../../src/foundation/rustls/src/testdata/cert-github.1.der"),
-                include_bytes!("../../../../../src/foundation/rustls/src/testdata/cert-github.2.der"),
+                include_bytes!("../../../../../src/foundation/networking/rustls/src/testdata/cert-github.0.der"),
+                include_bytes!("../../../../../src/foundation/networking/rustls/src/testdata/cert-github.1.der"),
+                include_bytes!("../../../../../src/foundation/networking/rustls/src/testdata/cert-github.2.der"),
             ],
         );
         b.iter(|| ctx.verify_once());
@@ -66,9 +66,9 @@ mod benchmarks {
             provider::default_provider(),
             "arstechnica.com",
             &[
-                include_bytes!("../../../../../src/foundation/rustls/src/testdata/cert-arstechnica.0.der"),
-                include_bytes!("../../../../../src/foundation/rustls/src/testdata/cert-arstechnica.1.der"),
-                include_bytes!("../../../../../src/foundation/rustls/src/testdata/cert-arstechnica.2.der"),
+                include_bytes!("../../../../../src/foundation/networking/rustls/src/testdata/cert-arstechnica.0.der"),
+                include_bytes!("../../../../../src/foundation/networking/rustls/src/testdata/cert-arstechnica.1.der"),
+                include_bytes!("../../../../../src/foundation/networking/rustls/src/testdata/cert-arstechnica.2.der"),
             ],
         );
         b.iter(|| ctx.verify_once());
@@ -80,9 +80,9 @@ mod benchmarks {
             provider::default_provider(),
             "servo.org",
             &[
-                include_bytes!("../../../../../src/foundation/rustls/src/testdata/cert-servo.0.der"),
-                include_bytes!("../../../../../src/foundation/rustls/src/testdata/cert-servo.1.der"),
-                include_bytes!("../../../../../src/foundation/rustls/src/testdata/cert-servo.2.der"),
+                include_bytes!("../../../../../src/foundation/networking/rustls/src/testdata/cert-servo.0.der"),
+                include_bytes!("../../../../../src/foundation/networking/rustls/src/testdata/cert-servo.1.der"),
+                include_bytes!("../../../../../src/foundation/networking/rustls/src/testdata/cert-servo.2.der"),
             ],
         );
         b.iter(|| ctx.verify_once());
@@ -94,8 +94,8 @@ mod benchmarks {
             provider::default_provider(),
             "twitter.com",
             &[
-                include_bytes!("../../../../../src/foundation/rustls/src/testdata/cert-twitter.0.der"),
-                include_bytes!("../../../../../src/foundation/rustls/src/testdata/cert-twitter.1.der"),
+                include_bytes!("../../../../../src/foundation/networking/rustls/src/testdata/cert-twitter.0.der"),
+                include_bytes!("../../../../../src/foundation/networking/rustls/src/testdata/cert-twitter.1.der"),
             ],
         );
         b.iter(|| ctx.verify_once());
@@ -107,8 +107,8 @@ mod benchmarks {
             provider::default_provider(),
             "wikipedia.org",
             &[
-                include_bytes!("../../../../../src/foundation/rustls/src/testdata/cert-wikipedia.0.der"),
-                include_bytes!("../../../../../src/foundation/rustls/src/testdata/cert-wikipedia.1.der"),
+                include_bytes!("../../../../../src/foundation/networking/rustls/src/testdata/cert-wikipedia.0.der"),
+                include_bytes!("../../../../../src/foundation/networking/rustls/src/testdata/cert-wikipedia.1.der"),
             ],
         );
         b.iter(|| ctx.verify_once());
@@ -120,9 +120,9 @@ mod benchmarks {
             provider::default_provider(),
             "www.google.com",
             &[
-                include_bytes!("../../../../../src/foundation/rustls/src/testdata/cert-google.0.der"),
-                include_bytes!("../../../../../src/foundation/rustls/src/testdata/cert-google.1.der"),
-                include_bytes!("../../../../../src/foundation/rustls/src/testdata/cert-google.2.der"),
+                include_bytes!("../../../../../src/foundation/networking/rustls/src/testdata/cert-google.0.der"),
+                include_bytes!("../../../../../src/foundation/networking/rustls/src/testdata/cert-google.1.der"),
+                include_bytes!("../../../../../src/foundation/networking/rustls/src/testdata/cert-google.2.der"),
             ],
         );
         b.iter(|| ctx.verify_once());
@@ -134,8 +134,8 @@ mod benchmarks {
             provider::default_provider(),
             "news.ycombinator.com",
             &[
-                include_bytes!("../../../../../src/foundation/rustls/src/testdata/cert-hn.0.der"),
-                include_bytes!("../../../../../src/foundation/rustls/src/testdata/cert-hn.1.der"),
+                include_bytes!("../../../../../src/foundation/networking/rustls/src/testdata/cert-hn.0.der"),
+                include_bytes!("../../../../../src/foundation/networking/rustls/src/testdata/cert-hn.1.der"),
             ],
         );
         b.iter(|| ctx.verify_once());
@@ -147,8 +147,8 @@ mod benchmarks {
             provider::default_provider(),
             "stackoverflow.com",
             &[
-                include_bytes!("../../../../../src/foundation/rustls/src/testdata/cert-stackoverflow.0.der"),
-                include_bytes!("../../../../../src/foundation/rustls/src/testdata/cert-stackoverflow.1.der"),
+                include_bytes!("../../../../../src/foundation/networking/rustls/src/testdata/cert-stackoverflow.0.der"),
+                include_bytes!("../../../../../src/foundation/networking/rustls/src/testdata/cert-stackoverflow.1.der"),
             ],
         );
         b.iter(|| ctx.verify_once());
@@ -160,9 +160,9 @@ mod benchmarks {
             provider::default_provider(),
             "duckduckgo.com",
             &[
-                include_bytes!("../../../../../src/foundation/rustls/src/testdata/cert-duckduckgo.0.der"),
-                include_bytes!("../../../../../src/foundation/rustls/src/testdata/cert-duckduckgo.1.der"),
-                include_bytes!("../../../../../src/foundation/rustls/src/testdata/cert-duckduckgo.2.der"),
+                include_bytes!("../../../../../src/foundation/networking/rustls/src/testdata/cert-duckduckgo.0.der"),
+                include_bytes!("../../../../../src/foundation/networking/rustls/src/testdata/cert-duckduckgo.1.der"),
+                include_bytes!("../../../../../src/foundation/networking/rustls/src/testdata/cert-duckduckgo.2.der"),
             ],
         );
         b.iter(|| ctx.verify_once());
@@ -174,8 +174,8 @@ mod benchmarks {
             provider::default_provider(),
             "www.rust-lang.org",
             &[
-                include_bytes!("../../../../../src/foundation/rustls/src/testdata/cert-rustlang.0.der"),
-                include_bytes!("../../../../../src/foundation/rustls/src/testdata/cert-rustlang.1.der"),
+                include_bytes!("../../../../../src/foundation/networking/rustls/src/testdata/cert-rustlang.0.der"),
+                include_bytes!("../../../../../src/foundation/networking/rustls/src/testdata/cert-rustlang.1.der"),
             ],
         );
         b.iter(|| ctx.verify_once());
@@ -187,8 +187,8 @@ mod benchmarks {
             provider::default_provider(),
             "www.washingtonpost.com",
             &[
-                include_bytes!("../../../../../src/foundation/rustls/src/testdata/cert-wapo.0.der"),
-                include_bytes!("../../../../../src/foundation/rustls/src/testdata/cert-wapo.1.der"),
+                include_bytes!("../../../../../src/foundation/networking/rustls/src/testdata/cert-wapo.0.der"),
+                include_bytes!("../../../../../src/foundation/networking/rustls/src/testdata/cert-wapo.1.der"),
             ],
         );
         b.iter(|| ctx.verify_once());

@@ -5,6 +5,7 @@ import tomllib
 import unittest
 
 ROOT = Path(__file__).resolve().parents[2]
+foundation_path = runpy.run_path(str(ROOT / '.github/scripts/foundation_paths.py'))['package_path']
 GATE = runpy.run_path(str(ROOT / '.github/scripts/check-futures-consolidation.py'))
 
 
@@ -30,7 +31,7 @@ class FuturesConsolidationTests(unittest.TestCase):
             with self.subTest(path=path):
                 self.assertTrue((ROOT / path).is_file())
                 self.assertTrue(reasons)
-        self.assertFalse(any((ROOT / 'src/foundation' / name).exists() for name in GATE['ABSORBED']))
+        self.assertFalse(any((foundation_path(ROOT, name)).exists() for name in GATE['ABSORBED']))
 
     def test_empty_or_partial_retained_run_is_rejected(self):
         for output in ('', 'test result: ok. 0 passed; 0 failed; 0 ignored\n' * 31,
@@ -48,8 +49,8 @@ class FuturesConsolidationTests(unittest.TestCase):
         self.assertIn('["cargo", "check", "--locked", "--offline", "--manifest-path", str(all_features)', source)
 
     def test_proc_macro_stays_a_host_boundary(self):
-        macro = tomllib.loads((ROOT / 'src/foundation/futures-macro/Cargo.toml').read_text())
-        library = tomllib.loads((ROOT / 'src/foundation/futures/Cargo.toml').read_text())
+        macro = tomllib.loads((ROOT / 'src/foundation/concurrency/futures-macro/Cargo.toml').read_text())
+        library = tomllib.loads((ROOT / 'src/foundation/concurrency/futures/Cargo.toml').read_text())
         self.assertTrue(macro['lib']['proc-macro'])
         self.assertNotIn('futures', macro['dependencies'])
         self.assertTrue(library['dependencies']['futures-macro']['optional'])

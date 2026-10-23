@@ -29,7 +29,7 @@ class SerializationConsolidationTests(unittest.TestCase):
         dependencies = manifest['dependencies']
         self.assertNotIn('url', dependencies)
         url = dependencies['url-encoding']
-        self.assertEqual(Path(url['path']), ROOT / 'src/foundation/url-encoding')
+        self.assertEqual(Path(url['path']), ROOT / 'src/foundation/networking/url-encoding')
         self.assertFalse(url['default-features'])
         self.assertEqual(url['features'], ['parser', 'std', 'serialization'])
         for name, dependency in dependencies.items():
@@ -49,7 +49,7 @@ class SerializationConsolidationTests(unittest.TestCase):
 
     def test_build_script_and_minimum_version_fail_closed(self):
         with tempfile.TemporaryDirectory() as folder:
-            root=Path(folder); package=root/'src/foundation/data-serialization'
+            root=Path(folder); package=root/'src/foundation/data-storage/data-serialization'
             (package/'src').mkdir(parents=True)
             manifest=package/'Cargo.toml'
             manifest.write_text('[package]\nbuild=false\nrust-version="1.99"\n')

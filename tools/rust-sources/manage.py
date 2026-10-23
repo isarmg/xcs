@@ -23,6 +23,7 @@ import source_relocation
 import benchmark_relocation
 import dependency_edges
 import source_trimming
+import source_layout
 
 ROOT = Path(__file__).resolve().parents[2]
 CATALOG = "compliance/rust-sources.json"
@@ -386,11 +387,22 @@ def verify_source_paths(root, metadata):
 def source_directories(root, policy):
     result = set(policy.get("integrated_sources", ["src/macros", "tools/web-bindings"]))
     foundation = root / "src/foundation"
+    layout = source_layout.load(root)
     if foundation.exists():
-        for path in foundation.iterdir():
-            if path.is_symlink() or not path.is_dir() or not (path / "Cargo.toml").is_file():
-                raise ValueError(f"invalid foundation source directory: {path}")
-            result.add(path.relative_to(root).as_posix())
+        categories = set(layout.receipt['categories']) if layout else None
+        children = list(foundation.iterdir())
+        if categories is not None and {p.name for p in children} != categories:
+            raise ValueError('foundation category inventory drift')
+        for entry in children:
+            if entry.is_symlink() or not entry.is_dir():
+                raise ValueError(f"invalid foundation source directory: {entry}")
+            packages = list(entry.iterdir()) if categories is not None else [entry]
+            for path in packages:
+                if path.is_symlink() or not path.is_dir() or not (path / "Cargo.toml").is_file():
+                    raise ValueError(f"invalid foundation source directory: {path}")
+                result.add(path.relative_to(root).as_posix())
+        if layout and not {p for p in result if p.startswith('src/foundation/')} <= set(layout.reverse):
+            raise ValueError('foundation grouped source inventory drift')
     return result
 
 
@@ -587,6 +599,7 @@ def upgrade_source_prefixes(root, item):
     return tuple(prefixes)
 
 
+@source_layout.historical_catalog
 def superseded_sources(root, catalog, records, check_manifests=True):
     """Preserve prior source receipts and immutable same-path upgrade chains."""
     superseded = catalog.get("superseded", {})
@@ -637,7 +650,7 @@ def superseded_sources(root, catalog, records, check_manifests=True):
         if current["version"] != current["upstream"]["version"]:
             raise ValueError(f"upgraded source version drift: {relative}")
         if check_manifests and relative in catalog["packages"]:
-            manifest = tomllib.loads((safe_path(root, relative) / "Cargo.toml").read_text(encoding="utf-8"))["package"]
+            manifest = tomllib.loads(source_layout.read(root, relative + "/Cargo.toml").decode("utf-8"))["package"]
             if manifest["name"] != current["name"] or manifest["version"] != current["version"]:
                 raise ValueError(f"upgraded source manifest identity drift: {relative}")
     return superseded
@@ -670,7 +683,7 @@ def upgrade_plan(root, previous, plan, records):
             raise ValueError(f"upgrade requires a new same-package origin: {relative}")
         if not isinstance(item.get("reason"), str) or not item["reason"].strip():
             raise ValueError(f"source upgrade requires a reason: {relative}")
-        manifest = tomllib.loads((safe_path(root, relative) / "Cargo.toml").read_text(encoding="utf-8"))["package"]
+        manifest = tomllib.loads(source_layout.read(root, relative + "/Cargo.toml").decode("utf-8"))["package"]
         if manifest["name"] != before["name"] or manifest["version"] != record["upstream"]["version"]:
             raise ValueError(f"upgrade manifest does not match successor identity: {relative}")
         prefixes = upgrade_source_prefixes(root, item)
@@ -697,10 +710,28 @@ def upgrade_plan(root, previous, plan, records):
     return packages, superseded
 
 
-def refresh(root, retire_plan=None, upgrade_plan_data=None, rename_plan_data=None, move_plan_data=None, consolidate_plan_data=None, relocate_benchmarks=False, trim_plan_data=None):
+def refresh(root, retire_plan=None, upgrade_plan_data=None, rename_plan_data=None, move_plan_data=None, consolidate_plan_data=None, relocate_benchmarks=False, trim_plan_data=None, layout_plan_data=None):
+    previous_raw = (root / CATALOG).read_bytes()
+    previous = json.loads(previous_raw)
+    if layout_plan_data is not None:
+        if any(p is not None for p in (retire_plan, upgrade_plan_data, rename_plan_data, move_plan_data, consolidate_plan_data, trim_plan_data)) or relocate_benchmarks:
+            raise ValueError('layout requires a separate reviewed transition')
+        layout, previous = source_layout.prepare(root, previous, layout_plan_data, digest(previous_raw))
+    else:
+        layout = source_layout.load(root, previous)
+    if layout is not None and layout_plan_data is None:
+        layout.require_supported_plan(previous, retirement=retire_plan, moves=move_plan_data,
+                                      rename=rename_plan_data, upgrade=upgrade_plan_data,
+                                      consolidation=consolidate_plan_data, trim=trim_plan_data)
+    with source_layout.activate(layout):
+        return _refresh(root, retire_plan, upgrade_plan_data, rename_plan_data, move_plan_data,
+                        consolidate_plan_data, relocate_benchmarks, trim_plan_data, previous)
+
+
+def _refresh(root, retire_plan=None, upgrade_plan_data=None, rename_plan_data=None, move_plan_data=None, consolidate_plan_data=None, relocate_benchmarks=False, trim_plan_data=None, previous=None):
     policy = read_json(root / POLICY)
     structure(root, policy)
-    previous = read_json(root / CATALOG)
+    previous = previous if previous is not None else read_json(root / CATALOG)
     if previous.get("initial_test_relocation_sha256") not in (None, source_relocation.RECEIPT_SHA256):
         raise ValueError("initial test relocation history identity drift")
     if relocate_benchmarks and any(p is not None for p in (retire_plan, upgrade_plan_data, rename_plan_data, move_plan_data, consolidate_plan_data, trim_plan_data)):
@@ -832,10 +863,14 @@ def refresh(root, retire_plan=None, upgrade_plan_data=None, rename_plan_data=Non
                    upstream_identities=[record["upstream"] for record in records.values()], merges=merges,
                    retired=retired, retired_records_sha256=origin_hashes(retired),
                    superseded=superseded, superseded_records_sha256=origin_hashes(superseded))
+    if source_layout.KEY in previous:
+        catalog[source_layout.KEY] = previous[source_layout.KEY]
     if external or external_tests.has_history(previous):
         catalog["initial_test_relocation_sha256"] = source_relocation.RECEIPT_SHA256
     if benchmark_receipt is not None:
         catalog[benchmark_relocation.KEY] = benchmark_relocation.RECEIPT
+    if source_layout.KEY in catalog:
+        source_layout.load(root).check_current_identity(catalog)
     source_trimming.check_append_only(previous, catalog)
     source_trimming.validate(root, catalog)
     benchmark_relocation.validate(root, catalog, files)
@@ -846,9 +881,11 @@ def refresh(root, retire_plan=None, upgrade_plan_data=None, rename_plan_data=Non
     retired_sources(root, catalog, records)
     superseded_sources(root, catalog, records)
     verify_origin_coverage(catalog, records)
-    external_tests.check_removed(source_moves.remap_previous(source_naming.remap_previous(source_consolidation.remap_previous_packages(previous_owners, consolidated_now), renames), moved_now), source_owners(packages, merges), external, renames, trim_grants)
+    external_tests.check_removed(source_moves.remap_previous(source_naming.remap_previous(source_consolidation.remap_previous_packages(previous_owners, consolidated_now), renames), moved_now), source_owners(packages, merges), external, renames, trim_grants, root=root)
     verify_retained_closure(catalog, policy)
-    (root / CATALOG).write_text(json.dumps(catalog, ensure_ascii=False, indent=2, sort_keys=True) + "\n", encoding="utf-8", newline="\n")
+    catalog_bytes = (json.dumps(catalog, ensure_ascii=False, indent=2, sort_keys=True) + "\n").encode("utf-8")
+    (root / CATALOG).write_bytes(catalog_bytes)
+    source_layout.written_catalog(root, catalog_bytes)
     (root / DOC).write_text(document(catalog, policy), encoding="utf-8", newline="\n")
     print(f"Recorded {len(packages)} active source trees, {len(retired)} retired and {len(superseded)} superseded sources and {len(catalog['resolutions'])} root-workspace closure profiles.")
 
@@ -860,7 +897,7 @@ def cell(value):
 def document(catalog, policy):
     lines = ["# Rust 第三方源码来源与使用清单", "",
              "本仓库只有根 Git 仓库、根 Cargo workspace 与根 Cargo.lock。活动 Rust 依赖全部通过仓库内 path 连接；基础实现位于 src/foundation，界面内核与命名规范化实现分别整合进 src/interface 与 src/naming。没有独立第三方工作区或独立锁文件。", "",
-             "精确来源及原始逐文件摘要见 compliance/provenance/origins.json；当前源码逐文件摘要、单锁文件及各目标闭包见 compliance/rust-sources.json；法律材料统一见 compliance/NOTICE.md 和 compliance/licenses。集中管理不改变各上游许可，也不把改造代码全部重新许可为根项目许可。", "",
+             "foundation 的 219 个包按职能归入 12 个分类目录，分类不减少包数量，也不改变 Cargo 名称、版本或上游身份；分类边界见 docs/architecture/foundation-groups.md。独立布局收据记录精确旧根到新根映射及可逆路径改写，原始测试、重命名、合并、裁剪等历史收据保持原样。精确来源及原始逐文件摘要见 compliance/provenance/origins.json；当前源码逐文件摘要、单锁文件及各目标闭包见 compliance/rust-sources.json；法律材料统一见 compliance/NOTICE.md 和 compliance/licenses。集中管理不改变各上游许可，也不把改造代码全部重新许可为根项目许可。", "",
              "runtime 是统一工作区特性图中 normal 边可达的运行候选；compile 包括 build/proc-macro 子图及维护工具。Cargo 先统一整个 workspace 的 features，再从各登记入口遍历；直接 dev 边虽被跳过，其他成员或开发依赖启用的特性仍可能间接扩大 normal/build 可达集合。这是保守可达超集，不是精确单入口运行时闭包或最终链接证明，不能单独据此判定源码可删除。元数据也不替代实际浏览器/SMB 验收或安全审计。每个活动源码身份必须至少进入一个受支持入口/目标的保守超集，移除身份仍须显式退役并保留来源证据。工具链及既有 Samba/SQLite/系统 SDK 管理边界保持独立。", "",
              "修改后显式执行 `python3 tools/rust-sources/manage.py refresh`，审查源码、来源清单与文档差异，再执行 `python3 tools/rust-sources/manage.py verify --metadata`；verify 不接受新哈希。删除依赖必须另提供经复核的 `refresh --retire-plan PLAN.json`，保存已移除实现的最后源码摘要及原因；普通 refresh 拒绝意外丢失目录或改写退役记录。原始身份与法律材料继续保存，不因退役而删除。原始发布包重建工具只向仓库外独立复核目录输出，不覆盖活动源码。", "",
              "同目录上游升级必须追加新的原始发布包及集中材料，并使用经复核的 `refresh --upgrade-plan PLAN.json`。计划 schema 为 1，packages 每项包含 directory、与上次活动记录完全相同的 package、successor_origin_directory、reason 及非空 source_prefixes（例如 `[\"src/\"]`）。升级时逐文件校验这些完整前缀下的源码与新发布包完全一致，不能仅提升版本号；路径清单、缺失、新增和内容差异均拒绝。schema 4 的 superseded 以旧 origin_directory 为键，保留原 package、后继来源、原因和已校验前缀，superseded_records_sha256 固定其摘要。连续升级保留不可改写的直接后继链，最终指向同目录的当前身份或显式退役记录。升级后有意的本地源码修改仍需常规 refresh，不改写上游原始收据。", "",
@@ -973,6 +1010,7 @@ def verify_retained_closure(catalog, policy):
             raise ValueError(f"retained source outside supported entry closures: {sorted(retained - reachable)}")
 
 
+@source_layout.operation
 def verify(root, metadata=False):
     catalog, policy = read_json(root / CATALOG), read_json(root / POLICY)
     if catalog.get("initial_test_relocation_sha256") not in (None, source_relocation.RECEIPT_SHA256):
@@ -1046,6 +1084,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("command", choices=("refresh", "verify"))
     parser.add_argument("--metadata", action="store_true")
+    parser.add_argument("--layout-plan", type=Path, help="explicit identity-preserving foundation root layout; refresh only")
     parser.add_argument("--trim-plan", type=Path, help="explicit reviewed per-file production source removal; refresh only")
     parser.add_argument("--retire-plan", type=Path, help="explicit reviewed removal plan; refresh only")
     parser.add_argument("--upgrade-plan", type=Path, help="explicit reviewed upstream replacement plan; refresh only")
@@ -1055,7 +1094,7 @@ def main():
     parser.add_argument("--relocate-benchmarks", action="store_true", help="install the pinned 32-file post-consolidation benchmark relocation; refresh only")
     arguments = parser.parse_args()
     try:
-        if (arguments.trim_plan or arguments.retire_plan or arguments.upgrade_plan or arguments.rename_plan or arguments.move_plan or arguments.consolidate_plan or arguments.relocate_benchmarks) and arguments.command != "refresh":
+        if (arguments.layout_plan or arguments.trim_plan or arguments.retire_plan or arguments.upgrade_plan or arguments.rename_plan or arguments.move_plan or arguments.consolidate_plan or arguments.relocate_benchmarks) and arguments.command != "refresh":
             raise ValueError("--trim-plan, --retire-plan, --upgrade-plan, --rename-plan, --move-plan, --consolidate-plan and --relocate-benchmarks are only accepted by refresh")
         (refresh(ROOT, read_json(arguments.retire_plan) if arguments.retire_plan else None,
                  read_json(arguments.upgrade_plan) if arguments.upgrade_plan else None,
@@ -1063,6 +1102,7 @@ def main():
                  read_json(arguments.move_plan) if arguments.move_plan else None,
                  read_json(arguments.consolidate_plan) if arguments.consolidate_plan else None,
                  trim_plan_data=read_json(arguments.trim_plan) if arguments.trim_plan else None,
+                 layout_plan_data=read_json(arguments.layout_plan) if arguments.layout_plan else None,
                  **({'relocate_benchmarks': True} if arguments.relocate_benchmarks else {}))
          if arguments.command == "refresh" else verify(ROOT, arguments.metadata))
     except (ValueError, OSError, KeyError, TypeError) as error:

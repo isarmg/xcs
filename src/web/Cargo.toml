@@ -11,14 +11,14 @@ crate-type = ["cdylib", "rlib"]
 web-interface = { path = "../interface" }
 storage-contract = { path = "../contract" }
 name-policy = { path = "../naming" }
-system-entropy = { version = "0.4", features = ["wasm_js"], path = "../foundation/system-entropy"}
-uuid = { version = "1", features = ["js"], path = "../foundation/uuid"}
-json-codec = {version = "1", path = "../foundation/json-codec"}
-wasm-bindgen = {version = "=0.2.129", path = "../foundation/wasm-bindgen"}
-js-sys = {version = "=0.3.106", path = "../foundation/js-sys"}
-gloo-timers = { version = "0.3", path = "../foundation/gloo-timers" }
-send_wrapper = {version = "0.6", path = "../foundation/send_wrapper"}
-web-sys = { version = "=0.3.106", features = ["Window", "Document", "Element", "HtmlElement", "HtmlInputElement", "Crypto", "AbortController", "AbortSignal", "Request", "RequestInit", "RequestMode", "RequestCredentials", "RequestRedirect", "Response", "ReadableStream", "ReadableStreamDefaultReader", "Headers", "UrlSearchParams", "Storage", "Event", "MouseEvent", "SubmitEvent", "console"], path = "../foundation/web-sys"}
+system-entropy = { version = "0.4", features = ["wasm_js"], path = "../foundation/cryptography/system-entropy"}
+uuid = { version = "1", features = ["js"], path = "../foundation/core-types/uuid"}
+json-codec = {version = "1", path = "../foundation/data-storage/json-codec"}
+wasm-bindgen = {version = "=0.2.129", path = "../foundation/web-runtime/wasm-bindgen"}
+js-sys = {version = "=0.3.106", path = "../foundation/web-runtime/js-sys"}
+gloo-timers = { version = "0.3", path = "../foundation/web-runtime/gloo-timers" }
+send_wrapper = {version = "0.6", path = "../foundation/concurrency/send_wrapper"}
+web-sys = { version = "=0.3.106", features = ["Window", "Document", "Element", "HtmlElement", "HtmlInputElement", "Crypto", "AbortController", "AbortSignal", "Request", "RequestInit", "RequestMode", "RequestCredentials", "RequestRedirect", "Response", "ReadableStream", "ReadableStreamDefaultReader", "Headers", "UrlSearchParams", "Storage", "Event", "MouseEvent", "SubmitEvent", "console"], path = "../foundation/web-runtime/web-sys"}
 
 [lints.rust]
 unsafe_code = "forbid"

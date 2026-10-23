@@ -7,11 +7,11 @@ license.workspace = true
 description = "Portable ZXS administrator credential and browser admission primitives"
 
 [dependencies]
-argon2 = { version = "0.5.3", features = ["std"], path = "../foundation/argon2"}
-base64 = {version = "0.23.1", path = "../foundation/base64"}
-system-entropy = {version = "0.4", path = "../foundation/system-entropy"}
-hmac = {version = "0.13", path = "../foundation/hmac"}
+argon2 = { version = "0.5.3", features = ["std"], path = "../foundation/cryptography/argon2"}
+base64 = {version = "0.23.1", path = "../foundation/data-storage/base64"}
+system-entropy = {version = "0.4", path = "../foundation/cryptography/system-entropy"}
+hmac = {version = "0.13", path = "../foundation/cryptography/hmac"}
 json-codec.workspace = true
-sha2 = {version = "0.11", path = "../foundation/sha2"}
-subtle = {version = "2.6", path = "../foundation/subtle"}
+sha2 = {version = "0.11", path = "../foundation/cryptography/sha2"}
+subtle = {version = "2.6", path = "../foundation/cryptography/subtle"}
 error-definition.workspace = true

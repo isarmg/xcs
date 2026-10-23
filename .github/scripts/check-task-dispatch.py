@@ -21,12 +21,12 @@ def run(work, *args, minimum_tests=0):
 
 
 def prepare(work, features, tests):
-    dependencies = f'task-dispatch={{path={json.dumps(str(ROOT / "src/foundation/task-dispatch"))},features={json.dumps(features)}}}\n'
+    dependencies = f'task-dispatch={{path={json.dumps(str(ROOT / "src/foundation/concurrency/task-dispatch"))},features={json.dumps(features)}}}\n'
     if 'tokio' in features:
-        dependencies += f'tokio={{path={json.dumps(str(ROOT / "src/foundation/tokio"))},default-features=false,features=["rt","sync"]}}\n'
+        dependencies += f'tokio={{path={json.dumps(str(ROOT / "src/foundation/concurrency/tokio"))},default-features=false,features=["rt","sync"]}}\n'
     if 'wasm-bindgen' in features:
-        dependencies += f'js-sys={{path={json.dumps(str(ROOT / "src/foundation/js-sys"))},default-features=false,features=["std"]}}\n'
-        dependencies += f'wasm-bindgen={{path={json.dumps(str(ROOT / "src/foundation/wasm-bindgen"))}}}\n'
+        dependencies += f'js-sys={{path={json.dumps(str(ROOT / "src/foundation/web-runtime/js-sys"))},default-features=false,features=["std"]}}\n'
+        dependencies += f'wasm-bindgen={{path={json.dumps(str(ROOT / "src/foundation/web-runtime/wasm-bindgen"))}}}\n'
         (work / 'src/lib.rs').write_text('use wasm_bindgen::prelude::*;\n' + (ROOT / 'test/task-dispatch/browser.rs').read_text())
     else:
         (work / 'src/lib.rs').write_text('')

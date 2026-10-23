@@ -17,6 +17,7 @@ import re
 import tomllib
 
 import external_tests
+import source_layout
 import source_history_chain
 import source_consolidation_chain as chain
 
@@ -354,7 +355,8 @@ def _absence(root, record):
 
 
 def _manifest(root, record, primary):
-    directory = _foundation(root, record['destination_directory'])
+    _foundation(root, record['destination_directory'])
+    directory = source_layout.physical(root, record['destination_directory'])
     _safe(root, record['destination_directory'] + '/Cargo.toml')
     try:
         manifest = tomllib.loads((directory / 'Cargo.toml').read_text(encoding='utf-8'))['package']
@@ -397,6 +399,7 @@ def _stable(before, after):
     return all((key in before) == (key in after) and before.get(key) == after.get(key) for key in STABLE)
 
 
+@source_layout.historical_catalog
 def validate_history(root, catalog, check_manifests=True, validate_external=None):
     """Validate historical proofs and current membership, not freeze old bytes."""
     root = Path(root)

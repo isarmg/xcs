@@ -34,7 +34,7 @@ class CryptoConsolidationTests(unittest.TestCase):
                     self.assertIn(feature, features)
 
     def test_blake3_feature_contract_is_preserved(self):
-        component = tomllib.loads((ROOT / 'src/foundation/blake3/Cargo.toml').read_text())
+        component = tomllib.loads((ROOT / 'src/foundation/cryptography/blake3/Cargo.toml').read_text())
         self.assertNotIn('digest', component['features'])
         self.assertEqual(component['features']['cryptographic-core'], ['dep:cryptographic-core'])
         self.assertEqual(component['features']['traits-preview'], ['dep:cryptographic-core'])
@@ -87,7 +87,7 @@ class CryptoConsolidationTests(unittest.TestCase):
             if directory.endswith('/digest-0.10.7'):
                 matches = [m for m in catalog['merges'] if m['origin_directory'] == package['origin_directory']]
                 self.assertEqual(len(matches), 1)
-                self.assertEqual(matches[0]['directory'], 'src/foundation/blake2')
+                self.assertEqual(matches[0]['directory'], 'src/foundation/cryptography/blake2')
                 self.assertEqual(matches[0]['upstream'], package['upstream'])
                 self.assertEqual(matches[0]['merge_receipt']['directory'], directory)
                 self.assertEqual(matches[0]['merge_receipt']['files_sha256'], package['files_sha256'])

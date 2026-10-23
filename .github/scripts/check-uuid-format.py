@@ -36,7 +36,7 @@ edition = "2021"
 uuid-simd = { path = "src/foundation/uuid-simd", default-features = false, features = ["std", "detect"] }
 ''')
         shutil.copy(ROOT / 'test/schema-validation/uuid_format_probe.rs', work / 'src/main.rs')
-        shutil.copy(ROOT / 'src/foundation/schema-validation/src/validation/keywords/uuid_format.rs', work / 'src/production.rs')
+        shutil.copy(ROOT / 'src/foundation/data-storage/schema-validation/src/validation/keywords/uuid_format.rs', work / 'src/production.rs')
         subprocess.run(['rustc', '--edition=2021', '--crate-type=lib', '--target', 'wasm32-unknown-unknown',
                         str(work / 'src/production.rs'), '-o', str(work / 'uuid-format.wasm.rlib')], check=True)
         env = dict(os.environ, CARGO_BUILD_JOBS='1', CARGO_INCREMENTAL='0', CARGO_PROFILE_RELEASE_DEBUG='0')

@@ -7,7 +7,10 @@ from pathlib import Path
 import subprocess
 import tempfile
 
+import runpy
+
 ROOT = Path(__file__).resolve().parents[2]
+foundation_path = runpy.run_path(str(ROOT / '.github/scripts/foundation_paths.py'))['package_path']
 FIXTURES = ROOT / 'test/async-notification'
 
 
@@ -27,7 +30,7 @@ def run(args, directory, expected=None, minimum_tests=None):
 
 
 def dependency(name, features=()):
-    return f'{name}={{path={json.dumps(str(ROOT / "src/foundation" / name))},default-features=false,features={json.dumps(list(features))}}}\n'
+    return f'{name}={{path={json.dumps(str(foundation_path(ROOT, name)))},default-features=false,features={json.dumps(list(features))}}}\n'
 
 
 def prepare(work, dependencies, source, tests=()):

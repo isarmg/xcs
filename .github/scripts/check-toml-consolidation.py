@@ -10,6 +10,11 @@ import sys
 import tomllib
 from pathlib import Path
 
+import runpy
+foundation_paths = runpy.run_path(str(Path(__file__).with_name('foundation_paths.py')))
+foundation_path = foundation_paths['package_path']
+rebase_dependency_paths = foundation_paths['rebase_dependency_paths']
+
 FEATURE_SETS = ((), ('serialization',), ('write',), ('write', 'alloc'), ('edit',),
                 ('parse',), ('display',), ('serialization', 'parse'),
                 ('serialization', 'display'), ('preserve_order',),
@@ -28,8 +33,8 @@ def command(operation, *args):
 
 def check_structure(root):
     for name in REMOVED:
-        assert not (root / 'src/foundation' / name).exists(), f'old source root: {name}'
-    manifest = tomllib.loads((root / 'src/foundation/toml/Cargo.toml').read_text())
+        assert not (foundation_path(root, name)).exists(), f'old source root: {name}'
+    manifest = tomllib.loads((root / 'src/foundation/data-storage/toml/Cargo.toml').read_text())
     assert manifest['package']['name'] == 'toml'
     assert 'perf' not in manifest['features'], 'missing kstring-backed capability advertised'
     for features in FEATURE_SETS:
@@ -37,7 +42,7 @@ def check_structure(root):
     catalog = json.loads((root / 'compliance/rust-sources.json').read_text())
     origins = {Path(row['origin_directory']).name for row in
                [*catalog['packages'].values(), *catalog.get('merges', [])]
-               if row['directory'] == 'src/foundation/toml'}
+               if row['directory'] == 'src/foundation/data-storage/toml'}
     assert origins == {'toml-0.8.23', 'toml_datetime-0.6.11', 'toml_edit-0.22.27',
                        'toml_write-0.1.2', 'serde_spanned-0.6.9'}, 'lost original source identity'
 
@@ -46,7 +51,7 @@ def fixture(root, directory, features):
     manifest = directory / 'Cargo.toml'
     manifest.write_text('[package]\nname="toml-capability-probe"\nversion="0.0.0"\nedition="2021"\n'
                         '[workspace]\n[dependencies]\ntoml={path='
-                        + json.dumps(str(root / 'src/foundation/toml'))
+                        + json.dumps(str(root / 'src/foundation/data-storage/toml'))
                         + ',default-features=false,features=' + json.dumps(list(features)) + '}\n')
     source = directory / 'src/lib.rs'
     source.parent.mkdir(exist_ok=True)
@@ -96,17 +101,15 @@ def check_retained_tests(root):
     # isolated source copy with its real dev dependencies, not a fake provider.
     with tempfile.TemporaryDirectory(prefix='toml-retained-tests-') as temporary:
         snapshot = Path(temporary)
-        for relative in ('src/foundation/toml', 'test/foundation/toml',
+        for relative in ('src/foundation/data-storage/toml', 'test/foundation/toml',
                          'test/tools/toml', 'docs/components/toml'):
             shutil.copytree(root / relative, snapshot / relative)
-        manifest = snapshot / 'src/foundation/toml/Cargo.toml'
-        source_manifest = root / 'src/foundation/toml/Cargo.toml'
+        manifest = snapshot / 'src/foundation/data-storage/toml/Cargo.toml'
+        source_manifest = root / 'src/foundation/data-storage/toml/Cargo.toml'
         text = manifest.read_text()
         # Only dependency locations are rewritten. Local source/test/doc paths
         # retain the same directory layout and exact original bytes.
-        text = re.sub(r'(?m)^path = "(\.\./[^"\n]+)"$',
-                      lambda match: 'path = ' + json.dumps(str((source_manifest.parent / match[1]).resolve()))
-                      if not match[1].startswith('../../../test/') else match[0], text)
+        text = rebase_dependency_paths(text, source_manifest.parent)
         manifest.write_text(text + '\n[workspace]\n')
         subprocess.run(['cargo', 'generate-lockfile', '--offline', '--manifest-path', str(manifest)],
                        cwd=root, check=True)

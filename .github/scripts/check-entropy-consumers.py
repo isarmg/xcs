@@ -20,8 +20,8 @@ def main():
         # Path identities must track the separately reviewed role-naming change.
         manifest.write_text('[package]\nname="entropy-consumer-regression"\nversion="0.0.0"\nedition="2024"\n'
                             '[workspace]\n[features]\nbrowser=["system-entropy/wasm_js"]\n[dependencies]\n'
-                            f'ahash={{path="{ROOT / "src/foundation/ahash"}"}}\n'
-                            f'system-entropy={{path="{ROOT / "src/foundation/system-entropy"}"}}\n'
+                            f'ahash={{path="{ROOT / "src/foundation/core-types/ahash"}"}}\n'
+                            f'system-entropy={{path="{ROOT / "src/foundation/cryptography/system-entropy"}"}}\n'
                             '[[test]]\nname="isolated_consumer"\n'
                             f'path="{ROOT / "test/ci/fixtures/entropy-fail-closed.rs"}"\n')
         backend['run'](['cargo', 'generate-lockfile', '--offline', '--manifest-path', str(manifest)], env)

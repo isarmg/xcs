@@ -1,5 +1,6 @@
 """Offline guards for authenticated ring regression material and exact test entries."""
 import contextlib
+from copy import deepcopy
 import importlib.util
 import io
 import json
@@ -15,6 +16,15 @@ SPEC.loader.exec_module(checker)
 
 
 class RingMaterials(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        # Proof/style mutations never change repository files. Authenticate the
+        # unchanged source inputs once, and copy before each byte mutation.
+        layout = checker.source_layout.load(checker.ROOT)
+        with checker.source_layout.activate(layout):
+            cls.historical_fixture = staticmethod(checker.historical_sources(checker.ROOT))
+            cls.relocated_fixture = checker.relocated_sources(checker.ROOT)
+
     def verify(self):
         with contextlib.redirect_stdout(io.StringIO()):
             return checker.verify()
@@ -27,7 +37,7 @@ class RingMaterials(unittest.TestCase):
         self.assertIn('Unsigned', proof['commit_verification'])
 
     def mutate_proof(self, mutate, error):
-        historical = checker.historical_sources(checker.ROOT)
+        historical = self.historical_fixture
         proof = json.loads((checker.ROOT / checker.PROOF).read_text())
         mutate(proof)
         with tempfile.TemporaryDirectory() as temporary:
@@ -48,9 +58,9 @@ class RingMaterials(unittest.TestCase):
                     self.verify()
 
     def test_style_patches_reconstruct_original_sources(self):
-        historical = checker.historical_sources(checker.ROOT)
+        historical = self.historical_fixture
         # This test only reads sources; authenticate one local snapshot, not one per patch.
-        relocated = checker.relocated_sources(checker.ROOT)
+        relocated = self.relocated_fixture
         for patch in json.loads((checker.ROOT / checker.STYLE).read_text())['patches']:
             before = historical(checker.RING / patch['path'])
             current = relocated[str(checker.RING / patch['path'])]
@@ -69,7 +79,7 @@ class RingMaterials(unittest.TestCase):
                 self.mutate_style(lambda r: r['patches'][0].update({label + '_sha256': '0' * 64}), 'hash mismatch')
 
     def test_style_rejects_unrecorded_current_source_change(self):
-        current = checker.relocated_sources(checker.ROOT)
+        current = deepcopy(self.relocated_fixture)
         current[str(checker.RING / 'src/testutil.rs')] += b'// unrecorded\n'
         with mock.patch.object(checker, 'relocated_sources', return_value=current):
             with self.assertRaisesRegex(ValueError, 'hash mismatch'):
@@ -141,7 +151,8 @@ class RingMaterials(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temporary:
             target = Path(temporary)
             output = target / 'debug/build/ring-test/out'
-            source = checker.ROOT / checker.RING / 'pregenerated'
+            _, package, _ = checker.current_ring(checker.ROOT)
+            source = checker.ROOT / package['directory'] / 'pregenerated'
             output.mkdir(parents=True)
             for path in source.glob('*x86_64*elf.S'):
                 shutil.copyfile(path, output / path.name)

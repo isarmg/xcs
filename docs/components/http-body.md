@@ -13,7 +13,7 @@
 
 ## 来源与测试
 
-合并来源是 `http-body` 1.1.0 与 `http-body-util` 0.1.5，均为 MIT 许可。原始来源、许可证和版本继续由中央来源目录独立登记。工具源码保存在 `src/foundation/http-body/src/utilities`，测试保存在 `test/foundation/http-body/utilities`；每个测试仍保留其原始来源身份。
+合并来源是 `http-body` 1.1.0 与 `http-body-util` 0.1.5，均为 MIT 许可。原始来源、许可证和版本继续由中央来源目录独立登记。工具源码保存在 `src/foundation/networking/http-body/src/utilities`，测试保存在 `test/foundation/http-body/utilities`；每个测试仍保留其原始来源身份。
 
 维护门禁为 `.github/scripts/check-http-body-consolidation.py`。它验证四种功能集合在 Linux amd64 与浏览器 WASM 下的编译、默认依赖隔离、缺少工具功能时的编译拒绝、保留的单元/集成/文档测试，以及实际 Axum、Hyper、Tower HTTP、Reqwest 消费者。门禁使用临时独立 manifest，不修改产品 manifest 或根锁文件。
 

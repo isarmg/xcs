@@ -58,7 +58,7 @@ mod macros;
 mod common;
 mod repo;
 
-#[path = "../../../../src/foundation/rust-syntax/src/scan_expr.rs"]
+#[path = "../../../../src/foundation/code-generation/rust-syntax/src/scan_expr.rs"]
 mod scan_expr;
 
 #[test]

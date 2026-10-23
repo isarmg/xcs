@@ -6,7 +6,7 @@ from pathlib import Path
 import subprocess
 
 ROOT = Path(__file__).resolve().parents[2]
-MANIFEST = ROOT / 'src/foundation/logging/Cargo.toml'
+MANIFEST = ROOT / 'src/foundation/diagnostics/logging/Cargo.toml'
 
 
 def check():

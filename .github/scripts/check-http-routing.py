@@ -6,11 +6,15 @@ import os
 from pathlib import Path
 import re
 import subprocess
+import sys
 import tempfile
 import tomllib
 ROOT = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(ROOT / 'tools/rust-sources'))
+import source_layout
 BASE_FEATURES = ((), ('http1',), ('json', 'form', 'query', 'macros'), ('tokio', 'http1'), ('default',))
-# Exact existing inactive source evidence, not compiled or exposed APIs.
+# Pinned original inactive source evidence, not compiled or exposed APIs.
+# Current wiring may differ only through the authenticated layout receipt.
 INACTIVE_SOURCES = {
     'src/extract/multipart.rs': '328db82e6b2ecc75a91dffbaa6cb5cefb103048d77926b7010d897f18160ada0',
     'src/extract/ws.rs': '478a826c84392a62d8329552875fed7264257c319fbbb12f187411612d29cdb1',
@@ -19,15 +23,23 @@ INACTIVE_SOURCES = {
 }
 UNSUPPORTED_FEATURES = ('ws', 'multipart', '__private', '__private_docs', 'http2')
 
+@source_layout.operation
 def verify_inactive_sources(root):
-    component = root / 'src/foundation/http-routing'
+    historical = 'src/foundation/http-routing'
+    component = source_layout.physical(root, historical)
     for relative, expected in INACTIVE_SOURCES.items():
         path = component / relative
         for ancestor in (path, *path.parents):
             if ancestor == root: break
             if ancestor.is_symlink():
                 raise ValueError(f'inactive evidence symlink: {relative}')
-        if not path.is_file() or hashlib.sha256(path.read_bytes()).hexdigest() != expected:
+        if not path.is_file():
+            raise ValueError(f'inactive evidence changed or missing: {relative}')
+        try:
+            original = source_layout.read(root, historical + '/' + relative)
+        except (OSError, ValueError) as error:
+            raise ValueError(f'inactive evidence changed or missing: {relative}') from error
+        if hashlib.sha256(original).hexdigest() != expected:
             raise ValueError(f'inactive evidence changed or missing: {relative}')
     manifest = tomllib.loads((component / 'Cargo.toml').read_text())
     if set(UNSUPPORTED_FEATURES) & manifest['features'].keys():
@@ -62,15 +74,15 @@ def main():
         (work / 'rust-toolchain.toml').write_bytes((ROOT / 'rust-toolchain.toml').read_bytes())
         (work/'src/lib.rs').write_text('pub fn router() -> http_routing::Router { http_routing::Router::new() }\n')
         (work/'test/behavior.rs').write_bytes((ROOT/'test/architecture/http-routing/behavior.rs').read_bytes())
-        declared = tuple(sorted(tomllib.loads((ROOT/'src/foundation/http-routing/Cargo.toml').read_text())['features']))
+        declared = tuple(sorted(tomllib.loads((ROOT/'src/foundation/networking/http-routing/Cargo.toml').read_text())['features']))
         wasm = tuple(feature for feature in declared if feature not in {'default', 'tokio'})
         count = 0
         for features in (*BASE_FEATURES, declared, wasm):
             (work/'Cargo.toml').write_text(
                 '[package]\nname="routing-contract"\nversion="0.0.0"\nedition="2021"\n[workspace]\n[dependencies]\n'
-                f'http-routing={{path={json.dumps(str(ROOT/"src/foundation/http-routing"))},default-features=false,features={json.dumps(features)}}}\n'
-                f'service-stack={{path={json.dumps(str(ROOT/"src/foundation/service-stack"))},default-features=false,features=["util"]}}\n'
-                f'http-body={{path={json.dumps(str(ROOT/"src/foundation/http-body"))},features=["utilities"]}}\n'
+                f'http-routing={{path={json.dumps(str(ROOT/"src/foundation/networking/http-routing"))},default-features=false,features={json.dumps(features)}}}\n'
+                f'service-stack={{path={json.dumps(str(ROOT/"src/foundation/networking/service-stack"))},default-features=false,features=["util"]}}\n'
+                f'http-body={{path={json.dumps(str(ROOT/"src/foundation/networking/http-body"))},features=["utilities"]}}\n'
                 '[[test]]\nname="behavior"\npath="test/behavior.rs"\nrequired-features=["http-routing/query","http-routing/macros"]\n')
             run(work,'generate-lockfile')
             metadata=json.loads(run(work,'metadata','--locked','--format-version','1'))

@@ -23,7 +23,7 @@ macro_rules! distrusted_spki {
         (
             $name,
             include_bytes!(concat!(
-                "../../../src/foundation/rustls-webpki/src/data/distrusted/",
+                "../../../src/foundation/networking/rustls-webpki/src/data/distrusted/",
                 $name,
                 ".spki.der"
             )) as &[u8],

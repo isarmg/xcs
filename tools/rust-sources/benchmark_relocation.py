@@ -10,6 +10,7 @@ import json
 import tomllib
 
 import external_tests
+import source_layout
 import source_consolidation
 
 RECEIPT = '8a08cc5b47c335b9e6aa2b7361ab7259fdc394c8dad16c29efb3e90d330ffbbc'
@@ -42,6 +43,7 @@ def read(root):
     return receipt
 
 
+@source_layout.historical_catalog
 def validate(root, catalog, inventory, *, installing=False):
     """Return exact grants only after independently checking the full transaction."""
     relevant = (KEY in catalog or external_tests.safe(root, PATH).exists() or any(directory in catalog.get('packages', {})
@@ -90,13 +92,13 @@ def validate(root, catalog, inventory, *, installing=False):
             for row in item['proposed_external_tests']['files'][len(item['before_external_tests']['files']):]:
                 if owner.get('files', []).count(row) != 1:
                     raise ValueError('benchmark relocation exact retained benchmark row missing')
-        manifest = external_tests.safe(root, directory + '/Cargo.toml').read_bytes()
+        manifest = source_layout.read(root, directory + '/Cargo.toml')
         cargo = tomllib.loads(manifest.decode())
         if ((installing and digest(manifest) != item['manifest_sha256']) or cargo['package'].get('autobenches') is not False or cargo.get('bench')):
             raise ValueError('benchmark relocation must not activate or edit manifests')
         if installing and inventory(external_tests.safe(root, directory)) != after:
             raise ValueError('benchmark relocation production inventory drift or partial move')
-        if external_tests.safe(root, directory + '/' + subtree).exists():
+        if source_layout.physical(root, directory + '/' + subtree).exists():
             raise ValueError('benchmark relocation old source directory remains')
         rows = item['routes']; origins = {p['package']['directory']: p['package'] for p in consolidation['inputs']}
         if len(rows) != count or len({r['source'] for r in rows}) != count or len({r['destination'] for r in rows}) != count:

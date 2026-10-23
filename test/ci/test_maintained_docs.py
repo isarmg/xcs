@@ -22,7 +22,7 @@ class MaintainedDocs(unittest.TestCase):
         self.assertNotIn('本机 zxs → 服务启动 / 初始化', text)
 
     def test_sqlite_type_examples_are_supported_and_compile_checked(self):
-        text = (ROOT / 'src/foundation/sqlite-access/src/query_engine/types/mod.rs').read_text()
+        text = (ROOT / 'src/foundation/data-storage/sqlite-access/src/query_engine/types/mod.rs').read_text()
         for removed in ('query!', 'query_as!', 'PgHasArrayType', '#[sqlx(',
                         '#[derive(sqlite_access::Type)]', 'PostgreSQL', 'postgres'):
             self.assertNotIn(removed, text)
