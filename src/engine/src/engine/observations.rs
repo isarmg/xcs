@@ -13,6 +13,13 @@ pub struct DiskObservationPlan {
     used_bytes: BTreeMap<String, u64>,
 }
 
+/// One non-authoritative observation, never admission for a write.
+pub struct DiskObservation {
+    pub status: DiskStatus,
+    /// Physical total, available and used bytes from the same status probe.
+    pub capacity: Option<(u64, u64, u64)>,
+}
+
 impl Engine {
     pub fn prepare_disk_observation(&self) -> DiskObservationPlan {
         let mut used_bytes: BTreeMap<String, u64> = BTreeMap::new();
@@ -80,17 +87,21 @@ impl DiskObservationPlan {
     /// Observe physical availability using the captured binding configuration.
     pub fn status(&self) -> Result<Vec<DiskStatus>> {
         Ok(self
-            .config
+            .sample()
+            .into_iter()
+            .map(|observation| observation.status)
+            .collect())
+    }
+
+    /// Sample each binding once; returned capacities are observations, not later resamples.
+    pub fn sample(&self) -> Vec<DiskObservation> {
+        self.config
             .disks
             .iter()
             .map(|disk| {
                 let seal = validate_seal(&self.config, disk).ok();
-                let available_bytes = seal
-                    .as_ref()
-                    .and_then(|seal| capacity(disk, seal).ok())
-                    .map(|capacity| capacity.1)
-                    .unwrap_or(0);
-                DiskStatus {
+                let capacity = seal.as_ref().and_then(|seal| capacity(disk, seal).ok());
+                let status = DiskStatus {
                     slot_id: disk.slot_id.clone(),
                     disk_id: disk.disk_id.clone(),
                     level: disk.level,
@@ -98,22 +109,13 @@ impl DiskObservationPlan {
                     online: seal.is_some(),
                     metadata_member: disk.metadata_member,
                     physical_device: seal.map(|seal| seal.physical_device).unwrap_or_default(),
-                    available_bytes,
+                    available_bytes: capacity.map(|capacity| capacity.1).unwrap_or(0),
                     used_bytes: self.used_bytes.get(&disk.slot_id).copied().unwrap_or(0),
                     simulation: self.config.mode == Mode::Development,
-                }
+                };
+                DiskObservation { status, capacity }
             })
-            .collect())
-    }
-
-    pub fn capacity(&self, slot: &str) -> Result<(u64, u64, u64)> {
-        let disk = self
-            .config
-            .disks
-            .iter()
-            .find(|disk| disk.slot_id.eq_ignore_ascii_case(slot))
-            .ok_or_else(|| Error::new("SLOT_NOT_FOUND", "storage slot is not registered"))?;
-        capacity(disk, &validate_seal(&self.config, disk)?)
+            .collect()
     }
 }
 

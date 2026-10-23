@@ -16,15 +16,14 @@ fn missing_member_with_empty_mountpoint_never_reports_host_capacity() {
     std::fs::create_dir(&member.root).unwrap();
     std::fs::set_permissions(&member.root, std::fs::Permissions::from_mode(0o700)).unwrap();
     assert!(rustix::fs::statvfs(&member.root).unwrap().f_blocks > 0);
-    let status = plan
-        .status()
-        .unwrap()
+    let observed = plan
+        .sample()
         .into_iter()
-        .find(|disk| disk.slot_id == member.slot_id)
+        .find(|disk| disk.status.slot_id == member.slot_id)
         .unwrap();
-    assert!(!status.online);
-    assert_eq!(status.available_bytes, 0);
-    assert!(plan.capacity(&member.slot_id).is_err());
+    assert!(!observed.status.online);
+    assert_eq!(observed.status.available_bytes, 0);
+    assert!(observed.capacity.is_none());
     assert!(engine.disk_capacity(&member.slot_id).is_err());
 }
 
@@ -39,24 +38,28 @@ fn observation_owns_snapshot_and_probes_without_engine() {
     let engine = Engine::initialize(&root.path().join("system"), config).unwrap();
     let plan = engine.prepare_disk_observation();
     let expected = engine.disk_status().unwrap();
-    drop(engine);
-    let observed = plan.status().unwrap();
-    assert_eq!(observed.len(), expected.len());
-    for (observed, expected) in observed.iter().zip(&expected) {
-        assert_eq!(observed.slot_id, expected.slot_id);
-        assert_eq!(observed.online, expected.online);
-        assert_eq!(observed.used_bytes, expected.used_bytes);
-        assert!(
-            plan.capacity(&observed.slot_id.to_ascii_lowercase())
-                .unwrap()
-                .0
-                > 0
-        );
-    }
+    assert!(
+        engine
+            .disk_capacity(&expected[0].slot_id.to_ascii_lowercase())
+            .unwrap()
+            .0
+            > 0
+    );
     assert_eq!(
-        plan.capacity("missing").unwrap_err().code(),
+        engine.disk_capacity("missing").unwrap_err().code(),
         "SLOT_NOT_FOUND"
     );
+    drop(engine);
+    let observed = plan.sample();
+    assert_eq!(observed.len(), expected.len());
+    for (observed, expected) in observed.iter().zip(&expected) {
+        assert_eq!(observed.status.slot_id, expected.slot_id);
+        assert_eq!(observed.status.online, expected.online);
+        assert_eq!(observed.status.used_bytes, expected.used_bytes);
+        let capacity = observed.capacity.unwrap();
+        assert!(capacity.0 > 0);
+        assert_eq!(observed.status.available_bytes, capacity.1);
+    }
 }
 
 #[test]

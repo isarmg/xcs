@@ -11,7 +11,7 @@ mod config;
 mod index;
 mod observations;
 mod operations;
-pub use observations::DiskObservationPlan;
+pub use observations::{DiskObservation, DiskObservationPlan};
 pub use operations::{OperationReadPlan, OperationRecord};
 mod publication;
 pub(crate) use publication::DetachedPublication;

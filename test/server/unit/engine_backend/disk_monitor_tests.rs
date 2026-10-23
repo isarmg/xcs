@@ -1,6 +1,47 @@
 use super::*;
 use std::os::unix::fs::PermissionsExt;
 
+fn online_observation(capacity: Option<(u64, u64, u64)>) -> DiskObservation {
+    DiskObservation {
+        status: storage_engine::DiskStatus {
+            slot_id: "P01".into(),
+            disk_id: "disk-1".into(),
+            level: 1,
+            upstream_slot_id: None,
+            online: true,
+            metadata_member: true,
+            physical_device: String::new(),
+            available_bytes: capacity.map(|capacity| capacity.1).unwrap_or(0),
+            used_bytes: 99,
+            simulation: true,
+        },
+        capacity,
+    }
+}
+
+#[test]
+fn online_member_with_unknown_capacity_keeps_unknown_monitoring_fields() {
+    let value = disk_value(online_observation(None));
+    assert_eq!(value["online"], true);
+    for field in [
+        "total_bytes",
+        "available_bytes",
+        "used_bytes",
+        "usage_percent",
+    ] {
+        assert!(value[field].is_null(), "unknown {field} must remain null");
+    }
+}
+
+#[test]
+fn monitoring_uses_sampled_physical_bytes_not_logical_accounting() {
+    let value = disk_value(online_observation(Some((1000, 700, 300))));
+    assert_eq!(value["total_bytes"], "1000");
+    assert_eq!(value["available_bytes"], "700");
+    assert_eq!(value["used_bytes"], "300");
+    assert_eq!(value["usage_percent"], 30.0);
+}
+
 #[test]
 fn unmounted_member_capacity_is_unknown_in_management_payload() {
     let temporary = tempfile::tempdir().unwrap();
