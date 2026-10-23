@@ -264,7 +264,10 @@ def inverse(path, data, row, moves):
 
 
 class Layout:
-    def __init__(self, root, receipt, receipt_id, catalog=None):
+    def __init__(self, root, receipt, receipt_id, catalog=None, pending_upgrade=None):
+        self.pending_upgrade = pending_upgrade
+        self.appended_origins = {}
+        self.upgraded_owners = {}
         self.root = Path(root).resolve()
         self.receipt = receipt
         self.receipt_id = receipt_id
@@ -320,7 +323,10 @@ class Layout:
                 raise ValueError('invalid frozen evidence hash')
             target = safe(self.root, path)
             if not target.is_file() or digest(target.read_bytes()) != expected:
-                raise ValueError('immutable pre-layout evidence drift: ' + path)
+                import source_layout_upgrades
+                if path != source_layout_upgrades.ORIGINS:
+                    raise ValueError('immutable pre-layout evidence drift: ' + path)
+                source_layout_upgrades.frozen_origins(self, expected)
         groups = set()
         for item in row['packages']:
             if not isinstance(item, dict) or set(item) != _PACKAGE_FIELDS:
@@ -415,7 +421,8 @@ class Layout:
         path = str(path)
         for old, item in self.rows.items():
             if (path.startswith(old + '/') and path[len(old) + 1:] not in item['package']['files_sha256']
-                    and path not in self.descendant_files):
+                    and path not in self.descendant_files
+                    and self.moves[old] not in self.upgraded_owners):
                 raise ValueError('unmapped logical path in relocated owner: ' + path)
         target = safe(self.root, self.current_path(path))
         if not target.is_file() or target.stat().st_size > MAX_FILE_BYTES:
@@ -425,7 +432,11 @@ class Layout:
             data = self.corrections.read(path, data)
         if path in self.descendant_files and digest(data) != self.descendant_files[path]:
             raise ValueError('post-layout moved source content differs from authenticated current inventory: ' + path)
-        if path in self.edits:
+        for directory, package in self.upgraded_owners.items():
+            prefix = self.reverse[directory] + '/'
+            if path.startswith(prefix) and package['files_sha256'].get(path[len(prefix):]) != digest(data):
+                raise ValueError('upgraded logical source differs from authenticated current inventory: ' + path)
+        if path in self.edits and not any(path.startswith(self.reverse[d] + '/') for d in self.upgraded_owners):
             data = inverse(path, data, self.edits[path], self.moves)
         return data
 
@@ -501,9 +512,12 @@ class Layout:
             raise ValueError('missing or changed layout catalog binding')
         if self.corrections is not None:
             self.corrections.validate_catalog(catalog)
+        import source_layout_upgrades
+        additions, upgraded, used = source_layout_upgrades.chains(self, catalog)
+        self.upgraded_owners = upgraded
         appended_moves = self._check_appended_moves(catalog)
         for field, expected in self.receipt['history_hashes'].items():
-            value = catalog.get(field)
+            value = source_layout_upgrades.history_value(self, field, catalog.get(field), additions, used)
             if field == 'source_moves' and isinstance(value, dict):
                 value = {key: row for key, row in value.items() if key not in appended_moves}
             if field in ('retired', 'retired_records_sha256') and isinstance(value, dict):
@@ -520,7 +534,7 @@ class Layout:
                 retired_roots.add(new)
                 continue
             if (old in current or not isinstance(package, dict) or package.get('directory') != new
-                    or _stable(before) != _stable(package)):
+                    or (new not in upgraded and _stable(before) != _stable(package))):
                 raise ValueError('layout current package identity drift: ' + old)
             if safe(self.root, old).exists():
                 raise ValueError('old relocated source root has returned: ' + old)
@@ -531,6 +545,8 @@ class Layout:
                     or any(m.get('merged_into') != route(b.get('merged_into', ''), self.moves)
                            or m.get('files_sha256') != package.get('files_sha256') for m, b in zip(merged, row['merged_packages']))):
                 raise ValueError('layout current shared origin coverage drift')
+            if new in upgraded:
+                continue
             before_owner = row['destination_external_tests']
             current_owner = catalog.get('external_tests', {}).get(new)
             if before_owner is None:
@@ -622,10 +638,10 @@ class Layout:
             added.add(key)
         return added
 
-    def require_supported_plan(self, previous, retirement=None, moves=None, **unsupported):
+    def require_supported_plan(self, previous, retirement=None, moves=None, upgrade=None, **unsupported):
         if any(value is not None for value in unsupported.values()):
             raise ValueError('grouped foundation rename, consolidation, upgrade or trim requires an explicit descendant-chain adapter; ordinary refresh, standalone retirement and internal source-file moves are supported')
-        for plan in (retirement, moves):
+        for plan in (retirement, moves, upgrade):
             if plan is None:
                 continue
             if not isinstance(plan, dict) or not isinstance(plan.get('packages'), list):
@@ -753,7 +769,7 @@ def read_receipt(root, receipt_id):
     return json.loads(data)
 
 
-def load(root, catalog=None):
+def load(root, catalog=None, pending_upgrade=None):
     root = Path(root).resolve()
     active = _ACTIVE.get()
     if active is not None and active.root == root and catalog is None:
@@ -767,7 +783,7 @@ def load(root, catalog=None):
         if any(safe(root, receipt_path(key)).exists() for key in PINNED_RECEIPTS):
             raise ValueError('layout receipt present but catalog binding removed')
         return None
-    return Layout(root, read_receipt(root, marker), marker, catalog)
+    return Layout(root, read_receipt(root, marker), marker, catalog, pending_upgrade)
 
 
 @contextmanager

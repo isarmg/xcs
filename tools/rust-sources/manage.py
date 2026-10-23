@@ -644,13 +644,15 @@ def superseded_sources(root, catalog, records, check_manifests=True):
             if next_receipt["package"]["directory"] != relative:
                 raise ValueError(f"superseded source path drift: {origin}")
             successor = next_receipt["successor_origin_directory"]
-        current = catalog["packages"].get(relative) or catalog.get("retired", {}).get(relative)
+        layout = source_layout.load(root)
+        lookup = layout.historical_path(relative) if layout else relative
+        current = catalog["packages"].get(lookup) or catalog.get("retired", {}).get(relative)
         if current is None or current["origin_directory"] != successor:
             raise ValueError(f"superseded source has no current successor: {origin}")
         match_origin(current, records)
         if current["version"] != current["upstream"]["version"]:
             raise ValueError(f"upgraded source version drift: {relative}")
-        if check_manifests and relative in catalog["packages"]:
+        if check_manifests and lookup in catalog["packages"]:
             manifest = tomllib.loads(source_layout.read(root, relative + "/Cargo.toml").decode("utf-8"))["package"]
             if manifest["name"] != current["name"] or manifest["version"] != current["version"]:
                 raise ValueError(f"upgraded source manifest identity drift: {relative}")
@@ -723,7 +725,7 @@ def refresh(root, retire_plan=None, upgrade_plan_data=None, rename_plan_data=Non
             raise ValueError('layout requires a separate reviewed transition')
         layout, previous = source_layout.prepare(root, previous, layout_plan_data, digest(previous_raw))
     else:
-        layout = source_layout.load(root, previous)
+        layout = source_layout.load(root, previous, pending_upgrade=upgrade_plan_data)
     if layout is not None and layout_plan_data is None:
         layout.require_supported_plan(previous, retirement=retire_plan, moves=move_plan_data,
                                       rename=rename_plan_data, upgrade=upgrade_plan_data,

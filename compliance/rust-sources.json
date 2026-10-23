@@ -52060,7 +52060,7 @@
     }
   },
   "external_test_mappings_sha256": {
-    "compliance/external-tests/foundation.json": "9dffa3911beddb479a97ed9fddbe94fdae8ee4691f2bd92c787effce617d604a",
+    "compliance/external-tests/foundation.json": "b22624c89c7d07e0d0cd047854991e0610e28530b2980f92c9361f1b6e6ba868",
     "compliance/external-tests/integrated.json": "c6aaba81aa6d0e5e2004cf185de321a4301ddf7a7bc74ddc462cae92db59c4d6",
     "compliance/external-tests/ring.json": "091524345f2f7aa89bd364032bb4813c3268382af75243f41eedcdca888994f9"
   },
@@ -63470,72 +63470,72 @@
       ]
     },
     "src/foundation/cryptography/ctutils": {
-      "bytes": 30491,
+      "bytes": 31933,
       "directory": "src/foundation/cryptography/ctutils",
       "file_count": 10,
       "files": [
         {
           "path": "test/foundation/ctutils/tests/proptests.rs",
-          "sha256": "682b21f0d9ab787cc07651a22721cf0c41df617f8615d577dcc6bf260fc55876",
-          "source": "src/foundation/ctutils/tests/proptests.rs",
-          "source_sha256_before": "682b21f0d9ab787cc07651a22721cf0c41df617f8615d577dcc6bf260fc55876"
+          "sha256": "3e23eb642799caa9e9ab2116230367908c0a7355277e1843e45a5b134e0b2e5d",
+          "source": "src/foundation/cryptography/ctutils/tests/proptests.rs",
+          "source_sha256_before": "3e23eb642799caa9e9ab2116230367908c0a7355277e1843e45a5b134e0b2e5d"
         },
         {
-          "path": "test/foundation/ctutils/unit/src/choice/tests_622.rs",
-          "sha256": "aae5ba660b4a336a33f0fab4352397fcad38d849c6bd1089e7b5332be624da44",
-          "source": "src/foundation/ctutils/src/choice.rs",
-          "source_sha256_before": "b9b1bcd6cd4d387599e3dbd5eded57913e258c3d169bc59ae02dd0888c2b4774"
+          "path": "test/foundation/ctutils/unit/src/choice/tests_651.rs",
+          "sha256": "75d79632dce6eb29b9bafa7f74f5af6c30e2e313e47d4e7584d60e6ca94bfb38",
+          "source": "src/foundation/cryptography/ctutils/src/choice.rs",
+          "source_sha256_before": "bf7876cc7427f37c7ae8e90582ae9790faae18f428cde4a4c962fd84afcda5c3"
         },
         {
           "path": "test/foundation/ctutils/unit/src/ct_option/tests_663.rs",
           "sha256": "39ffdac5e29166dba28c59eb43b0d5cc89f0577b33f3fd681036c485361aec8a",
-          "source": "src/foundation/ctutils/src/ct_option.rs",
+          "source": "src/foundation/cryptography/ctutils/src/ct_option.rs",
           "source_sha256_before": "6b80ea46e1d8b2dd8c4e64bf3900ae52d14e6ae274d72776ee54f69435fbd897"
         },
         {
           "path": "test/foundation/ctutils/unit/src/traits/ct_eq/tests_245.rs",
           "sha256": "cb0f29963cd1e19cb51ab525ce1314656eb7d425ada2ae92fb2287d6ff594123",
-          "source": "src/foundation/ctutils/src/traits/ct_eq.rs",
+          "source": "src/foundation/cryptography/ctutils/src/traits/ct_eq.rs",
           "source_sha256_before": "dfd4ea492d3f34909fe3028e12055c432ba2ba8e2f5377bc6fdf87a378f32238"
         },
         {
           "path": "test/foundation/ctutils/unit/src/traits/ct_find/tests_86.rs",
           "sha256": "dc73421550e9ab149b457307fd1bab507bc5183c31b0e672e21ca83227c186a2",
-          "source": "src/foundation/ctutils/src/traits/ct_find.rs",
+          "source": "src/foundation/cryptography/ctutils/src/traits/ct_find.rs",
           "source_sha256_before": "90278cf8778db2e8c3f294c6f87e368450711ce815e55ead5d460fe7cd350e87"
         },
         {
-          "path": "test/foundation/ctutils/unit/src/traits/ct_gt/tests_66.rs",
+          "path": "test/foundation/ctutils/unit/src/traits/ct_gt/tests_73.rs",
           "sha256": "fc93d080b37772508faee6b674dfc9b99285d2999fc3d0c44947f8b8862bc3b9",
-          "source": "src/foundation/ctutils/src/traits/ct_gt.rs",
-          "source_sha256_before": "0ec34871e14b01d7fb255acb8ae6994ce2a3ad64cfdc0aa058fe84a5edf2a010"
+          "source": "src/foundation/cryptography/ctutils/src/traits/ct_gt.rs",
+          "source_sha256_before": "a6e5689cedec6dae260e4302ae9dd427348366ac36209daca8be450f3f24e408"
         },
         {
           "path": "test/foundation/ctutils/unit/src/traits/ct_lookup/tests_88.rs",
           "sha256": "343cb3be46817a28180b3817e9a7b7ea743f2566e89b827f29430e0504a7fb49",
-          "source": "src/foundation/ctutils/src/traits/ct_lookup.rs",
+          "source": "src/foundation/cryptography/ctutils/src/traits/ct_lookup.rs",
           "source_sha256_before": "e412cefd054ae4a9c2980ddc937a45331ead46fc917cef1fa7aa886496e17611"
         },
         {
-          "path": "test/foundation/ctutils/unit/src/traits/ct_lt/tests_66.rs",
+          "path": "test/foundation/ctutils/unit/src/traits/ct_lt/tests_73.rs",
           "sha256": "7882f12ab95162cf3f5bd64780460e0853b9a21da81a5e4cd243767a28802454",
-          "source": "src/foundation/ctutils/src/traits/ct_lt.rs",
-          "source_sha256_before": "aaf12b75d2b1bfff206a3ceded7a2904c31b5d769197b9d5eb86bff1e7c1eafd"
+          "source": "src/foundation/cryptography/ctutils/src/traits/ct_lt.rs",
+          "source_sha256_before": "51d9e180c659239cac8d7bfaa150d1de2415f128a8d0f8c3ae3a5ae53f18a764"
         },
         {
           "path": "test/foundation/ctutils/unit/src/traits/ct_neg/tests_105.rs",
           "sha256": "d349a4fcb51cbeaf3c9a8c15e4d04db0bd396edef562ae8426c8ca5dcb4067e0",
-          "source": "src/foundation/ctutils/src/traits/ct_neg.rs",
+          "source": "src/foundation/cryptography/ctutils/src/traits/ct_neg.rs",
           "source_sha256_before": "d22f138b33455971e1a70faf3a25ad67fd43e1c9cac5a5ab8d8ed75e295bef2f"
         },
         {
           "path": "test/foundation/ctutils/unit/src/traits/ct_select/tests_160.rs",
           "sha256": "351c81a9c86c0b3a77b1c9fa02321df7d7fa060f49f8dc19a9a6bd56392b395f",
-          "source": "src/foundation/ctutils/src/traits/ct_select.rs",
+          "source": "src/foundation/cryptography/ctutils/src/traits/ct_select.rs",
           "source_sha256_before": "e0832740578f42dcd6d0234dd6cd022620e9c70f180014291e1de534f78500a8"
         }
       ],
-      "origin_directory": "vendor/rust/ctutils-0.4.3",
+      "origin_directory": "vendor/rust/ctutils-0.4.4",
       "roots": [
         "test/foundation/ctutils"
       ]
@@ -78528,7 +78528,7 @@
   "foundation_layout_receipt": "5f02def35b57751ea9e54a2f1f22fdfebdbd6dda1ed910de7f8fa805f55e281d",
   "initial_test_relocation_sha256": "791ad728a408677dd54ef98e3feaffe825c5fc5670e888440615933d9498ecc3",
   "lockfiles_sha256": {
-    "Cargo.lock": "a6da2cebce7b78247b9a89aea4026cce282a31ec856bca64ce6286c0f72eb98e"
+    "Cargo.lock": "a45ecb87a9e705b33f11ebbcd494c64cfc8d4c995074737e1f6774e769c2ffd6"
   },
   "manifests_sha256": {
     "Cargo.toml": "e8532e986d0c77955d597a4242c22420d9f2832f04d52d68faf344d3091298cb",
@@ -78634,7 +78634,7 @@
     "src/foundation/cryptography/const-oid/Cargo.toml": "5a4d570d893474a77a2b6a104fc82fc2b2228dde1bc1d9e2a3ca4731bf1850eb",
     "src/foundation/cryptography/constant_time_eq/Cargo.toml": "b92a11236e019c570f8134bba052238d7fe8ca4ba74be9fd1f00ca8ddd59acfc",
     "src/foundation/cryptography/cryptographic-core/Cargo.toml": "2d31e9572c4fd5a2588b359a28160b5e98d69d7b1fce5d0743f81fdb728c1dd0",
-    "src/foundation/cryptography/ctutils/Cargo.toml": "76d48b3ac1257123b73ebc5475b55b37d095d2529b48398cfefcb1b01ee37492",
+    "src/foundation/cryptography/ctutils/Cargo.toml": "c2d61caa31818e612863ba162020f468e633046cf5b1bd2973af0602e6dc7896",
     "src/foundation/cryptography/hmac/Cargo.toml": "5cd2f375c9cfe28a4efa4474eec20d0ad2cba88fe3754aac5f2ec19cf803f797",
     "src/foundation/cryptography/password-hash/Cargo.toml": "a0a167e3aee437e1d815804edcb546207bed2e79ac6a8a3a3b2729c70bf4e328",
     "src/foundation/cryptography/random-generator-core/Cargo.toml": "b03a3720272664b386c56d4f587dfc63b88262039575f4746c44b5b3d9e3f970",
@@ -87972,6 +87972,7 @@
     "vendor/rust/crypto-common-0.1.7": "20913e856e63b84162443fcba02571e6aca3d221a5940d192b63a7ec2fe8e6c2",
     "vendor/rust/crypto-common-0.2.2": "0adc706e8c29518e869e7399fe2c6dc799a2ff830febd9837775433ee0d2a297",
     "vendor/rust/ctutils-0.4.3": "baf1fda8124de07bc9a126d8c0b1aee3a1e66ec84c5ef937b7c9555d9774609f",
+    "vendor/rust/ctutils-0.4.4": "869f23c631474ea455891af113d403031e8131a127ab607c52f8fe1bbd08828e",
     "vendor/rust/data-encoding-2.11.1": "4b1674178fdf83c6de38d394a90bdc1e93c45fb0cee985604aafb5e78234babf",
     "vendor/rust/defmt-1.2.0": "e868d4a5a7e6dbe4205cabb4024f2a1718748e340edb57ca55135e670235e5b8",
     "vendor/rust/defmt-macros-1.2.0": "2097700ea977de92fae1e6c22ce5572335bbebe6e71f64c5729d67cf3adcea30",
@@ -88309,7 +88310,7 @@
     "vendor/web/zxs-web-core": "40a8fa17ccce7e3ac0f748ce5d76dedc3d8cd29cc8af9ca37ef19d5bd582df1c",
     "vendor/web/zxs-web-macro": "1f6b0ad8a9ac0ec3310cb65537b4d85032f15787bbd3d2a72133ee93462573c9"
   },
-  "origins_sha256": "55267be7777c4c3403f0518a1d4f56b69d299258a39c79c222d54537af07680e",
+  "origins_sha256": "08233023d1b0f093643267644d33f8bfc5c32771c1f7e7ffeb7e266f2dcf94f9",
   "packages": {
     "src/foundation/code-generation/derive-where": {
       "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。",
@@ -93683,47 +93684,47 @@
       "version": "0.11.3"
     },
     "src/foundation/cryptography/ctutils": {
-      "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。",
+      "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。；上游发布包升级：RUSTSEC-2026-0385: adopt official ctutils 0.4.4 constant-time mask and u128 comparison fixes.",
       "description": "Constant-time utility library with selection and equality testing support targeting cryptographic\napplications. Supports `const fn` where appropriate. Built on the `cmov` crate which provides\narchitecture-specific predication intrinsics. Heavily inspired by the `subtle` crate.",
       "directory": "src/foundation/cryptography/ctutils",
       "files_sha256": {
-        "Cargo.toml": "76d48b3ac1257123b73ebc5475b55b37d095d2529b48398cfefcb1b01ee37492",
-        "src/choice.rs": "a529eec0c75af6e02a529819dd93a71d9535184f1a613039d5368d50a159e40c",
+        "Cargo.toml": "c2d61caa31818e612863ba162020f468e633046cf5b1bd2973af0602e6dc7896",
+        "src/choice.rs": "d24cc5881cf554380e15f2808087a6876d307f6169c61a027a7224f32626f0e3",
         "src/ct_option.rs": "25c13e5442eb49a38b721f30fb806d74bb076d75f36e0971f80d55ceec770454",
-        "src/lib.rs": "4ea07821dfa8612e53ccbd73ff7a4cf0e82553eba5496dff839fee8ab6434558",
+        "src/lib.rs": "7e388eeb8725c4d0c039bd3b03133f368e1f0c80cac5812556e830af2ca80062",
         "src/traits.rs": "12955969208f4ab71f9ed07d84763a3a9915cbcc5544fcf8e947dcb7b8982a25",
         "src/traits/ct_assign.rs": "547c3456c64f429087923c1c8be12a059d623de82be60b6c749254d97a17dcb3",
         "src/traits/ct_eq.rs": "d3bc117853f6644c9d01bd6ed002f0d67d978f3a8ca2477ef835c57486c648cd",
         "src/traits/ct_find.rs": "aa14342b695d14d2676f8e060d7dda35cc6486b6eb0a7146e8121270dcdda9aa",
-        "src/traits/ct_gt.rs": "f5852a3996a9f9861b3a2eb6330251956b7d17f4d5b6109d799344f5777808fa",
+        "src/traits/ct_gt.rs": "ac6cd0d706e9d3f1e02b3998befc331d497aaea3124a319ea3a214ee1d9a7e84",
         "src/traits/ct_lookup.rs": "bbefaebdb4e6aee62d2761463f5ea2242469a2f00a3fb3ae5b05288ae2e0ad34",
-        "src/traits/ct_lt.rs": "7ea857b119908b9237772d2efaaa4f73e4f67a6fab1fba494228f620c0c52a45",
+        "src/traits/ct_lt.rs": "7a67ed9bbf635b4869aff99a41d0b1b1f3ec028d368e7f8725b320d637e26d0e",
         "src/traits/ct_neg.rs": "7845ae3abbed68268c8dd08c755270099f874e8cf761f35997d5d64eaf529b7e",
         "src/traits/ct_select.rs": "419f6338b4ceac18e4349aa156567e19b64d19e7c5937ffe165e3e28d0d649bf"
       },
       "license": "Apache-2.0 OR MIT",
       "license_materials": [
-        "compliance/licenses/upstream/ctutils-0.4.3/LICENSE-APACHE",
-        "compliance/licenses/upstream/ctutils-0.4.3/LICENSE-MIT"
+        "compliance/licenses/upstream/ctutils-0.4.4/LICENSE-APACHE",
+        "compliance/licenses/upstream/ctutils-0.4.4/LICENSE-MIT"
       ],
       "merged_into": "无；通过统一内部源码源接入",
       "name": "ctutils",
-      "origin_directory": "vendor/rust/ctutils-0.4.3",
+      "origin_directory": "vendor/rust/ctutils-0.4.4",
       "repository": "https://github.com/RustCrypto/utils",
       "status": "内部维护源码",
       "upstream": {
-        "archive_sha256": "03bb0e1cc970d482d121d9a1744999169b69a07470b3d644a7894e53fcaf4574",
-        "archive_url": "https://static.crates.io/crates/ctutils/ctutils-0.4.3.crate",
+        "archive_sha256": "12218662ccac37d9714f2191252553d67585b97df8c839cbe49e0bde278dc865",
+        "archive_url": "https://static.crates.io/crates/ctutils/ctutils-0.4.4.crate",
         "name": "ctutils",
-        "version": "0.4.3"
+        "version": "0.4.4"
       },
       "vcs": {
         "git": {
-          "sha1": "3c5aa70180232b57a485a14269adf1380d1807c1"
+          "sha1": "a993c0ba50db6510d8db15a6219572de65115438"
         },
         "path_in_vcs": "ctutils"
       },
-      "version": "0.4.3"
+      "version": "0.4.4"
     },
     "src/foundation/cryptography/hmac": {
       "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。",
@@ -101428,6 +101429,8 @@
     "compliance/licenses/upstream/crypto-common-0.2.2/LICENSE-MIT": "d2e7ec5355c96eeade56b09187ceb48a6a30299da3ce7531a66d3d11405ab963",
     "compliance/licenses/upstream/ctutils-0.4.3/LICENSE-APACHE": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
     "compliance/licenses/upstream/ctutils-0.4.3/LICENSE-MIT": "91585c36e4fb9ab4ca0d3dfac5d66d3c0c62cc51f640a0e1196542daf2267eae",
+    "compliance/licenses/upstream/ctutils-0.4.4/LICENSE-APACHE": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+    "compliance/licenses/upstream/ctutils-0.4.4/LICENSE-MIT": "91585c36e4fb9ab4ca0d3dfac5d66d3c0c62cc51f640a0e1196542daf2267eae",
     "compliance/licenses/upstream/data-encoding-2.11.1/LICENSE": "b68ad1a3367b825447089e1f8d6829b97f47a89eb78d2f4ebaef4672f5606186",
     "compliance/licenses/upstream/defmt-1.2.0/LICENSE-APACHE": "8173d5c29b4f956d532781d2b86e4e30f83e6b7878dce18c919451d6ba707c90",
     "compliance/licenses/upstream/defmt-1.2.0/LICENSE-MIT": "2710a622a896bba67356913d4d0492cab5465f61b2ecce6d880aeb483834fb50",
@@ -102534,7 +102537,7 @@
     "compliance/provenance/merged-components/vendor/web/zxs-web-core/Cargo.toml.txt": "8d893574a8f08f87bddad5443bff82c7640f5dd34a74dbe1f919a76400181fa4",
     "compliance/provenance/merged-components/vendor/web/zxs-web-core/README.md": "5a22efb04cfa9cef41afb32626f8e9637f8284ce71397a6f06aac22bdb64d52e",
     "compliance/provenance/merged-components/vendor/web/zxs-web-core/src/lib.rs": "498acdebfbb39557a40cbb0b28c1dfbd3175ad939795a0421b0fa2dbe8ff609c",
-    "compliance/provenance/origins.json": "55267be7777c4c3403f0518a1d4f56b69d299258a39c79c222d54537af07680e",
+    "compliance/provenance/origins.json": "08233023d1b0f093643267644d33f8bfc5c32771c1f7e7ffeb7e266f2dcf94f9",
     "compliance/provenance/packages/adler2-2.0.1/Cargo.lock.txt": "3e44ced212a9e7ddc0a5450bcebb48ec67f32a058529856458efa36415554e53",
     "compliance/provenance/packages/adler2-2.0.1/Cargo.toml.orig.txt": "077df9094ac86443a4d05305f74782bd237c1f15fa39640463e4c62e9e4a310a",
     "compliance/provenance/packages/adler2-2.0.1/cargo-checksum.json.txt": "1fea7b818407db360ba16278b91e5488d7b78c4e411dd29a2b35a85a6f08026e",
@@ -102859,6 +102862,12 @@
     "compliance/provenance/packages/ctutils-0.4.3/Cargo.toml.orig.txt": "d42cd45c4012987624e631d76ca6462239dda29d52b4c7e3473b51edc99e610a",
     "compliance/provenance/packages/ctutils-0.4.3/cargo-checksum.json.txt": "476994beb0181518b7f2490f3a4dd3e609f2a838a525e3b967415a781a81d635",
     "compliance/provenance/packages/ctutils-0.4.3/cargo_vcs_info.json.txt": "6c504d82941bd1ddc81dccf38df2d798bbe6b4ce24f701e2e8ebb4e88604baa3",
+    "compliance/provenance/packages/ctutils-0.4.4/Cargo.lock.txt": "68a0e988a37f399b87c82d3ae0a690c11044e658c2e11b8f3645add60b59da10",
+    "compliance/provenance/packages/ctutils-0.4.4/Cargo.toml.orig.txt": "454330a0bdfcbd411f0e5c7fa94bc660e019da0efff1df45056a18f77d9f9ea3",
+    "compliance/provenance/packages/ctutils-0.4.4/Cargo.toml.txt": "0e7a80338f6195bd85c0d0dad3c0d258c626d95da17a29a82307b2f6092902f1",
+    "compliance/provenance/packages/ctutils-0.4.4/cargo-checksum.json.txt": "19f7c9eb0ed6d2ffa99fb5b73258ee91bca671f487ca7337ff7083c9ef69ef26",
+    "compliance/provenance/packages/ctutils-0.4.4/cargo_vcs_info.json.txt": "79af273f631faf92ab600892cf556aaf539514ab08b76963f4abc1ff1da1ce98",
+    "compliance/provenance/packages/ctutils-0.4.4/registry-index.json": "d6dbd3f029e16514dbb11d91dccb99de58f43fd1514f99228eb03947e13ca608",
     "compliance/provenance/packages/data-encoding-2.11.1/Cargo.lock.txt": "e2a9ec626614c823644a573443e87b3c4e5460ba5f33cef83fdcaae7f729cc81",
     "compliance/provenance/packages/data-encoding-2.11.1/Cargo.toml.orig.txt": "0b1e7e2298a345bd38c7b75f73793ce70b1458979e6e436582ac3defbc0c6401",
     "compliance/provenance/packages/data-encoding-2.11.1/cargo-checksum.json.txt": "e72ae1ff977a2b4a315a666e4344432af3a81a0f8aa11fd84445d84b3e4f0e1d",
@@ -104657,6 +104666,8 @@
     "docs/upstream/crypto-common-0.2.2/README.md": "9c64886cdfe000aa140834716989af95a591cfe4c62e041fc0002587f92fee01",
     "docs/upstream/ctutils-0.4.3/CHANGELOG.md": "82cd87b8b1f431ec1373de0bbb6d49eba0852c51199cff51a60cd1733a88de16",
     "docs/upstream/ctutils-0.4.3/README.md": "4811de370f75587948eaab5ef2fcb8f3c483e262865a2bd219f057b0dc10bf00",
+    "docs/upstream/ctutils-0.4.4/CHANGELOG.md": "ce578d46c72a36733739aba7077d47eb9105e851066f9f9c043f69ebf5ac41d7",
+    "docs/upstream/ctutils-0.4.4/README.md": "4811de370f75587948eaab5ef2fcb8f3c483e262865a2bd219f057b0dc10bf00",
     "docs/upstream/data-encoding-2.11.1/README.md": "0f4a8b503e1f90b594840f55ffb38d33e8fa5b52184f4b72033248ee8a2232b8",
     "docs/upstream/defmt-1.2.0/README.md": "ac9636c4cb0c8686861b894ea944efd1dc12ea33019ab41fb3c09e6e05f29c05",
     "docs/upstream/defmt-macros-1.2.0/README.md": "1de671a4e6e9503ceeb6acbc491f510967d48fca9851a28341538a167fb29db6",
@@ -139948,6 +139959,128 @@
     }
   },
   "superseded": {
+    "vendor/rust/ctutils-0.4.3": {
+      "external_tests": {
+        "bytes": 30491,
+        "directory": "src/foundation/cryptography/ctutils",
+        "file_count": 10,
+        "files": [
+          {
+            "path": "test/foundation/ctutils/tests/proptests.rs",
+            "sha256": "682b21f0d9ab787cc07651a22721cf0c41df617f8615d577dcc6bf260fc55876",
+            "source": "src/foundation/ctutils/tests/proptests.rs",
+            "source_sha256_before": "682b21f0d9ab787cc07651a22721cf0c41df617f8615d577dcc6bf260fc55876"
+          },
+          {
+            "path": "test/foundation/ctutils/unit/src/choice/tests_622.rs",
+            "sha256": "aae5ba660b4a336a33f0fab4352397fcad38d849c6bd1089e7b5332be624da44",
+            "source": "src/foundation/ctutils/src/choice.rs",
+            "source_sha256_before": "b9b1bcd6cd4d387599e3dbd5eded57913e258c3d169bc59ae02dd0888c2b4774"
+          },
+          {
+            "path": "test/foundation/ctutils/unit/src/ct_option/tests_663.rs",
+            "sha256": "39ffdac5e29166dba28c59eb43b0d5cc89f0577b33f3fd681036c485361aec8a",
+            "source": "src/foundation/ctutils/src/ct_option.rs",
+            "source_sha256_before": "6b80ea46e1d8b2dd8c4e64bf3900ae52d14e6ae274d72776ee54f69435fbd897"
+          },
+          {
+            "path": "test/foundation/ctutils/unit/src/traits/ct_eq/tests_245.rs",
+            "sha256": "cb0f29963cd1e19cb51ab525ce1314656eb7d425ada2ae92fb2287d6ff594123",
+            "source": "src/foundation/ctutils/src/traits/ct_eq.rs",
+            "source_sha256_before": "dfd4ea492d3f34909fe3028e12055c432ba2ba8e2f5377bc6fdf87a378f32238"
+          },
+          {
+            "path": "test/foundation/ctutils/unit/src/traits/ct_find/tests_86.rs",
+            "sha256": "dc73421550e9ab149b457307fd1bab507bc5183c31b0e672e21ca83227c186a2",
+            "source": "src/foundation/ctutils/src/traits/ct_find.rs",
+            "source_sha256_before": "90278cf8778db2e8c3f294c6f87e368450711ce815e55ead5d460fe7cd350e87"
+          },
+          {
+            "path": "test/foundation/ctutils/unit/src/traits/ct_gt/tests_66.rs",
+            "sha256": "fc93d080b37772508faee6b674dfc9b99285d2999fc3d0c44947f8b8862bc3b9",
+            "source": "src/foundation/ctutils/src/traits/ct_gt.rs",
+            "source_sha256_before": "0ec34871e14b01d7fb255acb8ae6994ce2a3ad64cfdc0aa058fe84a5edf2a010"
+          },
+          {
+            "path": "test/foundation/ctutils/unit/src/traits/ct_lookup/tests_88.rs",
+            "sha256": "343cb3be46817a28180b3817e9a7b7ea743f2566e89b827f29430e0504a7fb49",
+            "source": "src/foundation/ctutils/src/traits/ct_lookup.rs",
+            "source_sha256_before": "e412cefd054ae4a9c2980ddc937a45331ead46fc917cef1fa7aa886496e17611"
+          },
+          {
+            "path": "test/foundation/ctutils/unit/src/traits/ct_lt/tests_66.rs",
+            "sha256": "7882f12ab95162cf3f5bd64780460e0853b9a21da81a5e4cd243767a28802454",
+            "source": "src/foundation/ctutils/src/traits/ct_lt.rs",
+            "source_sha256_before": "aaf12b75d2b1bfff206a3ceded7a2904c31b5d769197b9d5eb86bff1e7c1eafd"
+          },
+          {
+            "path": "test/foundation/ctutils/unit/src/traits/ct_neg/tests_105.rs",
+            "sha256": "d349a4fcb51cbeaf3c9a8c15e4d04db0bd396edef562ae8426c8ca5dcb4067e0",
+            "source": "src/foundation/ctutils/src/traits/ct_neg.rs",
+            "source_sha256_before": "d22f138b33455971e1a70faf3a25ad67fd43e1c9cac5a5ab8d8ed75e295bef2f"
+          },
+          {
+            "path": "test/foundation/ctutils/unit/src/traits/ct_select/tests_160.rs",
+            "sha256": "351c81a9c86c0b3a77b1c9fa02321df7d7fa060f49f8dc19a9a6bd56392b395f",
+            "source": "src/foundation/ctutils/src/traits/ct_select.rs",
+            "source_sha256_before": "e0832740578f42dcd6d0234dd6cd022620e9c70f180014291e1de534f78500a8"
+          }
+        ],
+        "origin_directory": "vendor/rust/ctutils-0.4.3",
+        "roots": [
+          "test/foundation/ctutils"
+        ]
+      },
+      "package": {
+        "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。",
+        "description": "Constant-time utility library with selection and equality testing support targeting cryptographic\napplications. Supports `const fn` where appropriate. Built on the `cmov` crate which provides\narchitecture-specific predication intrinsics. Heavily inspired by the `subtle` crate.",
+        "directory": "src/foundation/cryptography/ctutils",
+        "files_sha256": {
+          "Cargo.toml": "76d48b3ac1257123b73ebc5475b55b37d095d2529b48398cfefcb1b01ee37492",
+          "src/choice.rs": "a529eec0c75af6e02a529819dd93a71d9535184f1a613039d5368d50a159e40c",
+          "src/ct_option.rs": "25c13e5442eb49a38b721f30fb806d74bb076d75f36e0971f80d55ceec770454",
+          "src/lib.rs": "4ea07821dfa8612e53ccbd73ff7a4cf0e82553eba5496dff839fee8ab6434558",
+          "src/traits.rs": "12955969208f4ab71f9ed07d84763a3a9915cbcc5544fcf8e947dcb7b8982a25",
+          "src/traits/ct_assign.rs": "547c3456c64f429087923c1c8be12a059d623de82be60b6c749254d97a17dcb3",
+          "src/traits/ct_eq.rs": "d3bc117853f6644c9d01bd6ed002f0d67d978f3a8ca2477ef835c57486c648cd",
+          "src/traits/ct_find.rs": "aa14342b695d14d2676f8e060d7dda35cc6486b6eb0a7146e8121270dcdda9aa",
+          "src/traits/ct_gt.rs": "f5852a3996a9f9861b3a2eb6330251956b7d17f4d5b6109d799344f5777808fa",
+          "src/traits/ct_lookup.rs": "bbefaebdb4e6aee62d2761463f5ea2242469a2f00a3fb3ae5b05288ae2e0ad34",
+          "src/traits/ct_lt.rs": "7ea857b119908b9237772d2efaaa4f73e4f67a6fab1fba494228f620c0c52a45",
+          "src/traits/ct_neg.rs": "7845ae3abbed68268c8dd08c755270099f874e8cf761f35997d5d64eaf529b7e",
+          "src/traits/ct_select.rs": "419f6338b4ceac18e4349aa156567e19b64d19e7c5937ffe165e3e28d0d649bf"
+        },
+        "license": "Apache-2.0 OR MIT",
+        "license_materials": [
+          "compliance/licenses/upstream/ctutils-0.4.3/LICENSE-APACHE",
+          "compliance/licenses/upstream/ctutils-0.4.3/LICENSE-MIT"
+        ],
+        "merged_into": "无；通过统一内部源码源接入",
+        "name": "ctutils",
+        "origin_directory": "vendor/rust/ctutils-0.4.3",
+        "repository": "https://github.com/RustCrypto/utils",
+        "status": "内部维护源码",
+        "upstream": {
+          "archive_sha256": "03bb0e1cc970d482d121d9a1744999169b69a07470b3d644a7894e53fcaf4574",
+          "archive_url": "https://static.crates.io/crates/ctutils/ctutils-0.4.3.crate",
+          "name": "ctutils",
+          "version": "0.4.3"
+        },
+        "vcs": {
+          "git": {
+            "sha1": "3c5aa70180232b57a485a14269adf1380d1807c1"
+          },
+          "path_in_vcs": "ctutils"
+        },
+        "version": "0.4.3"
+      },
+      "reason": "RUSTSEC-2026-0385: adopt official ctutils 0.4.4 constant-time mask and u128 comparison fixes.",
+      "source_prefixes": [
+        "src/",
+        "tests/"
+      ],
+      "successor_origin_directory": "vendor/rust/ctutils-0.4.4"
+    },
     "vendor/rust/rustls-webpki-0.103.15": {
       "package": {
         "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。",
@@ -140052,6 +140185,7 @@
     }
   },
   "superseded_records_sha256": {
+    "vendor/rust/ctutils-0.4.3": "269c202c888dda91ea575e9231ebb856fc4520ba6b36bce3eeb8e54515958ba7",
     "vendor/rust/rustls-webpki-0.103.15": "c135f78400cf97844c0a76e3ce88372689c67eb1e9a1de177ab44fccac3eca04",
     "vendor/rust/webpki-roots-1.0.9": "ab27e4eff55798d801493547b9c28844c0861a692161807856a626437a709c7b"
   },
@@ -142506,6 +142640,12 @@
       "archive_url": "https://static.crates.io/crates/webpki-roots/webpki-roots-1.0.10.crate",
       "name": "webpki-roots",
       "version": "1.0.10"
+    },
+    {
+      "archive_sha256": "12218662ccac37d9714f2191252553d67585b97df8c839cbe49e0bde278dc865",
+      "archive_url": "https://static.crates.io/crates/ctutils/ctutils-0.4.4.crate",
+      "name": "ctutils",
+      "version": "0.4.4"
     }
   ]
 }

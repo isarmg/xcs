@@ -26,7 +26,14 @@ macro_rules! impl_unsigned_ct_lt {
     };
 }
 
-impl_unsigned_ct_lt!(u8, u16, u32, u64, u128, usize);
+impl_unsigned_ct_lt!(u8, u16, u32, u64, usize);
+
+impl CtLt for u128 {
+    #[inline]
+    fn ct_lt(&self, other: &Self) -> Choice {
+        Choice::from_u128_lt(*self, *other)
+    }
+}
 
 /// Impl `CtLt` for `NonZero<T>` by calling `NonZero::get`.
 macro_rules! impl_ct_lt_for_nonzero_integer {
@@ -64,4 +71,4 @@ impl CtLt for cmp::Ordering {
 }
 
 #[cfg(test)]
-include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../../test/foundation/ctutils/unit/src/traits/ct_lt/tests_66.rs"));
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../../test/foundation/ctutils/unit/src/traits/ct_lt/tests_73.rs"));

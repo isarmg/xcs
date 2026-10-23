@@ -85,6 +85,12 @@
     {
       "tool": "python3",
       "args": [
+        ".github/scripts/check-ctutils.py"
+      ]
+    },
+    {
+      "tool": "python3",
+      "args": [
         ".github/scripts/check-crypto-consolidation.py"
       ]
     },

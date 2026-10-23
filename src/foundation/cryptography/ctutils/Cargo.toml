@@ -4,7 +4,7 @@
 edition = "2024"
 rust-version = "1.87"
 name = "ctutils"
-version = "0.4.3"
+version = "0.4.4"
 authors = ["RustCrypto Developers"]
 build = false
 autolib = false
@@ -17,8 +17,8 @@ Constant-time utility library with selection and equality testing support target
 applications. Supports `const fn` where appropriate. Built on the `cmov` crate which provides
 architecture-specific predication intrinsics. Heavily inspired by the `subtle` crate.
 """
-homepage = "https://github.com/RustCrypto/utils/tree/master/ctutils"
-readme = "../../../../docs/upstream/ctutils-0.4.3/README.md"
+documentation = "https://docs.rs/ctutils"
+readme = "../../../../docs/upstream/ctutils-0.4.4/README.md"
 keywords = [
     "constant-time",
     "crypto",

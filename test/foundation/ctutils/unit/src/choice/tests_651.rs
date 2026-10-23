@@ -1,7 +1,7 @@
 #[cfg(test)]
 mod tests {
     use super::Choice;
-    use crate::{CtEq, CtSelect};
+    use crate::{CtEq, CtGt, CtLt, CtSelect};
 
     #[test]
     fn ct_eq() {
@@ -234,6 +234,38 @@ mod tests {
         assert!(Choice::from_u128_lt(1, 0).eq(Choice::FALSE).to_bool());
         assert!(Choice::from_u128_lt(1, 1).eq(Choice::FALSE).to_bool());
         assert!(Choice::from_u128_lt(1, 2).eq(Choice::TRUE).to_bool());
+    }
+
+    #[test]
+    fn from_u128_comparison_boundaries() {
+        const LT: Choice = Choice::from_u128_lt_halves((1 << 96) - 1, 1 << 96);
+        const LE: Choice = Choice::from_u128_le(1 << 64, 1 << 64);
+        assert!(LT.to_bool());
+        assert!(LE.to_bool());
+
+        let values = [
+            0,
+            1,
+            (1 << 32) - 1,
+            1 << 32,
+            (1 << 64) - 1,
+            1 << 64,
+            (1 << 64) + 1,
+            (1 << 96) - 1,
+            1 << 96,
+            u128::MAX - 1,
+            u128::MAX,
+        ];
+
+        for x in values {
+            for y in values {
+                assert_eq!(x < y, Choice::from_u128_lt_halves(x, y).to_bool());
+                assert_eq!(x < y, Choice::from_u128_lt(x, y).to_bool());
+                assert_eq!(x <= y, Choice::from_u128_le(x, y).to_bool());
+                assert_eq!(x < y, x.ct_lt(&y).to_bool());
+                assert_eq!(x > y, x.ct_gt(&y).to_bool());
+            }
+        }
     }
 
     #[test]
