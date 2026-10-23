@@ -1543,7 +1543,6 @@ dependencies = [
  "pin-project-lite",
  "service-stack",
  "tokio",
- "tracing",
  "url-encoding",
 ]
 

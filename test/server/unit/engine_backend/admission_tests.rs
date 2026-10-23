@@ -470,3 +470,52 @@ fn protected_snapshot_refresh_preserves_the_internal_smb_binding_constraint() {
     let serialized = json_codec::to_value(&refreshed).unwrap();
     assert!(serialized.get("smb_binding").is_none());
 }
+
+#[test]
+fn file_manager_borrowed_tree_reads_preserve_listing_and_path_context() {
+    use crate::{Backend, BackendAction};
+    let (_root, backend, repo, entry) = backend_fixture();
+    let listing = backend
+        .call(
+            BackendAction::FileManagerEntries,
+            &caller(),
+            json!({"slot_id":"P01","path":repo.name}),
+        )
+        .unwrap();
+    assert_eq!(listing["entries"].as_array().unwrap().len(), 1);
+    assert_eq!(listing["entries"][0]["entry_id"], entry.entry_id);
+    assert_eq!(listing["entries"][0]["repository_path"], entry.path);
+    let history = backend
+        .call(
+            BackendAction::FileManagerFileHistory,
+            &caller(),
+            json!({"file_id":entry.file_id}),
+        )
+        .unwrap();
+    let contextual = backend
+        .call(
+            BackendAction::FileManagerFileHistory,
+            &caller(),
+            json!({"file_id":entry.file_id,"query":{"repository_id":repo.repository_id,"path":entry.path}}),
+        )
+        .unwrap();
+    assert_eq!(contextual, history);
+    assert_eq!(history["path"], entry.path);
+    assert_eq!(history["versions"].as_array().unwrap().len(), 1);
+    let missing = backend
+        .call(
+            BackendAction::FileManagerFileHistory,
+            &caller(),
+            json!({"file_id":entry.file_id,"query":{"repository_id":repo.repository_id,"path":"missing.txt"}}),
+        )
+        .unwrap_err();
+    assert_eq!(missing.code, "FILE_NOT_FOUND");
+    let missing_directory = backend
+        .call(
+            BackendAction::FileManagerEntries,
+            &caller(),
+            json!({"slot_id":"P01","path":format!("{}/missing",repo.name)}),
+        )
+        .unwrap_err();
+    assert_eq!(missing_directory.code, "DIRECTORY_NOT_FOUND");
+}

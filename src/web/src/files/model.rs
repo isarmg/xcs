@@ -89,8 +89,10 @@ impl Model {
     }
 
     pub(crate) fn reconcile_selection(&mut self) {
-        self.checked_entries
-            .retain(|key| self.entries.iter().any(|entry| entry_key(entry) == *key));
+        if !self.checked_entries.is_empty() {
+            let visible = self.entries.iter().map(entry_key).collect::<BTreeSet<_>>();
+            self.checked_entries.retain(|key| visible.contains(key));
+        }
         let Some(selected) = &self.selected else {
             return;
         };

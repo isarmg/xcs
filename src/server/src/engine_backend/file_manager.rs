@@ -373,7 +373,7 @@ fn entries(engine: &Engine, identity: &Identity, input: &Value) -> Result<Value,
         Ok((repo, within)) => {
             default_branch_scope = within.is_empty();
             writable = authorize(identity, &repo, true, false).is_ok();
-            let tree = engine.list_tree(&repo.main_branch_id).map_err(error)?;
+            let tree = engine.list_tree_ref(&repo.main_branch_id).map_err(error)?;
             let within_key = name_policy::path_key(&within);
             if !within.is_empty()
                 && !tree
@@ -459,7 +459,7 @@ fn file_history(engine: &Engine, identity: &Identity, input: &Value) -> Result<V
     if let Some(path) = requested_path {
         name_policy::validate_path(path).map_err(ApiError::invalid)?;
     }
-    let entries = engine.list_tree(&repo.main_branch_id).map_err(error)?;
+    let entries = engine.list_tree_ref(&repo.main_branch_id).map_err(error)?;
     let current = if let Some(path) = requested_path {
         if requested_repo != Some(repo.repository_id.as_str()) {
             return Err(ApiError::new(
@@ -495,7 +495,7 @@ fn file_history(engine: &Engine, identity: &Identity, input: &Value) -> Result<V
                     .find(|entry| entry.file_id == file && entry.lookup_key == key)
             })
             .cloned()
-            .or_else(|| entries.into_iter().find(|entry| entry.file_id == file))
+            .or_else(|| entries.iter().find(|entry| entry.file_id == file).cloned())
     };
     let context = current
         .as_ref()

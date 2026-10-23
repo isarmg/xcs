@@ -311,3 +311,43 @@ fn disk_list_accepts_current_contract_and_rejects_legacy_or_partial_records() {
         assert!(parse_disks(&invalid).is_err());
     }
 }
+
+#[test]
+fn refreshed_checked_entries_preserve_exact_alias_paths() {
+    let kept = json!({"entry_id":"shared", "path":"a/file.txt"});
+    let removed = json!({"entry_id":"shared", "path":"b/file.txt"});
+    let new_alias = json!({"entry_id":"shared", "path":"c/file.txt"});
+    let unrelated = json!({"entry_id":"other", "path":"other.txt"});
+    let mut model = Model {
+        checked_entries: [entry_key(&kept), entry_key(&removed), entry_key(&unrelated)]
+            .into_iter()
+            .collect(),
+        entries: vec![kept.clone(), new_alias, unrelated.clone()].into(),
+        ..Default::default()
+    };
+    model.reconcile_selection();
+    assert_eq!(
+        model.checked_entries,
+        [entry_key(&kept), entry_key(&unrelated)]
+            .into_iter()
+            .collect()
+    );
+    model.entries = Default::default();
+    model.reconcile_selection();
+    assert!(model.checked_entries.is_empty());
+}
+
+#[test]
+fn empty_checked_entries_still_reconcile_the_detail_selection() {
+    let old = json!({"entry_id":"file", "path":"old.txt", "file_id":"file"});
+    let renamed = json!({"entry_id":"file", "path":"new.txt", "file_id":"file"});
+    let mut model = Model {
+        selected: Some(old),
+        entries: vec![renamed.clone()].into(),
+        ..Default::default()
+    };
+    model.reconcile_selection();
+    assert!(model.checked_entries.is_empty());
+    assert_eq!(model.selected, Some(renamed));
+    assert_eq!(model.history_generation, 1);
+}

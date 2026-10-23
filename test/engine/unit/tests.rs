@@ -3774,3 +3774,89 @@ fn upload_preparation_rejects_copied_bytes_not_matching_verified_stream() {
 mod retained_workspace_budget;
 #[path = "runtime_workspace_limits.rs"]
 mod runtime_workspace_limits;
+
+#[test]
+fn borrowed_tree_shares_the_snapshot_and_preserves_owned_read_checks() {
+    let fixture = Fixture::new();
+    let mut engine = fixture.initialize();
+    let repo = repository(&mut engine, 1);
+    save(&mut engine, &repo.main_branch_id, "file.txt", b"content");
+    let head = engine.state.branches[&repo.main_branch_id]
+        .head_commit_id
+        .clone();
+    let borrowed = engine.list_tree_ref(&repo.main_branch_id).unwrap();
+    assert!(!borrowed.is_empty());
+    assert_eq!(borrowed, engine.list_tree(&repo.main_branch_id).unwrap());
+    assert_eq!(
+        borrowed,
+        engine.list_tree_at(&repo.main_branch_id, &head).unwrap()
+    );
+    assert_eq!(
+        borrowed.as_ptr(),
+        engine.state.commits[&head].entries.as_ptr()
+    );
+    assert_eq!(
+        engine.list_tree_ref("missing").unwrap_err().code,
+        "BRANCH_NOT_FOUND"
+    );
+    assert_eq!(
+        engine.list_tree("missing").unwrap_err().code,
+        "BRANCH_NOT_FOUND"
+    );
+    assert_eq!(
+        engine
+            .list_tree_at(&repo.main_branch_id, "missing")
+            .unwrap_err()
+            .code,
+        "COMMIT_NOT_FOUND"
+    );
+
+    let other = engine
+        .create_repository("Other", "P01", 1, "admin", &new_id("op"))
+        .unwrap();
+    let foreign_head = engine.state.branches[&other.main_branch_id]
+        .head_commit_id
+        .clone();
+    assert_eq!(
+        engine
+            .list_tree_at(&repo.main_branch_id, &foreign_head)
+            .unwrap_err()
+            .code,
+        "COMMIT_NOT_FOUND"
+    );
+    // Exercise identical validation when the current head itself is invalid.
+    std::sync::Arc::make_mut(&mut engine.state)
+        .branches
+        .get_mut(&repo.main_branch_id)
+        .unwrap()
+        .head_commit_id = foreign_head;
+    assert_eq!(
+        engine.list_tree_ref(&repo.main_branch_id).unwrap_err().code,
+        "COMMIT_NOT_FOUND"
+    );
+    assert_eq!(
+        engine.list_tree(&repo.main_branch_id).unwrap_err().code,
+        "COMMIT_NOT_FOUND"
+    );
+    let branch = std::sync::Arc::make_mut(&mut engine.state)
+        .branches
+        .get_mut(&repo.main_branch_id)
+        .unwrap();
+    branch.head_commit_id = head.clone();
+    branch.state = "migrated".into();
+    assert_eq!(
+        engine.list_tree_ref(&repo.main_branch_id).unwrap_err().code,
+        "TREE_MOVED"
+    );
+    assert_eq!(
+        engine.list_tree(&repo.main_branch_id).unwrap_err().code,
+        "TREE_MOVED"
+    );
+    assert_eq!(
+        engine
+            .list_tree_at(&repo.main_branch_id, &head)
+            .unwrap_err()
+            .code,
+        "TREE_MOVED"
+    );
+}

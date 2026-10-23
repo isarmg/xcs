@@ -17,7 +17,7 @@ core = ["dep:storage-engine"]
 [dependencies]
 command-line.workspace = true
 authentication.workspace = true
-http-routing = { version = "0.8.9", path = "../foundation/networking/http-routing"}
+http-routing = { version = "0.8.9", default-features = false, features = ["form", "http1", "json", "query", "tokio", "tower-log", "tracing"], path = "../foundation/networking/http-routing"}
 blake3.workspace = true
 bytes = {version = "1", path = "../foundation/collections/bytes"}
 futures = { version = "0.3.34", path = "../foundation/concurrency/futures", default-features = false, features = ["async-await-macro", "shared-state", "std", "utilities"] }
@@ -26,7 +26,7 @@ data-serialization.workspace = true
 json-codec.workspace = true
 sysinfo = { version = "=0.39.6", default-features = false, features = ["system"], path = "../foundation/platform/sysinfo"}
 tokio.workspace = true
-tower-http = { version = "0.6", features = ["trace", "limit", "fs"], path = "../foundation/networking/tower-http"}
+tower-http = { version = "0.6", features = ["fs"], path = "../foundation/networking/tower-http"}
 tracing = {version = "0.1", default-features = false, features = ["collector-default", "env-filter"], path = "../foundation/diagnostics/tracing"}
 date-time = { version = "0.3.55", features = ["formatting"], path = "../foundation/core-types/date-time"}
 url-encoding = { path = "../foundation/networking/url-encoding", default-features = false, features = ["std", "parser"] }

@@ -36,17 +36,26 @@ impl Engine {
     }
 
     pub fn list_tree(&self, branch_id: &str) -> Result<Vec<Entry>> {
+        Ok(self.list_tree_ref(branch_id)?.to_vec())
+    }
+
+    /// Borrow the current frozen namespace without copying unrelated entries.
+    pub fn list_tree_ref(&self, branch_id: &str) -> Result<&[Entry]> {
         let branch = self
             .state
             .branches
             .get(branch_id)
             .ok_or_else(|| Error::new("BRANCH_NOT_FOUND", "branch not found"))?;
-        self.list_tree_at(branch_id, &branch.head_commit_id)
+        self.list_tree_at_ref(branch_id, &branch.head_commit_id)
     }
 
     /// An unwritten snapshot reads its frozen parent versions. Reservation
     /// markers separately distinguish inherited content from owned versions.
     pub fn list_tree_at(&self, branch_id: &str, commit_id: &str) -> Result<Vec<Entry>> {
+        Ok(self.list_tree_at_ref(branch_id, commit_id)?.to_vec())
+    }
+
+    fn list_tree_at_ref(&self, branch_id: &str, commit_id: &str) -> Result<&[Entry]> {
         let branch = self
             .state
             .branches
@@ -69,7 +78,7 @@ impl Engine {
                     "selected snapshot is outside this branch's history",
                 )
             })?;
-        Ok(commit.entries.clone())
+        Ok(&commit.entries)
     }
     pub fn file_history(&self, file_id: &str) -> Result<Vec<FileVersion>> {
         if self.history_index_is_selective(file_id)
