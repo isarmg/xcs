@@ -18,6 +18,13 @@ class InactiveHttpSources(unittest.TestCase):
         cls.historical = 'src/foundation/http-routing'
         layout = GATE.source_layout.load(ROOT)
         cls.frozen_evidence = tuple(layout.receipt['frozen_evidence'])
+        cls.upgrade_evidence = set()
+        if layout.appended_origins:
+            # The live origins file is append-only after an upgrade. Retain the
+            # exact snapshot authenticated by the original layout hash as well;
+            # never strip the upgrade chain or relax the fixture's proof checks.
+            origins_hash = layout.receipt['frozen_evidence']['compliance/provenance/origins.json']
+            cls.upgrade_evidence.add('compliance/source-layout/origins-' + origins_hash + '.json')
         cls.correction_evidence = set()
         if layout.corrections is not None:
             from source_layout_corrections import receipt_path
@@ -71,7 +78,7 @@ class InactiveHttpSources(unittest.TestCase):
         catalog = json.loads((ROOT / 'compliance/rust-sources.json').read_text())
         receipt = GATE.source_layout.receipt_path(catalog[GATE.source_layout.KEY])
         files = ['compliance/rust-sources.json', receipt, *self.frozen_evidence,
-                 *sorted(self.correction_evidence)]
+                 *sorted(self.correction_evidence), *sorted(self.upgrade_evidence)]
         owner = 'src/foundation/networking/http-routing'
         files += [owner + '/' + relative for relative in
                   (*GATE.INACTIVE_SOURCES, 'Cargo.toml', 'src/lib.rs', 'src/extract/mod.rs')]
