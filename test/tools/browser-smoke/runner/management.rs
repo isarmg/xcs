@@ -5,6 +5,31 @@ use super::{
     spawn, wait_for,
 };
 
+fn prepare_offline(source_pool: &Path, offline: &Path) -> Result<()> {
+    use std::os::unix::fs::DirBuilderExt;
+    let pool = offline.join("pool");
+    let management = offline.join("management");
+    // This second daemon must obey the production control-directory contract;
+    // create_dir_all would inherit a typical umask and make credentials unusable.
+    for path in [&pool, &management] {
+        fs::DirBuilder::new()
+            .recursive(true)
+            .mode(0o700)
+            .create(path)?;
+    }
+    // Only the independently persisted, verified management authority may be
+    // copied. Legacy pool/auth.json is deliberately not accepted as authority.
+    let auth = fs::read(source_pool.join("management/management-auth.json"))?;
+    OpenOptions::new()
+        .create_new(true)
+        .write(true)
+        .mode(0o600)
+        .open(management.join("management-auth.json"))?
+        .write_all(&auth)?;
+    fs::write(pool.join("config.json"), b"{corrupt pool configuration")?;
+    Ok(())
+}
+
 pub(super) fn run(
     browser: &Browser,
     daemon: &Path,
@@ -16,18 +41,7 @@ pub(super) fn run(
     let offline = root.join("offline-management");
     let pool = offline.join("pool");
     let management = offline.join("management");
-    fs::create_dir_all(&pool)?;
-    fs::create_dir_all(&management)?;
-    // Only the independently persisted, verified management authority may be
-    // copied. Legacy pool/auth.json is deliberately not accepted as authority.
-    let auth = fs::read(source_pool.join("management/management-auth.json"))?;
-    OpenOptions::new()
-        .create_new(true)
-        .write(true)
-        .mode(0o600)
-        .open(management.join("management-auth.json"))?
-        .write_all(&auth)?;
-    fs::write(pool.join("config.json"), b"{corrupt pool configuration")?;
+    prepare_offline(source_pool, &offline)?;
     let server_port = port()?;
     let origin = format!("http://127.0.0.1:{server_port}");
     let _server = spawn(
@@ -49,7 +63,10 @@ pub(super) fn run(
         {
             Ok(())
         } else {
-            Err("offline control-plane state not ready".into())
+            Err(format!(
+                "offline control-plane state not ready: HTTP {status}, authentication={}, storage={}",
+                value["authentication"], value["storage"]
+            ).into())
         }
     })?;
     browser.command("DELETE", "/cookie", None)?;
@@ -670,3 +687,7 @@ fn browser_preset_fixture_has_valid_topology_and_sanitized_preview() {
     );
     assert!(!fixture.pool.join("config.json").exists());
 }
+
+#[cfg(test)]
+#[path = "../unit/offline_management_tests.rs"]
+mod offline_management_tests;
