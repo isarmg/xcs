@@ -10,9 +10,9 @@ fn write_admission_combines_session_location_and_publication_state() {
     assert!(!write_allowed(&state), "unknown health fails closed");
     state.management.storage = crate::management::Storage::Ready;
     assert!(write_allowed(&state));
-    state.restoring = true;
+    state.session_transition = crate::ui::SessionTransition::Restoring;
     assert!(!write_allowed(&state));
-    state.restoring = false;
+    state.session_transition = crate::ui::SessionTransition::Idle;
     state.files.loading = true;
     assert!(!write_allowed(&state));
     state.files.loading = false;
@@ -23,9 +23,9 @@ fn write_admission_combines_session_location_and_publication_state() {
     crate::ui::begin_logout(&mut state);
     assert!(state.authenticated, "revocation has not been confirmed");
     assert!(!write_allowed(&state));
-    state.logout_pending = false;
+    state.session_transition = crate::ui::SessionTransition::Idle;
     state.authenticated = false;
-    state.logout_unconfirmed = true;
+    state.session_transition = crate::ui::SessionTransition::LogoutUnconfirmed;
     assert!(
         !write_allowed(&state),
         "failed logout permits revocation retry only"

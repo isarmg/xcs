@@ -72,17 +72,15 @@ fn independent_prefixes_are_relative_to_a_stable_scope_and_route() {
 #[test]
 fn backup_read_does_not_allocate_a_draft_for_an_inactive_session() {
     Owner::new().with(|| {
-        for (authenticated, restoring, logout_pending, logout_unconfirmed) in [
-            (false, false, false, false),
-            (true, true, false, false),
-            (true, false, true, false),
-            (true, false, false, true),
+        for (authenticated, session_transition) in [
+            (false, crate::ui::SessionTransition::Idle),
+            (true, crate::ui::SessionTransition::Restoring),
+            (true, crate::ui::SessionTransition::LoggingOut),
+            (true, crate::ui::SessionTransition::LogoutUnconfirmed),
         ] {
             let state = RwSignal::new(State {
                 authenticated,
-                restoring,
-                logout_pending,
-                logout_unconfirmed,
+                session_transition,
                 ..Default::default()
             });
             start(state, "repo".into(), "docs".into());

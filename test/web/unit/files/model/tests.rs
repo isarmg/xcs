@@ -1,4 +1,5 @@
 use super::*;
+use json_codec::json;
 
 #[test]
 fn refreshed_selection_invalidates_old_history_only_when_context_changes() {
@@ -291,4 +292,22 @@ fn a_removed_entry_discards_metadata() {
     assert!(model.file_history.is_null());
     assert!(!model.history_loading);
     assert_eq!(model.history_generation, 5);
+}
+
+#[test]
+fn disk_list_accepts_current_contract_and_rejects_legacy_or_partial_records() {
+    let disk = json!({"slot_id":"P01", "online":true, "writable":false, "available_bytes":"18446744073709551615"});
+    let parsed = parse_disks(&json!({"disks":[disk.clone()]})).unwrap();
+    assert_eq!(parsed[0].slot_id, "P01");
+    assert_eq!(parsed[0].available_bytes, u64::MAX);
+    assert!(!parsed[0].writable);
+    assert!(parse_disks(&json!({"disks":[]})).unwrap().is_empty());
+    for invalid in [
+        json!([disk.clone()]),
+        json!({"disks":[{"id":"legacy", "online":true, "writable":true,"available_bytes":"0"}]}),
+        json!({"disks":[disk, {"slot_id":"P02"}]}),
+        json!({"disks":null}),
+    ] {
+        assert!(parse_disks(&invalid).is_err());
+    }
 }

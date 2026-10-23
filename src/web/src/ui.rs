@@ -7,23 +7,49 @@ use web_interface::components::{
 use web_interface::tasks::spawn_local;
 use web_interface::{i18n::t, prelude::*};
 
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+pub(crate) enum Page {
+    #[default]
+    Files,
+    Details,
+    Health,
+    Admin,
+    Status,
+    History,
+    Account,
+}
+
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+pub(crate) enum SessionTransition {
+    #[default]
+    Idle,
+    Restoring,
+    LoggingOut,
+    LogoutUnconfirmed,
+}
+
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+pub(crate) enum PasswordChangeState {
+    #[default]
+    Idle,
+    Pending,
+    Unknown,
+}
+
 #[derive(Clone, Default)]
 pub(crate) struct State {
     pub authenticated: bool,
     pub session_epoch: u64,
     pub admin: bool,
     pub principal: String,
-    pub restoring: bool,
+    pub session_transition: SessionTransition,
     pub session_failure: Option<Feedback>,
     pub login_failure: Option<Feedback>,
-    pub logout_pending: bool,
-    pub logout_unconfirmed: bool,
-    pub password_pending: bool,
     // A lost response may follow a committed change and revoked sessions.
     // Only a settled sign-out/new session clears this non-idempotent fence.
-    pub password_unknown: bool,
+    pub password_change: PasswordChangeState,
     pub password_failure: Option<Feedback>,
-    pub page: String,
+    pub page: Page,
     pub busy: usize,
     pub errors: Vec<Feedback>,
     pub notice: String,
@@ -35,14 +61,27 @@ pub(crate) struct State {
 }
 
 impl State {
+    pub(crate) fn restoring(&self) -> bool {
+        self.session_transition == SessionTransition::Restoring
+    }
+    pub(crate) fn logout_pending(&self) -> bool {
+        self.session_transition == SessionTransition::LoggingOut
+    }
+    pub(crate) fn logout_unconfirmed(&self) -> bool {
+        self.session_transition == SessionTransition::LogoutUnconfirmed
+    }
+    fn password_pending(&self) -> bool {
+        self.password_change == PasswordChangeState::Pending
+    }
+    fn password_unknown(&self) -> bool {
+        self.password_change == PasswordChangeState::Unknown
+    }
+
     /// App-owned reloads must not destroy in-memory operation recovery fences.
     fn reload_blocked(&self) -> bool {
         self.busy > 0
-            || self.restoring
-            || self.logout_pending
-            || self.logout_unconfirmed
-            || self.password_pending
-            || self.password_unknown
+            || self.session_transition != SessionTransition::Idle
+            || self.password_change != PasswordChangeState::Idle
             || self.management.retrying
             || self.management.retry_unknown
             || self.admin_console.reload_blocked()
@@ -50,13 +89,13 @@ impl State {
     }
 
     fn password_change_blocked(&self) -> bool {
-        !self.session_active() || self.password_pending || self.password_unknown
+        !self.session_active() || self.password_pending() || self.password_unknown()
     }
 
     /// Business work belongs only to a settled, authenticated session. Logout
     /// retains credentials for revocation retries, not for admitting new work.
     pub(crate) fn session_active(&self) -> bool {
-        self.authenticated && !self.logout_pending && !self.logout_unconfirmed && !self.restoring
+        self.authenticated && self.session_transition == SessionTransition::Idle
     }
 }
 
@@ -100,7 +139,7 @@ pub(crate) fn set_notice(state: RwSignal<State>, notice: String) {
 
 pub fn app() -> impl IntoView {
     let state = RwSignal::new(State {
-        page: "files".into(),
+        page: Page::Files,
         ..Default::default()
     });
     let setup_state = RwSignal::new(crate::setup::Model::default());
@@ -119,19 +158,21 @@ pub fn app() -> impl IntoView {
     let poller = send_wrapper::SendWrapper::new(poller);
     on_cleanup(move || drop(poller));
     let telemetry = gloo_timers::callback::Interval::new(5_000, move || {
-        if state.with_untracked(|s| !s.logout_pending && !s.logout_unconfirmed && !s.restoring) {
+        if state
+            .with_untracked(|s| !s.logout_pending() && !s.logout_unconfirmed() && !s.restoring())
+        {
             management::load(state);
         }
-        if state.with_untracked(|s| s.authenticated && s.page == "status") {
+        if state.with_untracked(|s| s.authenticated && s.page == Page::Status) {
             monitor::load(state);
         }
     });
     let telemetry = send_wrapper::SendWrapper::new(telemetry);
     on_cleanup(move || drop(telemetry));
     let session = Memo::new(move |_| state.with(session_view));
-    let logout_pending = Memo::new(move |_| state.with(|s| s.logout_pending));
+    let logout_pending = Memo::new(move |_| state.with(|s| s.logout_pending()));
     let login_pending = Memo::new(move |_| {
-        state.with(|s| s.busy > 0 || s.restoring || s.logout_pending || s.logout_unconfirmed)
+        state.with(|s| s.busy > 0 || s.restoring() || s.logout_pending() || s.logout_unconfirmed())
     });
     let login_failure = Memo::new(move |_| state.with(|s| s.login_failure.clone()));
     let on_login = Callback::new(move |credentials: LoginCredentials| {
@@ -141,7 +182,7 @@ pub fn app() -> impl IntoView {
         spawn_local(async move {
             let result = api::login(&credentials.username, &credentials.password).await;
             if !state.with_untracked(|s| {
-                s.session_epoch == epoch && !s.logout_pending && !s.logout_unconfirmed
+                s.session_epoch == epoch && !s.logout_pending() && !s.logout_unconfirmed()
             }) {
                 return;
             }
@@ -155,7 +196,7 @@ pub fn app() -> impl IntoView {
                             authenticated: true,
                             principal: text(&value, &["principal", "username"]),
                             admin: value["admin"].as_bool().unwrap_or(false),
-                            page: "files".into(),
+                            page: Page::Files,
                             busy,
                             ..Default::default()
                         };
@@ -171,7 +212,7 @@ pub fn app() -> impl IntoView {
         move || view! { {management::summary(state)} {move ||state.with(|s|s.session_failure.clone()).map(|failure|view!{<ErrorState message=failure.message request_id=failure.request_id/>})} <LoginPage pending=login_pending.into() remote_failure=login_failure.into() on_submit=on_login/> {crate::setup::view(setup_state)} },
     );
     view! {
-        <AppShell product="zxs" session=session.into() pending_logout=logout_pending.into() on_logout=Callback::new(move |_|logout(state)) on_account=Callback::new(move |_|navigate(state,"account")) on_restore=Callback::new(move |_|restore_session(state)) login=login>
+        <AppShell product="zxs" session=session.into() pending_logout=logout_pending.into() on_logout=Callback::new(move |_|logout(state)) on_account=Callback::new(move |_|navigate(state,Page::Account)) on_restore=Callback::new(move |_|restore_session(state)) login=login>
             {workspace(state)}
             <Show when=move ||state.with(|s|!s.notice.is_empty())><p class="zxs-status zxs-row" role="status" aria-live="polite">{move ||state.with(|s|s.notice.clone())}</p></Show>
             <Show when=move ||state.with(|s|!s.errors.is_empty())><aside class="zxs-error-center zxs-stack" aria-label=t("请求错误","Request errors")>{move ||state.with(|s|s.errors.clone()).into_iter().enumerate().map(move |(index,error)|view! {
@@ -180,42 +221,42 @@ pub fn app() -> impl IntoView {
         </AppShell>
     }
 }
-pub(crate) fn navigate(state: RwSignal<State>, page: &str) {
+pub(crate) fn navigate(state: RwSignal<State>, page: Page) {
     state.update(|s| {
-        s.page = page.into();
+        s.page = page;
     });
     match page {
-        "health" => management::load(state),
-        "admin" => admin::load(state),
-        "status" => monitor::load(state),
-        "history" => history::load(state),
+        Page::Health => management::load(state),
+        Page::Admin => admin::load(state),
+        Page::Status => monitor::load(state),
+        Page::History => history::load(state),
         _ => {}
     }
 }
 fn workspace(state: RwSignal<State>) -> impl IntoView {
-    let page = Memo::new(move |_| state.with(|s| s.page.clone()));
+    let page = Memo::new(move |_| state.with(|s| s.page));
     view! {
         <HeaderNavigation label=t("主导航","Main navigation")>
-            {[ ("health",t("管理健康","Management health")), ("files",t("文件","Files")), ("details",t("详情","Details")), ("status",t("状态","Status")), ("history",t("历史记录","History")) ].into_iter().map(move |(page,title)|view! {
+            {[ (Page::Health,t("管理健康","Management health")), (Page::Files,t("文件","Files")), (Page::Details,t("详情","Details")), (Page::Status,t("状态","Status")), (Page::History,t("历史记录","History")) ].into_iter().map(move |(page,title)|view! {
                 <button class="zxs-button" aria-current=move ||(state.with(|s|s.page==page)).then_some("page") on:click=move |_|navigate(state,page)>{title}</button>
             }).collect_view()}
-            <Show when=move ||state.with(|s|s.admin)><button class="zxs-button" aria-current=move ||state.with(|s|(s.page=="admin").then_some("page")) on:click=move |_|navigate(state,"admin")>{t("系统管理","Administration")}</button></Show>
+            <Show when=move ||state.with(|s|s.admin)><button class="zxs-button" aria-current=move ||state.with(|s|(s.page==Page::Admin).then_some("page")) on:click=move |_|navigate(state,Page::Admin)>{t("系统管理","Administration")}</button></Show>
         </HeaderNavigation>
         <HeaderActions><div class="zxs-header-tools zxs-flow">
-            <Show when=move ||state.with(|s|matches!(s.page.as_str(),"files"|"details"|"status"|"history"))>
-                <button class="zxs-button zxs-header-refresh" type="button" aria-label=t("刷新","Refresh") title=t("刷新","Refresh") disabled=move ||state.with(|s|match s.page.as_str(){"files"=>s.files.loading||s.files.loading_disks,"details"=>s.files.loading||s.files.history_loading||s.files.selected.is_none(),"status"=>s.monitor.loading||!s.admin,"history"=>s.activity.loading,_=>true}) on:click=move |_|match state.with_untracked(|s|s.page.clone()).as_str(){"files"|"details"=>if state.with_untracked(|s|s.files.slot.is_empty()){files::load_disks(state)}else{files::load_entries(state)},"status"=>monitor::load(state),"history"=>history::load(state),_=>{}}><FileIcon name="refresh"/></button>
+            <Show when=move ||state.with(|s|matches!(s.page,Page::Files|Page::Details|Page::Status|Page::History))>
+                <button class="zxs-button zxs-header-refresh" type="button" aria-label=t("刷新","Refresh") title=t("刷新","Refresh") disabled=move ||state.with(|s|match s.page{Page::Files=>s.files.loading||s.files.loading_disks,Page::Details=>s.files.loading||s.files.history_loading||s.files.selected.is_none(),Page::Status=>s.monitor.loading||!s.admin,Page::History=>s.activity.loading,_=>true}) on:click=move |_|match state.with_untracked(|s|s.page){Page::Files|Page::Details=>if state.with_untracked(|s|s.files.slot.is_empty()){files::load_disks(state)}else{files::load_entries(state)},Page::Status=>monitor::load(state),Page::History=>history::load(state),_=>{}}><FileIcon name="refresh"/></button>
             </Show>
             <span class="zxs-session-identity">{move ||state.with(|s|s.principal.clone())}</span>
         </div></HeaderActions>
-        <Show when=move ||state.with(|s|s.page!="health"&&!s.management.storage.writable())>{management::summary(state)}</Show>
-        {move ||match page.get().as_str() { "health"=>management::view(state).into_any(),"admin"=>admin::view(state).into_any(),"details"=>files::details(state).into_any(),"status"=>monitor::view(state).into_any(),"history"=>history::view(state).into_any(),"account"=>account(state).into_any(),_=>files::view(state).into_any() }}
+        <Show when=move ||state.with(|s|s.page!=Page::Health&&!s.management.storage.writable())>{management::summary(state)}</Show>
+        {move ||match page.get() { Page::Health=>management::view(state).into_any(),Page::Admin=>admin::view(state).into_any(),Page::Details=>files::details(state).into_any(),Page::Status=>monitor::view(state).into_any(),Page::History=>history::view(state).into_any(),Page::Account=>account(state).into_any(),Page::Files=>files::view(state).into_any() }}
     }
 }
 fn session_view(state: &State) -> SessionView {
     SessionView {
-        phase: if state.restoring {
+        phase: if state.restoring() {
             SessionPhase::Loading
-        } else if state.logout_unconfirmed {
+        } else if state.logout_unconfirmed() {
             SessionPhase::LogoutUnconfirmed
         } else if state.authenticated {
             SessionPhase::Authenticated
@@ -244,7 +285,7 @@ fn session_view(state: &State) -> SessionView {
 // Session transitions own an epoch before their first asynchronous step.
 // Disable duplicate submissions at the action boundary as well as in the view.
 fn begin_login(state: &mut State) -> Option<u64> {
-    if state.busy > 0 || state.restoring || state.logout_pending || state.logout_unconfirmed {
+    if state.busy > 0 || state.restoring() || state.logout_pending() || state.logout_unconfirmed() {
         return None;
     }
     state.busy = 1;
@@ -254,10 +295,10 @@ fn begin_login(state: &mut State) -> Option<u64> {
     Some(state.session_epoch)
 }
 fn begin_restore(state: &mut State) -> Option<u64> {
-    if state.busy > 0 || state.restoring || state.logout_pending || state.logout_unconfirmed {
+    if state.busy > 0 || state.restoring() || state.logout_pending() || state.logout_unconfirmed() {
         return None;
     }
-    state.restoring = true;
+    state.session_transition = SessionTransition::Restoring;
     state.session_epoch += 1;
     state.session_failure = None;
     Some(state.session_epoch)
@@ -271,7 +312,7 @@ fn restore_session(state: RwSignal<State>) {
     spawn_local(async move {
         let result = api::restore().await;
         if !state.with_untracked(|s| {
-            s.session_epoch == epoch && !s.logout_pending && !s.logout_unconfirmed
+            s.session_epoch == epoch && !s.logout_pending() && !s.logout_unconfirmed()
         }) {
             return;
         }
@@ -290,15 +331,15 @@ fn restore_session(state: RwSignal<State>) {
                 }
             }),
         }
-        state.update(|s| s.restoring = false);
+        state.update(|s| s.session_transition = SessionTransition::Idle);
         management::load(state);
     });
 }
 pub(crate) fn begin_logout(state: &mut State) -> Option<u64> {
-    if state.logout_pending {
+    if state.logout_pending() {
         return None;
     }
-    state.logout_pending = true;
+    state.session_transition = SessionTransition::LoggingOut;
     state.session_epoch += 1;
     api::invalidate_session_work();
     Some(state.session_epoch)
@@ -311,7 +352,7 @@ fn logout(state: RwSignal<State>) {
     js_sys::futures::spawn_local(async move {
         let result = api::request("POST", "/api/auth/logout", Some(json!({}))).await;
         if !state
-            .try_with_untracked(|s| s.session_epoch == epoch && s.logout_pending)
+            .try_with_untracked(|s| s.session_epoch == epoch && s.logout_pending())
             .unwrap_or(false)
         {
             return;
@@ -325,8 +366,7 @@ fn logout(state: RwSignal<State>) {
             }
             Err(error) => state.update(|s| {
                 s.authenticated = false;
-                s.logout_unconfirmed = true;
-                s.logout_pending = false;
+                s.session_transition = SessionTransition::LogoutUnconfirmed;
                 s.session_failure = Some(feedback(&error));
             }),
         }
@@ -337,7 +377,7 @@ fn end_session(state: RwSignal<State>, notice: String) {
     let session_epoch = state.with_untracked(|s| s.session_epoch + 1);
     state.set(State {
         session_epoch,
-        page: "files".into(),
+        page: Page::Files,
         notice,
         ..Default::default()
     });
@@ -351,7 +391,7 @@ fn account(state: RwSignal<State>) -> impl IntoView {
             return;
         }
         state.update(|s| {
-            s.password_pending = true;
+            s.password_change = PasswordChangeState::Pending;
             s.password_failure = None;
         });
         let epoch = state.with_untracked(|s| s.session_epoch);
@@ -385,11 +425,10 @@ fn account(state: RwSignal<State>) -> impl IntoView {
             }
         });
     });
-    view! { <section class="zxs-content-stack zxs-stack"><p class="zxs-row">{t("修改密码后，该账号的全部会话将失效。","Changing the password signs this account out on all devices.")}</p><Show when=move ||state.with(|s|s.password_unknown)><p class="zxs-row" role="alert">{t("改密结果未知，已禁用重复提交。请先退出登录，再核实可用的密码；不会自动重试改密。","The password change outcome is unknown; repeat submission is disabled. Sign out, then verify which password works. The change will not be retried automatically.")}</p></Show><AccountPage username_value=username.into() pending=pending.into() remote_failure=failure.into() on_submit=change/></section> }
+    view! { <section class="zxs-content-stack zxs-stack"><p class="zxs-row">{t("修改密码后，该账号的全部会话将失效。","Changing the password signs this account out on all devices.")}</p><Show when=move ||state.with(|s|s.password_unknown())><p class="zxs-row" role="alert">{t("改密结果未知，已禁用重复提交。请先退出登录，再核实可用的密码；不会自动重试改密。","The password change outcome is unknown; repeat submission is disabled. Sign out, then verify which password works. The change will not be retried automatically.")}</p></Show><AccountPage username_value=username.into() pending=pending.into() remote_failure=failure.into() on_submit=change/></section> }
 }
 fn reject_unconfirmed_password_change(state: &mut State) {
-    state.password_pending = false;
-    state.password_unknown = true;
+    state.password_change = PasswordChangeState::Unknown;
     state.password_failure = Some(
         t(
             "未收到有效的改密确认，请核对会话状态。",
@@ -400,8 +439,11 @@ fn reject_unconfirmed_password_change(state: &mut State) {
     );
 }
 fn reject_password_change(state: &mut State, error: &api::Error) {
-    state.password_pending = false;
-    state.password_unknown |= error.mutation_outcome_unknown();
+    if state.password_unknown() || error.mutation_outcome_unknown() {
+        state.password_change = PasswordChangeState::Unknown;
+    } else {
+        state.password_change = PasswordChangeState::Idle;
+    }
     state.password_failure = Some(feedback(error));
 }
 

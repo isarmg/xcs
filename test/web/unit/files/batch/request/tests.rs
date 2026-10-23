@@ -232,17 +232,15 @@ fn stale_detail_rename_keeps_original_identity_and_tree_instead_of_retargeting_s
 #[test]
 fn target_reads_preserve_the_draft_when_the_session_is_inactive() {
     Owner::new().with(|| {
-        for (authenticated, restoring, logout_pending, logout_unconfirmed) in [
-            (false, false, false, false),
-            (true, true, false, false),
-            (true, false, true, false),
-            (true, false, false, true),
+        for (authenticated, session_transition) in [
+            (false, crate::ui::SessionTransition::Idle),
+            (true, crate::ui::SessionTransition::Restoring),
+            (true, crate::ui::SessionTransition::LoggingOut),
+            (true, crate::ui::SessionTransition::LogoutUnconfirmed),
         ] {
             let state = RwSignal::new(State {
                 authenticated,
-                restoring,
-                logout_pending,
-                logout_unconfirmed,
+                session_transition,
                 ..Default::default()
             });
             state.update(|s| s.files.batch = Some(draft(Kind::Copy)));

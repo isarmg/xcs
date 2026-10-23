@@ -80,7 +80,7 @@ fn active_state() -> State {
     State {
         authenticated: true,
         session_epoch: 7,
-        page: "details".into(),
+        page: crate::ui::Page::Details,
         ..Default::default()
     }
 }
@@ -138,8 +138,8 @@ fn queued_edits_cannot_submit_after_session_navigation_alias_or_branch_changes()
             draft.start("old context".into());
             state.update(|s| match change {
                 "epoch" => s.session_epoch += 1,
-                "logout" => s.logout_pending = true,
-                "page" => s.page = "files".into(),
+                "logout" => s.session_transition = crate::ui::SessionTransition::LoggingOut,
+                "page" => s.page = crate::ui::Page::Files,
                 "slot" => s.files.slot = "other".into(),
                 "directory" => s.files.directory = "other".into(),
                 "repository" => s.files.repository_id = "other".into(),

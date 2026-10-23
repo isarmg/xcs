@@ -23,9 +23,9 @@ fn account_administration_survives_data_failure_but_storage_writes_fail_closed()
     state.admin_console.busy = true;
     assert!(!permitted(&state, false));
     state.admin_console.busy = false;
-    state.logout_pending = true;
+    state.session_transition = crate::ui::SessionTransition::LoggingOut;
     assert!(!permitted(&state, false));
-    state.logout_pending = false;
+    state.session_transition = crate::ui::SessionTransition::Idle;
     state.admin = false;
     assert!(!permitted(&state, false));
 }
@@ -173,7 +173,7 @@ fn account_row_handlers_do_not_bypass_busy_uncertain_or_session_guards() {
             state.update(|s| {
                 s.admin_console.busy = guard == "busy";
                 s.admin_console.uncertain_operation = if guard == "unknown" {"unknown".into()} else {String::new()};
-                s.logout_pending = guard == "logout";
+                s.session_transition = if guard == "logout" { crate::ui::SessionTransition::LoggingOut } else { crate::ui::SessionTransition::Idle };
             });
             select_account(state, "reader");
             assert_eq!(state.with_untracked(|s| s.admin_console.fields["username"].clone()), "unchanged");

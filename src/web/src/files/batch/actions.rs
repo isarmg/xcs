@@ -79,7 +79,7 @@ pub(crate) fn start(state: RwSignal<State>, kind: Kind, entry: Option<Value>) {
     let epoch = snapshot.session_epoch;
     state.update(|s| {
         s.files.batch = Some(draft);
-        s.page = "files".into();
+        s.page = crate::ui::Page::Files;
     });
     spawn_local(async move {
         let result = api::request(

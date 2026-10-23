@@ -2,9 +2,48 @@ use json_codec::Value;
 use std::{collections::BTreeSet, sync::Arc};
 use web_interface::i18n::t;
 
+/// The file-manager disk contract is distinct from monitor/topology records.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub(crate) struct Disk {
+    pub slot_id: String,
+    pub online: bool,
+    pub writable: bool,
+    pub available_bytes: u64,
+}
+
+pub(crate) fn parse_disks(value: &Value) -> Result<Vec<Disk>, crate::api::Error> {
+    let parsed = value
+        .get("disks")
+        .and_then(Value::as_array)
+        .and_then(|disks| {
+            disks
+                .iter()
+                .map(|disk| {
+                    Some(Disk {
+                        slot_id: disk
+                            .get("slot_id")?
+                            .as_str()
+                            .filter(|id| !id.is_empty())?
+                            .to_owned(),
+                        online: disk.get("online")?.as_bool()?,
+                        writable: disk.get("writable")?.as_bool()?,
+                        available_bytes: crate::format::parse_u64(disk.get("available_bytes")?)?,
+                    })
+                })
+                .collect::<Option<Vec<_>>>()
+        });
+    parsed.ok_or_else(|| crate::api::Error {
+        status: 200,
+        code: "INVALID_DISK_LIST".into(),
+        message: "The disk listing did not match the server contract.".into(),
+        retryable: false,
+        request_id: None,
+    })
+}
+
 #[derive(Clone, Default)]
 pub(crate) struct Model {
-    pub disks: Vec<Value>,
+    pub disks: Vec<Disk>,
     pub disks_loaded: bool,
     pub loading_disks: bool,
     pub slot: String,

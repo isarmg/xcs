@@ -6,6 +6,7 @@ use crate::{
     ui::{State, current_session, fail, feedback, list},
 };
 use json_codec::Value;
+use storage_contract::{CapacityWarning, WorkspaceCapacity, WorkspaceCapacityScope};
 use web_interface::components::{
     EmptyState, ErrorState, Feedback, LoadingState, Select, SelectOption,
 };
@@ -17,6 +18,9 @@ const RANGES: [&str; 5] = ["1min", "30min", "1h", "24h", "1month"];
 #[derive(Clone)]
 pub(crate) struct Model {
     pub snapshot: Value,
+    pub capacity: Option<WorkspaceCapacity>,
+    pub capacity_loading: bool,
+    pub capacity_failure: Option<Feedback>,
     pub loading: bool,
     pub loaded: bool,
     pub failure: Option<Feedback>,
@@ -31,6 +35,9 @@ impl Default for Model {
     fn default() -> Self {
         Self {
             snapshot: Value::Null,
+            capacity: None,
+            capacity_loading: false,
+            capacity_failure: None,
             loading: false,
             loaded: false,
             failure: None,
@@ -49,6 +56,7 @@ pub(crate) fn load(state: RwSignal<State>) {
         return;
     }
     load_history(state);
+    load_capacity(state);
     if state.with_untracked(|s| s.monitor.loading) {
         return;
     }
@@ -71,6 +79,87 @@ pub(crate) fn load(state: RwSignal<State>) {
         state.update(|s| s.monitor.loading = false);
     });
 }
+fn load_capacity(state: RwSignal<State>) {
+    if state.with_untracked(|s| !s.session_active() || !s.admin || s.monitor.capacity_loading) {
+        return;
+    }
+    state.update(|s| s.monitor.capacity_loading = true);
+    let epoch = state.with_untracked(|s| s.session_epoch);
+    spawn_local(async move {
+        let result = api::request("GET", "/api/workspaces/capacity", None).await;
+        if !current_session(state, epoch) {
+            return;
+        }
+        match result {
+            Ok(value) => state.update(|s| accept_capacity_response(&mut s.monitor, value)),
+            Err(error) if error.status == 401 => {
+                fail(state, error);
+                return;
+            }
+            Err(error) => state.update(|s| {
+                s.monitor.capacity = None;
+                s.monitor.capacity_failure = Some(feedback(&error));
+            }),
+        }
+        state.update(|s| s.monitor.capacity_loading = false);
+    });
+}
+
+fn accept_capacity_response(model: &mut Model, value: Value) {
+    match json_codec::from_value::<WorkspaceCapacity>(value) {
+        Ok(capacity) => {
+            model.capacity = Some(capacity);
+            model.capacity_failure = None;
+        }
+        Err(_) => {
+            model.capacity = None;
+            model.capacity_failure = Some(Feedback {
+                message: t(
+                    "容量响应格式无效，无法确认当前额度。",
+                    "Invalid capacity response; current limits cannot be confirmed.",
+                ),
+                request_id: None,
+            });
+        }
+    }
+}
+
+fn capacity_warning(value: Option<&WorkspaceCapacity>) -> String {
+    match value.map(|capacity| capacity.warning) {
+        Some(CapacityWarning::Exhausted) => t(
+            "保留证据配额已耗尽，新增工作区或清单增长可能被拒绝。",
+            "Retained evidence capacity is exhausted; new workspaces or manifest growth may be rejected.",
+        ),
+        Some(CapacityWarning::NearLimit) => t(
+            "保留证据配额已使用至少 80%，请提前评估服务容量。",
+            "At least 80% of a retained evidence quota is used; review service capacity.",
+        ),
+        Some(CapacityWarning::Ok) => t(
+            "保留证据配额尚有余量。",
+            "Retained evidence capacity remains available.",
+        ),
+        None => t(
+            "保留证据配额状态不可用。",
+            "Retained evidence capacity is unavailable.",
+        ),
+    }
+}
+
+fn capacity_summary(scope: Option<&WorkspaceCapacityScope>) -> String {
+    let Some(scope) = scope else {
+        return t("不可用", "Unavailable");
+    };
+    format!(
+        "{}: {} / {} · {}: {} / {}",
+        t("记录", "Records"),
+        scope.records.used,
+        scope.records.limit,
+        t("预留元数据", "Reserved metadata"),
+        format::bytes(scope.metadata_bytes.used),
+        format::bytes(scope.metadata_bytes.limit)
+    )
+}
+
 fn load_history(state: RwSignal<State>) {
     if state.with_untracked(|s| !s.session_active() || !s.admin || s.monitor.history_loading) {
         return;
@@ -327,6 +416,14 @@ pub(crate) fn view(state: RwSignal<State>) -> impl IntoView {
                 {move ||state.with(|s|s.monitor.failure.clone()).map(|failure|view!{<ErrorState message=failure.message request_id=failure.request_id/>})}
                 {move ||state.with(|s|s.monitor.history_failure.clone()).map(|failure|view!{<ErrorState message=failure.message request_id=failure.request_id/>})}
                 <Show when=move ||state.with(|s|s.monitor.loading&&!s.monitor.loaded)><LoadingState/></Show>
+                <article class="zxs-content-panel zxs-frame zxs-frame--inset" aria-label=t("持久工作区证据配额", "Retained workspace evidence capacity")>
+                    <h2>{t("持久工作区证据配额", "Retained workspace evidence capacity")}</h2>
+                    {move || state.with(|s| s.monitor.capacity_failure.clone()).map(|failure| view!{<ErrorState message=failure.message request_id=failure.request_id/>})}
+                    <p role="status">{move || state.with(|s| capacity_warning(s.monitor.capacity.as_ref()))}</p>
+                    <p>{move || state.with(|s| format!("{}：{}", t("全池", "Pool"), capacity_summary(s.monitor.capacity.as_ref().and_then(|capacity| capacity.global.as_ref()))))}</p>
+                    <p>{move || state.with(|s| format!("{}：{}", t("当前账户", "Current account"), capacity_summary(s.monitor.capacity.as_ref().map(|capacity| &capacity.principal))))}</p>
+                    <p>{t("这是累计生命周期额度，不是活动工作区数。成功提交、中止和过期均不会释放证据名额；当前无自动退休或既有池配额调整。元数据额度不是磁盘剩余空间。", "These are lifetime evidence quotas, not active workspace counts. Committed, aborted and expired records remain charged. Automatic retirement and existing-pool quota changes are not available. Metadata quota is not free disk space.")}</p>
+                </article>
                 <div class="zxs-metric-grid zxs-surface-start"><For each=move ||available_metrics.get() key=Metric::key children=move |metric|metric_card(state,metric)/></div>
                 <p class="zxs-metric-timestamp zxs-row">{move ||state.with(|s|format!("{}: {}",t("采样时间","Sampled at"),s.monitor.snapshot["collected_at"].as_str().map(format::timestamp).unwrap_or_else(||t("不可用","Unavailable"))))}</p>
             </Show>

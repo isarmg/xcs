@@ -93,7 +93,7 @@ pub(crate) fn view(state: RwSignal<State>) -> impl IntoView {
                 .with(|s| s.files.disks.clone())
                 .into_iter()
                 .map(|disk| {
-                    let id = text(&disk, &["slot_id", "id"]);
+                    let id = disk.slot_id;
                     SelectOption::new(id.clone(), id)
                 }),
         );

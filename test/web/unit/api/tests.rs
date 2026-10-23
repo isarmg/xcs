@@ -81,8 +81,7 @@ fn beginning_logout_invalidates_pending_login_without_losing_revocation_credenti
     });
     // Transport failure locks the UI but must retain the exact credential for
     // a later revocation retry, rather than replacing it with a new identity.
-    state.logout_pending = false;
-    state.logout_unconfirmed = true;
+    state.session_transition = crate::ui::SessionTransition::LogoutUnconfirmed;
     state.authenticated = false;
     assert_eq!(crate::ui::begin_logout(&mut state), Some(2));
     CREDENTIALS.with(|saved| {

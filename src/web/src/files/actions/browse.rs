@@ -15,13 +15,15 @@ pub(crate) fn load_disks(state: RwSignal<State>) {
     state.update(|s| s.files.loading_disks = true);
     let epoch = state.with_untracked(|s| s.session_epoch);
     spawn_local(async move {
-        let result = api::request("GET", "/api/file-manager/disks", None).await;
+        let result = api::request("GET", "/api/file-manager/disks", None)
+            .await
+            .and_then(|value| super::super::model::parse_disks(&value));
         if !current_session(state, epoch) {
             return;
         }
         match result {
             Ok(value) => state.update(|s| {
-                s.files.disks = list(&value, "disks");
+                s.files.disks = value;
                 s.files.disks_loaded = true;
             }),
             Err(error) => fail(state, error),
@@ -31,7 +33,7 @@ pub(crate) fn load_disks(state: RwSignal<State>) {
 }
 pub(crate) fn open_disk(state: RwSignal<State>, slot: String) {
     state.update(|s| {
-        s.page = "files".into();
+        s.page = crate::ui::Page::Files;
         s.files.slot = slot;
         s.files.writable = false;
         s.files.directory.clear();
@@ -52,7 +54,7 @@ pub(crate) fn open_disk(state: RwSignal<State>, slot: String) {
 }
 pub(crate) fn go_root(state: RwSignal<State>) {
     state.update(|s| {
-        s.page = "files".into();
+        s.page = crate::ui::Page::Files;
         s.files.directory_branches.clear();
         s.files.directory_file_count = 0;
         s.files.directory_branches_supported = false;
@@ -73,7 +75,7 @@ pub(crate) fn go_root(state: RwSignal<State>) {
 }
 pub(crate) fn go_directory(state: RwSignal<State>, directory: String) {
     state.update(|s| {
-        s.page = "files".into();
+        s.page = crate::ui::Page::Files;
         s.files.directory = directory;
         s.files.writable = false;
         s.files.entries = Default::default();
@@ -141,8 +143,8 @@ pub(crate) fn load_entries(state: RwSignal<State>) {
                 s.files.writable = value["writable"].as_bool().unwrap_or(false);
                 s.files.loaded = true;
                 s.files.reconcile_selection();
-                if s.page == "details" && s.files.selected.is_none() {
-                    s.page = "files".into();
+                if s.page == crate::ui::Page::Details && s.files.selected.is_none() {
+                    s.page = crate::ui::Page::Files;
                 }
             }),
             Err(error) => fail(state, error),
@@ -171,7 +173,7 @@ pub(crate) fn select_entry(state: RwSignal<State>, entry: Value) {
     state.update(|s| {
         s.files.clear_selection();
         s.files.selected = Some(entry.clone());
-        s.page = "details".into();
+        s.page = crate::ui::Page::Details;
     });
     if entry["kind"] == "file" {
         load_file_history(state);

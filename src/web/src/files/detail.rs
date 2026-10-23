@@ -20,7 +20,7 @@ pub(crate) fn page(state: RwSignal<State>) -> impl IntoView {
     view! {
         <section class="zxs-content-stack zxs-entry-page zxs-stack">
             <nav class="zxs-entry-navigation zxs-flow" aria-label=t("详情导航","Details navigation")>
-                <button class="zxs-button" on:click=move |_|state.update(|s|{s.page="files".into();})><FileIcon name="back"/>{t("返回文件列表","Back to files")}</button>
+                <button class="zxs-button" on:click=move |_|state.update(|s|{s.page=crate::ui::Page::Files;})><FileIcon name="back"/>{t("返回文件列表","Back to files")}</button>
                 <span>{move ||state.with(|s|join_path(&s.files.slot,&s.files.directory))}</span>
             </nav>
             {move ||match selected.get() {

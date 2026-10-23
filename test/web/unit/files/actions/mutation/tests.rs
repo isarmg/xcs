@@ -2,11 +2,14 @@ use super::*;
 
 #[test]
 fn business_mutations_require_an_active_session_before_browser_work() {
-    for (authenticated, logout_pending) in [(true, true), (false, false)] {
+    for (authenticated, session_transition) in [
+        (true, crate::ui::SessionTransition::LoggingOut),
+        (false, crate::ui::SessionTransition::Idle),
+    ] {
         Owner::new().with(|| {
             let state = RwSignal::new(State {
                 authenticated,
-                logout_pending,
+                session_transition,
                 ..Default::default()
             });
             state.update(|s| {

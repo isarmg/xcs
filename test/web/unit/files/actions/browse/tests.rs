@@ -18,7 +18,7 @@ fn listing_responses_require_the_original_location_generation_and_active_session
         assert!(!current_listing(state, 1, "P02", "docs", 3));
         assert!(!current_listing(state, 1, "P01", "other", 3));
         assert!(!current_listing(state, 0, "P01", "docs", 3));
-        state.update(|s| s.logout_pending = true);
+        state.update(|s| s.session_transition = crate::ui::SessionTransition::LoggingOut);
         assert!(!current_listing(state, 1, "P01", "docs", 3));
     });
 }
@@ -45,17 +45,15 @@ fn directory_navigation_drops_the_previous_write_permission_before_loading() {
 #[test]
 fn selected_file_history_read_requires_an_active_session() {
     Owner::new().with(|| {
-        for (authenticated, restoring, logout_pending, logout_unconfirmed) in [
-            (false, false, false, false),
-            (true, true, false, false),
-            (true, false, true, false),
-            (true, false, false, true),
+        for (authenticated, session_transition) in [
+            (false, crate::ui::SessionTransition::Idle),
+            (true, crate::ui::SessionTransition::Restoring),
+            (true, crate::ui::SessionTransition::LoggingOut),
+            (true, crate::ui::SessionTransition::LogoutUnconfirmed),
         ] {
             let state = RwSignal::new(State {
                 authenticated,
-                restoring,
-                logout_pending,
-                logout_unconfirmed,
+                session_transition,
                 ..Default::default()
             });
             state.update(|s| {

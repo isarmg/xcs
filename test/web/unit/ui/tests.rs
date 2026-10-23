@@ -6,13 +6,13 @@ fn session_transitions_reject_duplicate_and_overlapping_submissions() {
     assert_eq!(begin_restore(&mut state), None);
     assert_eq!(begin_login(&mut state), None);
     assert_eq!(state.session_epoch, 1);
-    state.restoring = false;
+    state.session_transition = crate::ui::SessionTransition::Idle;
     assert_eq!(begin_login(&mut state), Some(2));
     assert_eq!(begin_login(&mut state), None);
     assert_eq!(begin_restore(&mut state), None);
     assert_eq!(state.busy, 1);
     state.busy = 0;
-    state.logout_pending = true;
+    state.session_transition = crate::ui::SessionTransition::LoggingOut;
     assert_eq!(begin_login(&mut state), None);
     assert_eq!(begin_restore(&mut state), None);
     assert_eq!(state.session_epoch, 2);
@@ -26,10 +26,10 @@ fn content_and_account_completion_require_the_original_active_session() {
             ..Default::default()
         });
         assert!(current_session(state, 4));
-        state.update(|s| s.logout_pending = true);
+        state.update(|s| s.session_transition = crate::ui::SessionTransition::LoggingOut);
         assert!(!current_session(state, 4));
         state.update(|s| {
-            s.logout_pending = false;
+            s.session_transition = crate::ui::SessionTransition::Idle;
             s.session_epoch = 5;
         });
         assert!(!current_session(state, 4));
@@ -56,7 +56,7 @@ fn detached_completion_rejects_a_disposed_root() {
     assert!(current_session(state, 4));
     owner.cleanup();
     assert!(!current_session(state, 4));
-    assert_eq!(state.try_with_untracked(|s| s.logout_pending), None);
+    assert_eq!(state.try_with_untracked(|s| s.logout_pending()), None);
 }
 #[test]
 fn shell_identity_does_not_change_with_file_progress() {
@@ -67,7 +67,7 @@ fn shell_identity_does_not_change_with_file_progress() {
     };
     let session = session_view(&state);
     state.busy = 3;
-    state.password_pending = true;
+    state.password_change = crate::ui::PasswordChangeState::Pending;
     state.notice = "saving".into();
     assert_eq!(session_view(&state), session);
     assert_eq!(session.phase, SessionPhase::Authenticated);
@@ -76,7 +76,7 @@ fn shell_identity_does_not_change_with_file_progress() {
 fn wrong_password_does_not_discard_pending_file_saves() {
     let mut state = State {
         authenticated: true,
-        password_pending: true,
+        password_change: crate::ui::PasswordChangeState::Pending,
         ..Default::default()
     };
     state.files.slot = "P01".into();
@@ -92,7 +92,7 @@ fn wrong_password_does_not_discard_pending_file_saves() {
     );
     assert!(state.authenticated);
     assert_eq!(state.files.slot, "P01");
-    assert!(!state.password_pending);
+    assert!(!state.password_pending());
     assert_eq!(
         state.password_failure.unwrap().request_id.as_deref(),
         Some("req_test")
@@ -143,10 +143,10 @@ fn language_reload_waits_for_pending_or_uncertain_work() {
     assert!(state.reload_blocked());
     state.files.operations[0]["commit_state"] = "PUBLISHED".into();
     assert!(!state.reload_blocked());
-    state.password_pending = true;
+    state.password_change = crate::ui::PasswordChangeState::Pending;
     assert!(state.reload_blocked());
-    state.password_pending = false;
-    state.logout_unconfirmed = true;
+    state.password_change = crate::ui::PasswordChangeState::Idle;
+    state.session_transition = crate::ui::SessionTransition::LogoutUnconfirmed;
     assert!(state.reload_blocked());
 }
 
@@ -171,7 +171,7 @@ fn unconfirmed_logout_cannot_be_replaced_by_login_or_restore() {
     let mut state = State {
         principal: "original-admin".into(),
         session_epoch: 7,
-        logout_unconfirmed: true,
+        session_transition: crate::ui::SessionTransition::LogoutUnconfirmed,
         ..Default::default()
     };
     for _ in 0..3 {
@@ -196,17 +196,15 @@ fn unconfirmed_logout_cannot_be_replaced_by_login_or_restore() {
 #[test]
 fn business_reads_do_not_start_outside_a_settled_session() {
     Owner::new().with(|| {
-        for (authenticated, restoring, logout_pending, logout_unconfirmed) in [
-            (false, false, false, false),
-            (true, true, false, false),
-            (true, false, true, false),
-            (true, false, false, true),
+        for (authenticated, session_transition) in [
+            (false, crate::ui::SessionTransition::Idle),
+            (true, crate::ui::SessionTransition::Restoring),
+            (true, crate::ui::SessionTransition::LoggingOut),
+            (true, crate::ui::SessionTransition::LogoutUnconfirmed),
         ] {
             let state = RwSignal::new(State {
                 authenticated,
-                restoring,
-                logout_pending,
-                logout_unconfirmed,
+                session_transition,
                 admin: true,
                 ..Default::default()
             });
@@ -237,7 +235,7 @@ fn uncertain_password_change_blocks_resubmission_and_reload_without_discarding_w
     for status in [0, 200, 500, 503] {
         let mut state = State {
             authenticated: true,
-            password_pending: true,
+            password_change: crate::ui::PasswordChangeState::Pending,
             ..Default::default()
         };
         state.files.slot = "P01".into();
@@ -251,8 +249,8 @@ fn uncertain_password_change_blocks_resubmission_and_reload_without_discarding_w
                 request_id: Some("req_password".into()),
             },
         );
-        assert!(state.password_unknown);
-        assert!(!state.password_pending);
+        assert!(state.password_unknown());
+        assert!(!state.password_pending());
         assert!(state.password_change_blocked());
         assert!(state.reload_blocked());
         assert!(state.authenticated);
@@ -269,18 +267,18 @@ fn malformed_password_success_requires_signout_before_another_change() {
     Owner::new().with(|| {
         let state = RwSignal::new(State {
             authenticated: true,
-            password_pending: true,
+            password_change: crate::ui::PasswordChangeState::Pending,
             ..Default::default()
         });
         state.update(reject_unconfirmed_password_change);
         state.with_untracked(|s| {
-            assert!(s.password_unknown);
+            assert!(s.password_unknown());
             assert!(s.password_change_blocked());
             assert!(s.reload_blocked());
         });
         end_session(state, String::new());
         state.with_untracked(|s| {
-            assert!(!s.password_unknown);
+            assert!(!s.password_unknown());
             assert!(!s.reload_blocked());
         });
     });
@@ -290,7 +288,7 @@ fn malformed_password_success_requires_signout_before_another_change() {
 fn known_password_rejection_allows_correction_but_never_erases_an_existing_fence() {
     let mut state = State {
         authenticated: true,
-        password_pending: true,
+        password_change: crate::ui::PasswordChangeState::Pending,
         ..Default::default()
     };
     let error = api::Error {
@@ -301,9 +299,52 @@ fn known_password_rejection_allows_correction_but_never_erases_an_existing_fence
         request_id: None,
     };
     reject_password_change(&mut state, &error);
-    assert!(!state.password_unknown);
+    assert!(!state.password_unknown());
     assert!(!state.password_change_blocked());
-    state.password_unknown = true;
+    state.password_change = crate::ui::PasswordChangeState::Unknown;
     reject_password_change(&mut state, &error);
     assert!(state.password_change_blocked());
+}
+
+#[test]
+fn logout_supersedes_restore_and_unknown_retry_without_overlapping_phases() {
+    for transition in [
+        SessionTransition::Restoring,
+        SessionTransition::LogoutUnconfirmed,
+    ] {
+        let mut state = State {
+            authenticated: true,
+            session_transition: transition,
+            password_change: PasswordChangeState::Unknown,
+            ..Default::default()
+        };
+        assert_eq!(begin_logout(&mut state), Some(1));
+        assert_eq!(state.session_transition, SessionTransition::LoggingOut);
+        assert!(!state.restoring());
+        assert!(!state.logout_unconfirmed());
+        assert!(!state.session_active());
+        assert!(state.reload_blocked());
+        assert_eq!(state.password_change, PasswordChangeState::Unknown);
+        assert_eq!(begin_logout(&mut state), None);
+    }
+}
+
+#[test]
+fn typed_navigation_preserves_unknown_password_and_reload_fences() {
+    Owner::new().with(|| {
+        let state = RwSignal::new(State {
+            authenticated: true,
+            password_change: PasswordChangeState::Unknown,
+            ..Default::default()
+        });
+        for page in [Page::Account, Page::Details, Page::Files] {
+            navigate(state, page);
+            state.with_untracked(|s| {
+                assert_eq!(s.page, page);
+                assert_eq!(s.password_change, PasswordChangeState::Unknown);
+                assert!(s.password_change_blocked());
+                assert!(s.reload_blocked());
+            });
+        }
+    });
 }

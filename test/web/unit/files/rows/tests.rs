@@ -149,7 +149,7 @@ fn aliases_sessions_and_navigation_do_not_reuse_wrong_identity() {
     assert!(old[0].current_entry(&state).is_none());
     assert_ne!(old[0].key, Listing::capture(&state).project()[0].key);
     state.session_epoch -= 1;
-    state.logout_pending = true;
+    state.session_transition = crate::ui::SessionTransition::LoggingOut;
     assert!(old[0].current_entry(&state).is_none());
 }
 

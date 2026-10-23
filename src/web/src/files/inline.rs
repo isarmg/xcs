@@ -166,7 +166,7 @@ pub(super) struct Draft {
 struct Context {
     epoch: u64,
     active: bool,
-    page: String,
+    page: crate::ui::Page,
     slot: String,
     directory: String,
     repository: String,
@@ -178,7 +178,7 @@ impl Context {
         Self {
             epoch: state.session_epoch,
             active: state.session_active(),
-            page: state.page.clone(),
+            page: state.page,
             slot: state.files.slot.clone(),
             directory: state.files.directory.clone(),
             repository: state.files.repository_id.clone(),

@@ -51,15 +51,14 @@ fn matching_wrapped_receipts_preserve_rejection_and_publication_evidence() {
 #[test]
 fn metadata_polling_requires_an_active_session_before_scheduling_network_work() {
     Owner::new().with(|| {
-        for (authenticated, logout_pending, restoring) in [
-            (false, false, false),
-            (true, true, false),
-            (true, false, true),
+        for (authenticated, session_transition) in [
+            (false, crate::ui::SessionTransition::Idle),
+            (true, crate::ui::SessionTransition::LoggingOut),
+            (true, crate::ui::SessionTransition::Restoring),
         ] {
             let mut initial = State {
                 authenticated,
-                logout_pending,
-                restoring,
+                session_transition,
                 ..Default::default()
             };
             initial
@@ -102,6 +101,6 @@ fn poll_projection_copies_only_unpolled_operation_ids_and_keeps_session_epoch() 
         0,
         "polling must not clone State or its history snapshots"
     );
-    state.logout_pending = true;
+    state.session_transition = crate::ui::SessionTransition::LoggingOut;
     assert_eq!(poll_work(&state), None);
 }

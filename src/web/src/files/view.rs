@@ -32,9 +32,9 @@ fn disk_roots(state: RwSignal<State>) -> impl IntoView {
                 <table class="zxs-table zxs-file-table zxs-disk-table">
                     <thead><tr><th scope="col">{t("名称","Name")}</th><th scope="col">{t("访问权限","Access")}</th><th scope="col">{t("可用空间","Available space")}</th><th scope="col">{t("操作","Actions")}</th></tr></thead>
                     <tbody>{model.disks.into_iter().map(move |disk|{
-                        let id=text(&disk,&["slot_id","id"]);let data_slot=id.clone();let row_slot=id.clone();let name_slot=id.clone();let action_slot=id.clone();
-                        let online=disk["online"].as_bool().unwrap_or(false);let writable=disk["writable"].as_bool().unwrap_or(false);
-                        let available=format::parse_u64(&disk["available_bytes"]).map(format::bytes).unwrap_or_else(||t("容量不可用","Capacity unavailable"));
+                        let id=disk.slot_id;let data_slot=id.clone();let row_slot=id.clone();let name_slot=id.clone();let action_slot=id.clone();
+                        let online=disk.online;let writable=disk.writable;
+                        let available=format::bytes(disk.available_bytes);
                         view!{<tr data-online=online.to_string() on:click=move |_|{if online{actions::open_disk(state,row_slot.clone());}}>
                             <td><button class="zxs-button zxs-file-name zxs-disk-entry" data-slot=data_slot disabled=!online on:click=move |event|{event.stop_propagation();actions::open_disk(state,name_slot.clone());}><FileIcon name="folder"/><span>{id}</span></button></td>
                             <td>{if online{if writable{t("可读写","Read and write")}else{t("只读","Read only")}}else{t("离线","Offline")}}</td>
