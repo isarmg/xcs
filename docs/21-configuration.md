@@ -342,9 +342,6 @@ queue_warning_seconds = 30
 
 [配置约束附件](contracts/config-constraints.schema.json)校验最关键的协议断言、资源上限与告警参数；它是完整 TOML 的受检投影，不覆盖全部设备和业务状态。完整部署配置 schema、拓扑交叉校验以及真实启动器仍须在 P0/P1 补齐，不能把投影校验当作部署成功。
 
----
-
-[文档目录](README.md) · [上一章：工程结构与依赖约束](20-engineering.md) · [下一章：验收标准与证明材料](22-acceptance.md)
 
 ### HTTP 暂存的可执行配置入口
 
@@ -368,3 +365,7 @@ HTTP 传输准入及期限参数（上传/读取各自独立一池）：
 ## 当前配置应用入口
 
 `zxs-rescue configuration` 只生成或编辑未初始化草稿，不直接应用配置或在线登记磁盘。部署者可将受保护的本机 Config 通过 `zxs --setup-config ID=PATH` 登记为预置方案，并为每个盘登记 `--setup-disk`。Web 只提交方案 ID，授权预览后按配置摘要确认初始化；提交时重读并核对摘要，文件变化不能静默替换已审查方案。缺失或损坏的预置文件不阻止 HTTP 启动，不能通过浏览器上传任意 Config 或服务器路径。详见[受保护初始化](management/setup-recovery.md)。
+
+---
+
+[文档目录](README.md) · [上一章：工程结构与依赖约束](20-engineering.md) · [下一章：验收标准与证明材料](22-acceptance.md)

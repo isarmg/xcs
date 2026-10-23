@@ -32,3 +32,7 @@
 2026-10-19 最新分支与批量文件操作的核心恢复、HTTP、Unix 描述符、Web 和本地服务证据见[分支实现记录](reports/branch-system-implementation.md)及[验收材料](validation/evidence/branch-operations.md)。文档图示检查与这些业务验证分别记录。
 
 历史 JavaScript 探针的完整分类、显式夹具配置及静态 CI 门禁见[证据索引](validation/evidence.md)。当前生产浏览器验收由 [browser-smoke](tools/browser-smoke.md) 单独维护；历史脚本语法通过不替代实际浏览器运行。
+
+## 历史附件路径说明
+
+[2026-10-20 SMB 审查](validation/evidence/smb/review-2026-10-20.md)中的三条 `tests/evidence/smb/review-2026-10-20/` 链接引用当时生成的 `sdk-build.txt`、`validation.txt` 和 `repeated-tests.txt`，不是当前测试源码。当前测试根目录为 `test/`，但本源码检出也没有对应的 `test/evidence/` 日志；仅替换目录名不会恢复附件。保留报告与迁移原件的历史路径，不伪造日志或宣称已重新验收。需要原始输出时使用当次独立归档；需要当前结果时按 [SMB SDK 验证入口](components/smb.md)重新运行并另记证据。契约检查将此类缺失生成附件单列，不放宽源码链接要求。

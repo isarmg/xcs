@@ -10,7 +10,7 @@
 - 内部命名：[职责命名规范](NAMING.md) → [源码命名迁移与来源架构](architecture/source-naming.md)
 - 本地开发：[运行服务与检查](getting-started.md) → [工程结构](20-engineering.md)
 - 日常使用：[操作手册](25-operation-manual.md) → [配置](21-configuration.md)
-- 理解设计：[总体架构](03-architecture.md) → [分支逻辑](design/branch-system-logic.md)
+- 理解设计：[术语速查](02-concepts-and-invariants.md#s02-04) → [总体架构](03-architecture.md) → [分支逻辑](design/branch-system-logic.md)
 - 构建与分发：[持续集成](ci.md) → [质量门禁](quality.md) → [发布与安装](release.md) → [Rust 第三方源码来源](THIRD_PARTY_RUST_SOURCES.md)
 - 核对进度：[交付状态](23-delivery-and-decisions.md#s23-05) → [实现与检查报告](reports/README.md)
 

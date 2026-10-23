@@ -8,13 +8,13 @@ ZXS 采用一个 Git 仓库、一个根 Cargo 工作区和一个活动锁文件�
 
 | 位置 | 职责 |
 | --- | --- |
-| `src/{auth,contract,naming,platform,engine,server,client,admin}` | 认证、业务契约、命名、平台能力、存储引擎、HTTP 服务、客户端与运维命令 |
+| `src/{auth,contract,naming,platform,engine,server,client,rescue}` | 认证、业务契约、命名、平台能力、存储引擎、HTTP 服务、客户端与运维命令 |
 | `src/web` | 浏览器 Rust/WASM 产品界面及静态样式、字体资源 |
 | `src/interface` | 主题、语言、生命周期、共享组件及直接合并的 CSR 基础原语 |
 | `src/macros` | 与编译器进程边界一致的界面过程宏 |
 | `src/{smb,smb-vfs}` | 独立 Samba → 本机桥接路径及 VFS 接口 |
-| `src/foundation` | 在仓库内直接维护的 Rust 基础实现；包名和版本保留上游身份用于追踪 |
-| `tools` | 构建、绑定生成、契约、安全、来源管理和验收工具，统一属于根工作区 |
+| `src/foundation` | 在仓库内直接维护的 Rust 基础实现；活动包按职责命名；真实上游名称、版本、来源摘要及本地变更由中央溯源清单追踪 |
+| `tools` | 构建、绑定生成、契约、安全、来源管理和验收工具；Rust 工具属于根工作区，脚本承担构建与验收编排 |
 | `test` | 按原组件组织的单元测试、集成测试、工具回归和保留的基础库测试材料；不建立第二套产品工作区 |
 | `docs` | 唯一文档目录：规范、组件说明、开发运维、验证记录、上游原始说明 |
 | `compliance` | 唯一许可证和溯源目录：原始条款、版权通知、来源、迁移映射和校验收据 |

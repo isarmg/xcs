@@ -11,6 +11,7 @@
 - [2.1 对象定义](#s02-01)
 - [2.2 不变量](#s02-02)
 - [2.3 状态维度与统一用语](#s02-03)
+- [2.4 中英术语速查](#s02-04)
 
 <a id="s02-01"></a>
 
@@ -94,6 +95,24 @@ I22 目录分支递归批量操作各文件的独立分支，一次决定和发�
 | 访问结果 | 无权限、连接中断、内容不可用 | 分别返回，不能统一伪装为空目录或“文件不存在” |
 
 “全量”描述版本文件的完整性；“份数”描述指定物理盘上的副本数量；“主分支”描述当前访问目标。三者不得混用。
+
+<a id="s02-04"></a>
+
+## 2.4 中英术语速查
+
+本表是阅读索引，定义与不变量仍以本章和对应领域规范为准；代码类型及线协议字段不因中文翻译而改名。
+
+| 中文 | 代码或协议用语 | 阅读入口 |
+| --- | --- | --- |
+| 仓库／历史树 | `Repository` / `HistoryTree` | [对象定义](#s02-01) |
+| 工作区／访问会话 | `Workspace` / `AccessSession` | [写入与保存](11-write-semantics.md) |
+| 放置／存储盘位 | `Placement` / `StorageSlot` | [数据模型](07-data-model.md)、[备份拓扑](09-backup-topology.md) |
+| 提交／分支头 | `Commit` / `HEAD` | [历史与分支](06-history-and-branches.md) |
+| 合并连线／文件分支合并 | `MergeLink` / `FileBranchMerge` | [文件合并](design/file-merge-tags-backup.md)；前者只记录关系，后者执行显式内容选择 |
+| 代际 | `generation` / `epoch`，按所属字段区分 | [事务与恢复](10-transactions-and-recovery.md)；不把会话、配置和拓扑代际混作同一计数器 |
+| 发布证明／发布闭包 | `PUBLICATION` 及其准确摘要绑定的候选、对象和证明 | [盘格式](08-full-storage-and-disk-format.md)、[事务与恢复](10-transactions-and-recovery.md) |
+| 冻结父版本 | 创建分支时固定的父节点或版本引用 | [历史与分支](06-history-and-branches.md)；不是随父分支 HEAD 自动移动的别名 |
+| 发布时保护／当前健康 | `protection_at_publish` / `current_health` | [读取与观测](12-reading-and-cache.md#s12-08)；历史成功和当前副本状态分别记录 |
 
 ---
 
