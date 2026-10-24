@@ -817,6 +817,7 @@ impl SetupRecovery {
         &self,
         identity: &Identity,
         request: RecoveryPreviewRequest,
+        revalidate: impl FnOnce(&Identity) -> Result<(), ApiError>,
     ) -> Result<storage_engine::RecoveryPlan, ApiError> {
         let _lock = self.lock()?;
         let mut engine = Engine::open_for_recovery_with_workspace_limits(
@@ -824,6 +825,11 @@ impl SetupRecovery {
             self.retained_workspace_limits,
         )
         .map_err(engine_error)?;
+        #[cfg(test)]
+        tests::after_recovery_open();
+        // Opening/replaying storage can outlive the entrance session. Admit
+        // this new recovery action only after the engine and its locks exist.
+        revalidate(identity)?;
         engine
             .prepare_degraded_recovery(&request.operation_id, &identity.principal, &request.reason)
             .map_err(engine_error)
@@ -833,6 +839,7 @@ impl SetupRecovery {
         &self,
         identity: &Identity,
         request: RecoveryCommitRequest,
+        revalidate: impl FnOnce(&Identity) -> Result<(), ApiError>,
     ) -> Result<storage_engine::OperationResult, ApiError> {
         if !request.accept_permanent_loss {
             return Err(ApiError::invalid(
@@ -845,6 +852,11 @@ impl SetupRecovery {
             self.retained_workspace_limits,
         )
         .map_err(engine_error)?;
+        #[cfg(test)]
+        tests::after_recovery_open();
+        // Do not hold the authority lock across disk I/O. Once this fresh
+        // admission succeeds, the core keeps its normal completion semantics.
+        revalidate(identity)?;
         engine
             .commit_degraded_recovery(
                 &request.recovery_id,
@@ -1175,4 +1187,10 @@ fn read_preset(path: &Path) -> Result<Config, ApiError> {
 #[cfg(test)]
 pub(crate) fn after_next_restore(action: impl FnOnce() + 'static) {
     tests::after_next_restore(action);
+}
+
+/// Deterministic test-only interruption before a new recovery action is admitted.
+#[cfg(test)]
+pub(crate) fn after_next_recovery_open(action: impl FnOnce() + 'static) {
+    tests::after_next_recovery_open(action);
 }

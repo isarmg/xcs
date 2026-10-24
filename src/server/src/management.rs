@@ -743,6 +743,11 @@ impl Backend for ManagementBackend {
                     .recovery_preview(
                         identity.as_ref().ok_or_else(ApiError::unauthorized)?,
                         request,
+                        |identity| {
+                            crate::lock(&auth)?
+                                .revalidate_identity(identity)
+                                .map(|_| ())
+                        },
                     )
                     .and_then(|value| json_codec::to_value(value).map_err(ApiError::invalid))
             }
@@ -753,6 +758,11 @@ impl Backend for ManagementBackend {
                     .recovery_commit(
                         identity.as_ref().ok_or_else(ApiError::unauthorized)?,
                         request,
+                        |identity| {
+                            crate::lock(&auth)?
+                                .revalidate_identity(identity)
+                                .map(|_| ())
+                        },
                     )
                     .and_then(|value| json_codec::to_value(value).map_err(ApiError::invalid))
             }
@@ -957,6 +967,10 @@ mod management_tests;
 #[cfg(test)]
 #[path = "../../../test/server/unit/management_authority_tests.rs"]
 mod authority_tests;
+
+#[cfg(test)]
+#[path = "../../../test/server/unit/management_recovery_admission_tests.rs"]
+mod recovery_admission_tests;
 
 #[cfg(test)]
 #[path = "../../../test/server/unit/management_shutdown_tests.rs"]

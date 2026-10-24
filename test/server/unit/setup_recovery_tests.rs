@@ -212,7 +212,8 @@ fn recovery_requires_explicit_permanent_loss_acknowledgement() {
                     recovery_id: "recovery".into(),
                     digest: "digest".into(),
                     accept_permanent_loss: false
-                }
+                },
+                |_| panic!("unacknowledged recovery must not reach final admission"),
             )
             .unwrap_err()
             .status,
@@ -936,6 +937,8 @@ fn single_disk_interrupted_setup_still_requires_bound_completion_proof() {
 thread_local! {
     static AFTER_RESTORE: std::cell::RefCell<Option<Box<dyn FnOnce()>>> =
         const { std::cell::RefCell::new(None) };
+    static AFTER_RECOVERY_OPEN: std::cell::RefCell<Option<Box<dyn FnOnce()>>> =
+        const { std::cell::RefCell::new(None) };
 }
 
 pub(super) fn after_next_restore(action: impl FnOnce() + 'static) {
@@ -944,6 +947,16 @@ pub(super) fn after_next_restore(action: impl FnOnce() + 'static) {
 
 pub(super) fn after_restore() {
     if let Some(action) = AFTER_RESTORE.with(|hook| hook.borrow_mut().take()) {
+        action();
+    }
+}
+
+pub(super) fn after_next_recovery_open(action: impl FnOnce() + 'static) {
+    AFTER_RECOVERY_OPEN.with(|hook| *hook.borrow_mut() = Some(Box::new(action)));
+}
+
+pub(super) fn after_recovery_open() {
+    if let Some(action) = AFTER_RECOVERY_OPEN.with(|hook| hook.borrow_mut().take()) {
         action();
     }
 }

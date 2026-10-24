@@ -1,0 +1,237 @@
+//! Revoke only after offline open, before a new recovery action reaches the core.
+use super::*;
+use storage_engine::{CommitRequest, Config, Engine, new_id};
+
+const PASSWORD: &str = "recovery-admission-password";
+const NEW_PASSWORD: &str = "rotated-recovery-password";
+const LOST_PAYLOAD: &[u8] = b"permanently lost recovery fixture bytes";
+
+fn files(root: &Path) -> BTreeMap<PathBuf, Vec<u8>> {
+    let mut result = BTreeMap::new();
+    if !root.exists() {
+        return result;
+    }
+    for entry in fs::read_dir(root).unwrap() {
+        let path = entry.unwrap().path();
+        if path.is_dir() {
+            result.extend(files(&path));
+        } else {
+            result.insert(path.clone(), fs::read(path).unwrap());
+        }
+    }
+    result
+}
+
+fn evidence(data: &Path, disks: &BTreeMap<String, PathBuf>) -> BTreeMap<PathBuf, Vec<u8>> {
+    let mut result = files(&data.join("recovery-plans"));
+    for disk in disks.values() {
+        // Include all journal frames and immutable proofs, not just the current
+        // state projection: a rejected request must not append recovery records.
+        result.extend(files(disk));
+    }
+    result
+}
+
+struct Fixture {
+    _root: tempfile::TempDir,
+    backend: Arc<ManagementBackend>,
+    auth: Arc<Mutex<AuthStore>>,
+    input: Value,
+}
+
+impl Fixture {
+    fn new(action: &str) -> Self {
+        let root = tempfile::tempdir().unwrap();
+        let data = root.path().join("system");
+        let management = root.path().join("management");
+        let disks = BTreeMap::from([
+            ("one".into(), root.path().join("one")),
+            ("two".into(), root.path().join("two")),
+            ("three".into(), root.path().join("three")),
+        ]);
+        let auth = AuthStore::initialize_management(&management, "admin", PASSWORD).unwrap();
+        let mut engine =
+            Engine::initialize(&data, Config::development(disks.values().cloned())).unwrap();
+        engine
+            .persist_auth_state(auth.snapshot().unwrap(), "system_auth", &new_id("op"))
+            .unwrap();
+        let repo = engine
+            .create_repository("Recovery admission", "P01", 3, "admin", &new_id("op"))
+            .unwrap();
+        let workspace = engine
+            .create_workspace(&repo.main_branch_id, "admin")
+            .unwrap();
+        let staged = engine
+            .stage_bytes(&workspace.workspace_id, "lost.txt", LOST_PAYLOAD)
+            .unwrap();
+        let primary = engine
+            .config()
+            .disks
+            .iter()
+            .find(|disk| disk.slot_id == repo.primary_slot_id)
+            .unwrap();
+        assert!(
+            staged.source_path.starts_with(
+                primary
+                    .root
+                    .join("staging/workspaces")
+                    .join(&workspace.workspace_id)
+            )
+        );
+        let operation = new_id("op");
+        engine.inject_fault_once("after_accept_2");
+        assert!(
+            engine
+                .commit_workspace(CommitRequest {
+                    workspace_id: workspace.workspace_id,
+                    operation_id: operation.clone(),
+                    principal: "admin".into(),
+                    expected_head: workspace.base_head,
+                    fencing_token: workspace.fencing_token,
+                    message: "candidate awaiting recovery".into(),
+                    request_digest: None,
+                })
+                .is_err()
+        );
+        for disk in disks.values() {
+            // Resolve the one immutable version descriptor on this member,
+            // separately from the primary disk's private workspace source.
+            let history = disk.join("histories").join(&repo.history_tree_id);
+            let versions = fs::read_dir(history.join("versions"))
+                .unwrap()
+                .map(|entry| entry.unwrap().path())
+                .collect::<Vec<_>>();
+            assert_eq!(versions.len(), 1);
+            let version: storage_contract::FileVersion =
+                json_codec::from_slice(&fs::read(versions[0].join("version.json")).unwrap())
+                    .unwrap();
+            assert_eq!(version.creation_name, "lost.txt");
+            let payload = history
+                .join("file-containers")
+                .join(version.file_id)
+                .join(version.creation_name)
+                .join("versions")
+                .join(version.storage_name);
+            assert_ne!(payload, staged.source_path);
+            assert_eq!(fs::read(&payload).unwrap(), LOST_PAYLOAD);
+            fs::remove_file(payload).unwrap();
+        }
+        // stage_bytes stores its independent source on the primary disk too.
+        // It must be the only surviving full copy, not a fourth replica.
+        let remaining = files(root.path())
+            .into_iter()
+            .filter_map(|(path, bytes)| (bytes == LOST_PAYLOAD).then_some(path))
+            .collect::<Vec<_>>();
+        assert_eq!(
+            remaining.as_slice(),
+            std::slice::from_ref(&staged.source_path)
+        );
+        fs::remove_file(staged.source_path).unwrap();
+        assert!(
+            files(root.path())
+                .values()
+                .all(|bytes| bytes != LOST_PAYLOAD)
+        );
+        drop(engine);
+        drop(auth);
+        let input = if action == "recovery_commit" {
+            let mut engine = Engine::open_for_recovery(&data).unwrap();
+            let plan = engine
+                .prepare_degraded_recovery(&operation, "admin", "all original bytes are lost")
+                .unwrap();
+            json!({"recovery_id":plan.recovery_id,"digest":plan.digest,"accept_permanent_loss":true})
+        } else {
+            json!({"operation_id":operation,"reason":"all original bytes are lost"})
+        };
+        let (backend, auth) = open_service_with_disks(&data, &management, disks, true).unwrap();
+        let auth = Arc::new(Mutex::new(auth));
+        // No background recovery races with the deliberate offline fixture.
+        *backend.inner.auth.lock().unwrap() = Some(auth.clone());
+        Self {
+            _root: root,
+            backend,
+            auth,
+            input,
+        }
+    }
+}
+
+#[test]
+fn offline_recovery_revalidates_after_open_before_new_plan_or_publication() {
+    for action in ["recovery_preview", "recovery_commit"] {
+        for change_password in [false, true] {
+            let f = Fixture::new(action);
+            let (token, identity) = {
+                let mut auth = f.auth.lock().unwrap();
+                let token = auth.login("admin", PASSWORD).unwrap().token;
+                let identity = auth.authenticate(&token).unwrap();
+                (token, identity)
+            };
+            let before = Arc::new(Mutex::new(None));
+            let captured = before.clone();
+            let auth = f.auth.clone();
+            let data = f.backend.inner.data_root.clone();
+            let disks = f.backend.inner.setup_disks.clone();
+            crate::setup_recovery::after_next_recovery_open(move || {
+                let mut auth = auth.lock().unwrap();
+                if change_password {
+                    auth.change_password(&token, PASSWORD, NEW_PASSWORD)
+                        .unwrap();
+                } else {
+                    auth.logout(&token).unwrap();
+                }
+                drop(auth);
+                *captured.lock().unwrap() = Some(evidence(&data, &disks));
+            });
+            let error = f
+                .backend
+                .setup_operation(action, f.input.clone(), None, Some(&identity))
+                .unwrap_err();
+            assert_eq!(
+                error.code, "UNAUTHORIZED",
+                "{action}, password change: {change_password}"
+            );
+            let before = before
+                .lock()
+                .unwrap()
+                .take()
+                .expect("recovery open hook ran");
+            assert_eq!(
+                evidence(&f.backend.inner.data_root, &f.backend.inner.setup_disks),
+                before,
+                "rejected recovery changed plans, journals or publication proofs"
+            );
+            assert!(
+                f.auth
+                    .lock()
+                    .unwrap()
+                    .revalidate_identity(&identity)
+                    .is_err()
+            );
+
+            // The exact same, valid request remains usable with fresh credentials.
+            // This proves rejection did not come from a malformed/unsatisfiable plan.
+            let fresh = {
+                let mut auth = f.auth.lock().unwrap();
+                let password = if change_password {
+                    NEW_PASSWORD
+                } else {
+                    PASSWORD
+                };
+                let login = auth.login("admin", password).unwrap();
+                auth.authenticate(&login.token).unwrap()
+            };
+            let result = f
+                .backend
+                .setup_operation(action, f.input, None, Some(&fresh));
+            f.backend.stop_management();
+            f.backend.drain_management().unwrap();
+            let result = result.unwrap();
+            if action == "recovery_commit" {
+                assert_eq!(result["commit_state"], "PUBLISHED_DEGRADED");
+            } else {
+                assert!(result["recovery_id"].as_str().is_some());
+            }
+        }
+    }
+}
