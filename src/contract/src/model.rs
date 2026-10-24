@@ -481,7 +481,6 @@ pub struct NamespaceOperation {
 #[serialization(deny_unknown_fields)]
 pub struct Workspace {
     pub workspace_id: String,
-    #[serialization(default = "normal_workspace_purpose")]
     pub purpose: String,
     pub branch_id: String,
     /// Immutable operation actor, bound to staged data and replay, not an ACL.
@@ -517,9 +516,6 @@ pub struct Workspace {
     #[serialization(with = "crate::u64_string")]
     pub created_at: u64,
     pub state: String,
-}
-fn normal_workspace_purpose() -> String {
-    "normal".into()
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serialization(deny_unknown_fields)]
@@ -623,7 +619,7 @@ pub struct ProtectionPolicy {
 pub struct State {
     #[serialization(with = "crate::u64_string")]
     pub sequence: u64,
-    #[serialization(default, with = "crate::u64_string")]
+    #[serialization(with = "crate::u64_string")]
     pub business_generation: u64,
     pub repositories: BTreeMap<String, Repository>,
     pub histories: BTreeMap<String, HistoryTree>,
@@ -687,17 +683,13 @@ pub struct State {
     pub versions: BTreeMap<String, FileVersion>,
     pub placements: BTreeMap<String, Placement>,
     pub merge_links: BTreeMap<String, MergeLink>,
-    #[serialization(default)]
     pub history_boundaries: BTreeMap<String, HistoryBoundary>,
     pub content_states: BTreeMap<String, String>,
     pub operations: BTreeMap<String, OperationResult>,
     pub plans: BTreeMap<String, Plan>,
-    #[serialization(default)]
     pub placement_rules: BTreeMap<String, PlacementRule>,
-    #[serialization(default)]
     pub protection_policies: BTreeMap<String, ProtectionPolicy>,
     /// Audit and idempotency owners of published operations, not user accounts.
-    #[serialization(default)]
     pub operation_principals: BTreeMap<String, String>,
     /// Private authentication control state; never expose State as a public API DTO.
     #[serialization(default)]

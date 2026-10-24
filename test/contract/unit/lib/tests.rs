@@ -46,3 +46,50 @@ fn full_width_wire_integers_roundtrip_without_float_or_precision_loss() {
         assert!(decode_strict::<Integers>(invalid.as_bytes()).is_err());
     }
 }
+
+#[test]
+fn persisted_workspace_requires_explicit_purpose_without_changing_current_bytes() {
+    for purpose in ["normal", "historical_branch"] {
+        let bytes = format!(
+            r#"{{"base_head":"commit_fixture","branch_id":"br_fixture","created_at":"1","fencing_token":"1","files":{{}},"namespace_operations":[],"principal":"admin","purpose":"{purpose}","state":"open","workspace_id":"ws_fixture"}}"#
+        );
+        let workspace: Workspace = decode_strict(bytes.as_bytes()).unwrap();
+        assert_eq!(workspace.purpose, purpose);
+        assert_eq!(canonical_json(&workspace).unwrap(), bytes.as_bytes());
+        // Empty selection maps remain legitimately omitted in the current format.
+        assert!(workspace.selected_file_contexts.is_empty());
+        assert!(workspace.selected_directory_branches.is_empty());
+        let mut missing = json_codec::to_value(&workspace).unwrap();
+        assert!(missing.as_object_mut().unwrap().remove("purpose").is_some());
+        assert!(json_codec::from_value::<Workspace>(missing).is_err());
+    }
+}
+
+#[test]
+fn persisted_state_requires_nonsparse_fields_without_changing_current_bytes() {
+    for generation in [0, u64::MAX] {
+        let bytes = format!(
+            r#"{{"branches":{{}},"business_generation":"{generation}","commits":{{}},"content_states":{{}},"control_auth":null,"events":[],"histories":{{}},"history_boundaries":{{}},"merge_links":{{}},"operation_principals":{{}},"operations":{{}},"placement_rules":{{}},"placements":{{}},"plans":{{}},"protection_policies":{{}},"repositories":{{}},"sequence":"0","topology_generation":"0","versions":{{}}}}"#
+        );
+        let state = State {
+            business_generation: generation,
+            ..Default::default()
+        };
+        assert_eq!(canonical_json(&state).unwrap(), bytes.as_bytes());
+        assert_eq!(decode_strict::<State>(bytes.as_bytes()).unwrap(), state);
+        for field in [
+            "business_generation",
+            "history_boundaries",
+            "placement_rules",
+            "protection_policies",
+            "operation_principals",
+        ] {
+            let mut missing = json_codec::to_value(&state).unwrap();
+            assert!(missing.as_object_mut().unwrap().remove(field).is_some());
+            assert!(
+                json_codec::from_value::<State>(missing).is_err(),
+                "accepted missing {field} at generation {generation}"
+            );
+        }
+    }
+}

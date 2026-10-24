@@ -272,6 +272,75 @@ fn file_node_publication_rejects_missing_main_without_leaking_new_nodes() {
 }
 
 #[test]
+fn file_node_publication_requires_frozen_path_contexts_without_publication() {
+    for missing in ["frozen_tree", "pending_projection"] {
+        let (_temporary, mut engine, repo, entry, _) = fixture();
+        let file_branch = engine
+            .file_context(&repo.repository_id, &entry.path)
+            .unwrap()
+            .branch_id
+            .clone();
+        let result = engine
+            .create_directory_branches(
+                &repo.repository_id,
+                "folder",
+                "pending",
+                "admin",
+                &new_id("op"),
+            )
+            .unwrap();
+        let directory = result.result["directory_branch_id"].as_str().unwrap();
+        let pending = engine.state.directory_branches[directory].clone();
+        assert!(!pending.materialized);
+        let state = std::sync::Arc::make_mut(&mut engine.state);
+        let contexts = match missing {
+            "frozen_tree" => {
+                &mut state
+                    .directory_trees
+                    .get_mut(&pending.head_tree_id)
+                    .unwrap()
+                    .file_contexts
+            }
+            "pending_projection" => {
+                &mut state
+                    .directory_branches
+                    .get_mut(directory)
+                    .unwrap()
+                    .file_contexts
+            }
+            _ => unreachable!(),
+        };
+        assert!(contexts.remove(&entry.lookup_key).is_some());
+        let before = canonical_json(engine.state()).unwrap();
+        let sequence = engine.state.sequence;
+        let slot = engine.next_slot;
+        let operation = new_id("op");
+        let error = engine
+            .update_file_node_tags(
+                &entry.file_id,
+                &[FileTagTarget {
+                    branch_id: file_branch,
+                    source_node_id: entry.version_id.clone(),
+                    expected_node_id: entry.version_id,
+                }],
+                &["tag".into()],
+                &[],
+                "admin",
+                &operation,
+            )
+            .unwrap_err();
+        assert_eq!(error.code(), "STATE_INVALID", "{missing}");
+        assert_eq!(canonical_json(engine.state()).unwrap(), before, "{missing}");
+        assert_eq!(engine.state.sequence, sequence, "{missing}");
+        assert_eq!(engine.next_slot, slot, "{missing}");
+        assert!(
+            !engine.state.operations.contains_key(&operation),
+            "{missing}"
+        );
+    }
+}
+
+#[test]
 fn missing_file_nodes_and_bodies_return_errors_without_publication() {
     for missing in ["node", "body"] {
         let (_temporary, mut engine, _, entry, branch) = fixture();

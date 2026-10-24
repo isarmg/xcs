@@ -165,16 +165,7 @@ impl Publication<'_> {
                 .file_contexts
                 .get(&entry.lookup_key)
                 .cloned()
-                .unwrap_or_else(|| FileContext {
-                    node_id: None,
-                    selection_generation: 0,
-                    branch_id: tree
-                        .file_branches
-                        .get(self.file)
-                        .cloned()
-                        .unwrap_or_default(),
-                    inherited_from: tree.inherited_files.get(self.file).cloned(),
-                });
+                .ok_or_else(|| Error::new("STATE_INVALID", "frozen file path context missing"))?;
             if !matches(&context, entry, self.branches, self.source) {
                 continue;
             }

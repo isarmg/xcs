@@ -173,6 +173,32 @@ fn current_snapshot_and_candidate_are_strict_unversioned_structures() {
 }
 
 #[test]
+fn current_snapshot_requires_nonsparse_state_fields() {
+    let state = State::default();
+    let snapshot = prepare_snapshot(&state, MAX_METADATA).unwrap().descriptor;
+    assert_eq!(
+        resolve_snapshot(snapshot, |_| panic!("empty maps have no pages")).unwrap(),
+        state
+    );
+    for field in [
+        "business_generation",
+        "history_boundaries",
+        "placement_rules",
+        "protection_policies",
+        "operation_principals",
+    ] {
+        let mut snapshot = prepare_snapshot(&state, MAX_METADATA).unwrap().descriptor;
+        if field == "business_generation" {
+            assert!(snapshot.scalars.remove(field).is_some());
+        } else {
+            assert!(snapshot.pages.remove(field).is_some());
+        }
+        let error = resolve_snapshot(snapshot, |_| panic!("empty maps have no pages")).unwrap_err();
+        assert_eq!(error.code(), "INVALID_JSON", "{field}");
+    }
+}
+
+#[test]
 fn scalar_event_snapshots_are_rejected_without_rewriting_evidence() {
     let temp = tempfile::tempdir().unwrap();
     let config = Config::development([
