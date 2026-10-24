@@ -329,9 +329,12 @@ async fn upload_inner(
         let previous = previous.clone();
         let ownership = (admission.clone(), staged_file.clone());
         tokio::task::spawn_blocking(move || {
+            // Capture the whole owner, not only the staged-file tuple field:
+            // cancellation must retain the per-item claim and transfer slot too.
+            let _ownership = ownership;
             let result = uploads::retain_generation(&root, &previous);
             if result.is_err() {
-                ownership.1.block_admission();
+                _ownership.1.block_admission();
             }
             result
         })

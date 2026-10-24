@@ -277,3 +277,200 @@ async fn stale_if_range_returns_complete_content_and_head_retains_length() {
     );
     assert_eq!(dropped.load(Ordering::SeqCst), 1);
 }
+
+struct RetainedGenerationBackend;
+impl crate::Backend for RetainedGenerationBackend {
+    fn call(
+        &self,
+        action: crate::BackendAction,
+        _identity: &Identity,
+        _input: Value,
+    ) -> Result<Value, ApiError> {
+        match action {
+            crate::BackendAction::UploadAuthorize => Ok(json!({"authorized":true})),
+            _ => Err(ApiError::unsupported()),
+        }
+    }
+
+    fn upload(
+        &self,
+        _identity: &Identity,
+        _workspace: &str,
+        _item: &str,
+        _path: &str,
+        _source: &crate::UploadSource,
+    ) -> Result<Value, ApiError> {
+        Ok(json!({"accepted":true}))
+    }
+
+    fn content(&self, _identity: &Identity, _version: &str) -> Result<Content, ApiError> {
+        Err(ApiError::unsupported())
+    }
+}
+
+#[test]
+fn cancelled_generation_retention_keeps_item_claim_and_upload_slot_until_worker_finishes() {
+    use service_stack::ServiceExt;
+    use std::{
+        fs,
+        sync::{Condvar, Mutex},
+        time::Duration,
+    };
+
+    struct Release(Arc<(Mutex<bool>, Condvar)>);
+    impl Drop for Release {
+        fn drop(&mut self) {
+            uploads::RETAIN_GENERATION_HOOK.lock().unwrap().take();
+            *self.0.0.lock().unwrap() = true;
+            self.0.1.notify_all();
+        }
+    }
+    let runtime = || {
+        tokio::runtime::Builder::new_current_thread()
+            .enable_all()
+            .build()
+            .unwrap()
+    };
+    let request = |token: &str, item: &str, generation: u64, body: Body| {
+        Request::builder()
+            .method("PUT")
+            .uri(format!("/api/workspaces/ws/files/{item}/content?path=file"))
+            .header("authorization", format!("Bearer {token}"))
+            .header("x-zxs-logical-size", "3")
+            .header("x-zxs-upload-generation", generation.to_string())
+            .header(
+                "x-zxs-content-hash",
+                blake3::hash(if generation == 1 { b"old" } else { b"new" })
+                    .to_hex()
+                    .to_string(),
+            )
+            .body(body)
+            .unwrap()
+    };
+    let root = crate::tests::private_tempdir();
+    let mut auth =
+        crate::AuthStore::initialize(root.path(), "admin", "a-long-test-password").unwrap();
+    let token = auth.login("admin", "a-long-test-password").unwrap().token;
+    let mut config = crate::ServerConfig::loopback(root.path());
+    config.http_transfer_limits.slots = 2;
+    config.http_spool_limits.recovery_reserve_bytes = 1;
+    let spool = config.spool_dir.clone();
+    let first_runtime = runtime();
+    let (app, previous) = first_runtime.block_on(async {
+        let app = crate::router(Arc::new(RetainedGenerationBackend), auth, config).unwrap();
+        let first = app
+            .clone()
+            .oneshot(request(&token, "item", 1, Body::from("old")))
+            .await
+            .unwrap();
+        assert_eq!(first.status(), StatusCode::OK);
+        let previous = uploads::load(&spool, "ws", "item").unwrap().unwrap();
+        let (started, started_rx) = tokio::sync::oneshot::channel();
+        let started = Mutex::new(Some(started));
+        let gate = Arc::new((Mutex::new(false), Condvar::new()));
+        let release = Release(gate.clone());
+        *uploads::RETAIN_GENERATION_HOOK.lock().unwrap() = Some(uploads::RetainGenerationHook {
+            root: spool.clone(),
+            after_publish: Arc::new(move || {
+                let Some(started) = started.lock().unwrap().take() else {
+                    return;
+                };
+                started.send(()).unwrap();
+                let mut ready = gate.0.lock().unwrap();
+                while !*ready {
+                    ready = gate.1.wait(ready).unwrap();
+                }
+            }),
+        });
+        let pending =
+            tokio::spawn(
+                app.clone()
+                    .oneshot(request(&token, "item", 2, Body::from("new"))),
+            );
+        // The old generation's retained record is already installed, but its
+        // blocking retention job has not completed its final sync or released owners.
+        tokio::time::timeout(Duration::from_secs(5), started_rx)
+            .await
+            .unwrap()
+            .unwrap();
+        pending.abort();
+        assert!(pending.await.unwrap_err().is_cancelled());
+        let retry = app
+            .clone()
+            .oneshot(request(&token, "item", 2, Body::from("new")))
+            .await
+            .unwrap();
+        assert_eq!(retry.status(), StatusCode::CONFLICT);
+        let error: Value = json_codec::from_slice(
+            &http_routing::body::to_bytes(retry.into_body(), 8192)
+                .await
+                .unwrap(),
+        )
+        .unwrap();
+        assert_eq!(error["error"]["code"], "FILE_WRITE_BUSY");
+
+        let (reading, reading_rx) = tokio::sync::oneshot::channel();
+        let mut reading = Some(reading);
+        let body = Body::from_stream(futures::stream::poll_fn(move |_| {
+            if let Some(reading) = reading.take() {
+                reading.send(()).unwrap();
+            }
+            std::task::Poll::Pending::<Option<Result<bytes::Bytes, std::io::Error>>>
+        }));
+        let other = tokio::spawn(app.clone().oneshot(request(&token, "other", 1, body)));
+        tokio::time::timeout(Duration::from_secs(5), reading_rx)
+            .await
+            .unwrap()
+            .unwrap();
+        let overflow = app
+            .clone()
+            .oneshot(request(&token, "third", 1, Body::from("old")))
+            .await
+            .unwrap();
+        assert_eq!(overflow.status(), StatusCode::TOO_MANY_REQUESTS);
+        other.abort();
+        assert!(other.await.unwrap_err().is_cancelled());
+        assert_eq!(
+            uploads::load(&spool, "ws", "item")
+                .unwrap()
+                .unwrap()
+                .generation,
+            1
+        );
+        drop(release);
+        (app, previous)
+    });
+    // Runtime shutdown joins the released blocking worker. Do not infer its
+    // completion from elapsed time or a notification sent before owner destruction.
+    drop(first_runtime);
+
+    runtime().block_on(async {
+        let retry = app
+            .oneshot(request(&token, "item", 2, Body::from("new")))
+            .await
+            .unwrap();
+        assert_eq!(retry.status(), StatusCode::OK);
+    });
+    let current = uploads::load(&spool, "ws", "item").unwrap().unwrap();
+    assert_eq!(current.generation, 2);
+    assert_eq!(current.state, "complete");
+    assert_eq!(fs::read(spool.join(&current.data_file)).unwrap(), b"new");
+    assert_eq!(fs::read(spool.join(&previous.data_file)).unwrap(), b"old");
+    let retained = fs::read_dir(&spool)
+        .unwrap()
+        .map(|entry| entry.unwrap().path())
+        .filter(|path| {
+            path.file_name()
+                .unwrap()
+                .to_string_lossy()
+                .starts_with("retained-")
+        })
+        .collect::<Vec<_>>();
+    assert_eq!(retained.len(), 1);
+    let record: uploads::UploadRecord =
+        storage_contract::decode_strict(&fs::read(&retained[0]).unwrap()).unwrap();
+    assert_eq!(
+        json_codec::to_vec(&record).unwrap(),
+        json_codec::to_vec(&previous).unwrap()
+    );
+}

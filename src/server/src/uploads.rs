@@ -233,6 +233,15 @@ fn persist_held(
 pub(crate) fn status(record: &UploadRecord) -> json_codec::Value {
     json_codec::json!({"workspace_id":record.workspace_id,"item_id":record.item_id,"upload_generation":record.generation.to_string(),"logical_size":record.logical_size.to_string(),"content_hash":record.content_hash,"state":if record.state=="complete"{"COMPLETE"}else{"RECEIVING"},"durable_ranges":if record.persisted_bytes>0{vec![json_codec::json!({"offset":"0","length":record.persisted_bytes.to_string(),"content_hash":record.persisted_hash})]}else{vec![]},"sealed_manifest_hash":null})
 }
+#[cfg(test)]
+pub(crate) struct RetainGenerationHook {
+    pub root: PathBuf,
+    pub after_publish: std::sync::Arc<dyn Fn() + Send + Sync>,
+}
+#[cfg(test)]
+pub(crate) static RETAIN_GENERATION_HOOK: std::sync::Mutex<Option<RetainGenerationHook>> =
+    std::sync::Mutex::new(None);
+
 pub(crate) fn retain_generation(root: &Path, record: &UploadRecord) -> Result<(), ApiError> {
     let name = format!(
         "retained-{}-{}-{}.json",
@@ -240,7 +249,26 @@ pub(crate) fn retain_generation(root: &Path, record: &UploadRecord) -> Result<()
         record.generation,
         blake3::hash(record.data_file.as_bytes()).to_hex()
     );
-    persist_at(root, &name, record, || {}, || sync_directory(root))
+    persist_at(
+        root,
+        &name,
+        record,
+        || {
+            #[cfg(test)]
+            {
+                let hook = RETAIN_GENERATION_HOOK
+                    .lock()
+                    .unwrap()
+                    .as_ref()
+                    .filter(|hook| hook.root == root)
+                    .map(|hook| hook.after_publish.clone());
+                if let Some(hook) = hook {
+                    hook();
+                }
+            }
+        },
+        || sync_directory(root),
+    )
 }
 pub(crate) struct ExistingPrefix {
     file: fs::File,
