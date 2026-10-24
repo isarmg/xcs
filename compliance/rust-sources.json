@@ -78528,7 +78528,7 @@
   "foundation_layout_receipt": "5f02def35b57751ea9e54a2f1f22fdfebdbd6dda1ed910de7f8fa805f55e281d",
   "initial_test_relocation_sha256": "791ad728a408677dd54ef98e3feaffe825c5fc5670e888440615933d9498ecc3",
   "lockfiles_sha256": {
-    "Cargo.lock": "fe6324509133c1590ea1c97d43981a9be0202d6d8f2d1396a53a45756505538e"
+    "Cargo.lock": "ea98ddf52f594b246f6784c6da333a2fa754f70628b3804b707135736a9a6321"
   },
   "manifests_sha256": {
     "Cargo.toml": "2915aa60a121d18f665872ccaf51d9dcc3b5bb3465df5dc684dca366f7aed03e",
@@ -78760,7 +78760,7 @@
     "src/naming/Cargo.toml": "5dea667ea941dfde629bfc5e809ba6d6c12ca018507c4030ecdfdddcc2a01aff",
     "src/platform/Cargo.toml": "8b667ac649113e5e58334f7b8c3fddb47aa10873ac610a073868874b77dba968",
     "src/rescue/Cargo.toml": "8d5bd0f02eff46f12595c50064d4f801718b022f1bc37fc9e09f47dae31760d1",
-    "src/server/Cargo.toml": "b0407a2acd6e965aa3d3b2c5de79f81b4583b478dd3a991bae8a1666744ee619",
+    "src/server/Cargo.toml": "d51bad5de2461665d3e8323c6468495c732b82e45b0a2ce540dab4b619edc139",
     "src/smb-vfs/Cargo.toml": "8513f0d76d84f2e345de71376e751d36313fb2c42878af69b6d71ec37b3a3817",
     "src/smb/Cargo.toml": "66ca64b286cff2b2a6b2f551145e267b2eac6017affcd4c239605a9d080ecec4",
     "src/web/Cargo.toml": "612dd26e977186b9f9a32a0e8a739d34ce6b7f22d05ab7b7f1955c39d0910e7f",
@@ -112437,12 +112437,9 @@
         },
         "src/foundation/networking/http-routing": {
           "features": [
-            "default",
             "form",
             "http1",
             "json",
-            "matched-path",
-            "original-uri",
             "query",
             "tokio",
             "tower-log",
@@ -112611,13 +112608,10 @@
             "follow-redirect",
             "fs",
             "httpdate",
-            "limit",
             "mime",
             "mime_guess",
             "set-status",
             "tokio",
-            "trace",
-            "tracing",
             "url-encoding"
           ],
           "roles": [
@@ -115410,12 +115404,9 @@
         },
         "src/foundation/networking/http-routing": {
           "features": [
-            "default",
             "form",
             "http1",
             "json",
-            "matched-path",
-            "original-uri",
             "query",
             "tokio",
             "tower-log",
@@ -115517,13 +115508,10 @@
             "follow-redirect",
             "fs",
             "httpdate",
-            "limit",
             "mime",
             "mime_guess",
             "set-status",
             "tokio",
-            "trace",
-            "tracing",
             "url-encoding"
           ],
           "roles": [
