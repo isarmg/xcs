@@ -110,7 +110,11 @@ pub(super) fn effective_policy<'a>(
         .filter(|policy| {
             policy.repository_id == repository && policy_applies(state, policy, file, path)
         })
-        .max_by_key(|policy| scope_path(state, policy).map_or(0, |path| path.split('/').count()))
+        .max_by_key(|policy| {
+            scope_path(state, policy).map_or(0, |path| {
+                path.split('/').filter(|part| !part.is_empty()).count()
+            })
+        })
 }
 
 #[derive(Clone)]
@@ -284,6 +288,13 @@ pub(crate) fn apply_backup_paths(
         return Ok(());
     };
     if policy.backup_prefixes.is_empty() {
+        // A scoped one-copy rule still follows the file after a primary move.
+        if policy.scope_directory_id.is_some() || policy.scope_file_id.is_some() {
+            state
+                .file_backup_policies
+                .entry(file.into())
+                .or_insert(policy.policy_id);
+        }
         return Ok(());
     }
     let root = scope_path(state, &policy).unwrap_or(&policy.path_prefix);

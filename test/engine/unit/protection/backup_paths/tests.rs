@@ -519,3 +519,235 @@ fn configuration_exposes_all_historical_primary_chains_before_collecting_prefixe
         "second/a.txt"
     );
 }
+
+#[test]
+fn top_level_backup_policy_overrides_root_regardless_of_policy_id_order() {
+    let low = "policy_00000000000000000000000000000000";
+    let high = "policy_ffffffffffffffffffffffffffffffff";
+    for (root_policy, child_policy) in [(low, high), (high, low)] {
+        let temp = tempfile::tempdir().unwrap();
+        let (mut engine, repo) = initialize(temp.path(), 1, None);
+        engine
+            .file_namespace(
+                &repo.repository_id,
+                NamespaceOperation {
+                    kind: "mkdir".into(),
+                    path: "docs".into(),
+                    destination: None,
+                },
+                "admin",
+                &new_id("op"),
+            )
+            .unwrap();
+        // Seed deterministic IDs through the public policy API, then upgrade
+        // both scopes through the same configuration path used by the editor.
+        for (policy_id, path, copies, backup_prefixes) in [
+            (root_policy, "", 2, prefixes(&[("B01", "root")])),
+            (
+                child_policy,
+                "docs",
+                3,
+                prefixes(&[("B01", "child"), ("C01", "cold")]),
+            ),
+        ] {
+            engine
+                .update_protection_policy(crate::ProtectionPolicyUpdate {
+                    policy_id,
+                    repository_id: &repo.repository_id,
+                    path_prefix: path,
+                    target_copies: copies,
+                    expected_generation: 0,
+                    principal: "admin",
+                    operation_id: &new_id("op"),
+                })
+                .unwrap();
+            engine
+                .configure_backups(crate::BackupConfigurationRequest {
+                    repository_id: &repo.repository_id,
+                    path,
+                    target_copies: copies,
+                    backup_prefixes: &backup_prefixes,
+                    expected_generation: 1,
+                    principal: "admin",
+                    operation_id: &new_id("op"),
+                })
+                .unwrap();
+        }
+        let child = save(&mut engine, &repo, "docs/new.txt", b"child");
+        assert_eq!(engine.state.placements[&child.version_id].target_copies, 3);
+        assert_eq!(
+            engine.state.file_backup_policies[&child.file_id],
+            child_policy
+        );
+        assert_eq!(
+            engine.state.file_backup_paths[&child.file_id]["B01"],
+            "child/new.txt"
+        );
+        let root = save(&mut engine, &repo, "other.txt", b"root");
+        assert_eq!(engine.state.placements[&root.version_id].target_copies, 2);
+        assert_eq!(
+            engine.state.file_backup_policies[&root.file_id],
+            root_policy
+        );
+        assert_eq!(
+            engine.state.file_backup_paths[&root.file_id]["B01"],
+            "root/other.txt"
+        );
+        let read = engine
+            .backup_configuration(&repo.repository_id, "docs")
+            .unwrap();
+        assert_eq!(read["effective_policy_id"], child_policy);
+        assert_eq!(read["target_copies"], 3);
+        drop(engine);
+        let mut engine = Engine::open(&temp.path().join("state")).unwrap();
+        let after = save(&mut engine, &repo, "docs/after.txt", b"after reopen");
+        assert_eq!(engine.state.placements[&after.version_id].target_copies, 3);
+        assert_eq!(
+            engine.state.file_backup_policies[&after.file_id],
+            child_policy
+        );
+        assert_eq!(
+            engine.state.file_backup_paths[&after.file_id]["C01"],
+            "cold/after.txt"
+        );
+    }
+}
+
+#[test]
+fn one_copy_scoped_policy_binds_new_files_and_survives_moves_and_reopen() {
+    let temp = tempfile::tempdir().unwrap();
+    let (mut engine, repo) = initialize(temp.path(), 1, None);
+    let before = save(
+        &mut engine,
+        &repo,
+        "source/before.txt",
+        b"before configuration",
+    );
+    engine
+        .file_namespace(
+            &repo.repository_id,
+            NamespaceOperation {
+                kind: "mkdir".into(),
+                path: "destination".into(),
+                destination: None,
+            },
+            "admin",
+            &new_id("op"),
+        )
+        .unwrap();
+    let configured = engine
+        .configure_backups(crate::BackupConfigurationRequest {
+            repository_id: &repo.repository_id,
+            path: "source",
+            target_copies: 1,
+            backup_prefixes: &BTreeMap::new(),
+            expected_generation: 0,
+            principal: "admin",
+            operation_id: &new_id("op"),
+        })
+        .unwrap();
+    let policy_id = configured.result["policy"]["policy_id"].as_str().unwrap();
+    engine
+        .configure_backups(crate::BackupConfigurationRequest {
+            repository_id: &repo.repository_id,
+            path: "destination",
+            target_copies: 2,
+            backup_prefixes: &prefixes(&[("B01", "destination-backup")]),
+            expected_generation: 0,
+            principal: "admin",
+            operation_id: &new_id("op"),
+        })
+        .unwrap();
+    let after = save(
+        &mut engine,
+        &repo,
+        "source/after.txt",
+        b"after configuration",
+    );
+    let versions = canonical_json(&engine.state.versions).unwrap();
+    rename(
+        &mut engine,
+        &repo,
+        "source/before.txt",
+        "destination/before.txt",
+    );
+    rename(
+        &mut engine,
+        &repo,
+        "source/after.txt",
+        "destination/after.txt",
+    );
+    assert_eq!(canonical_json(&engine.state.versions).unwrap(), versions);
+    for original in [&before, &after] {
+        let path = format!("destination/{}", original.name);
+        let updated = save(&mut engine, &repo, &path, b"updated after move");
+        assert_eq!(updated.file_id, original.file_id);
+        assert_eq!(
+            engine.state.placements[&updated.version_id].target_copies,
+            1
+        );
+        assert_eq!(
+            engine.state.file_backup_policies[&updated.file_id],
+            policy_id
+        );
+        assert!(
+            !engine
+                .state
+                .file_backup_paths
+                .contains_key(&updated.file_id)
+        );
+    }
+    drop(engine);
+    let mut engine = Engine::open(&temp.path().join("state")).unwrap();
+    let updated = save(&mut engine, &repo, "destination/after.txt", b"after reopen");
+    assert_eq!(
+        engine.state.placements[&updated.version_id].target_copies,
+        1
+    );
+    let read = engine
+        .backup_configuration(&repo.repository_id, "destination/after.txt")
+        .unwrap();
+    assert_eq!(read["effective_policy_id"], policy_id);
+    assert_eq!(read["target_copies"], 1);
+}
+
+#[test]
+fn path_only_protection_policy_follows_the_path_for_future_versions() {
+    let temp = tempfile::tempdir().unwrap();
+    let (mut engine, repo) = initialize(temp.path(), 2, None);
+    engine
+        .update_protection_policy(crate::ProtectionPolicyUpdate {
+            policy_id: &new_id("policy"),
+            repository_id: &repo.repository_id,
+            path_prefix: "source",
+            target_copies: 1,
+            expected_generation: 0,
+            principal: "admin",
+            operation_id: &new_id("op"),
+        })
+        .unwrap();
+    let original = save(&mut engine, &repo, "source/file.txt", b"first");
+    assert_eq!(
+        engine.state.placements[&original.version_id].target_copies,
+        1
+    );
+    assert!(
+        !engine
+            .state
+            .file_backup_policies
+            .contains_key(&original.file_id)
+    );
+    rename(&mut engine, &repo, "source/file.txt", "moved.txt");
+    let updated = save(&mut engine, &repo, "moved.txt", b"second");
+    assert_eq!(updated.file_id, original.file_id);
+    assert_eq!(
+        engine.state.placements[&updated.version_id].target_copies,
+        2
+    );
+    assert!(
+        !engine
+            .state
+            .file_backup_policies
+            .contains_key(&updated.file_id)
+    );
+}
