@@ -52,7 +52,7 @@ fn within(root: &str, path: &str) -> bool {
             .strip_prefix(&root)
             .is_some_and(|suffix| suffix.starts_with('/'))
 }
-fn scope_path<'a>(state: &'a State, policy: &'a ProtectionPolicy) -> Option<&'a str> {
+pub(super) fn scope_path<'a>(state: &'a State, policy: &'a ProtectionPolicy) -> Option<&'a str> {
     if policy.scope_directory_id.as_deref() == Some(policy.repository_id.as_str()) {
         return Some("");
     }
@@ -114,9 +114,16 @@ pub(super) fn effective_policy<'a>(
             policy.repository_id == repository && policy_applies(state, policy, file, path)
         })
         .max_by_key(|policy| {
-            scope_path(state, policy).map_or(0, |path| {
+            let depth = scope_path(state, policy).map_or(0, |path| {
                 path.split('/').filter(|part| !part.is_empty()).count()
-            })
+            });
+            // A rename can bring a stable scope onto an existing path rule.
+            // At equal depth the stable scope wins, never the random policy ID;
+            // a more specific child rule still takes precedence.
+            (
+                depth,
+                policy.scope_directory_id.is_some() || policy.scope_file_id.is_some(),
+            )
         })
 }
 
@@ -350,13 +357,14 @@ impl Engine {
     pub fn backup_configuration(&self, repository: &str, path: &str) -> Result<Value> {
         let mut scope = source_scope(&self.state, repository, path)?;
         let exact = exact_policy(&self.state, repository, &scope);
-        let effective = exact.or_else(|| {
-            effective_policy(
-                &self.state,
-                repository,
-                (scope.kind == "file").then_some(scope.id.as_str()),
-                &scope.path,
-            )
+        let effective = effective_policy(
+            &self.state,
+            repository,
+            (scope.kind == "file").then_some(scope.id.as_str()),
+            &scope.path,
+        );
+        let inherited = effective.is_some_and(|policy| {
+            policy.inheritable && exact.is_none_or(|exact| exact.policy_id != policy.policy_id)
         });
         retain_inherited_files(&self.state, repository, &mut scope, exact);
         let (primary, copies) = self.new_file_placement_for_file(
@@ -406,7 +414,7 @@ impl Engine {
             .cloned()
             .collect::<BTreeSet<_>>();
         Ok(
-            json!({"scope":{"id":scope.id,"kind":scope.kind,"path":scope.path},"policy_id":exact.map(|policy|&policy.policy_id),"effective_policy_id":effective.map(|policy|&policy.policy_id),"generation":exact.map_or(0,|policy|policy.generation).to_string(),"effective_generation":effective.map_or(0,|policy|policy.generation).to_string(),"inherited":exact.is_none()&&effective.is_some_and(|policy|policy.inheritable),"target_copies":copies,"backup_prefixes":effective.map(|policy|policy.backup_prefixes.clone()).unwrap_or_default(),"route_slot_ids":self.route(&primary,copies)?,"available_route_slot_ids":available_route,"backup_routes":routes,"backup_slot_ids":backup_slots,"max_copies":maximum,"file_count":scope.files.len().to_string(),"backup_paths":if scope.kind=="file"{self.state.file_backup_paths.get(&scope.id).cloned().unwrap_or_default()}else{BTreeMap::new()}}),
+            json!({"scope":{"id":scope.id,"kind":scope.kind,"path":scope.path},"policy_id":exact.map(|policy|&policy.policy_id),"effective_policy_id":effective.map(|policy|&policy.policy_id),"generation":exact.map_or(0,|policy|policy.generation).to_string(),"effective_generation":effective.map_or(0,|policy|policy.generation).to_string(),"inherited":inherited,"target_copies":copies,"backup_prefixes":effective.map(|policy|policy.backup_prefixes.clone()).unwrap_or_default(),"route_slot_ids":self.route(&primary,copies)?,"available_route_slot_ids":available_route,"backup_routes":routes,"backup_slot_ids":backup_slots,"max_copies":maximum,"file_count":scope.files.len().to_string(),"backup_paths":if scope.kind=="file"{self.state.file_backup_paths.get(&scope.id).cloned().unwrap_or_default()}else{BTreeMap::new()}}),
         )
     }
 

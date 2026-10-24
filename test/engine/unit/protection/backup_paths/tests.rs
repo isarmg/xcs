@@ -1,5 +1,7 @@
 use super::*;
 use std::{fs, os::unix::fs::MetadataExt, path::Path};
+#[path = "precedence_tests.rs"]
+mod precedence_tests;
 #[path = "retained_tests.rs"]
 mod retained_tests;
 
