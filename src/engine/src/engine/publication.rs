@@ -126,6 +126,7 @@ impl Engine {
             maximum,
             Some(&snapshot.descriptor),
         )?;
+        crate::container_storage::validate_new_projection_paths(&self.state, &next)?;
         let preparation = PayloadPreparation::new(&self.config, &candidate)?;
         self.prepare_payloads(&prepared)?;
         let verified = preparation.verify(&self.config, &candidate)?;

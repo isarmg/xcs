@@ -907,6 +907,73 @@ pub(crate) fn prepare_names(
     prepare_names_inner(config, previous, next, maximum, false)
 }
 
+fn projection_locations(
+    previous: &State,
+    next: &State,
+    file: &str,
+) -> Result<BTreeSet<(String, String)>> {
+    let mut locations = BTreeSet::new();
+    for (state, version) in previous
+        .versions
+        .values()
+        .map(|version| (previous, version))
+        .chain(next.versions.values().map(|version| (next, version)))
+        .filter(|(_, version)| version.file_id == file)
+    {
+        validate_version(version)?;
+        if let Some(placement) = state.placements.get(&version.version_id) {
+            for slot in &placement.route_slot_ids {
+                locations.insert((slot.clone(), version.history_tree_id.clone()));
+            }
+        }
+    }
+    Ok(locations)
+}
+
+fn projection_path<'a>(
+    state: &'a State,
+    file: &str,
+    slot: &str,
+) -> (Option<&'a String>, Option<&'a str>) {
+    let backup = state
+        .file_backup_paths
+        .get(file)
+        .and_then(|paths| paths.get(slot));
+    let location = backup.or_else(|| state.file_locations.get(file));
+    let name = backup
+        .and_then(|path| path.rsplit('/').next())
+        .or_else(|| state.file_names.get(file).map(String::as_str));
+    (location, name)
+}
+
+fn validate_new_projection_path(location: Option<&String>) -> Result<()> {
+    // Only the first physical component shares a directory with the marker.
+    // Equivalent spellings must not admit a later case-only rename collision.
+    if location.is_some_and(|location| {
+        location
+            .split('/')
+            .next()
+            .is_some_and(|first| name_policy::lookup_key(first) == NAMESPACE_MARKER)
+    }) {
+        return Err(Error::new(
+            "NAME_COLLISION",
+            format!("{NAMESPACE_MARKER} is reserved as the first primary or backup path component"),
+        ));
+    }
+    Ok(())
+}
+
+/// Pure new-candidate admission, before copying any payload. Use the exact same
+/// routed projections as cache preparation, not unused backup bindings.
+pub(crate) fn validate_new_projection_paths(previous: &State, next: &State) -> Result<()> {
+    for file in changed_files(previous, next) {
+        for (slot, _) in projection_locations(previous, next, &file)? {
+            validate_new_projection_path(projection_path(next, &file, &slot).0)?;
+        }
+    }
+    Ok(())
+}
+
 fn prepare_names_inner(
     config: &Config,
     previous: &State,
@@ -933,21 +1000,7 @@ fn prepare_names_inner(
                     .map(|source| (branch, source))
             })
             .collect::<Vec<_>>();
-        let mut locations = BTreeSet::new();
-        for (state, version) in previous
-            .versions
-            .values()
-            .map(|version| (previous, version))
-            .chain(next.versions.values().map(|version| (next, version)))
-            .filter(|(_, version)| version.file_id == file)
-        {
-            validate_version(version)?;
-            if let Some(placement) = state.placements.get(&version.version_id) {
-                for slot in &placement.route_slot_ids {
-                    locations.insert((slot.clone(), version.history_tree_id.clone()));
-                }
-            }
-        }
+        let locations = projection_locations(previous, next, &file)?;
         // Replica-independent version records are built once per file/history.
         let mut records_by_history = BTreeMap::new();
         for (slot, history_id) in locations {
@@ -971,14 +1024,12 @@ fn prepare_names_inner(
                 .copied()
                 .filter(|(branch, _)| branch.history_tree_id == history_id)
                 .collect::<Vec<_>>();
-            let backup_location = next
-                .file_backup_paths
-                .get(&file)
-                .and_then(|paths| paths.get(&slot));
-            let physical_location = backup_location.or_else(|| next.file_locations.get(&file));
-            let physical_name = backup_location
-                .and_then(|path| path.rsplit('/').next())
-                .or_else(|| next.file_names.get(&file).map(String::as_str));
+            let (physical_location, physical_name) = projection_path(next, &file, &slot);
+            // Other new-candidate callers retain the same admission boundary.
+            // Published decisions use existing layout checks, not new-name rules.
+            if !historical {
+                validate_new_projection_path(physical_location)?;
+            }
             // Metadata-only references and tombstones never synthesize bodies.
             let Some(current) = container(&history, &file)? else {
                 continue;
@@ -1064,3 +1115,7 @@ fn prepare_names_inner(
 #[cfg(test)]
 #[path = "../../../test/engine/unit/container_storage/tests.rs"]
 mod tests;
+
+#[cfg(test)]
+#[path = "../../../test/engine/unit/container_storage/projection_path_tests.rs"]
+mod projection_path_tests;

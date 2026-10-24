@@ -508,6 +508,9 @@ fn canonical_location_handles_reserved_looking_user_names_and_prefix_moves() {
         "namespace/sub/namespace",
         "namespace",
         "versions/.zxs-container-owner.json/namespace",
+        "safe/.zxs-namespace.json/namespace",
+        "safe/.zxs-namespace.json/namespace/sub/namespace",
+        "safe/.zxs-namespace.json/namespace",
     ] {
         let previous = state.clone();
         state.file_locations.insert(file.clone(), location.into());
@@ -516,6 +519,81 @@ fn canonical_location_handles_reserved_looking_user_names_and_prefix_moves() {
         assert_eq!(fs::metadata(&body).unwrap().ino(), inode);
         assert_eq!(fs::read(body).unwrap(), b"single body");
     }
+}
+
+#[test]
+fn new_name_admission_does_not_revalidate_published_projection_spelling() {
+    let temporary = tempfile::tempdir().unwrap();
+    let config = Config::development([
+        temporary.path().join("p"),
+        temporary.path().join("b"),
+        temporary.path().join("c"),
+    ]);
+    drop(Engine::initialize(&temporary.path().join("state"), config.clone()).unwrap());
+    let history_id = new_id("history");
+    let file = new_id("file");
+    let item = version(&State::default(), &history_id, &file, "file.txt", b"body");
+    let history = config.disks[0].root.join("histories").join(&history_id);
+    let directory = prepare(&history, &item, b"body");
+    let original = install_version_content(&directory, &item).unwrap();
+    let inode = fs::metadata(&original).unwrap().ino();
+    let previous = with_version(&item);
+    let mut published = previous.clone();
+    published
+        .file_names
+        .insert(file.clone(), ".ZXS-NAMESPACE.JSON".into());
+    published
+        .file_locations
+        .insert(file.clone(), ".ZXS-NAMESPACE.JSON".into());
+
+    assert!(matches!(
+        prepare_names(&config, &previous, &published, MAX_METADATA),
+        Err(error) if error.code() == "NAME_COLLISION"
+    ));
+    // The same physical spelling is valid for replay of an immutable decision.
+    // This is the existing publication phase boundary, not a second disk format.
+    prepare_names_inner(&config, &previous, &published, MAX_METADATA, true)
+        .unwrap()
+        .apply(&config)
+        .unwrap();
+    let body = content_path(&directory, &item).unwrap();
+    assert_eq!(fs::metadata(&body).unwrap().ino(), inode);
+    assert_eq!(fs::read(&body).unwrap(), b"body");
+
+    let mut renamed = published.clone();
+    renamed
+        .file_names
+        .insert(file.clone(), NAMESPACE_MARKER.into());
+    renamed
+        .file_locations
+        .insert(file.clone(), NAMESPACE_MARKER.into());
+    assert!(
+        matches!(
+            prepare_names(&config, &published, &renamed, MAX_METADATA),
+            Err(error) if error.code() == "NAME_COLLISION"
+        ),
+        "case-only changes are new admissions, not publication replay"
+    );
+    assert_eq!(content_path(&directory, &item).unwrap(), body);
+
+    let marker = history
+        .join("file-containers")
+        .join(file)
+        .join("namespace")
+        .join(NAMESPACE_MARKER);
+    write_json(&marker, &new_id("file"), true).unwrap();
+    let evidence = fs::read(&marker).unwrap();
+    assert!(matches!(
+        prepare_names_inner(&config, &previous, &published, MAX_METADATA, true),
+        Err(error) if error.code() == "CONTAINER_LAYOUT_INVALID"
+    ));
+    assert_eq!(
+        fs::read(marker).unwrap(),
+        evidence,
+        "invalid marker evidence is preserved"
+    );
+    assert_eq!(fs::metadata(&body).unwrap().ino(), inode);
+    assert_eq!(fs::read(body).unwrap(), b"body");
 }
 
 #[test]

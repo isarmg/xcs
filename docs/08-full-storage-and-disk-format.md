@@ -70,6 +70,8 @@
 
 `versions/<version-id>/` 保留不可变版本说明、校验及发布证明；正文唯一实体位于 `file-containers/<file-id>/<当前文件名>/versions/<storage_name>`，是可以直接读取的普通文件。外层 `file-id` 为稳定身份，内层是实际目录，不是界面别名。业务改名真正重命名该内层目录；历史版本文件的内部名称及已有证明保持不变。下载当前或历史版本时使用该文件当前的业务名称，已删除文件保留最后登记的名称。
 
+位置投影的 namespace 根维护内部标记 `.zxs-namespace.json`。新候选在复制正文副本前预检实际主盘及备份投影的根部分量冲突，按[命名约束](05-naming-and-paths.md)在决定前返回 `NAME_COLLISION`，保留现有状态、正文和工作材料；不改标记或容器格式，不迁移或清除历史材料。已经发布的历史投影仍按固定身份和现有布局校验重放，不重新套用新请求的准入检查。
+
 版本内部名称为 `v<文件内序号>_<UTC时间>_<内容散列前8位>.<扩展名>`，例如 `v000001_20261018T133000Z_ab12cd34.docx`；序号至少六位，按同一文件已有版本递增，不等同于全局 `version_sequence` 审计序。时间另以 RFC3339 写入 `created_at`。新版本扩展名采用当前文件名；没有扩展名时不追加句点。它们不使用容器目录名称作为版本身份。
 
 分支的 pending_file_versions 是已发布的继承归属记录，不对应空文件。新创建、恢复和导入均不生成 pending-branches/*.pending，也不为继承引用新建空容器。容器内出现 pending-branches 或 legacy 项时返回 FORMAT_UNSUPPORTED，保留包括零字节占位文件在内的原始材料，不自动清理或迁移。container.json 的 inherited_branches 是来源引用缓存，可见 version_id 等于父真实 ID，自有版本为空。
