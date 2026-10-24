@@ -78547,7 +78547,7 @@
   "manifests_sha256": {
     "Cargo.toml": "2915aa60a121d18f665872ccaf51d9dcc3b5bb3465df5dc684dca366f7aed03e",
     "src/auth/Cargo.toml": "e6986ad60c15d48e2b3d60a5157de60ac7318f1ecc80befc1adfd60059b5dab3",
-    "src/client/Cargo.toml": "fe89bb77ac7a669a4acf5d7136f0146a2847a12938b7be300c2d5670592c8660",
+    "src/client/Cargo.toml": "31f7eb0739b17cc0b590ded751c0dc3cefde9e9ec60387db0e204e6bd334570b",
     "src/contract/Cargo.toml": "3cdb429c2617fb934312c73d89045b838d1329b4db8e317701fa4daa04c95d8f",
     "src/engine/Cargo.toml": "071e2fb61527d6a5a67b412c4aa8912c317cecb19df4c8625d81c064f04daf0c",
     "src/foundation/code-generation/derive-where/Cargo.toml": "dac6d156693a9ca4d661e41d456a17154836e90ca1d9be52e85b86b5264f1725",
@@ -78774,7 +78774,7 @@
     "src/naming/Cargo.toml": "5dea667ea941dfde629bfc5e809ba6d6c12ca018507c4030ecdfdddcc2a01aff",
     "src/platform/Cargo.toml": "8b667ac649113e5e58334f7b8c3fddb47aa10873ac610a073868874b77dba968",
     "src/rescue/Cargo.toml": "8d5bd0f02eff46f12595c50064d4f801718b022f1bc37fc9e09f47dae31760d1",
-    "src/server/Cargo.toml": "d51bad5de2461665d3e8323c6468495c732b82e45b0a2ce540dab4b619edc139",
+    "src/server/Cargo.toml": "3bf472feb52c968d18959b01f42d0efbf6f5ad2b4f38e46b718f9cfe3bc7a2dc",
     "src/smb-vfs/Cargo.toml": "8513f0d76d84f2e345de71376e751d36313fb2c42878af69b6d71ec37b3a3817",
     "src/smb/Cargo.toml": "66ca64b286cff2b2a6b2f551145e267b2eac6017affcd4c239605a9d080ecec4",
     "src/web/Cargo.toml": "4c982faef6a598e2084fc3e42cc17f096b27c4b1299bf07db9cfa20ccbfa8399",
