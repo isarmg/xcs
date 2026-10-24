@@ -12967,14 +12967,28 @@
           "source_sha256_before": "711fbecd50e69e9622f055da8662b15eda3711d78040a3fdbee7ae72ba988ea0"
         },
         {
+          "path": "test/foundation/reactive-state/unit/src/computed/arc_memo_lifecycle.rs",
+          "sha256": "d33ec675a76411e010dfe905558b8c81b54c37984a070dffc69c1d526bb5dc46",
+          "source": "test/foundation/reactive-state/unit/src/computed/arc_memo_lifecycle.rs",
+          "source_kind": "project-authored",
+          "source_sha256_before": "d33ec675a76411e010dfe905558b8c81b54c37984a070dffc69c1d526bb5dc46"
+        },
+        {
           "path": "test/foundation/reactive-state/unit/src/into_reactive_value/tests_21.rs",
           "sha256": "5f9f420cd4a744e7d2faef4336a01c1a3177c7884fc0be45ec47facf58b29d08",
           "source": "src/foundation/reactive_graph/src/into_reactive_value.rs",
           "source_sha256_before": "fe18a84a56d0183c204951980388b635235142b806ada1fcf12ab10d76ded171"
         },
         {
+          "path": "test/foundation/reactive-state/unit/src/owner/child_registry.rs",
+          "sha256": "49d2149a7d7fa687450ba53580b8b7b074dc00c95f5a4f5a1067efe75de858f2",
+          "source": "test/foundation/reactive-state/unit/src/owner/child_registry.rs",
+          "source_kind": "project-authored",
+          "source_sha256_before": "49d2149a7d7fa687450ba53580b8b7b074dc00c95f5a4f5a1067efe75de858f2"
+        },
+        {
           "path": "test/foundation/reactive-state/unit/src/owner/tests_594.rs",
-          "sha256": "57842dee3c6aaeddba1086838ca9e22a056cc0c9b5d71a4f7ae071ce990c718a",
+          "sha256": "701f53982a474ad3a4e1771dd1bbedc4891afc3dd178bd89929f3bba6b1c3762",
           "source": "src/foundation/reactive_graph/src/owner.rs",
           "source_sha256_before": "50236f8bdf6764ff2587ccd78c3b2fd37902411f65ed4b422495003474667c48"
         }

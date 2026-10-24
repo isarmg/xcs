@@ -447,7 +447,7 @@ impl<T: 'static> ArcAsyncDerived<T> {
         }
 
         // notify reactive subscribers that we're not loading any more
-        let subs = inner.read().or_poisoned().subscribers.clone();
+        let subs = inner.write().or_poisoned().subscribers.live_snapshot();
         for sub in subs {
             sub.mark_dirty();
         }

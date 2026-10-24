@@ -47,6 +47,8 @@ fn reactive_example() {
 
 owner 清理依次处理子 owner、`on_cleanup` 回调和 arena 值。计时器、DOM listener、observer 等外部资源也要在清理回调中取消或释放；仅移除 DOM 节点不会自动释放应用持有的这些对象。实际例子见 [Web 根组件](../../src/web/src/ui.rs)与[界面组件](../../src/interface/src/components/select.rs)。
 
+弱引用登记与资源清理分开处理：Signal、Memo 和异步派生源在生成通知快照时保序剔除已销毁订阅者，释放源锁后再通知活订阅者；不在每次订阅时扫描整个集合。稳定父 owner 的子登记采用保序、按存活规模摊销的清理阈值，避免列表反复过滤后积累无界死亡登记，也避免逐行创建或替换时重复全表扫描。父 owner 清理后重置阈值。这里保证登记有界与后续通知清理，不承诺所有弱引用在对象销毁的瞬间同步移除。
+
 异步上下文与取消是两个不同契约：
 
 - `reactive_state::spawn_local_scoped` 恢复 owner/observer 上下文，但 owner 清理时**不取消**任务。
@@ -59,6 +61,6 @@ owner 清理依次处理子 owner、`on_cleanup` 回调和 arena 值。计时器
 
 [reactive_graph 0.2.16](../upstream/reactive_graph-0.2.16/README.md)说明依赖跟踪模型，[tachys 0.2.19](../upstream/tachys-0.2.19/README.md)提供原始框架背景。前者在这里导入为 `reactive_state`，后者为 `view_renderer`；上游完整 Leptos 的 SSR、hydration、nightly 调用语法及构建工具示例不属于本仓库支持范围。应用 API 以 [web-interface](../components/interface.md) 为入口，不直接照搬上游 `leptos::*` 示例。
 
-CSR 范围门禁通过隔离 manifest，在启用及禁用 effect 两种情况下运行保留的 14 项响应式单元测试；typed-builder 仅供测试使用。门禁还检查真实模板探针的原生及 WASM 目标，并拒绝已退役的 owner API 和特性请求。界面集成测试覆盖清理及 parent/weak-owner 生命周期。`test/ci/test_reactive_csr_scope.py` 的静态回归防止退役模式、编译器探测和多余直接依赖请求重新进入。
+CSR 范围门禁通过隔离 manifest，在启用及禁用 effect 两种情况下运行保留的响应式单元测试与本地生命周期回归；typed-builder 仅供测试使用。门禁还检查真实模板探针的原生及 WASM 目标，并拒绝已退役的 owner API 和特性请求。界面集成测试覆盖清理及 parent/weak-owner 生命周期。`test/ci/test_reactive_csr_scope.py` 的静态回归防止退役模式、编译器探测和多余直接依赖请求重新进入。
 
 上游身份、原始 manifest、许可证及源码收据继续保留在 `compliance/provenance` 与 `compliance/rust-sources.json`，不得通过改名暗示这些实现由本项目原创。

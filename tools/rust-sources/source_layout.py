@@ -568,13 +568,25 @@ class Layout:
                     raise ValueError('layout introduced an unattributed external owner')
             else:
                 from collections import Counter
-                def labels(owner):
+                import external_tests
+                def labels(entries):
                     return Counter(tuple((key, canonical(value)) for key, value in sorted(entry.items()) if key != 'sha256')
-                                   for entry in owner.get('files', []))
+                                   for entry in entries)
                 if (not isinstance(current_owner, dict)
-                        or {k: v for k, v in before_owner.items() if k not in ('files', 'bytes')}
-                        != {k: v for k, v in current_owner.items() if k not in ('files', 'bytes')}
-                        or labels(before_owner) != labels(current_owner)):
+                        or {k: v for k, v in before_owner.items() if k not in ('files', 'bytes', 'file_count')}
+                        != {k: v for k, v in current_owner.items() if k not in ('files', 'bytes', 'file_count')}
+                        or not isinstance(current_owner.get('files'), list)
+                        or type(current_owner.get('file_count')) is not int
+                        or current_owner['file_count'] != len(current_owner['files'])):
+                    raise ValueError('layout current external historical attribution drift')
+                historical, present = labels(before_owner['files']), labels(current_owner['files'])
+                # Preserve every installation label, including any local rows
+                # already in that snapshot. Only later local work is additive;
+                # it never becomes part of the immutable relocation receipt.
+                local = labels(entry for entry in current_owner['files']
+                               if entry.get('source_kind') == 'project-authored'
+                               and external_tests._owns_source(current_owner, entry, before_owner['origin_directory'], (), {}))
+                if historical - present or (present - historical) - local:
                     raise ValueError('layout current external historical attribution drift')
         for directory, row in self.receipt['stationary_owners'].items():
             before = row['package']; package = current.get(directory)

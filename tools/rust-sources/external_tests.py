@@ -40,6 +40,23 @@ def inventory(root, relative):
     return result
 
 
+def _owns_source(owner, entry, origin, prefixes, transfers):
+    from external_transfers import permits
+    if 'source_kind' in entry:
+        # Local work is not an upstream extraction or a cross-owner transfer.
+        return (entry['source_kind'] == 'project-authored'
+                and entry.get('origin_directory', origin) == origin
+                and entry['source'].startswith('test/')
+                and any(entry['source'].startswith(p + '/') for p in owner['roots'])
+                and not permits(transfers, owner['directory'], entry, origin))
+    native = entry.get('origin_directory', origin) == origin and entry['source'].startswith(prefixes)
+    return native or permits(transfers, owner['directory'], entry, origin)
+
+
+def _identity(row):
+    return (row.get('source_kind'), row.get('origin_directory'), row['source'], row['source_sha256_before'])
+
+
 @source_layout.operation
 def load(root, packages, renames=None, transfers=None):
     """Never learn new source bytes during refresh: verify explicit receipts first."""
@@ -47,7 +64,6 @@ def load(root, packages, renames=None, transfers=None):
     directory = safe(root, MAPPINGS)
     if not directory.exists():
         return {}, {}
-    from external_transfers import permits
     owners, receipts, all_roots, paths = {}, {}, [], set()
     for file in sorted(directory.iterdir()):
         safe(root, file.relative_to(root).as_posix())
@@ -72,8 +88,7 @@ def load(root, packages, renames=None, transfers=None):
                 safe(root, source)
                 safe(root, path)
                 primary_origin = packages[identity]['origin_directory']
-                native = entry.get('origin_directory', primary_origin) == primary_origin and source.startswith(prefixes)
-                if (not (native or permits(transfers or {}, identity, entry, primary_origin))
+                if (not _owns_source(owner, entry, primary_origin, prefixes, transfers)
                         or not path.startswith('test/') or path in paths):
                     raise ValueError(f'invalid external test ownership: {path}')
                 paths.add(path)
@@ -110,6 +125,8 @@ def check_removed(previous, current, owners, renames=None, trim_grants=None, roo
         attributed = {path for path, value in (trim_grants or {}).get(directory, {}).items()
                       if package.get("files_sha256", {}).get(path) == value}
         for entry in owners.get(directory, {}).get('files', []):
+            if entry.get('source_kind') == 'project-authored':
+                continue
             for prefix in prefixes:
                 if entry['source'].startswith(prefix):
                     relative = entry['source'][len(prefix):]
@@ -126,18 +143,16 @@ def check_previous(previous, current, root=None, packages=None, previous_package
     for directory, owner in previous.items():
         # Legacy rows predate per-origin transfers and may carry a corrected
         # aggregate owner. Explicit row origins are immutable transfer identity.
-        def identity(row):
-            return (row.get('origin_directory'), row['source'], row['source_sha256_before'])
-        old = Counter(identity(row) for row in owner['files'])
+        old = Counter(_identity(row) for row in owner['files'])
         next_owner = current.get(directory, {})
-        new = Counter(identity(row) for row in next_owner.get('files', []))
+        new = Counter(_identity(row) for row in next_owner.get('files', []))
         missing = old - new
-        for (origin, source, before_hash), count in list(missing.items()):
+        for (kind, origin, source, before_hash), count in list(missing.items()):
             candidates = [row for row in owner['files']
-                          if identity(row) == (origin, source, before_hash)]
+                          if _identity(row) == (kind, origin, source, before_hash)]
             # Only a single whole-file move can be reversed this way. Multiple
             # extracted fragments cannot collapse into one restored production file.
-            if count != 1 or len(candidates) != 1 or root is None:
+            if kind is not None or count != 1 or len(candidates) != 1 or root is None:
                 continue
             row = candidates[0]
             package = (packages or {}).get(directory, {})
@@ -156,9 +171,25 @@ def check_previous(previous, current, root=None, packages=None, previous_package
             if (external.exists() or not restored.is_file()
                     or hashlib.sha256(restored.read_bytes()).hexdigest() != row['sha256']):
                 continue
-            del missing[(origin, source, before_hash)]
+            del missing[(kind, origin, source, before_hash)]
         if missing:
             raise ValueError(f'external test source accounting shrank: {directory}')
+    for directory, owner in current.items():
+        old = {_identity(row) for row in previous.get(directory, {}).get('files', [])}
+        seen = set()
+        for row in owner['files']:
+            if row.get('source_kind') != 'project-authored':
+                continue
+            identity = _identity(row)
+            if identity in seen:
+                raise ValueError(f'duplicate project-authored test identity: {row["source"]}')
+            seen.add(identity)
+            if identity in old:
+                continue
+            if (row['source'] != row['path'] or row['source_sha256_before'] != row['sha256']
+                    or root is None or not safe(root, row['path']).is_file()
+                    or hashlib.sha256(safe(root, row['path']).read_bytes()).hexdigest() != row['sha256']):
+                raise ValueError(f'invalid initial project-authored test source: {row["path"]}')
 
 
 def validate_archived(root, owner, package, removed=False, renames=None, transfers=None):
@@ -184,10 +215,7 @@ def validate_archived(root, owner, package, removed=False, renames=None, transfe
     for entry in owner['files']:
         source, path = entry['source'], entry['path']
         safe(root, source); safe(root, path)
-        from external_transfers import permits
-        native = (entry.get('origin_directory', package['origin_directory']) == package['origin_directory']
-                  and source.startswith(prefixes))
-        if (not (native or permits(transfers or {}, directory, entry, package['origin_directory'])) or path in paths
+        if (not _owns_source(owner, entry, package['origin_directory'], prefixes, transfers or {}) or path in paths
                 or not any(path.startswith(p + '/') for p in roots)
                 or any(not re.fullmatch(r'[0-9a-f]{64}', entry.get(key, ''))
                        for key in ('sha256', 'source_sha256_before'))):

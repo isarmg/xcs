@@ -70,7 +70,7 @@ where
         let subs = {
             let mut lock = self.reactivity.write().or_poisoned();
             lock.state = ReactiveNodeState::Dirty;
-            lock.subscribers.clone()
+            lock.subscribers.live_snapshot()
         };
 
         for sub in subs {
@@ -86,7 +86,7 @@ where
                 if lock.state != ReactiveNodeState::Dirty {
                     lock.state = ReactiveNodeState::Check;
                 }
-                lock.subscribers.clone()
+                lock.subscribers.live_snapshot()
             };
 
             for sub in subs {
@@ -97,7 +97,12 @@ where
     }
 
     fn mark_subscribers_check(&self) {
-        let subs = self.reactivity.read().or_poisoned().subscribers.clone();
+        let subs = self
+            .reactivity
+            .write()
+            .or_poisoned()
+            .subscribers
+            .live_snapshot();
         for sub in subs {
             sub.mark_check();
         }
@@ -160,7 +165,7 @@ where
                 reactivity_lock.state = ReactiveNodeState::Clean;
 
                 if changed {
-                    let subs = reactivity_lock.subscribers.clone();
+                    let subs = reactivity_lock.subscribers.live_snapshot();
                     drop(reactivity_lock);
                     for sub in subs {
                         // don't trigger reruns of effects/memos

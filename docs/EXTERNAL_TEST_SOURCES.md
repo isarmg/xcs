@@ -41,6 +41,23 @@ refresh accepts reviewed current code changes, not a claim that edited tests rem
 byte-identical to the initial separation. Missing files and unrecorded additions
 still fail, and removing previously attributed fragments is not ordinary refresh.
 
+## 项目新写的回归测试
+
+全新编写、并非从上游代码抽取的测试仍在所属包的 `test/` 根下显式登记，
+不得虚构上游来源路径。映射保持 `schema_version: 1`，仅这类新行增加
+`source_kind: "project-authored"`；已有历史行不加标记、不改写。
+首次登记时，`source` 等于实际 `path`，`source_sha256_before` 等于该文件
+首次登记的实际字节 SHA-256，`sha256` 记录当前内容。refresh 同时检查首次
+路径和实际字节，不会把任意旧哈希当作本地创作证据。
+
+后续经审查的内容修改只更新 `sha256`；来源类型、初始路径、初始哈希及
+原有 origin 标记必须保持不变。所属包的 upstream/version 身份不变，
+但这不表示新测试来自该上游版本。新标记不能抵消上游文件移除，也不能
+把旧的抽取行改成本地新作。精确清单、路径安全、禁止丢失既有行以及显式
+退役归档规则继续适用。此支持仅覆盖本 owner 下的新作登记和后续内容
+编辑，不授权跨 owner 转移或根重命名；这些变更未有专门证明时保持拒绝，
+不能通过删除标记或重写初始来源绕过。
+
 ## Retirement and upgrade of an external-test owner
 
 Ordinary refresh still refuses disappearance of an external owner or fragment.

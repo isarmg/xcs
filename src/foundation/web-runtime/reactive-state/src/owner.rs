@@ -142,6 +142,9 @@ impl Owner {
                 contexts: Default::default(),
                 cleanups: Default::default(),
                 children: Default::default(),
+                children_prune_at: 0,
+                #[cfg(test)]
+                child_slots_scanned: 0,
                 #[cfg(feature = "sandboxed-arenas")]
                 arena: parent
                     .as_ref()
@@ -152,11 +155,7 @@ impl Owner {
             })),
         };
         if let Some(parent) = parent.and_then(|n| n.upgrade()) {
-            parent
-                .write()
-                .or_poisoned()
-                .children
-                .push(Arc::downgrade(&this.inner));
+            parent.write().or_poisoned().register_child(&this.inner);
         }
         this
     }
@@ -190,12 +189,15 @@ impl Owner {
                 contexts: Default::default(),
                 cleanups: Default::default(),
                 children: Default::default(),
+                children_prune_at: 0,
+                #[cfg(test)]
+                child_slots_scanned: 0,
                 #[cfg(feature = "sandboxed-arenas")]
                 arena,
                 paused,
             })),
         };
-        inner.children.push(Arc::downgrade(&child.inner));
+        inner.register_child(&child.inner);
         child
     }
 
@@ -361,9 +363,36 @@ pub(crate) struct OwnerInner {
     pub contexts: FxHashMap<TypeId, Box<dyn Any + Send + Sync>>,
     pub cleanups: Vec<Box<dyn FnOnce() + Send + Sync>>,
     pub children: Vec<Weak<RwLock<OwnerInner>>>,
+    children_prune_at: usize,
+    #[cfg(test)]
+    child_slots_scanned: usize,
     #[cfg(feature = "sandboxed-arenas")]
     arena: Arc<RwLock<ArenaMap>>,
     paused: bool,
+}
+
+impl OwnerInner {
+    fn register_child(&mut self, child: &Arc<RwLock<OwnerInner>>) {
+        if self.children.len() >= self.children_prune_at {
+            #[cfg(test)]
+            {
+                self.child_slots_scanned += self.children.len();
+            }
+            // Preserve context lookup order. Checking the count avoids upgrading
+            // and potentially dropping the last strong child under this lock.
+            self.children.retain(|child| child.strong_count() > 0);
+            // Wait for at least as many additions as surviving children before
+            // scanning again. Live growth and replacement both stay amortized O(1).
+            self.children_prune_at = self.children.len().saturating_mul(2).max(32);
+        }
+        self.children.push(Arc::downgrade(child));
+    }
+
+    fn take_children(&mut self) -> Vec<Weak<RwLock<OwnerInner>>> {
+        // A reused owner must not inherit the previous population's watermark.
+        self.children_prune_at = 0;
+        mem::take(&mut self.children)
+    }
 }
 
 impl Debug for OwnerInner {
@@ -379,7 +408,7 @@ impl Debug for OwnerInner {
 
 impl Drop for OwnerInner {
     fn drop(&mut self) {
-        for child in std::mem::take(&mut self.children) {
+        for child in self.take_children() {
             if let Some(child) = child.upgrade() {
                 child.cleanup();
             }
@@ -420,7 +449,7 @@ impl Cleanup for RwLock<OwnerInner> {
             (
                 mem::take(&mut lock.cleanups),
                 mem::take(&mut lock.nodes),
-                mem::take(&mut lock.children),
+                lock.take_children(),
             )
         };
         for child in children {
@@ -453,4 +482,7 @@ impl Cleanup for RwLock<OwnerInner> {
 }
 
 #[cfg(test)]
-include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../../test/foundation/reactive-state/unit/src/owner/tests_594.rs"));
+include!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/../../../../test/foundation/reactive-state/unit/src/owner/tests_594.rs"
+));

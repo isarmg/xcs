@@ -265,4 +265,126 @@ class OrdinaryGroupedRetirement(unittest.TestCase):
             f.refresh(move_plan_data=plan)
 
 
+class ProjectAuthoredGroupedTests(unittest.TestCase):
+    setUp = OrdinaryGroupedRetirement.setUp
+    grouped = OrdinaryGroupedRetirement.grouped
+
+    def add_local_test(self, f):
+        path = f.external_root / 'regression.rs'
+        path.write_bytes(b'#[test]\nfn regression() { assert_eq!(2 + 2, 4); }\n')
+        relative = path.relative_to(f.root).as_posix()
+        row = dict(source_kind='project-authored', source=relative, path=relative,
+                   source_sha256_before=sha(path.read_bytes()), sha256=sha(path.read_bytes()))
+        mapping = json.loads(f.external_mapping.read_bytes())
+        mapping['owners'][0]['files'].append(row)
+        f.external_mapping.write_text(json.dumps(mapping))
+        return path, mapping
+
+    def test_local_addition_refresh_verify_and_content_edit_keep_layout_evidence(self):
+        f = self.grouped(external=True)
+        before = deepcopy(f.catalog)
+        path, mapping = self.add_local_test(f)
+        initial = deepcopy(mapping['owners'][0]['files'][-1])
+        f.refresh(); f.verify(); f.refresh(); f.verify()
+        owner = f.catalog['external_tests'][self.directory]
+        self.assertEqual(owner['file_count'], 2)
+        self.assertEqual(owner['files'][0], before['external_tests'][self.directory]['files'][0])
+        self.assertEqual(owner['files'][-1], initial)
+        path.write_bytes(path.read_bytes() + b'// reviewed later regression coverage\n')
+        mapping['owners'][0]['files'][-1]['sha256'] = sha(path.read_bytes())
+        f.external_mapping.write_text(json.dumps(mapping))
+        f.refresh(); f.verify()
+        current = f.catalog['external_tests'][self.directory]['files'][-1]
+        self.assertNotEqual(current['sha256'], initial['sha256'])
+        self.assertEqual({k: v for k, v in current.items() if k != 'sha256'},
+                         {k: v for k, v in initial.items() if k != 'sha256'})
+        self.assertEqual((f.root / layout.receipt_path(self.marker)).read_bytes(), self.receipt_bytes)
+        for field in layout.HISTORY_FIELDS:
+            self.assertEqual(f.catalog.get(field), before.get(field), field)
+        view = layout.load(f.root, f.catalog)
+        self.assertEqual(view.rows['src/foundation/mini']['destination_external_tests'],
+                         before['external_tests'][self.directory])
+        self.assertNotIn(initial['path'], view.edits)
+
+    def test_local_addition_does_not_allow_unmarked_historical_additions(self):
+        f = self.grouped(external=True)
+        _, mapping = self.add_local_test(f)
+        row = mapping['owners'][0]['files'][-1]
+        del row['source_kind']
+        row['source'] = 'src/foundation/mini/lib.rs'
+        f.external_mapping.write_text(json.dumps(mapping))
+        with self.assertRaisesRegex(ValueError, 'external historical attribution drift'):
+            f.refresh()
+
+    def test_local_addition_cannot_hide_old_label_rewrites_or_drops(self):
+        f = self.grouped(external=True)
+        self.add_local_test(f); f.refresh(); f.verify()
+        original = deepcopy(f.catalog)
+        for field, value in [('source', 'src/foundation/mini/forged.rs'),
+                             ('source_sha256_before', 'a' * 64),
+                             ('path', 'test/foundation/mini/forged.rs'),
+                             ('source_kind', 'project-authored'), ('drop', None)]:
+            with self.subTest(field=field):
+                catalog = deepcopy(original)
+                owner = catalog['external_tests'][self.directory]
+                if field == 'drop': owner['files'].pop(0); owner['file_count'] -= 1
+                else: owner['files'][0][field] = value
+                with self.assertRaisesRegex(ValueError, 'external historical attribution drift'):
+                    layout.load(f.root, catalog)
+
+    def test_added_local_rows_cannot_change_owner_roots_or_forge_count(self):
+        f = self.grouped(external=True)
+        self.add_local_test(f); f.refresh(); f.verify()
+        original = deepcopy(f.catalog)
+        for field, value in [('directory', 'src/foundation/core-types/other'),
+                             ('origin_directory', 'old/other'),
+                             ('roots', ['test/foundation']), ('file_count', 1)]:
+            with self.subTest(field=field):
+                catalog = deepcopy(original); catalog['external_tests'][self.directory][field] = value
+                with self.assertRaisesRegex(ValueError, 'external historical attribution drift'):
+                    layout.load(f.root, catalog)
+
+    def test_added_local_rows_require_own_source_scope_in_layout_check(self):
+        f = self.grouped(external=True)
+        self.add_local_test(f); f.refresh(); f.verify()
+        original = deepcopy(f.catalog)
+        for field, value in [('source', 'src/foundation/mini/lib.rs'),
+                             ('source', 'test/foundation/other/regression.rs'),
+                             ('origin_directory', 'old/other')]:
+            with self.subTest(field=field, value=value):
+                catalog = deepcopy(original)
+                catalog['external_tests'][self.directory]['files'][-1][field] = value
+                with self.assertRaisesRegex(ValueError, 'external historical attribution drift'):
+                    layout.load(f.root, catalog)
+
+    def test_added_local_initial_hash_and_disappearance_still_fail_refresh(self):
+        f = self.grouped(external=True)
+        path, mapping = self.add_local_test(f); f.refresh(); f.verify()
+        original = deepcopy(mapping)
+        mapping['owners'][0]['files'][-1]['source_sha256_before'] = 'a' * 64
+        f.external_mapping.write_text(json.dumps(mapping))
+        with self.assertRaisesRegex(ValueError, 'accounting shrank'):
+            f.refresh()
+        original['owners'][0]['files'].pop(); path.unlink()
+        f.external_mapping.write_text(json.dumps(original))
+        with self.assertRaisesRegex(ValueError, 'accounting shrank'):
+            f.refresh()
+
+    def test_local_rows_already_in_installation_remain_historical_labels(self):
+        f = self.fixture
+        f.install_external_tests()
+        self.add_local_test(f); f.refresh(); f.verify()
+        self.grouped()
+        original = deepcopy(f.catalog)
+        for field, value in [('source_kind', 'other'), ('source_sha256_before', 'a' * 64),
+                             ('path', 'test/foundation/mini/other.rs'), ('drop', None)]:
+            with self.subTest(field=field):
+                catalog = deepcopy(original)
+                owner = catalog['external_tests'][self.directory]
+                if field == 'drop': owner['files'].pop(); owner['file_count'] -= 1
+                else: owner['files'][-1][field] = value
+                with self.assertRaisesRegex(ValueError, 'external historical attribution drift'):
+                    layout.load(f.root, catalog)
+
+
 if __name__=='__main__':unittest.main(verbosity=2)

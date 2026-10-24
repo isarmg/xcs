@@ -50,7 +50,7 @@ impl ReactiveNode for RwLock<ArcAsyncDerivedInner> {
     }
 
     fn mark_subscribers_check(&self) {
-        let subs = self.read().or_poisoned().subscribers.clone();
+        let subs = self.write().or_poisoned().subscribers.live_snapshot();
         for sub in subs {
             sub.mark_check();
         }

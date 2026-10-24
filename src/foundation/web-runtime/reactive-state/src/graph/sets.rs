@@ -1,9 +1,7 @@
 //! Types that hold the set of sources or subscribers affiliated with a reactive node.
 //!
-//! At the moment, these are implemented as linear maps built on a `Vec<_>`. This is for the sake
-//! of minimizing binary size as much as possible, and on the assumption that the M:N relationship
-//! between sources and subscribers usually consists of fairly small numbers, such that the cost of
-//! a linear search is not significantly more expensive than a hash and lookup.
+//! These use insertion-ordered hash sets so subscriptions are deduplicated without
+//! scanning the existing entries, while notifications retain subscription order.
 
 use super::{AnySource, AnySubscriber, Source};
 use indexmap::IndexSet;
@@ -70,6 +68,15 @@ impl SubscriberSet {
 
     pub fn subscribe(&mut self, subscriber: AnySubscriber) {
         self.0.insert(subscriber);
+    }
+
+    /// Prunes dead subscribers and snapshots the remaining notification order.
+    /// Callers must release the source lock before notifying this snapshot.
+    pub(crate) fn live_snapshot(&mut self) -> Self {
+        // Do not upgrade under the source lock: dropping a temporary last strong
+        // reference could run subscriber cleanup that re-enters this source.
+        self.0.retain(|subscriber| subscriber.1.strong_count() != 0);
+        self.clone()
     }
 
     pub fn unsubscribe(&mut self, subscriber: &AnySubscriber) {

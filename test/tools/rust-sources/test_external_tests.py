@@ -149,6 +149,149 @@ class FullFileRestoration(unittest.TestCase):
             external.check_previous(owners, {}, self.root, self.packages, prior)
 
 
+class ProjectAuthoredTests(unittest.TestCase):
+    setUp = ExternalTestAccounting.setUp
+    save = ExternalTestAccounting.save
+
+    def local_row(self):
+        row = self.record['owners'][0]['files'][0]
+        row.update(source_kind='project-authored', source=row['path'], source_sha256_before=row['sha256'])
+        self.save()
+        return row
+
+    def test_explicit_initial_receipt_uses_actual_local_path_and_bytes(self):
+        row = self.local_row()
+        owners, _ = external.load(self.root, self.packages)
+        external.check_previous({}, owners, self.root)
+        self.assertEqual(self.record['schema_version'], 1)
+        self.assertEqual(owners[self.owner]['files'], [row])
+        del row['source_kind']; self.save()
+        with self.assertRaisesRegex(ValueError, 'ownership'):
+            external.load(self.root, self.packages)
+
+    def test_initial_path_hash_and_actual_bytes_must_match(self):
+        row = self.local_row()
+        for field, value in [('source', 'test/foundation/mini/other.rs'),
+                             ('source_sha256_before', 'a' * 64)]:
+            with self.subTest(field=field):
+                original = row[field]; row[field] = value; self.save()
+                owners, _ = external.load(self.root, self.packages)
+                with self.assertRaisesRegex(ValueError, 'initial project-authored'):
+                    external.check_previous({}, owners, self.root)
+                row[field] = original
+        self.save()
+        owners, _ = external.load(self.root, self.packages)
+        self.file.write_text('unrecorded replacement')
+        with self.assertRaisesRegex(ValueError, 'initial project-authored'):
+            external.check_previous({}, owners, self.root)
+
+    def test_new_row_on_existing_owner_is_also_checked(self):
+        previous, _ = external.load(self.root, self.packages)
+        new = self.file.with_name('regression.rs'); new.write_text('new regression')
+        row = dict(source_kind='project-authored', source=new.relative_to(self.root).as_posix(),
+                   path=new.relative_to(self.root).as_posix(), sha256=hashlib.sha256(new.read_bytes()).hexdigest(),
+                   source_sha256_before='a' * 64)
+        self.record['owners'][0]['files'].append(row); self.save()
+        current, _ = external.load(self.root, self.packages)
+        with self.assertRaisesRegex(ValueError, 'initial project-authored'):
+            external.check_previous(previous, current, self.root)
+        row['source_sha256_before'] = row['sha256']; self.save()
+        current, _ = external.load(self.root, self.packages)
+        external.check_previous(previous, current, self.root)
+
+    def test_reviewed_content_edit_retains_initial_identity(self):
+        row = self.local_row()
+        previous, _ = external.load(self.root, self.packages)
+        self.file.write_text('reviewed new assertion')
+        row['sha256'] = hashlib.sha256(self.file.read_bytes()).hexdigest(); self.save()
+        current, _ = external.load(self.root, self.packages)
+        external.check_previous(previous, current, self.root)
+        self.assertNotEqual(row['sha256'], row['source_sha256_before'])
+        self.assertEqual(previous[self.owner]['files'][0]['source_sha256_before'], row['source_sha256_before'])
+
+    def test_initial_kind_origin_source_and_hash_are_immutable(self):
+        self.local_row()
+        previous, _ = external.load(self.root, self.packages)
+        for field, value in [('source_kind', None), ('source_kind', 'upstream'),
+                             ('origin_directory', 'vendor/other'),
+                             ('source', 'test/foundation/mini/other.rs'),
+                             ('source_sha256_before', 'a' * 64)]:
+            with self.subTest(field=field, value=value):
+                current = json.loads(json.dumps(previous))
+                row = current[self.owner]['files'][0]
+                if value is None: del row[field]
+                else: row[field] = value
+                with self.assertRaisesRegex(ValueError, 'accounting shrank'):
+                    external.check_previous(previous, current, self.root)
+
+    def test_upstream_row_cannot_be_reclassified_as_local(self):
+        previous, _ = external.load(self.root, self.packages)
+        self.local_row()
+        current, _ = external.load(self.root, self.packages)
+        with self.assertRaisesRegex(ValueError, 'accounting shrank'):
+            external.check_previous(previous, current, self.root)
+
+    def test_local_marker_cannot_bypass_owner_or_transfer_rules(self):
+        row = self.local_row()
+        grant = ('vendor/mini', row['source'], row['source_sha256_before'])
+        with self.assertRaisesRegex(ValueError, 'ownership'):
+            external.load(self.root, self.packages, transfers={self.owner: {grant}})
+        for field, value in [('source_kind', None), ('source_kind', 'unknown'),
+                             ('source', self.owner + '/tests.rs'),
+                             ('source', 'test/foundation/other/tests.rs'),
+                             ('origin_directory', 'vendor/other')]:
+            with self.subTest(field=field, value=value):
+                original = dict(row); row[field] = value; self.save()
+                grant = (row.get('origin_directory', 'vendor/mini'), row['source'], row['source_sha256_before'])
+                with self.assertRaisesRegex(ValueError, 'ownership'):
+                    external.load(self.root, self.packages, transfers={self.owner: {grant}})
+                row.clear(); row.update(original)
+
+    def test_local_source_paths_remain_safe(self):
+        row = self.local_row()
+        for source in ('../escape', '/absolute', 'test/foundation/mini/../other.rs'):
+            row['source'] = source; self.save()
+            with self.assertRaisesRegex(ValueError, 'unsafe external test path'):
+                external.load(self.root, self.packages)
+        link = self.file.with_name('linked.rs'); link.symlink_to(self.file)
+        row['source'] = link.relative_to(self.root).as_posix(); self.save()
+        with self.assertRaisesRegex(ValueError, 'symlink'):
+            external.load(self.root, self.packages)
+
+    def test_local_rows_cannot_disappear_change_owner_or_duplicate_identity(self):
+        self.local_row()
+        previous, _ = external.load(self.root, self.packages)
+        for current in ({}, {'src/foundation/other': previous[self.owner]}):
+            with self.assertRaisesRegex(ValueError, 'accounting shrank'):
+                external.check_previous(previous, current, self.root)
+        current = json.loads(json.dumps(previous))
+        row = current[self.owner]['files'][0]
+        current[self.owner]['files'].append(dict(row, path='test/foundation/mini/duplicate.rs'))
+        with self.assertRaisesRegex(ValueError, 'duplicate project-authored'):
+            external.check_previous(previous, current, self.root)
+
+    def test_local_row_does_not_account_for_removed_upstream_source(self):
+        self.local_row()
+        owners, _ = external.load(self.root, self.packages)
+        previous = {self.owner: {'origin_directory': 'vendor/mini', 'files_sha256': {'tests.rs': 'a' * 64}}}
+        with self.assertRaisesRegex(ValueError, 'unaccounted source removal'):
+            external.check_removed(previous, self.packages, owners)
+
+    def test_archived_local_receipt_keeps_identity_without_live_bytes(self):
+        self.local_row()
+        owners, _ = external.load(self.root, self.packages)
+        owner = owners[self.owner]
+        package = dict(self.packages[self.owner], directory=self.owner)
+        self.file.unlink(); self.file.parent.rmdir()
+        external.validate_archived(self.root, owner, package, removed=True)
+        for field, value in [('source_kind', 'unknown'), ('origin_directory', 'vendor/other'),
+                             ('source', 'test/foundation/other/tests.rs')]:
+            with self.subTest(field=field):
+                invalid = json.loads(json.dumps(owner)); invalid['files'][0][field] = value
+                with self.assertRaisesRegex(ValueError, 'archived external test source'):
+                    external.validate_archived(self.root, invalid, package, removed=True)
+
+
 class ExternalSourceAttributes(unittest.TestCase):
     def test_relocated_upstream_bytes_disable_git_text_normalization(self):
         root = Path(__file__).resolve().parents[3]
