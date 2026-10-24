@@ -261,6 +261,39 @@ fn retain_inherited_files(
     });
 }
 
+fn backup_primaries(engine: &Engine, repository: &str, scope: &Scope) -> Result<BTreeSet<String>> {
+    let mut primaries = BTreeSet::from([engine
+        .file_placement_settings(repository, None, &scope.path)?
+        .0]);
+    // Existing files may have a more specific future placement rule than the
+    // directory itself, even before their first version on that primary.
+    for (file, entry) in &scope.files {
+        primaries.insert(
+            engine
+                .file_placement_settings(repository, Some(file), &entry.path)?
+                .0,
+        );
+    }
+    for version in engine.state.versions.values().filter(|version| {
+        scope.files.contains_key(&version.file_id)
+            && engine
+                .state
+                .content_states
+                .get(&version.version_id)
+                .map(String::as_str)
+                .unwrap_or("AVAILABLE")
+                == "AVAILABLE"
+    }) {
+        let placement = engine
+            .state
+            .placements
+            .get(&version.version_id)
+            .ok_or_else(|| Error::new("PLACEMENT_NOT_FOUND", "backup source placement missing"))?;
+        primaries.insert(placement.primary_slot_id.clone());
+    }
+    Ok(primaries)
+}
+
 pub(crate) fn prune_retained_policies(state: &mut State, repository: &str) {
     let referenced = state
         .file_backup_policies
@@ -367,29 +400,13 @@ impl Engine {
             policy.inheritable && exact.is_none_or(|exact| exact.policy_id != policy.policy_id)
         });
         retain_inherited_files(&self.state, repository, &mut scope, exact);
-        let (primary, copies) = self.new_file_placement_for_file(
+        let (primary, copies) = self.file_placement_settings(
             repository,
             (scope.kind == "file").then_some(scope.id.as_str()),
             &scope.path,
         )?;
-        // PUT re-protects every available version, including versions whose
-        // primary differs from today's route. Expose those chains as well so
-        // the editor can collect every required user prefix before submitting.
-        let mut primaries = BTreeSet::from([primary.clone()]);
-        for version in self.state.versions.values().filter(|version| {
-            scope.files.contains_key(&version.file_id)
-                && self
-                    .state
-                    .content_states
-                    .get(&version.version_id)
-                    .map(String::as_str)
-                    .unwrap_or("AVAILABLE")
-                    == "AVAILABLE"
-        }) {
-            if let Some(placement) = self.state.placements.get(&version.version_id) {
-                primaries.insert(placement.primary_slot_id.clone());
-            }
-        }
+        // GET and PUT use the same future and historical source chains.
+        let primaries = backup_primaries(self, repository, &scope)?;
         let mut routes = Vec::new();
         for source in primaries {
             let mut route = self.route(&source, 1)?;
@@ -408,13 +425,18 @@ impl Engine {
             .cloned()
             .expect("default primary chain is included");
         let maximum = routes.iter().map(Vec::len).min().unwrap_or(1);
+        let requested_route = match self.route(&primary, copies) {
+            Ok(route) => route,
+            Err(error) if error.code() == "ROUTE_INCOMPLETE" => Vec::new(),
+            Err(error) => return Err(error),
+        };
         let backup_slots = routes
             .iter()
             .flat_map(|route| route.iter().skip(1))
             .cloned()
             .collect::<BTreeSet<_>>();
         Ok(
-            json!({"scope":{"id":scope.id,"kind":scope.kind,"path":scope.path},"policy_id":exact.map(|policy|&policy.policy_id),"effective_policy_id":effective.map(|policy|&policy.policy_id),"generation":exact.map_or(0,|policy|policy.generation).to_string(),"effective_generation":effective.map_or(0,|policy|policy.generation).to_string(),"inherited":inherited,"target_copies":copies,"backup_prefixes":effective.map(|policy|policy.backup_prefixes.clone()).unwrap_or_default(),"route_slot_ids":self.route(&primary,copies)?,"available_route_slot_ids":available_route,"backup_routes":routes,"backup_slot_ids":backup_slots,"max_copies":maximum,"file_count":scope.files.len().to_string(),"backup_paths":if scope.kind=="file"{self.state.file_backup_paths.get(&scope.id).cloned().unwrap_or_default()}else{BTreeMap::new()}}),
+            json!({"scope":{"id":scope.id,"kind":scope.kind,"path":scope.path},"policy_id":exact.map(|policy|&policy.policy_id),"effective_policy_id":effective.map(|policy|&policy.policy_id),"generation":exact.map_or(0,|policy|policy.generation).to_string(),"effective_generation":effective.map_or(0,|policy|policy.generation).to_string(),"inherited":inherited,"target_copies":copies,"backup_prefixes":effective.map(|policy|policy.backup_prefixes.clone()).unwrap_or_default(),"route_slot_ids":requested_route,"available_route_slot_ids":available_route,"backup_routes":routes,"backup_slot_ids":backup_slots,"max_copies":maximum,"file_count":scope.files.len().to_string(),"backup_paths":if scope.kind=="file"{self.state.file_backup_paths.get(&scope.id).cloned().unwrap_or_default()}else{BTreeMap::new()}}),
         )
     }
 
@@ -486,18 +508,14 @@ impl Engine {
                         return Err(Error::new("INVALID_BACKUP_PREFIX", "backup slot is listed more than once"));
                     }
                 }
-                let (primary, _) = engine.new_file_placement_for_file(repository,
-                    (scope.kind == "file").then_some(scope.id.as_str()), &scope.path)?;
-                let mut required = engine.route(&primary, copies)?.into_iter().skip(1).collect::<BTreeSet<_>>();
+                let mut required = BTreeSet::new();
+                for primary in backup_primaries(engine, repository, &scope)? {
+                    required.extend(engine.route(&primary, copies)?.into_iter().skip(1));
+                }
                 let versions = state.versions.values().filter(|version| {
                     scope.files.contains_key(&version.file_id)
                         && state.content_states.get(&version.version_id).map(String::as_str).unwrap_or("AVAILABLE") == "AVAILABLE"
                 }).cloned().collect::<Vec<_>>();
-                for version in &versions {
-                    let placement = state.placements.get(&version.version_id)
-                        .ok_or_else(|| Error::new("PLACEMENT_NOT_FOUND", "backup source placement missing"))?;
-                    required.extend(engine.route(&placement.primary_slot_id, copies)?.into_iter().skip(1));
-                }
                 for slot in required {
                     if !normalized.contains_key(&slot) {
                         return Err(Error::new("BACKUP_PREFIX_REQUIRED", format!("backup slot {slot} requires a user-chosen prefix")));

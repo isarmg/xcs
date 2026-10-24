@@ -4,6 +4,8 @@ use std::{fs, os::unix::fs::MetadataExt, path::Path};
 mod precedence_tests;
 #[path = "retained_tests.rs"]
 mod retained_tests;
+#[path = "route_changes_tests.rs"]
+mod route_changes_tests;
 
 fn initialize(root: &Path, copies: u32, capacity: Option<u64>) -> (Engine, Repository) {
     let mut config = Config::development([root.join("p"), root.join("b"), root.join("c")]);

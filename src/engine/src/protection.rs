@@ -47,6 +47,18 @@ impl Engine {
         file_id: Option<&str>,
         path: &str,
     ) -> Result<(String, u32)> {
+        let (primary, copies) = self.file_placement_settings(repository, file_id, path)?;
+        self.route(&primary, copies)?;
+        Ok((primary, copies))
+    }
+    // Resolve settings separately so configuration can repair a moved file
+    // whose old copy count exceeds its new primary's fixed chain.
+    fn file_placement_settings(
+        &self,
+        repository: &str,
+        file_id: Option<&str>,
+        path: &str,
+    ) -> Result<(String, u32)> {
         let repo = self
             .state
             .repositories
@@ -63,7 +75,6 @@ impl Engine {
         let copies = backup_paths::effective_policy(&self.state, repository, file_id, path)
             .map(|p| p.target_copies)
             .unwrap_or(repo.target_copies);
-        self.route(&primary, copies)?;
         Ok((primary, copies))
     }
     pub fn update_placement_rule(
@@ -90,7 +101,7 @@ impl Engine {
             if actual!=expected_generation { return Err(Error::new("GENERATION_MISMATCH","placement rule changed; reread before updating")); }
             if state.placement_rules.get(id).is_some_and(|r|r.repository_id!=repository) { return Err(Error::new("REQUEST_BINDING_MISMATCH","rule is bound to another repository")); }
             if state.placement_rules.values().any(|r|r.rule_id!=id&&r.repository_id==repository&&name_policy::path_key(&r.path_prefix)==name_policy::path_key(path_prefix)) { return Err(Error::new("NAME_COLLISION","an equivalent placement prefix already has a rule")); }
-            engine.route(primary,engine.new_file_placement(repository,path_prefix)?.1)?;
+            engine.route(primary,engine.file_placement_settings(repository,None,path_prefix)?.1)?;
             let rule=PlacementRule{rule_id:id.into(),repository_id:repository.into(),path_prefix:path_prefix.into(),primary_slot_id:engine.disk(primary)?.slot_id.clone(),generation:actual.checked_add(1).ok_or_else(||Error::new("RESOURCE_LIMIT","rule generation exhausted"))?};
             state.placement_rules.insert(id.into(),rule.clone());
             Ok(json!({"rule":rule}))
@@ -121,7 +132,7 @@ impl Engine {
             if state.protection_policies.get(id).is_some_and(|p|p.repository_id!=repository) { return Err(Error::new("REQUEST_BINDING_MISMATCH","policy is bound to another repository")); }
             if state.protection_policies.get(id).is_some_and(|p|!p.inheritable||p.scope_directory_id.is_some()||p.scope_file_id.is_some()) { return Err(Error::new("BACKUP_CONFIGURATION_REQUIRED","scoped and retained settings must be changed through file or directory backup configuration")); }
             if state.protection_policies.values().any(|p|p.inheritable&&p.policy_id!=id&&p.repository_id==repository&&backup_paths::scope_path(state,p).is_some_and(|path|name_policy::path_key(path)==name_policy::path_key(path_prefix))) { return Err(Error::new("NAME_COLLISION","an equivalent protection prefix already has a policy")); }
-            engine.route(&engine.new_file_placement(repository,path_prefix)?.0,copies)?;
+            engine.route(&engine.file_placement_settings(repository,None,path_prefix)?.0,copies)?;
             let previous=state.protection_policies.get(id);
             let policy=ProtectionPolicy{policy_id:id.into(),repository_id:repository.into(),path_prefix:path_prefix.into(),target_copies:copies,inheritable:true,scope_directory_id:None,scope_file_id:None,backup_prefixes:previous.map(|policy|policy.backup_prefixes.clone()).unwrap_or_default(),generation:actual.checked_add(1).ok_or_else(||Error::new("RESOURCE_LIMIT","policy generation exhausted"))?};
             state.protection_policies.insert(id.into(),policy.clone());
