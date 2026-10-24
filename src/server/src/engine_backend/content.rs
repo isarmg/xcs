@@ -29,16 +29,19 @@ impl EngineBackend {
         )?;
         let plan = engine.prepare_content(version).map_err(error)?;
         let repo = repo_for_history(&engine, &record.history_tree_id)?;
-        let entries = engine.list_tree(&repo.main_branch_id).unwrap_or_default();
+        let entries = engine
+            .list_tree_ref(&repo.main_branch_id)
+            .unwrap_or_default();
         let preferred = engine
             .state()
             .file_locations
             .get(&record.file_id)
             .and_then(|path| {
+                let key = name_policy::path_key(path);
                 entries.iter().find(|entry| {
                     entry.kind == "file"
                         && entry.file_id == record.file_id
-                        && entry.lookup_key == name_policy::path_key(path)
+                        && entry.lookup_key == key
                 })
             });
         let download_name = preferred

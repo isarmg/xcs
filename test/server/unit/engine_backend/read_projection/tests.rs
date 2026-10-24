@@ -650,3 +650,132 @@ fn directory_byte_bound_applies_to_utf8_and_long_paths_before_the_count_limit() 
             <= MAX_DIRECTORY_PAGE_BYTES
     );
 }
+
+#[test]
+fn smb_lookup_preserves_path_first_match_without_serializing_the_tree() {
+    let (_root, engine, repo, _) = fixture();
+    let mut commit = synthetic_commit(&engine, &repo, 10_000);
+    let mut first = commit.entries[0].clone();
+    first.path = "Straße/内容.txt".into();
+    first.lookup_key = "deliberately-unrelated-key".into();
+    let mut duplicate = first.clone();
+    duplicate.version_id = "later-duplicate".into();
+    commit.entries.insert(7, first.clone());
+    commit.entries.push(duplicate);
+    commit.entries.swap(0, 5);
+    for path in [
+        "STRASSE/内容.txt",
+        "straße/内容.txt",
+        "file-09999.txt",
+        "absent",
+    ] {
+        let key = name_policy::path_key(path);
+        let legacy = commit
+            .entries
+            .clone()
+            .into_iter()
+            .find(|entry| name_policy::path_key(&entry.path) == key);
+        let projected = SmbLookup::find(&commit.entries, path);
+        assert_eq!(projected.0, legacy);
+        assert_eq!(
+            encode(projected).unwrap(),
+            json_codec::to_value(legacy).unwrap()
+        );
+    }
+    let projected = encode(SmbLookup::find(&commit.entries, "strasse/内容.txt")).unwrap();
+    assert_eq!(projected["version_id"], first.version_id);
+    assert!(projected.get("entries").is_none());
+    assert!(projected.get("pending_file_versions").is_none());
+    assert!(json_codec::to_vec(&projected).unwrap().len() < 1024);
+}
+
+#[test]
+fn smb_lookup_rechecks_authorization_and_returns_only_current_entry() {
+    let (_root, mut engine, repo, identity) = fixture();
+    save_projection_file(&mut engine, &repo.main_branch_id, "Straße.txt", b"content");
+    let expected = engine
+        .list_tree(&repo.main_branch_id)
+        .unwrap()
+        .into_iter()
+        .find(|entry| name_policy::path_key(&entry.path) == "strasse.txt");
+    let input = json!({"branch_id":repo.main_branch_id,"path":"STRASSE.TXT"});
+    let frozen = SmbLookup::capture(&engine, &identity, &input).unwrap();
+    let backend = EngineBackend::new(engine);
+    assert_eq!(
+        backend
+            .call(BackendAction::SmbLookup, &identity, input.clone())
+            .unwrap(),
+        json_codec::to_value(&expected).unwrap()
+    );
+    assert_eq!(
+        backend
+            .call(
+                BackendAction::SmbLookup,
+                &identity,
+                json!({"branch_id":repo.main_branch_id,"path":"missing"})
+            )
+            .unwrap(),
+        json!(null)
+    );
+    let mut denied = identity.clone();
+    denied.repositories.clear();
+    assert_eq!(
+        backend
+            .call(BackendAction::SmbLookup, &denied, input.clone())
+            .unwrap_err()
+            .code,
+        "FORBIDDEN"
+    );
+    backend
+        .engine
+        .lock()
+        .unwrap()
+        .set_grants(
+            &repo.repository_id,
+            storage_engine::Grants {
+                manage: BTreeSet::from(["replacement-owner".into()]),
+                ..Default::default()
+            },
+            &identity.principal,
+            &new_id("op"),
+        )
+        .unwrap();
+    assert_eq!(
+        encode(frozen).unwrap(),
+        json_codec::to_value(expected).unwrap()
+    );
+    assert_eq!(
+        backend
+            .call(BackendAction::SmbLookup, &identity, input)
+            .unwrap_err()
+            .code,
+        "FORBIDDEN"
+    );
+}
+
+#[test]
+fn smb_lookup_preserves_migrated_branch_error() {
+    let (_root, mut engine, repo, identity) = fixture();
+    save_projection_file(&mut engine, &repo.main_branch_id, "file.txt", b"first");
+    let cut = engine.state().branches[&repo.main_branch_id]
+        .head_commit_id
+        .clone();
+    save_projection_file(&mut engine, &repo.main_branch_id, "file.txt", b"second");
+    let plan = engine
+        .create_split_plan(&repo.history_tree_id, &cut, "owner")
+        .unwrap();
+    engine
+        .commit_plan(&plan.plan_id, "owner", &new_id("op"))
+        .unwrap();
+    let backend = EngineBackend::new(engine);
+    let input = json!({"branch_id":repo.main_branch_id,"path":"file.txt"});
+    for action in [BackendAction::Tree, BackendAction::SmbLookup] {
+        assert_eq!(
+            backend
+                .call(action, &identity, input.clone())
+                .unwrap_err()
+                .code,
+            "TREE_MOVED"
+        );
+    }
+}

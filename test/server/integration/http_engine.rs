@@ -698,6 +698,30 @@ async fn file_notes_are_authorized_bounded_persistent_and_download_uses_current_
         deleted["versions"][0]["download_name"], "改名后的文件.txt",
         "deletion preserves the container's last name for historical downloads"
     );
+    let response = app
+        .clone()
+        .oneshot(
+            Request::builder()
+                .uri(format!("/api/versions/{version}/content"))
+                .header("authorization", format!("Bearer {reader}"))
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(response.status(), StatusCode::OK);
+    assert!(
+        response.headers()["content-disposition"]
+            .to_str()
+            .unwrap()
+            .contains("filename*=UTF-8''%E6%94%B9")
+    );
+    assert_eq!(
+        &http_routing::body::to_bytes(response.into_body(), 4096)
+            .await
+            .unwrap()[..],
+        b"immutable historical bytes"
+    );
     drop(app);
     let backend = Arc::new(EngineBackend::new(
         reopen_after_router_drop(&root.path().join("system")).await,

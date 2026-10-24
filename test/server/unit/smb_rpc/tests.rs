@@ -6,6 +6,18 @@ use std::{
 };
 use storage_engine::{CommitRequest, Config, Engine};
 
+impl Session {
+    pub(super) fn entries(&self) -> Result<Vec<Entry>, ApiError> {
+        let tree = self.call(crate::BackendAction::Tree, json!({"branch_id":self.branch}))?;
+        json_codec::from_value(
+            tree.get("entries")
+                .cloned()
+                .ok_or_else(|| ApiError::invalid("missing tree entries"))?,
+        )
+        .map_err(ApiError::invalid)
+    }
+}
+
 #[path = "admission_tests.rs"]
 mod admission_tests;
 #[path = "binding_tests.rs"]

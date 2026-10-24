@@ -50,6 +50,42 @@ impl Tree {
     }
 }
 
+/// One current SMB entry, retaining the existing path-based first-match rule.
+/// The projection owns only its match, never the whole namespace or pending map.
+#[derive(Serialize)]
+#[serialization(transparent)]
+pub(super) struct SmbLookup(Option<storage_contract::Entry>);
+
+impl SmbLookup {
+    pub(super) fn capture(
+        engine: &Engine,
+        identity: &Identity,
+        input: &Value,
+    ) -> Result<Self, ApiError> {
+        let branch = field(input, "branch_id")?;
+        authorize(identity, repo_for_branch(engine, branch)?, false, false)?;
+        let branch_info = &engine.state().branches[branch];
+        engine
+            .state()
+            .commits
+            .get(&branch_info.head_commit_id)
+            .filter(|commit| commit.history_tree_id == branch_info.history_tree_id)
+            .ok_or_else(|| ApiError::new(404, "NOT_FOUND", "commit not found"))?;
+        let entries = engine.list_tree_ref(branch).map_err(error)?;
+        Ok(Self::find(entries, field(input, "path")?))
+    }
+
+    fn find(entries: &[storage_contract::Entry], path: &str) -> Self {
+        let key = name_policy::path_key(path);
+        Self(
+            entries
+                .iter()
+                .find(|entry| name_policy::path_key(&entry.path) == key)
+                .cloned(),
+        )
+    }
+}
+
 /// A bounded projection over the immutable, lookup-key-sorted commit tree.
 /// It neither clones nor serializes the complete namespace for every page.
 #[derive(Serialize)]

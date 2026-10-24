@@ -58,21 +58,12 @@ impl Session {
     ) -> Result<Value, ApiError> {
         self.shared.backend.call(action, &self.identity, input)
     }
-    pub(super) fn entries(&self) -> Result<Vec<Entry>, ApiError> {
-        let tree = self.call(crate::BackendAction::Tree, json!({"branch_id":self.branch}))?;
-        json_codec::from_value(
-            tree.get("entries")
-                .cloned()
-                .ok_or_else(|| ApiError::invalid("missing tree entries"))?,
-        )
-        .map_err(ApiError::invalid)
-    }
     pub(super) fn find(&self, path: &str) -> Result<Option<Entry>, ApiError> {
-        let key = name_policy::path_key(path);
-        Ok(self
-            .entries()?
-            .into_iter()
-            .find(|entry| name_policy::path_key(&entry.path) == key))
+        json_codec::from_value(self.call(
+            crate::BackendAction::SmbLookup,
+            json!({"branch_id":self.branch,"path":path}),
+        )?)
+        .map_err(ApiError::invalid)
     }
     pub(super) fn workspace(&self) -> Result<Workspace, ApiError> {
         json_codec::from_value(self.call(

@@ -11,7 +11,7 @@ use web_interface::{i18n::t, prelude::*};
 
 #[derive(Clone, Default)]
 pub(crate) struct Model {
-    pub events: Vec<Value>,
+    pub events: crate::snapshot::Snapshot<Vec<Value>>,
     pub loading: bool,
     pub loaded: bool,
     pub failure: Option<Feedback>,
@@ -30,7 +30,7 @@ pub(crate) fn load(state: RwSignal<State>) {
         }
         match result {
             Ok(value) => state.update(|s| {
-                s.activity.events = list(&value, "events");
+                s.activity.events = list(&value, "events").into();
                 s.activity.loaded = true;
                 s.activity.failure = None;
             }),
@@ -85,6 +85,25 @@ fn action_label(action: &str) -> String {
     }
 }
 
+// Isolate immutable events and the filter from unrelated management polling.
+fn visible_events(state: RwSignal<State>) -> Memo<Vec<Value>> {
+    let events = Memo::new(move |_| state.with(|s| s.activity.events.clone()));
+    let disk = Memo::new(move |_| state.with(|s| s.activity.disk.clone()));
+    Memo::new(move |_| {
+        #[cfg(test)]
+        tests::record_projection();
+        events.with(|events| {
+            disk.with(|disk| {
+                events
+                    .iter()
+                    .filter(|event| disk.is_empty() || text(event, &["slot_id"]) == *disk)
+                    .cloned()
+                    .collect()
+            })
+        })
+    })
+}
+
 pub(crate) fn view(state: RwSignal<State>) -> impl IntoView {
     let options = Signal::derive(move || {
         let mut options = vec![SelectOption::new("", t("所有硬盘", "All disks"))];
@@ -100,31 +119,20 @@ pub(crate) fn view(state: RwSignal<State>) -> impl IntoView {
         options
     });
     let selected = Signal::derive(move || state.with(|s| s.activity.disk.clone()));
-    let visible_events = Memo::new(move |_| {
-        state.with(|s| {
-            s.activity
-                .events
-                .iter()
-                .filter(|event| {
-                    s.activity.disk.is_empty() || text(event, &["slot_id"]) == s.activity.disk
-                })
-                .cloned()
-                .collect::<Vec<_>>()
-        })
-    });
+    let visible_events = visible_events(state);
     view! {<section class="zxs-content-stack zxs-history-page zxs-stack">
         <p class="zxs-row">{t("显示最近 200 条已提交的文件操作。选择文件可查看它的版本和分支。","The latest 200 committed file operations are shown. Select a file to view its versions and branches.")}</p>
         <div class="zxs-history-toolbar zxs-flow zxs-flow--end zxs-surface-end"><Select label=t("硬盘","Disk") options=options value=selected on_change=Callback::new(move |disk:String|state.update(|s|s.activity.disk=disk))/></div>
         <Show when=move ||state.with(|s|s.activity.loading&&!s.activity.loaded)><LoadingState/></Show>
         {move ||state.with(|s|s.activity.failure.clone()).map(|failure|view!{<ErrorState message=failure.message request_id=failure.request_id/>})}
-        <Show when=move || !visible_events.get().is_empty()><div class="zxs-content-panel zxs-history-list-panel zxs-frame zxs-stack zxs-stack--flush"><ul class="zxs-activity-list zxs-history-list" aria-label=t("文件操作记录","File operation history")>{move ||{
+        <Show when=move || !visible_events.with(Vec::is_empty)><div class="zxs-content-panel zxs-history-list-panel zxs-frame zxs-stack zxs-stack--flush"><ul class="zxs-activity-list zxs-history-list" aria-label=t("文件操作记录","File operation history")>{move ||{
             visible_events.get().into_iter().map(|event|{
                 let time=event["timestamp"].as_str().map(|value|if value.contains('T'){format::timestamp(value)}else{format::timestamp_seconds(value)}).unwrap_or_else(||t("未记录时间","Time not recorded"));
                 let path=text(&event,&["path","display_path"]);let slot=text(&event,&["slot_id"]);let principal=text(&event,&["principal"]);
                 view!{<li class="zxs-history-row zxs-flow zxs-flow--stretch"><span class="zxs-history-action zxs-row">{action_label(&text(&event,&["action"]))}</span><span class="zxs-history-path zxs-row">{if slot.is_empty(){path}else{format!("{slot}/{path}")}}</span><time class="zxs-row">{time}</time><span class="zxs-history-principal zxs-row">{if principal.is_empty(){"–".into()}else{principal}}</span></li>}
             }).collect_view()
         }}</ul></div></Show>
-        <Show when=move ||state.with(|s|s.activity.loaded)&&visible_events.get().is_empty()><EmptyState message=t("尚无文件操作记录。","No file operations have been recorded.")/></Show>
+        <Show when=move ||state.with(|s|s.activity.loaded)&&visible_events.with(Vec::is_empty)><EmptyState message=t("尚无文件操作记录。","No file operations have been recorded.")/></Show>
     </section>}
 }
 

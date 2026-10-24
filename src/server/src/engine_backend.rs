@@ -366,6 +366,10 @@ impl Backend for EngineBackend {
                 let projection = read_projection::Tree::capture(&engine, identity, &input)?;
                 read_projection::render_unlocked(engine, projection)
             }
+            crate::BackendAction::SmbLookup => {
+                let projection = read_projection::SmbLookup::capture(&engine, identity, &input)?;
+                read_projection::render_unlocked(engine, projection)
+            }
             crate::BackendAction::SmbReadDirectory => {
                 let projection = read_projection::SmbDirectory::capture(&engine, identity, &input)?;
                 read_projection::render_unlocked(engine, projection)
