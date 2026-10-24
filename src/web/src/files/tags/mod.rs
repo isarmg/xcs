@@ -186,6 +186,12 @@ fn add_input(state: RwSignal<State>) {
     });
 }
 fn request(draft: &Draft) -> Result<Value, String> {
+    if !draft.input.trim().is_empty() {
+        return Err(t(
+            "请先点击“添加标签”加入输入框中的标签，或清空输入框后再保存。",
+            "Click Add tag to include the tag in the input, or clear the input before saving.",
+        ));
+    }
     if draft.targets.is_empty() || draft.add.is_empty() && draft.remove.is_empty() {
         return Err(t(
             "请先选择节点并添加或移除标签。",

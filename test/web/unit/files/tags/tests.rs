@@ -85,3 +85,85 @@ fn one_invalid_tag_target_blocks_the_entire_batch() {
         "read-only aliases cannot target edits even without a redundant read_only flag"
     );
 }
+
+fn draft_with_pending_input(input: &str) -> Draft {
+    Draft {
+        file: "file".into(),
+        repository: "repo".into(),
+        path: "a.txt".into(),
+        nodes: vec![json!({"node_id":"source","tags":["old"]})],
+        branches: vec![json!({"branch_id":"main","node_id":"head"})],
+        targets: vec![Target {
+            source: "source".into(),
+            branch: "main".into(),
+            expected: "head".into(),
+        }],
+        add: BTreeSet::from(["reviewed".into()]),
+        remove: BTreeSet::from(["old".into()]),
+        input: input.into(),
+    }
+}
+
+#[test]
+fn pending_tag_input_cannot_be_silently_dropped_from_a_valid_delta() {
+    for input in ["another", "  another  ", "bad\nlabel", &"a".repeat(129)] {
+        let draft = draft_with_pending_input(input);
+        let error = request(&draft).expect_err("pending input must block the whole request");
+        assert!(error.contains("Add tag"));
+        assert_eq!(draft.input, input);
+        assert_eq!(draft.add, BTreeSet::from(["reviewed".into()]));
+        assert_eq!(draft.remove, BTreeSet::from(["old".into()]));
+    }
+    for input in ["", "   "] {
+        let body = request(&draft_with_pending_input(input)).unwrap();
+        assert_eq!(body["add"], json!(["reviewed"]));
+        assert_eq!(body["remove"], json!(["old"]));
+    }
+}
+
+#[test]
+fn pending_tag_input_rejection_preserves_an_editable_draft_without_starting_an_operation() {
+    Owner::new().with(|| {
+        let state = RwSignal::new(State {
+            authenticated: true,
+            ..Default::default()
+        });
+        state.update(|s| {
+            s.management.storage = crate::management::Storage::Ready;
+            s.files.writable = true;
+            s.files.tag_edit = Some(draft_with_pending_input("  another  "));
+            s.files.checked_nodes.insert("source".into());
+        });
+        // Validation must stop before review::submit generates an operation ID
+        // or schedules a browser request. This path also runs in native tests.
+        submit(state);
+        state.with_untracked(|s| {
+            let draft = s.files.tag_edit.as_ref().unwrap();
+            assert_eq!(draft.input, "  another  ");
+            assert_eq!(draft.targets[0].source, "source");
+            assert_eq!(draft.targets[0].branch, "main");
+            assert_eq!(draft.targets[0].expected, "head");
+            assert!(s.files.checked_nodes.contains("source"));
+            assert!(s.files.operations.is_empty());
+            assert!(!s.files.mutation_pending);
+            assert!(
+                s.files.publications[&review::Kind::Tags]
+                    .operation_id
+                    .is_none()
+            );
+            assert!(!review::error_text(s, review::Kind::Tags).is_empty());
+            assert!(actions::write_allowed(s));
+        });
+
+        // The user can explicitly add the pending tag and keep the prior delta.
+        add_input(state);
+        state.with_untracked(|s| {
+            let draft = s.files.tag_edit.as_ref().unwrap();
+            assert!(draft.input.is_empty());
+            let body = request(draft).unwrap();
+            assert_eq!(body["add"], json!(["another", "reviewed"]));
+            assert_eq!(body["remove"], json!(["old"]));
+            assert!(s.files.operations.is_empty());
+        });
+    });
+}
