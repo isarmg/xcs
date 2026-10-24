@@ -146,39 +146,84 @@ impl Engine {
     ) -> Result<Branch> {
         super::validate_branch_name(name)?;
         let op = self.mutate(
-            "branch.create", principal, operation,
+            "branch.create",
+            principal,
+            operation,
             json!({"source_commit_id":source_commit,"name":name}),
             |engine, state, _| {
-                let source = state.commits.get(source_commit).cloned()
+                let source = state
+                    .commits
+                    .get(source_commit)
+                    .cloned()
                     .ok_or_else(|| Error::new("COMMIT_NOT_FOUND", "source commit not found"))?;
                 engine.repository_for_history(&source.history_tree_id)?;
 
-                if state.branches.values().any(|branch| branch.history_tree_id == source.history_tree_id && branch.file_id.is_some()) {
-                    return Err(Error::new("FILE_BRANCH_SCOPE", "use independent file branches in this history"));
+                if state.branches.values().any(|branch| {
+                    branch.history_tree_id == source.history_tree_id && branch.file_id.is_some()
+                }) {
+                    return Err(Error::new(
+                        "FILE_BRANCH_SCOPE",
+                        "use independent file branches in this history",
+                    ));
                 }
-                if state.branches.values().any(|branch| branch.history_tree_id == source.history_tree_id && name_policy::lookup_key(&branch.name) == name_policy::lookup_key(name)) {
+                if state.branches.values().any(|branch| {
+                    branch.history_tree_id == source.history_tree_id
+                        && name_policy::lookup_key(&branch.name) == name_policy::lookup_key(name)
+                }) {
                     return Err(Error::new("NAME_COLLISION", "branch name already exists"));
                 }
                 let id = new_id("br");
                 let commit_id = new_id("commit");
                 let mut entries = source.entries.clone();
-                let pending_file_versions: std::collections::BTreeMap<String, String> = entries.iter().filter(|entry| entry.kind == "file")
-                    .map(|entry| (entry.file_id.clone(), entry.version_id.clone())).collect();
-                for entry in &mut entries { entry.entry_id = new_id("entry"); }
-                state.commits.insert(commit_id.clone(), Commit {
-                    commit_id: commit_id.clone(), history_tree_id: source.history_tree_id.clone(),
-                    kind: "branch_pending".into(), parent_commit_ids: vec![source_commit.into()],
-                    tree_id: new_id("tree"), sequence: state.sequence, operation_id: operation.into(),
-                    author: principal.into(), message: format!("Create pending branch {name}"),
-                    entries, pending_file_versions: pending_file_versions.clone(), provenance: Some(source_commit.into()),
-                });
-                state.branches.insert(id.clone(), Branch {file_node_id:None,
-                    branch_id: id.clone(), history_tree_id: source.history_tree_id.clone(), name: name.into(),
-                    head_commit_id: commit_id.clone(), fork_commit_id: source_commit.into(),
-                    branch_kind: "full".into(), file_id: None, pending_file_versions,
-                    generation: 1, state: "active".into(),
-                });
-                Ok(json!({"branch_id":id,"commit_id":commit_id,"history_tree_id":source.history_tree_id,"copied_files":"0","placeholder_files":source.entries.iter().filter(|entry|entry.kind=="file").count().to_string()}))
+                let pending_file_versions: std::collections::BTreeMap<String, String> = entries
+                    .iter()
+                    .filter(|entry| entry.kind == "file")
+                    .map(|entry| (entry.file_id.clone(), entry.version_id.clone()))
+                    .collect();
+                for entry in &mut entries {
+                    entry.entry_id = new_id("entry");
+                }
+                state.commits.insert(
+                    commit_id.clone(),
+                    Commit {
+                        commit_id: commit_id.clone(),
+                        history_tree_id: source.history_tree_id.clone(),
+                        kind: "branch_pending".into(),
+                        parent_commit_ids: vec![source_commit.into()],
+                        tree_id: new_id("tree"),
+                        sequence: state.sequence,
+                        operation_id: operation.into(),
+                        author: principal.into(),
+                        message: format!("Create pending branch {name}"),
+                        entries,
+                        pending_file_versions: pending_file_versions.clone(),
+                        provenance: Some(source_commit.into()),
+                    },
+                );
+                state.branches.insert(
+                    id.clone(),
+                    Branch {
+                        file_node_id: None,
+                        branch_id: id.clone(),
+                        history_tree_id: source.history_tree_id.clone(),
+                        name: name.into(),
+                        head_commit_id: commit_id.clone(),
+                        fork_commit_id: source_commit.into(),
+                        branch_kind: "full".into(),
+                        file_id: None,
+                        pending_file_versions,
+                        generation: 1,
+                        state: "active".into(),
+                    },
+                );
+                Ok(json!({
+                    "branch_id": id,
+                    "commit_id": commit_id,
+                    "history_tree_id": source.history_tree_id,
+                    "copied_files": "0",
+                    "placeholder_files": source.entries.iter()
+                        .filter(|entry| entry.kind == "file").count().to_string()
+                }))
             },
         )?;
         self.state
@@ -196,14 +241,75 @@ impl Engine {
         principal: &str,
         operation: &str,
     ) -> Result<MergeLink> {
-        let op=self.mutate("merge-link.create",principal,operation,json!({"source_branch_id":source_branch,"source_commit_id":source_commit,"target_branch_id":target_branch,"target_commit_id":target_commit}),|engine,state,_|{
-            let sb=state.branches.get(source_branch).ok_or_else(||Error::new("BRANCH_NOT_FOUND","source branch missing"))?;let tb=state.branches.get(target_branch).ok_or_else(||Error::new("BRANCH_NOT_FOUND","target branch missing"))?;if sb.history_tree_id!=tb.history_tree_id{return Err(Error::new("HISTORY_MISMATCH","merge endpoints must belong to one history"));}
-            if sb.file_id!=tb.file_id&&(sb.file_id.is_some()||tb.file_id.is_some()){return Err(Error::new("FILE_BRANCH_SCOPE","file branch relations must identify the same file"));}
-            engine.repository_for_history(&sb.history_tree_id)?;
-            for id in [source_commit,target_commit]{if !state.commits.get(id).is_some_and(|c|c.history_tree_id==sb.history_tree_id){return Err(Error::new("COMMIT_NOT_FOUND","selected endpoint is not in the history"));}}
-            if source_branch==target_branch || !branch_contains_commit(state,sb,source_commit)? || !branch_contains_commit(state,tb,target_commit)? {return Err(Error::new("MERGE_ENDPOINT_MISMATCH","select one existing commit from each of two distinct branches"));}
-            let link=MergeLink{merge_link_id:new_id("link"),history_tree_id:sb.history_tree_id.clone(),source_branch_id:source_branch.into(),source_commit_id:source_commit.into(),target_branch_id:target_branch.into(),target_commit_id:target_commit.into(),author:principal.into(),operation_id:operation.into()};let id=link.merge_link_id.clone();let history=link.history_tree_id.clone();state.merge_links.insert(id.clone(),link);Ok(json!({"merge_link_id":id,"history_tree_id":history}))
-        })?;
+        let op = self.mutate(
+            "merge-link.create",
+            principal,
+            operation,
+            json!({
+                "source_branch_id": source_branch,
+                "source_commit_id": source_commit,
+                "target_branch_id": target_branch,
+                "target_commit_id": target_commit
+            }),
+            |engine, state, _| {
+                let sb = state
+                    .branches
+                    .get(source_branch)
+                    .ok_or_else(|| Error::new("BRANCH_NOT_FOUND", "source branch missing"))?;
+                let tb = state
+                    .branches
+                    .get(target_branch)
+                    .ok_or_else(|| Error::new("BRANCH_NOT_FOUND", "target branch missing"))?;
+                if sb.history_tree_id != tb.history_tree_id {
+                    return Err(Error::new(
+                        "HISTORY_MISMATCH",
+                        "merge endpoints must belong to one history",
+                    ));
+                }
+                if sb.file_id != tb.file_id && (sb.file_id.is_some() || tb.file_id.is_some()) {
+                    return Err(Error::new(
+                        "FILE_BRANCH_SCOPE",
+                        "file branch relations must identify the same file",
+                    ));
+                }
+                engine.repository_for_history(&sb.history_tree_id)?;
+                for id in [source_commit, target_commit] {
+                    if !state
+                        .commits
+                        .get(id)
+                        .is_some_and(|c| c.history_tree_id == sb.history_tree_id)
+                    {
+                        return Err(Error::new(
+                            "COMMIT_NOT_FOUND",
+                            "selected endpoint is not in the history",
+                        ));
+                    }
+                }
+                if source_branch == target_branch
+                    || !branch_contains_commit(state, sb, source_commit)?
+                    || !branch_contains_commit(state, tb, target_commit)?
+                {
+                    return Err(Error::new(
+                        "MERGE_ENDPOINT_MISMATCH",
+                        "select one existing commit from each of two distinct branches",
+                    ));
+                }
+                let link = MergeLink {
+                    merge_link_id: new_id("link"),
+                    history_tree_id: sb.history_tree_id.clone(),
+                    source_branch_id: source_branch.into(),
+                    source_commit_id: source_commit.into(),
+                    target_branch_id: target_branch.into(),
+                    target_commit_id: target_commit.into(),
+                    author: principal.into(),
+                    operation_id: operation.into(),
+                };
+                let id = link.merge_link_id.clone();
+                let history = link.history_tree_id.clone();
+                state.merge_links.insert(id.clone(), link);
+                Ok(json!({"merge_link_id":id,"history_tree_id":history}))
+            },
+        )?;
         self.state
             .merge_links
             .get(op.result["merge_link_id"].as_str().unwrap_or(""))

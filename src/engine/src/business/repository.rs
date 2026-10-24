@@ -13,24 +13,90 @@ impl Engine {
         principal: &str,
         operation: &str,
     ) -> Result<OperationResult> {
-        self.mutate("smb.binding.update",principal,operation,json!({"repository_id":repository,"branch_id":branch_id,"enabled":enabled,"expected_generation":expected_generation.to_string()}),|engine,state,_|{
-            let repo=state.repositories.get(repository).cloned().ok_or_else(||Error::new("REPOSITORY_NOT_FOUND","repository not found"))?;
+        self.mutate(
+            "smb.binding.update",
+            principal,
+            operation,
+            json!({
+                "repository_id": repository,
+                "branch_id": branch_id,
+                "enabled": enabled,
+                "expected_generation": expected_generation.to_string()
+            }),
+            |engine, state, _| {
+                let repo =
+                    state.repositories.get(repository).cloned().ok_or_else(|| {
+                        Error::new("REPOSITORY_NOT_FOUND", "repository not found")
+                    })?;
 
-            let history=state.histories.get(&repo.history_tree_id).ok_or_else(||Error::new("STATE_INVALID","repository history missing"))?;
-            if history.generation!=expected_generation { return Err(Error::new("GENERATION_MISMATCH","share binding history changed")); }
-            let branch=state.branches.get(branch_id).ok_or_else(||Error::new("BRANCH_NOT_FOUND","share branch missing"))?;
-            if branch.history_tree_id!=history.history_tree_id || branch.state!="active" { return Err(Error::new("BRANCH_NOT_ACTIVE","share binding requires a live branch in this repository")); }
-            if branch.file_id.is_some() {return Err(Error::new("FILE_BRANCH_SCOPE","a file branch cannot replace a directory or SMB namespace"));}
-            if engine.workspaces.values().any(|w|matches!(w.state.as_str(),"open"|"sealed")&&state.branches.get(&w.branch_id).is_some_and(|b|b.history_tree_id==history.history_tree_id)) { return Err(Error::new("WORKSPACE_BUSY","close affected write workspaces before rebinding the share")); }
-            let history_id=repo.history_tree_id.clone();
-            let repo=state.repositories.get_mut(repository).expect("repository checked");
-            repo.smb_binding_generation=repo.smb_binding_generation.checked_add(1).ok_or_else(||Error::new("RESOURCE_LIMIT","SMB binding generation exhausted"))?;
-            repo.main_branch_id=branch_id.into(); repo.smb_enabled=enabled;
-            let binding_generation=repo.smb_binding_generation;
-            let history=state.histories.get_mut(&history_id).expect("history checked");
-            history.main_branch_id=Some(branch_id.into()); history.generation=history.generation.checked_add(1).ok_or_else(||Error::new("RESOURCE_LIMIT","history generation exhausted"))?;
-            Ok(json!({"repository_id":repository,"branch_id":branch_id,"smb_enabled":enabled,"generation":history.generation.to_string(),"smb_binding_generation":binding_generation.to_string()}))
-        })
+                let history = state
+                    .histories
+                    .get(&repo.history_tree_id)
+                    .ok_or_else(|| Error::new("STATE_INVALID", "repository history missing"))?;
+                if history.generation != expected_generation {
+                    return Err(Error::new(
+                        "GENERATION_MISMATCH",
+                        "share binding history changed",
+                    ));
+                }
+                let branch = state
+                    .branches
+                    .get(branch_id)
+                    .ok_or_else(|| Error::new("BRANCH_NOT_FOUND", "share branch missing"))?;
+                if branch.history_tree_id != history.history_tree_id || branch.state != "active" {
+                    return Err(Error::new(
+                        "BRANCH_NOT_ACTIVE",
+                        "share binding requires a live branch in this repository",
+                    ));
+                }
+                if branch.file_id.is_some() {
+                    return Err(Error::new(
+                        "FILE_BRANCH_SCOPE",
+                        "a file branch cannot replace a directory or SMB namespace",
+                    ));
+                }
+                if engine.workspaces.values().any(|w| {
+                    matches!(w.state.as_str(), "open" | "sealed")
+                        && state
+                            .branches
+                            .get(&w.branch_id)
+                            .is_some_and(|b| b.history_tree_id == history.history_tree_id)
+                }) {
+                    return Err(Error::new(
+                        "WORKSPACE_BUSY",
+                        "close affected write workspaces before rebinding the share",
+                    ));
+                }
+                let history_id = repo.history_tree_id.clone();
+                let repo = state
+                    .repositories
+                    .get_mut(repository)
+                    .expect("repository checked");
+                repo.smb_binding_generation =
+                    repo.smb_binding_generation.checked_add(1).ok_or_else(|| {
+                        Error::new("RESOURCE_LIMIT", "SMB binding generation exhausted")
+                    })?;
+                repo.main_branch_id = branch_id.into();
+                repo.smb_enabled = enabled;
+                let binding_generation = repo.smb_binding_generation;
+                let history = state
+                    .histories
+                    .get_mut(&history_id)
+                    .expect("history checked");
+                history.main_branch_id = Some(branch_id.into());
+                history.generation = history
+                    .generation
+                    .checked_add(1)
+                    .ok_or_else(|| Error::new("RESOURCE_LIMIT", "history generation exhausted"))?;
+                Ok(json!({
+                    "repository_id": repository,
+                    "branch_id": branch_id,
+                    "smb_enabled": enabled,
+                    "generation": history.generation.to_string(),
+                    "smb_binding_generation": binding_generation.to_string()
+                }))
+            },
+        )
     }
     pub fn create_repository(
         &mut self,
@@ -84,11 +150,20 @@ impl Engine {
             input["file_manager_root"] = json!(true);
         }
         let result = self.mutate(
-            "repository.create", principal, operation,
+            "repository.create",
+            principal,
+            operation,
             input,
             |engine, state, _| {
-                if state.repositories.values().any(|r| name_policy::lookup_key(&r.name) == name_policy::lookup_key(name)) {
-                    return Err(Error::new("NAME_COLLISION", "repository name already exists"));
+                if state
+                    .repositories
+                    .values()
+                    .any(|r| name_policy::lookup_key(&r.name) == name_policy::lookup_key(name))
+                {
+                    return Err(Error::new(
+                        "NAME_COLLISION",
+                        "repository name already exists",
+                    ));
                 }
                 let repo_id = new_id("repo");
                 let history_id = new_id("history");
@@ -96,29 +171,69 @@ impl Engine {
                 let commit_id = new_id("commit");
                 let repository = Repository {
                     repository_id: repo_id.clone(),
-                    smb_enabled: true, smb_binding_generation: 1, file_manager_root, name: name.into(), history_tree_id: history_id.clone(),
-                    main_branch_id: branch_id.clone(), primary_slot_id: engine.disk(primary)?.slot_id.clone(),
-                    target_copies: copies, name_policy: name_policy::NAME_POLICY.into(),
+                    smb_enabled: true,
+                    smb_binding_generation: 1,
+                    file_manager_root,
+                    name: name.into(),
+                    history_tree_id: history_id.clone(),
+                    main_branch_id: branch_id.clone(),
+                    primary_slot_id: engine.disk(primary)?.slot_id.clone(),
+                    target_copies: copies,
+                    name_policy: name_policy::NAME_POLICY.into(),
                     unicode_version: name_policy::UNICODE_VERSION.into(),
                 };
-                state.histories.insert(history_id.clone(), HistoryTree {
-                    history_tree_id: history_id.clone(), repository_id: repo_id.clone(),
-                    root_commit_id: commit_id.clone(), main_branch_id: Some(branch_id.clone()),
-                    generation: 1, state: "active".into(), provenance: None,
-                });
-                state.branches.insert(branch_id.clone(), Branch {file_node_id:None,
-                    branch_id: branch_id.clone(), history_tree_id: history_id.clone(), name: "main".into(),
-                    head_commit_id: commit_id.clone(), fork_commit_id: commit_id.clone(),
-                    branch_kind: "full".into(), file_id: None, pending_file_versions: Default::default(), generation: 1, state: "active".into(),
-                });
-                state.commits.insert(commit_id.clone(), Commit {
-                    commit_id: commit_id.clone(), history_tree_id: history_id.clone(), kind: "root".into(),
-                    parent_commit_ids: Vec::new(), tree_id: new_id("tree"), sequence: state.sequence,
-                    operation_id: operation.into(), author: principal.into(), message: "Create repository".into(),
-                    entries: Vec::new(), pending_file_versions: Default::default(), provenance: None,
-                });
+                state.histories.insert(
+                    history_id.clone(),
+                    HistoryTree {
+                        history_tree_id: history_id.clone(),
+                        repository_id: repo_id.clone(),
+                        root_commit_id: commit_id.clone(),
+                        main_branch_id: Some(branch_id.clone()),
+                        generation: 1,
+                        state: "active".into(),
+                        provenance: None,
+                    },
+                );
+                state.branches.insert(
+                    branch_id.clone(),
+                    Branch {
+                        file_node_id: None,
+                        branch_id: branch_id.clone(),
+                        history_tree_id: history_id.clone(),
+                        name: "main".into(),
+                        head_commit_id: commit_id.clone(),
+                        fork_commit_id: commit_id.clone(),
+                        branch_kind: "full".into(),
+                        file_id: None,
+                        pending_file_versions: Default::default(),
+                        generation: 1,
+                        state: "active".into(),
+                    },
+                );
+                state.commits.insert(
+                    commit_id.clone(),
+                    Commit {
+                        commit_id: commit_id.clone(),
+                        history_tree_id: history_id.clone(),
+                        kind: "root".into(),
+                        parent_commit_ids: Vec::new(),
+                        tree_id: new_id("tree"),
+                        sequence: state.sequence,
+                        operation_id: operation.into(),
+                        author: principal.into(),
+                        message: "Create repository".into(),
+                        entries: Vec::new(),
+                        pending_file_versions: Default::default(),
+                        provenance: None,
+                    },
+                );
                 state.repositories.insert(repo_id.clone(), repository);
-                Ok(json!({"repository_id":repo_id,"history_tree_id":history_id,"branch_id":branch_id,"commit_id":commit_id}))
+                Ok(json!({
+                    "repository_id": repo_id,
+                    "history_tree_id": history_id,
+                    "branch_id": branch_id,
+                    "commit_id": commit_id
+                }))
             },
         )?;
         let id = result.result["repository_id"]
