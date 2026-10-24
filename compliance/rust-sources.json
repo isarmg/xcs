@@ -78528,7 +78528,7 @@
   "foundation_layout_receipt": "5f02def35b57751ea9e54a2f1f22fdfebdbd6dda1ed910de7f8fa805f55e281d",
   "initial_test_relocation_sha256": "791ad728a408677dd54ef98e3feaffe825c5fc5670e888440615933d9498ecc3",
   "lockfiles_sha256": {
-    "Cargo.lock": "ea98ddf52f594b246f6784c6da333a2fa754f70628b3804b707135736a9a6321"
+    "Cargo.lock": "e23a70f2b76a80a81d35e5c58058ca1987e2dae7a598ba4c2dbe09a0c4b1468a"
   },
   "manifests_sha256": {
     "Cargo.toml": "2915aa60a121d18f665872ccaf51d9dcc3b5bb3465df5dc684dca366f7aed03e",
@@ -78755,7 +78755,7 @@
     "src/foundation/web-runtime/wasm-encoder/Cargo.toml": "63f4fdeb12bc8dc6860ff36442cc2fdd71d8519f3a9dd79e105d7dcafe69f301",
     "src/foundation/web-runtime/wasmparser/Cargo.toml": "771207359c85d13aa247962a53b713da998d1bbc634fee7931dfb1c180e558f8",
     "src/foundation/web-runtime/web-sys/Cargo.toml": "01d5648616483a1e463244828bbafec6d848942e1bf414e1069c69f3afc6b4c1",
-    "src/interface/Cargo.toml": "5de729a8f1f5d4c9c65f580fd07a2a27808f837d28a4537f89ce6eb4cfccf6bc",
+    "src/interface/Cargo.toml": "048b2acb4508fded70f45a822085df4e804bde0041d01b78e8beec570be31587",
     "src/macros/Cargo.toml": "abdb767c05856f890b63b18f86b16f4487a30bd8d2832f5caeeeb6d668e44c0c",
     "src/naming/Cargo.toml": "5dea667ea941dfde629bfc5e809ba6d6c12ca018507c4030ecdfdddcc2a01aff",
     "src/platform/Cargo.toml": "8b667ac649113e5e58334f7b8c3fddb47aa10873ac610a073868874b77dba968",
@@ -78763,7 +78763,7 @@
     "src/server/Cargo.toml": "d51bad5de2461665d3e8323c6468495c732b82e45b0a2ce540dab4b619edc139",
     "src/smb-vfs/Cargo.toml": "8513f0d76d84f2e345de71376e751d36313fb2c42878af69b6d71ec37b3a3817",
     "src/smb/Cargo.toml": "66ca64b286cff2b2a6b2f551145e267b2eac6017affcd4c239605a9d080ecec4",
-    "src/web/Cargo.toml": "612dd26e977186b9f9a32a0e8a739d34ce6b7f22d05ab7b7f1955c39d0910e7f",
+    "src/web/Cargo.toml": "4c982faef6a598e2084fc3e42cc17f096b27c4b1299bf07db9cfa20ccbfa8399",
     "tools/browser-smoke/Cargo.toml": "c9444749ebc71e294f3772f37697a9752fa53006100f4c4c7946ecb44283fcae",
     "tools/contract-check/Cargo.toml": "db127e20e1e01f96ba91c6960aef31c3b1082a40f8695f01ef615c21e748bcda",
     "tools/perf-check/Cargo.toml": "f679ad92d373d773117c4e8b07ccf4dbc0c46d56b964f92fcee0b1f445855ddc",
@@ -78831,7 +78831,7 @@
       "description": "Project-specific browser CSR runtime",
       "directory": "src/interface",
       "files_sha256": {
-        "Cargo.toml": "5de729a8f1f5d4c9c65f580fd07a2a27808f837d28a4537f89ce6eb4cfccf6bc",
+        "Cargo.toml": "048b2acb4508fded70f45a822085df4e804bde0041d01b78e8beec570be31587",
         "src/animated_show.rs": "cd95f8823c423be1c48e4c2054872c6ab63b2efad10d091a49786f033afdf59a",
         "src/attribute_interceptor.rs": "7b148fc2ba4b4a07a078ce2c9e063f8e8a9a02d0cac75dc2d1b78220747a1954",
         "src/children.rs": "774081a72328ff254cd3f087335688fe63c0925fe8b46e4407c4ffb7cdbd96ff",
@@ -78854,7 +78854,7 @@
         "src/for_snapshot.rs": "06b6e10d666d91305fac3c11e51dbbdf60e770c053b96418940432bd6e4636b3",
         "src/i18n.rs": "48cf957c30e60ee725afcead2ea06e25af00d1e1bf2ae49b12261a3deed2c46c",
         "src/into_view.rs": "63eb8d572837186f8cdd5872e63b78a9bd3142e275d99991f746b1d9c59fabb4",
-        "src/lib.rs": "ea0aea89e210a9c4288ac9892b2e11cce29fb2fc9522e284f5686cc726115d3b",
+        "src/lib.rs": "b08e150182ae94c404a7ff79c9c3326e16d35ea2958b13b46e74ac04beba8ed3",
         "src/lifecycle.rs": "ec0299ee31c65e448febcb099d259c140e57f358910dd398e180d8862dc7f276",
         "src/mount.rs": "e65bb5bb6d950141ee554f978f0d22cb1b8fb08555e4a581ea75d705b1ce1d4a",
         "src/portal.rs": "96a8961e77f28f255a8abe4ca55376d7cb0267bfc9081e81af6a4d99a88cc310",
@@ -78893,13 +78893,13 @@
       "directory": "src/macros",
       "files_sha256": {
         "Cargo.toml": "abdb767c05856f890b63b18f86b16f4487a30bd8d2832f5caeeeb6d668e44c0c",
-        "src/component.rs": "8d1ec4dc361d06135b8519bf623172665d37b9d86d92f47c81572bb9a2481bb6",
+        "src/component.rs": "7eb8cac336f8d2dc87a0392d5a4c2b35316fd8d5a42bbe6607f05f1a44aae7df",
         "src/diagnostics.rs": "b501d80659ee3202adc4f60e6eec000389fe34eeb19cc0fb60e02c15aaabd03e",
         "src/lib.rs": "98e54fddf8c3158126335057b77fca502230bab9b6a0763d6735eff6f70c4014",
         "src/memo.rs": "9ac1857a33a83f73eafb576895ce02f3d0c0898ca869ae8741747fa281a01539",
         "src/prop_options.rs": "020bb41625d3e026d2963e3c1c6eda87a16f3b968fb5c5380411e9c838f35424",
         "src/slice.rs": "496a010eedcb7f8c4b74a9aed209f2ff5c435d3efba6f9d3d877864eb18fc943",
-        "src/slot.rs": "c2539c36b261d01ed6e9c34990a237c0e4c30b7372d8dcbc90450a13b297d337",
+        "src/slot.rs": "fcf5b8d2495f6866ef7b278b8fa8a3fce78cbdf3e5cb3d9005e07f6a3a0e7200",
         "src/view/component_builder.rs": "2cb6a02c28818b01533485afc2431d210cbf1784b5bff25315d4a870737acf5c",
         "src/view/mod.rs": "bfdf3d476685542b5a5b4438e4077562dd4e53baa44ac35a238a2b6db9d0826b",
         "src/view/slot_helper.rs": "f5dc7ff103b83fad59f61f6fa0e4e5bbe0e280f89beba63d10bf47c8c6d45caa",
@@ -101216,13 +101216,13 @@
       "directory": "src/macros",
       "files_sha256": {
         "Cargo.toml": "abdb767c05856f890b63b18f86b16f4487a30bd8d2832f5caeeeb6d668e44c0c",
-        "src/component.rs": "8d1ec4dc361d06135b8519bf623172665d37b9d86d92f47c81572bb9a2481bb6",
+        "src/component.rs": "7eb8cac336f8d2dc87a0392d5a4c2b35316fd8d5a42bbe6607f05f1a44aae7df",
         "src/diagnostics.rs": "b501d80659ee3202adc4f60e6eec000389fe34eeb19cc0fb60e02c15aaabd03e",
         "src/lib.rs": "98e54fddf8c3158126335057b77fca502230bab9b6a0763d6735eff6f70c4014",
         "src/memo.rs": "9ac1857a33a83f73eafb576895ce02f3d0c0898ca869ae8741747fa281a01539",
         "src/prop_options.rs": "020bb41625d3e026d2963e3c1c6eda87a16f3b968fb5c5380411e9c838f35424",
         "src/slice.rs": "496a010eedcb7f8c4b74a9aed209f2ff5c435d3efba6f9d3d877864eb18fc943",
-        "src/slot.rs": "c2539c36b261d01ed6e9c34990a237c0e4c30b7372d8dcbc90450a13b297d337",
+        "src/slot.rs": "fcf5b8d2495f6866ef7b278b8fa8a3fce78cbdf3e5cb3d9005e07f6a3a0e7200",
         "src/view/component_builder.rs": "2cb6a02c28818b01533485afc2431d210cbf1784b5bff25315d4a870737acf5c",
         "src/view/mod.rs": "bfdf3d476685542b5a5b4438e4077562dd4e53baa44ac35a238a2b6db9d0826b",
         "src/view/slot_helper.rs": "f5dc7ff103b83fad59f61f6fa0e4e5bbe0e280f89beba63d10bf47c8c6d45caa",
@@ -112276,8 +112276,7 @@
         },
         "src/foundation/cryptography/system-entropy": {
           "features": [
-            "std",
-            "wasm_js"
+            "std"
           ],
           "roles": [
             "runtime"
@@ -113263,15 +113262,6 @@
             "runtime"
           ]
         },
-        "src/foundation/cryptography/system-entropy": {
-          "features": [
-            "std",
-            "wasm_js"
-          ],
-          "roles": [
-            "runtime"
-          ]
-        },
         "src/foundation/data-storage/data-serialization": {
           "features": [
             "alloc",
@@ -113754,8 +113744,7 @@
         },
         "src/foundation/cryptography/system-entropy": {
           "features": [
-            "std",
-            "wasm_js"
+            "std"
           ],
           "roles": [
             "runtime"
@@ -115190,8 +115179,7 @@
         },
         "src/foundation/cryptography/system-entropy": {
           "features": [
-            "std",
-            "wasm_js"
+            "std"
           ],
           "roles": [
             "compile"
@@ -116357,8 +116345,7 @@
         },
         "src/foundation/cryptography/system-entropy": {
           "features": [
-            "std",
-            "wasm_js"
+            "std"
           ],
           "roles": [
             "compile"
@@ -117125,8 +117112,7 @@
         },
         "src/foundation/cryptography/system-entropy": {
           "features": [
-            "std",
-            "wasm_js"
+            "std"
           ],
           "roles": [
             "compile"
