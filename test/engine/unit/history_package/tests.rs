@@ -73,9 +73,12 @@ fn initialize(root: &Path) -> Engine {
     .unwrap()
 }
 fn save(engine: &mut Engine, branch: &str, bytes: &[u8]) -> String {
+    save_path(engine, branch, "file.txt", bytes)
+}
+fn save_path(engine: &mut Engine, branch: &str, path: &str, bytes: &[u8]) -> String {
     let workspace = engine.create_workspace(branch, "alice").unwrap();
     engine
-        .stage_bytes(&workspace.workspace_id, "file.txt", bytes)
+        .stage_bytes(&workspace.workspace_id, path, bytes)
         .unwrap();
     engine
         .commit_workspace(CommitRequest {
@@ -90,6 +93,201 @@ fn save(engine: &mut Engine, branch: &str, bytes: &[u8]) -> String {
         .unwrap()
         .commit_id
         .unwrap()
+}
+
+#[test]
+fn empty_configured_backup_scopes_export_and_restore_without_version_routes() {
+    for path in ["", "empty"] {
+        let temp = tempfile::tempdir().unwrap();
+        fs::set_permissions(temp.path(), fs::Permissions::from_mode(0o700)).unwrap();
+        let mut engine = initialize(&temp.path().join("source"));
+        let repo = engine
+            .create_repository("empty backup scope", "P01", 1, "alice", &new_id("op"))
+            .unwrap();
+        if !path.is_empty() {
+            engine
+                .file_namespace(
+                    &repo.repository_id,
+                    NamespaceOperation {
+                        kind: "mkdir".into(),
+                        path: path.into(),
+                        destination: None,
+                    },
+                    "alice",
+                    &new_id("op"),
+                )
+                .unwrap();
+        }
+        engine
+            .configure_backups(BackupConfigurationRequest {
+                repository_id: &repo.repository_id,
+                path,
+                target_copies: 2,
+                backup_prefixes: &BTreeMap::from([("B01".into(), "chosen-backup".into())]),
+                expected_generation: 0,
+                principal: "alice",
+                operation_id: &new_id("op"),
+            })
+            .unwrap();
+        assert!(engine.state.versions.is_empty());
+        let package = temp.path().join("package");
+        engine
+            .export_history_package(&repo.history_tree_id, &package)
+            .unwrap();
+        let mut restored = initialize(&temp.path().join("restored"));
+        let operation = new_id("op");
+        let receipt = restored
+            .restore_history_package(&package, "P01", 2, "alice", &operation)
+            .unwrap();
+        let configuration = restored
+            .backup_configuration(&repo.repository_id, path)
+            .unwrap();
+        assert_eq!(configuration["target_copies"], 2);
+        assert_eq!(configuration["backup_prefixes"]["B01"], "chosen-backup");
+        let file_path = if path.is_empty() {
+            "file.txt"
+        } else {
+            "empty/file.txt"
+        };
+        save_path(
+            &mut restored,
+            &repo.main_branch_id,
+            file_path,
+            b"later content",
+        );
+        let file = restored
+            .list_tree(&repo.main_branch_id)
+            .unwrap()
+            .into_iter()
+            .find(|entry| entry.kind == "file")
+            .unwrap();
+        assert_eq!(
+            restored.state.file_backup_paths[&file.file_id]["B01"],
+            "chosen-backup/file.txt"
+        );
+        let sequence = restored.state.sequence;
+        let replay = restored
+            .restore_history_package(&package, "P01", 2, "alice", &operation)
+            .unwrap();
+        assert_eq!(replay.result, receipt.result);
+        assert_eq!(replay.sequence, receipt.sequence);
+        assert_eq!(restored.state.sequence, sequence);
+        drop(restored);
+        let restored = Engine::open(&temp.path().join("restored/state")).unwrap();
+        assert_eq!(
+            restored
+                .backup_configuration(&repo.repository_id, path)
+                .unwrap()["backup_prefixes"]["B01"],
+            "chosen-backup"
+        );
+
+        let mut reduced = initialize(&temp.path().join("reduced"));
+        reduced
+            .restore_history_package(&package, "P01", 1, "alice", &new_id("op"))
+            .unwrap();
+        let configuration = reduced
+            .backup_configuration(&repo.repository_id, path)
+            .unwrap();
+        assert_eq!(configuration["target_copies"], 1);
+        assert_eq!(configuration["backup_prefixes"], json!({}));
+
+        for (name, copies, renamed) in [("expanded", 3, false), ("renamed", 2, true)] {
+            let root = temp.path().join(name);
+            let mut config = Config::development([root.join("p"), root.join("b"), root.join("c")]);
+            if renamed {
+                config.disks[1].slot_id = "OTHER".into();
+                config.disks[2].upstream_slot_id = Some("OTHER".into());
+            }
+            let mut destination = Engine::initialize(&root.join("state"), config).unwrap();
+            let before = canonical_json(destination.state()).unwrap();
+            assert_eq!(
+                destination
+                    .restore_history_package(&package, "P01", copies, "alice", &new_id("op"))
+                    .unwrap_err()
+                    .code(),
+                "BACKUP_PREFIX_REQUIRED"
+            );
+            assert_eq!(canonical_json(destination.state()).unwrap(), before);
+        }
+    }
+}
+
+#[test]
+fn restore_backup_prefixes_preserve_evidenced_positions_and_reject_identity_collisions() {
+    for (source_copies, target_copies) in [(2, 2), (3, 2), (3, 3)] {
+        let temp = tempfile::tempdir().unwrap();
+        fs::set_permissions(temp.path(), fs::Permissions::from_mode(0o700)).unwrap();
+        let mut engine = initialize(&temp.path().join("source"));
+        let repo = engine
+            .create_repository(
+                "prefix positions",
+                "P01",
+                source_copies,
+                "alice",
+                &new_id("op"),
+            )
+            .unwrap();
+        save(&mut engine, &repo.main_branch_id, b"observed route");
+        engine
+            .file_namespace(
+                &repo.repository_id,
+                NamespaceOperation {
+                    kind: "mkdir".into(),
+                    path: "empty".into(),
+                    destination: None,
+                },
+                "alice",
+                &new_id("op"),
+            )
+            .unwrap();
+        engine
+            .configure_backups(BackupConfigurationRequest {
+                repository_id: &repo.repository_id,
+                path: "empty",
+                target_copies: source_copies,
+                backup_prefixes: &BTreeMap::from([
+                    ("B01".into(), "first-tier".into()),
+                    ("C01".into(), "second-tier".into()),
+                ]),
+                expected_generation: 0,
+                principal: "alice",
+                operation_id: &new_id("op"),
+            })
+            .unwrap();
+        let package = temp.path().join("package");
+        engine
+            .export_history_package(&repo.history_tree_id, &package)
+            .unwrap();
+        let root = temp.path().join("restored");
+        let mut config = Config::development([root.join("p"), root.join("b"), root.join("c")]);
+        config.disks[1].slot_id = "C01".into();
+        config.disks[2].slot_id = "B01".into();
+        config.disks[2].upstream_slot_id = Some("C01".into());
+        let mut restored = Engine::initialize(&root.join("state"), config).unwrap();
+        let before = canonical_json(restored.state()).unwrap();
+        let result = restored.restore_history_package(
+            &package,
+            "P01",
+            target_copies,
+            "alice",
+            &new_id("op"),
+        );
+        if source_copies == 2 {
+            assert_eq!(result.unwrap_err().code(), "RESTORE_BACKUP_CONFLICT");
+            assert_eq!(canonical_json(restored.state()).unwrap(), before);
+        } else {
+            result.unwrap();
+            let configuration = restored
+                .backup_configuration(&repo.repository_id, "empty")
+                .unwrap();
+            let expected = if target_copies == 2 {
+                json!({"C01":"first-tier"})
+            } else {
+                json!({"C01":"first-tier", "B01":"second-tier"})
+            };
+            assert_eq!(configuration["backup_prefixes"], expected);
+        }
+    }
 }
 
 fn latest_candidate(engine: &Engine) -> Candidate {

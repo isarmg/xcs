@@ -1776,6 +1776,11 @@ impl Engine {
         // Recovery explicitly rebinds routes. Keep the user's logical prefixes
         // by route position, never derive them from a primary physical path.
         let mut backup_slots = BTreeMap::<String, String>::new();
+        let source_backup_slots = manifest
+            .placements
+            .values()
+            .flat_map(|placement| placement.route_slot_ids.iter().skip(1))
+            .collect::<BTreeSet<_>>();
         for placement in manifest.placements.values() {
             for (old, new) in placement
                 .route_slot_ids
@@ -1797,7 +1802,16 @@ impl Engine {
         let remap_paths = |paths: &BTreeMap<String, String>| -> Result<BTreeMap<String, String>> {
             let mut rebound = BTreeMap::new();
             for (slot, path) in paths {
-                if let Some(target) = backup_slots.get(slot)
+                // Empty configured scopes have no version placement to map.
+                // Their explicit destination slot identity still carries the
+                // chosen prefix. Never replace a known positional mapping or
+                // revive a source tier excluded by the requested copy count.
+                let target = backup_slots.get(slot).or_else(|| {
+                    (!source_backup_slots.contains(slot))
+                        .then(|| route.iter().skip(1).find(|target| *target == slot))
+                        .flatten()
+                });
+                if let Some(target) = target
                     && rebound
                         .insert(target.clone(), path.clone())
                         .is_some_and(|prior| prior != *path)
