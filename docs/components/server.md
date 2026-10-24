@@ -23,7 +23,7 @@ Axum HTTP 服务、持久会话认证及受保护的 Samba 本机桥接。业务
 
 ## 启动
 
-从项目根目录构建 `CARGO_TARGET_DIR=target/native cargo build --locked --offline -p storage-server -p storage-rescue`，直接启动服务，再按[受保护 Web 引导](../getting-started.md)完成首次初始化：
+从项目根目录构建 `CARGO_TARGET_DIR=target/native cargo build --locked --offline -p storage-server -p storage-rescue`。下面是已有池或诊断模式的最小启动样例；首次安装须在启动前按下节配置 `--setup-disk` 白名单并预置引导密钥，再按[受保护 Web 引导](../getting-started.md)完成初始化。只运行下面的命令不会提供可选初始化磁盘：
 
 ```sh
 target/native/debug/zxs --root /srv/zxs/system \
@@ -158,7 +158,7 @@ Unix socket 测试需要运行环境允许本机 socket。[集成回归](../../t
 
 `POST /api/file-manager/files/{file}/tags` 对显式节点与分支 head 基线应用标签增量，最多16项，每项128 UTF-8字节。变化生成不可变标签子节点，保留源标签；历史源不推进分支 head，当前精确引用才推进。标签不产生正文或完成首次正文写入。路径、标签、合并节点备注统一使用 `PATCH /files/{file}/nodes/{node}`，与正文备注独立。
 
-`GET/PUT /api/repositories/{repo}/backup-configuration` 查询/配置稳定文件或目录 scope。写请求需要manage，绑定 `expected_scope_id` 与自身 `expected_generation`；继承策略的有效代数另以 `effective_generation` 返回。份数包含主盘；每个备份slot使用用户独立指定的逻辑路径前缀，相对所选scope根。配置回填可用历史正文且保持版本及proof ID。目录分支合并待用户确认，暂不实现，能力明确为false且无写端点。完整语义见[文件合并、标签和备份](../design/file-merge-tags-backup.md)。
+`GET/PUT /api/repositories/{repo}/backup-configuration` 查询/配置稳定文件或目录 scope。写请求需要当前唯一管理员认证，绑定 `expected_scope_id` 与自身 `expected_generation`；继承策略的有效代数另以 `effective_generation` 返回。份数包含主盘；每个备份slot使用用户独立指定的逻辑路径前缀，相对所选scope根。配置回填可用历史正文且保持版本及proof ID。目录分支合并待用户确认，暂不实现，能力明确为false且无写端点。完整语义见[文件合并、标签和备份](../design/file-merge-tags-backup.md)。
 
 ### 反向代理登录限流
 

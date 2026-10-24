@@ -1,6 +1,6 @@
 # 24 技术资料与引用范围
 
-[文档目录](README.md) · [上一章：当前支持范围、限制与设计取舍](23-delivery-and-decisions.md) · [下一章：用户与管理员操作手册](25-operation-manual.md)
+[文档目录](README.md) · [上一章：当前支持范围、限制与设计取舍](23-delivery-and-decisions.md) · [下一章：唯一管理员操作手册](25-operation-manual.md)
 
 <a id="s24"></a>
 
@@ -56,4 +56,4 @@
 
 ---
 
-[文档目录](README.md) · [上一章：当前支持范围、限制与设计取舍](23-delivery-and-decisions.md) · [下一章：用户与管理员操作手册](25-operation-manual.md)
+[文档目录](README.md) · [上一章：当前支持范围、限制与设计取舍](23-delivery-and-decisions.md) · [下一章：唯一管理员操作手册](25-operation-manual.md)
