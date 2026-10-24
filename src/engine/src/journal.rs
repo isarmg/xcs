@@ -948,6 +948,9 @@ fn verify_local_membership(root: &Path, candidate: &Candidate, seal: &DiskSeal) 
 }
 
 pub(crate) fn verify_tombstone(directory: &Path, version: &FileVersion) -> Result<()> {
+    // Intentional removal proves the content state, not the retained descriptor.
+    // Its immutable identity and location must still bind to the local publication.
+    verify_local_version_publication(directory, version)?;
     let t: ContentTombstone = read_json(&directory.join("purged.json"))?;
     verify_publication_seal(&t.candidate, &t.publication, &t.publication_seal)?;
     let root = directory
@@ -992,6 +995,18 @@ pub(crate) fn local_proof_directory(directory: &Path, candidate: &str) -> Result
 }
 
 pub(crate) fn verify_local_publication(directory: &Path, version: &FileVersion) -> Result<()> {
+    verify_local_version_publication(directory, version)?;
+    if directory.join("purged.json").exists() {
+        return Err(Error::new(
+            "CONTENT_PURGED",
+            "this version has a local content tombstone",
+        ));
+    }
+    Ok(())
+}
+
+/// Verify immutable publication identity independently of current availability.
+fn verify_local_version_publication(directory: &Path, version: &FileVersion) -> Result<()> {
     if directory.file_name().and_then(|s| s.to_str()) != Some(version.version_id.as_str())
         || directory
             .ancestors()
@@ -1091,12 +1106,6 @@ pub(crate) fn verify_local_publication(directory: &Path, version: &FileVersion) 
                 "a required route receipt is absent",
             ));
         }
-    }
-    if directory.join("purged.json").exists() {
-        return Err(Error::new(
-            "CONTENT_PURGED",
-            "this version has a local content tombstone",
-        ));
     }
     Ok(())
 }
