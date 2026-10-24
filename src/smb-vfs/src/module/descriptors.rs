@@ -1,5 +1,5 @@
 //! Owned descriptor snapshots and close/save ordering.
-use super::{Open, bad, context, sdk};
+use super::{Context, Open, authentication, bad, context, sdk};
 use smb_protocol::{
     client::{Client, close_descriptor},
     protocol::{OpenResult, Request},
@@ -53,4 +53,21 @@ pub(super) fn close_opened(
     let descriptor = unsafe { OwnedFd::from_raw_fd(opened.fd) };
     close_descriptor(opened.info.handle, descriptor, &opened.io, finish)?;
     Ok(0)
+}
+
+pub(super) fn finish_open(
+    context: &mut Context,
+    opened: Open,
+    authorized: bool,
+) -> std::io::Result<i32> {
+    let remote = opened.info.handle;
+    close_opened(opened, |request| {
+        if authorized {
+            context.client.call(request).map(|_| ())
+        } else {
+            // Detach releases the handle without publishing after revocation.
+            let _ = context.client.call(Request::Detach { handle: remote });
+            Err(authentication::denied())
+        }
+    })
 }

@@ -46,8 +46,9 @@ mod sdk {
 mod asynchronous;
 mod authentication;
 mod descriptors;
+mod directory_ownership;
 mod paths;
-use descriptors::{close_opened, snapshot};
+use descriptors::{finish_open, snapshot};
 use paths::{at_name, name, text};
 
 struct Open {
@@ -64,6 +65,7 @@ struct Context {
 }
 struct Directory {
     client: Client,
+    owner: usize,
     handle: u64,
     entries: Vec<sdk::dirent>,
     position: usize,
@@ -586,16 +588,7 @@ unsafe extern "C" fn close(
         // This bypass only removes ownership; a failed check forces Detach below.
         let context = unsafe { context_for_cleanup(handle) }?;
         let opened = context.files.remove(&(fsp as usize)).ok_or_else(bad)?;
-        let remote = opened.info.handle;
-        close_opened(opened, |request| {
-            if authorized {
-                context.client.call(request).map(|_| ())
-            } else {
-                // Detach retains bytes/recovery evidence without publishing them.
-                let _ = context.client.call(Request::Detach { handle: remote });
-                Err(authentication::denied())
-            }
-        })
+        finish_open(context, opened, authorized)
     })
 }
 
@@ -924,6 +917,7 @@ unsafe extern "C" fn fdopendir(
                 .handle;
             let mut directory = Directory {
                 client: context.client.clone(),
+                owner: fsp as usize,
                 handle: remote,
                 entries: Vec::new(),
                 position: 0,
@@ -1040,17 +1034,32 @@ unsafe extern "C" fn rewind(_handle: *mut sdk::vfs_handle_struct, directory: *mu
     }
 }
 unsafe extern "C" fn closedir(
-    _handle: *mut sdk::vfs_handle_struct,
+    handle: *mut sdk::vfs_handle_struct,
     directory: *mut sdk::DIR,
 ) -> i32 {
-    if directory.is_null() {
-        errno(libc::EINVAL);
-        return -1;
-    }
-    // SAFETY: This non-null opaque directory is the live Box returned by fdopendir; the host
-    // serializes callbacks and closedir consumes it exactly once.
-    drop(unsafe { Box::from_raw(directory.cast::<Directory>()) });
-    0
+    guarded(|| {
+        if directory.is_null() {
+            return Err(bad());
+        }
+        // SAFETY: This is the live Box returned by fdopendir. The host serializes
+        // callbacks and consumes it once, including when terminal cleanup fails.
+        let directory = unsafe { Box::from_raw(directory.cast::<Directory>()) };
+        // Samba's directory destructor invalidates the fsp FD after CLOSEDIR
+        // and skips CLOSE. Keep its Open available during enumeration, then
+        // release that exact owner here rather than merely dropping the cursor.
+        // SAFETY: The host handle remains live on its owning event loop.
+        let authorized = unsafe { context(handle) }.is_ok();
+        // SAFETY: Resource release must remain possible after identity revocation;
+        // finish_open uses Detach instead of publishing when authorization fails.
+        let context = unsafe { context_for_cleanup(handle) }?;
+        let opened = directory_ownership::take_directory_open(
+            &mut context.files,
+            directory.owner,
+            directory.handle,
+            |opened| (opened.info.handle, opened.info.kind == "directory"),
+        )?;
+        finish_open(context, opened, authorized)
+    })
 }
 
 // Refuse lower-layer mutations that could bypass the workspace or change an
