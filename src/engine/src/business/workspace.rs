@@ -329,41 +329,52 @@ fn validate_directory_selection(state: &State, workspace: &Workspace, path: &str
         .commits
         .get(&branch.head_commit_id)
         .ok_or_else(|| Error::new("STATE_INVALID", "current namespace missing"))?;
+    if state.directory_selection_generations.is_empty() {
+        return Ok(());
+    }
     let path = name_policy::path_key(path);
-    for (id, generation) in &state.directory_selection_generations {
-        let relevant = state
-            .repositories
-            .values()
-            .any(|r| r.history_tree_id == branch.history_tree_id && r.repository_id == *id)
-            || base.entries.iter().chain(&current.entries).any(|e| {
-                e.kind == "directory"
-                    && e.entry_id == *id
-                    && (path == e.lookup_key || path.starts_with(&format!("{}/", e.lookup_key)))
-            });
-        if relevant
-            && workspace
-                .directory_selection_generations
-                .get(id)
-                .copied()
-                .unwrap_or(0)
-                != *generation
-        {
-            return Err(Error::new(
-                "DIRECTORY_BRANCH_CONFLICT",
-                "directory branch changed after the workspace began; staged bytes are preserved",
-            ));
-        }
+    let changed = |id: &str| {
+        state
+            .directory_selection_generations
+            .get(id)
+            .is_some_and(|generation| {
+                workspace
+                    .directory_selection_generations
+                    .get(id)
+                    .copied()
+                    .unwrap_or(0)
+                    != *generation
+            })
+    };
+    // Visit this path's roots and ancestors once, not the whole namespace for
+    // every selection generation retained anywhere in the pool. Both views
+    // matter: an ancestor can disappear or first appear after workspace open.
+    let root_changed = state
+        .repositories
+        .values()
+        .any(|repo| repo.history_tree_id == branch.history_tree_id && changed(&repo.repository_id));
+    if root_changed
+        || base.entries.iter().chain(&current.entries).any(|entry| {
+            entry.kind == "directory"
+                && (path == entry.lookup_key || namespace::is_descendant(&path, &entry.lookup_key))
+                && changed(&entry.entry_id)
+        })
+    {
+        return Err(Error::new(
+            "DIRECTORY_BRANCH_CONFLICT",
+            "directory branch changed after the workspace began; staged bytes are preserved",
+        ));
     }
     Ok(())
 }
 
-fn validate_file_selection(
+// Callers validate directory selections first, including for new file paths.
+fn validate_file_context(
     state: &State,
     workspace: &Workspace,
     file: &str,
     path: &str,
 ) -> Result<()> {
-    validate_directory_selection(state, workspace, path)?;
     let selected = directory::branch_context_at(state, &workspace.branch_id, path)
         .ok_or_else(|| Error::new("FILE_NOT_FOUND", "file context no longer exists"))?;
     if selected.inherited_from.is_none()
@@ -427,7 +438,7 @@ impl Engine {
             .get(&workspace.base_head)
             .and_then(|c| find(&c.entries, path))
         {
-            validate_file_selection(&self.state, &workspace, &entry.file_id, path)?;
+            validate_file_context(&self.state, &workspace, &entry.file_id, path)?;
         }
         Ok(())
     }
@@ -478,8 +489,13 @@ impl Engine {
                         .iter()
                         .filter(|e| e.kind == "file")
                         .filter_map(|e| {
-                            directory::context_at(&self.state, &r.repository_id, &e.path)
-                                .map(|c| (directory::context_key(&r.repository_id, &e.path), c))
+                            self.file_context_for_current_entry(&r.repository_id, e)
+                                .map(|c| {
+                                    (
+                                        directory::context_key(&r.repository_id, &e.path),
+                                        c.into_owned(),
+                                    )
+                                })
                         })
                         .collect()
                 })
@@ -580,7 +596,7 @@ impl Engine {
         if w.purpose == "normal"
             && let Some(entry) = base_entry.as_ref().filter(|e| e.kind == "file")
         {
-            validate_file_selection(&self.state, &w, &entry.file_id, path)?;
+            validate_file_context(&self.state, &w, &entry.file_id, path)?;
         }
         if base_entry
             .as_ref()
@@ -901,7 +917,7 @@ impl Engine {
         if w.purpose == "normal"
             && let Some(entry) = find(&base.entries, path)
         {
-            validate_file_selection(&self.state, &w, &entry.file_id, path)?;
+            validate_file_context(&self.state, &w, &entry.file_id, path)?;
             let current = self
                 .state
                 .branches
@@ -1135,7 +1151,7 @@ impl Engine {
                         return Err(Error::new("FILE_VERSION_CONFLICT", "file changed after this workspace began"));
                     }
                     if let Some(entry) = existing {
-                        validate_file_selection(state, &w, &entry.file_id,&file.path)?;
+                        validate_file_context(state, &w, &entry.file_id,&file.path)?;
                     }
                 }
                 {
@@ -1467,3 +1483,7 @@ impl Engine {
         Ok(version)
     }
 }
+
+#[cfg(test)]
+#[path = "../../../../test/engine/unit/business/workspace_selection_tests.rs"]
+mod selection_tests;
