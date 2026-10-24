@@ -105,7 +105,9 @@ HTTP 监听地址必须是回环地址。对外部署由同机反向代理终止
 
 表中同一行的缩写路径共享资源前缀，例如 `/api/branches/{branch}/tree` 和 `/api/branches/{branch}/resolve`。请求字段以代码及 [HTTP 契约](../15-api-and-errors.md) 为准；64 位整数使用规范十进制字符串。重复 JSON 键、浮点数、未声明的变更字段会被拒绝。失败响应包含 `error.code/message/retryable/request_id`，不会把未实现操作返回为成功。
 
-## 上传与发布
+## HTTP 上传与发布
+
+以下为服务端 HTTP 内容接口的行为，不代表 Web 具有文件上传、下载或正文预览功能；Web 只提供文件元数据与管理操作，日常文件内容访问使用 SMB。
 
 上传 URL 使用 `?path=业务相对路径`，必需声明 `X-ZXS-Logical-Size`、`X-ZXS-Content-Hash`（完整 BLAKE3）；`X-ZXS-Upload-Generation` 为正的十进制代际，省略时为 1。服务流式写入私有暂存目录并周期 fsync。中断和失败内容保留：同代际重新发送完整文件时必须匹配已持久前缀、长度和哈希；内容变更须显式提高代际。旧代际不会被新上传静默删除。当前不支持按偏移 PATCH/Range 上传。
 
@@ -121,7 +123,7 @@ HTTP 断开不会取消已运行的阻塞发布或进度持久化。每个任务
 
 命名目录分支保持稳定身份；内容保存、子项分支切换及命名空间变化追加不可变目录子树。`namespace-batch` 显式列出每个作用分支及依据子树，整批检查并发布；移动保留文件身份并移交跟踪，复制产生独立文件，删除只移除选中分支条目，未选分支保留自己的冻结路径和节点。详细规则见[分支系统逻辑](../design/branch-system-logic.md)。
 
-选中尚未写入的分支时，文件列表、预览和下载显示父版本。响应中 `version_id` 和大小指向当前可见的父文件，同时用 `materialized:false`、`inherited:true`、`own_version_id:null`、`source_version_id` 明确表示该分支尚无自己的版本；`content_state:"PENDING"` 表示此归属状态，`visible_content_state` 是父版本实际的可用状态。首次成功写入后，`version_id` 与 `own_version_id` 指向新 FULL 版本，`materialized:true`、`inherited:false`。目录里未写入的文件继续显示各自父版本，已写入的文件显示自己的版本。
+选中尚未写入的分支时，文件列表响应指向当前可见的父版本；通过保留的 HTTP 内容接口读取该 `version_id` 时返回父版本正文。响应中 `version_id` 和大小指向当前可见的父文件，同时用 `materialized:false`、`inherited:true`、`own_version_id:null`、`source_version_id` 明确表示该分支尚无自己的版本；`content_state:"PENDING"` 表示此归属状态，`visible_content_state` 是父版本实际的可用状态。首次成功写入后，`version_id` 与 `own_version_id` 指向新 FULL 版本，`materialized:true`、`inherited:false`。目录里未写入的文件继续显示各自父版本，已写入的文件显示自己的版本。
 
 未发布的工作区、上传失败和写打开后直接关闭不会产生内容版本。`versions` 只列真实正文版本；统一历史图还列复用正文的路径节点，分支登记单独保留审计事件。底层 `tree` 继续使用严格的 `Entry` 合同，以真实可见版本 ID 和大小返回继承视图，顶层 `pending_file_versions` 标明哪些文件仍继承来源。登记时的历史快照在首次写入后仍显示其父内容，并保持继承标记，不会追填一个属于该分支的旧版本。
 
