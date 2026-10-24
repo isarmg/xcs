@@ -70,6 +70,109 @@ fn assert_graph_closed(engine: &Engine, history: &str) {
 }
 
 #[test]
+fn split_closes_source_policy_scopes_without_dropping_valid_empty_rules() {
+    let (temp, mut engine, repo) = fixture();
+    fs::set_permissions(temp.path(), fs::Permissions::from_mode(0o700)).unwrap();
+    let configure = |engine: &mut Engine, path: &str, copies: u32| {
+        engine
+            .configure_backups(BackupConfigurationRequest {
+                repository_id: &repo.repository_id,
+                path,
+                target_copies: copies,
+                backup_prefixes: &if copies == 1 {
+                    BTreeMap::new()
+                } else {
+                    BTreeMap::from([("B01".into(), "backup".into())])
+                },
+                expected_generation: 0,
+                principal: "alice",
+                operation_id: &new_id("op"),
+            })
+            .unwrap()
+            .result["policy"]["policy_id"]
+            .as_str()
+            .unwrap()
+            .to_owned()
+    };
+    let mkdir = |engine: &mut Engine, path: &str| {
+        engine
+            .file_namespace(
+                &repo.repository_id,
+                NamespaceOperation {
+                    kind: "mkdir".into(),
+                    path: path.into(),
+                    destination: None,
+                },
+                "alice",
+                &new_id("op"),
+            )
+            .unwrap();
+    };
+    mkdir(&mut engine, "prefix-empty");
+    let valid_empty = configure(&mut engine, "prefix-empty", 1);
+    let cut = save(&mut engine, &repo.main_branch_id, b"split source scope");
+    let file = engine
+        .list_tree(&repo.main_branch_id)
+        .unwrap()
+        .into_iter()
+        .find(|entry| entry.kind == "file")
+        .unwrap();
+    let bound = configure(&mut engine, "资料", 2);
+    mkdir(&mut engine, "moved-empty");
+    let moved_empty = configure(&mut engine, "moved-empty", 1);
+    let plan = engine
+        .create_split_plan(&repo.history_tree_id, &cut, "alice")
+        .unwrap();
+    let result = engine
+        .commit_plan(&plan.plan_id, "alice", &new_id("op"))
+        .unwrap();
+    let destination = result.history_tree_id.unwrap();
+    let source_policy = &engine.state.protection_policies[&bound];
+    assert!(!source_policy.inheritable);
+    assert_eq!(source_policy.scope_directory_id, None);
+    assert_eq!(source_policy.target_copies, 2);
+    assert_eq!(engine.state.file_backup_policies[&file.file_id], bound);
+    assert!(engine.state.protection_policies[&valid_empty].inheritable);
+    assert!(
+        engine.state.protection_policies[&valid_empty]
+            .scope_directory_id
+            .is_some()
+    );
+    assert!(!engine.state.protection_policies.contains_key(&moved_empty));
+    let copied = engine
+        .state
+        .repositories
+        .values()
+        .find(|repository| repository.history_tree_id == destination)
+        .unwrap();
+    for (path, copies) in [("资料", 2), ("prefix-empty", 1), ("moved-empty", 1)] {
+        let configuration = engine
+            .backup_configuration(&copied.repository_id, path)
+            .unwrap();
+        assert_eq!(configuration["target_copies"], copies);
+        let policy = configuration["policy_id"].as_str().unwrap();
+        assert!(engine.state.protection_policies[policy].inheritable);
+    }
+    assert_graph_closed(&engine, &repo.history_tree_id);
+    assert_graph_closed(&engine, &destination);
+    for (history, name) in [
+        (&repo.history_tree_id, "source"),
+        (&destination, "destination"),
+    ] {
+        engine
+            .export_history_package(history, &temp.path().join(format!("package-{name}")))
+            .unwrap();
+    }
+    drop(engine);
+    let engine = Engine::open(&temp.path().join("state")).unwrap();
+    assert!(!engine.state.protection_policies[&bound].inheritable);
+    assert!(engine.state.protection_policies[&valid_empty].inheritable);
+    assert!(!engine.state.protection_policies.contains_key(&moved_empty));
+    assert_graph_closed(&engine, &repo.history_tree_id);
+    assert_graph_closed(&engine, &destination);
+}
+
+#[test]
 fn split_preserves_bound_settings_when_the_original_scope_is_outside_the_cut() {
     for inheritable in [false, true] {
         let (temp, mut engine, repo) = fixture();

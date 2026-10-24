@@ -805,6 +805,24 @@ impl Engine {
                 }
                 for (old,new) in &file_map {if let Some(policy)=state.file_backup_policies.get(old).and_then(|policy|policy_map.get(policy)).cloned(){state.file_backup_policies.insert(new.clone(),policy);}}
                 crate::protection::prune_retained_policies(state, &repository_id);
+                // The source also loses directory identities found only in the
+                // moved commits. Keep their settings only for explicit source
+                // file bindings, never as a new path-inheritable fallback.
+                let source_directories = state.commits.values()
+                    .filter(|commit| commit.history_tree_id == history)
+                    .flat_map(|commit| commit.entries.iter())
+                    .filter(|entry| entry.kind == "directory")
+                    .map(|entry| entry.entry_id.as_str())
+                    .collect::<BTreeSet<_>>();
+                for policy in state.protection_policies.values_mut()
+                    .filter(|policy| policy.repository_id == original.repository_id) {
+                    if policy.scope_directory_id.as_deref().is_some_and(|directory|
+                        directory != original.repository_id && !source_directories.contains(directory)) {
+                        policy.scope_directory_id = None;
+                        policy.inheritable = false;
+                    }
+                }
+                crate::protection::prune_retained_policies(state, &original.repository_id);
                 // The cut edge and each crossing merge edge are explicit audit boundaries.
                 insert_boundary(state, BoundaryInput { history, commit: &prefix_head, branch: None, relation: "split_out", external_history: &history_id, external_commit: &commit_map[cut], source_link: None });
                 insert_boundary(state, BoundaryInput { history: &history_id, commit: &commit_map[cut], branch: None, relation: "split_origin", external_history: history, external_commit: &prefix_head, source_link: None });
