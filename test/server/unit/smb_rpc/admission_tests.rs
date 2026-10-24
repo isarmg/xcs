@@ -1,4 +1,4 @@
-//! Per-principal fairness while authenticated connections remain idle.
+//! Shared capacity while authenticated connections remain idle.
 use super::*;
 use std::{net::Shutdown, os::unix::net::UnixStream, thread::JoinHandle, time::Duration};
 
@@ -49,12 +49,28 @@ fn disconnect(connection: Connection, cancel: bool) {
 }
 
 #[test]
-fn sole_account_session_cap_cannot_be_bypassed_by_another_samba_name() {
+fn session_cap_is_shared_across_repositories_and_rejects_other_samba_names() {
     let (_temp, shared, _backend, _branch) = fixture();
     let repository = repository(&shared);
+    let other_repository = shared
+        .backend
+        .call(
+            crate::BackendAction::CreateRepository,
+            &identity(&shared),
+            json!({"name":"second-share","primary_slot_id":"P01","target_copies":3,"operation_id":new_id("op")}),
+        )
+        .unwrap()["repository_id"]
+        .as_str()
+        .unwrap()
+        .to_owned();
     let mut idle = Vec::new();
-    for _ in 0..MAX_SESSIONS_PER_ACCOUNT {
-        let (connection, response) = connect(shared.clone(), "alice", &repository);
+    for index in 0..MAX_AUTHENTICATED_SESSIONS {
+        let target = if index % 2 == 0 {
+            &repository
+        } else {
+            &other_repository
+        };
+        let (connection, response) = connect(shared.clone(), "alice", target);
         assert!(matches!(response, Response::Ok { .. }));
         idle.push(connection);
     }
@@ -67,29 +83,29 @@ fn sole_account_session_cap_cannot_be_bypassed_by_another_samba_name() {
         disconnect(rejected, false);
     }
     assert_eq!(
-        shared.sessions_per_account.lock().unwrap()["alice"],
-        MAX_SESSIONS_PER_ACCOUNT
+        *shared.authenticated_sessions.lock().unwrap(),
+        MAX_AUTHENTICATED_SESSIONS
     );
     disconnect(idle.pop().unwrap(), false);
-    let (replacement, response) = connect(shared.clone(), "alice", &repository);
+    let (replacement, response) = connect(shared.clone(), "alice", &other_repository);
     assert!(matches!(response, Response::Ok { .. }));
     idle.push(replacement);
     for connection in idle {
         disconnect(connection, true);
     }
-    assert!(shared.sessions_per_account.lock().unwrap().is_empty());
+    assert_eq!(*shared.authenticated_sessions.lock().unwrap(), 0);
 }
 
 #[test]
-fn failed_repository_admission_does_not_leak_account_session_slots() {
+fn failed_repository_admission_does_not_leak_session_slots() {
     let (_temp, shared, _backend, _branch) = fixture();
-    for _ in 0..=MAX_SESSIONS_PER_ACCOUNT {
+    for _ in 0..=MAX_AUTHENTICATED_SESSIONS {
         let (rejected, response) = connect(shared.clone(), "alice", &new_id("repo"));
         assert!(
             matches!(response, Response::Error { code, .. } if code != "RESOURCE_LIMIT_EXCEEDED")
         );
         disconnect(rejected, false);
-        assert!(shared.sessions_per_account.lock().unwrap().is_empty());
+        assert_eq!(*shared.authenticated_sessions.lock().unwrap(), 0);
     }
 }
 
@@ -120,7 +136,7 @@ fn configured_samba_account_binds_the_current_single_authority_and_fails_closed_
     assert!(matches!(response, Response::Error { code, .. } if code == "RECOVERY_REQUIRED"));
     disconnect(rejected, false);
     disconnect(live, false);
-    assert!(shared.sessions_per_account.lock().unwrap().is_empty());
+    assert_eq!(*shared.authenticated_sessions.lock().unwrap(), 0);
 
     *shared.auth.lock().unwrap() = AuthStore::initialize(
         &temp.path().join("restored-auth"),

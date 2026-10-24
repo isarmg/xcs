@@ -2,7 +2,6 @@
 use crate::{ApiError, lock};
 use futures::Stream;
 use std::{
-    collections::BTreeMap,
     pin::Pin,
     sync::{Arc, Mutex},
     task::{Context, Poll, Waker},
@@ -13,16 +12,14 @@ use tokio::time::Instant;
 #[derive(Clone, Debug)]
 pub struct TransferLimits {
     /// Independent upload and read pools, each with this total capacity.
-    pub slots_total: usize,
-    pub slots_per_account: usize,
+    pub slots: usize,
     pub idle_timeout: Duration,
     pub total_timeout: Duration,
 }
 impl Default for TransferLimits {
     fn default() -> Self {
         Self {
-            slots_total: 8,
-            slots_per_account: 2,
+            slots: 2,
             idle_timeout: Duration::from_secs(60),
             total_timeout: Duration::from_secs(3600),
         }
@@ -30,68 +27,47 @@ impl Default for TransferLimits {
 }
 impl TransferLimits {
     pub(crate) fn validate(&self) -> Result<(), ApiError> {
-        if self.slots_per_account == 0
-            || self.slots_per_account >= self.slots_total
+        if self.slots == 0
             || self.idle_timeout.is_zero()
             || self.total_timeout < self.idle_timeout
             || self.total_timeout > Duration::from_secs(7 * 24 * 3600)
         {
             return Err(ApiError::invalid(
-                "HTTP transfers require 0 < account slots < total slots and 0 < idle <= total timeout <= 7 days",
+                "HTTP transfers require positive slots and 0 < idle <= total timeout <= 7 days",
             ));
         }
         Ok(())
     }
 }
-#[derive(Default)]
-struct Counts {
-    total: usize,
-    accounts: BTreeMap<String, usize>,
-}
 pub(crate) struct Admission {
-    counts: Mutex<Counts>,
-    total: usize,
-    per_account: usize,
+    active: Mutex<usize>,
+    slots: usize,
 }
 pub(crate) struct Permit {
     admission: Arc<Admission>,
-    principal: String,
 }
 impl Admission {
     pub(crate) fn new(limits: &TransferLimits) -> Arc<Self> {
         Arc::new(Self {
-            counts: Mutex::new(Counts::default()),
-            total: limits.slots_total,
-            per_account: limits.slots_per_account,
+            active: Mutex::new(0),
+            slots: limits.slots,
         })
     }
-    pub(crate) fn acquire(self: &Arc<Self>, principal: &str) -> Result<Permit, ApiError> {
-        let mut counts = lock(&self.counts)?;
-        if counts.total >= self.total
-            || counts.accounts.get(principal).copied().unwrap_or(0) >= self.per_account
-        {
-            return Err(ApiError::limit(
-                "HTTP transfer account or global capacity reached",
-            ));
+    pub(crate) fn acquire(self: &Arc<Self>) -> Result<Permit, ApiError> {
+        let mut active = lock(&self.active)?;
+        if *active >= self.slots {
+            return Err(ApiError::limit("HTTP transfer capacity reached"));
         }
-        counts.total += 1;
-        *counts.accounts.entry(principal.into()).or_default() += 1;
+        *active += 1;
         Ok(Permit {
             admission: self.clone(),
-            principal: principal.into(),
         })
     }
 }
 impl Drop for Permit {
     fn drop(&mut self) {
-        if let Ok(mut counts) = self.admission.counts.lock() {
-            counts.total -= 1;
-            if let Some(count) = counts.accounts.get_mut(&self.principal) {
-                *count -= 1;
-                if *count == 0 {
-                    counts.accounts.remove(&self.principal);
-                }
-            }
+        if let Ok(mut active) = self.admission.active.lock() {
+            *active -= 1;
         }
     }
 }

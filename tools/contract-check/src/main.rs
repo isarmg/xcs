@@ -147,16 +147,18 @@ fn semantics(name: &str, value: &Value) -> Result {
             )?;
             let r = &value["resource_limits"];
             let o = &value["observability"];
-            for key in ["uploads", "staging_bytes"] {
-                let parse = if key == "uploads" { small } else { uint };
-                let account = parse(&r[format!("{key}_per_account")])?;
-                let pool = parse(&r[format!("{key}_per_pool")])?;
-                require(account > 0 && account <= pool, "account/pool limit")?;
+            for protocol in ["http", "smb"] {
+                let account = uint(&r[format!("{protocol}_spool_bytes_per_account")])?;
+                let total = uint(&r[format!("{protocol}_spool_bytes_total")])?;
+                require(
+                    account >= 65536 && account <= total,
+                    format!("{protocol} spool owner/total limit"),
+                )?;
+                require(
+                    uint(&r[format!("{protocol}_spool_recovery_reserve_bytes")])? > 0,
+                    format!("{protocol} spool recovery reserve"),
+                )?;
             }
-            require(
-                small(&r["handles_per_session"])? <= small(&r["handles_per_pool"])?,
-                "handle limit",
-            )?;
             require(
                 small(&r["default_page_items"])? <= small(&r["maximum_page_items"])?,
                 "page limit",
@@ -494,6 +496,37 @@ struct Report {
     result: &'static str,
     scope: &'static str,
 }
+fn configuration_projection(schema: &Value, configuration: &Value) -> Result<Value> {
+    let mut projection = json_codec::Map::new();
+    for (section, shape) in object(&schema["properties"])? {
+        let source = configuration
+            .get(section)
+            .ok_or_else(|| format!("configuration projection missing {section}"))?;
+        let mut value = json_codec::Map::new();
+        for key in object(&shape["properties"])?.keys() {
+            value.insert(
+                key.clone(),
+                source
+                    .get(key)
+                    .ok_or_else(|| format!("configuration projection missing {section}.{key}"))?
+                    .clone(),
+            );
+        }
+        // All resource fields are covered. Do not silently discard obsolete
+        // account upload pools or a fictional application queue from the TOML.
+        // Other sections still deliberately project only part of the target.
+        projection.insert(
+            section.clone(),
+            if section == "resource_limits" {
+                source.clone()
+            } else {
+                Value::Object(value)
+            },
+        );
+    }
+    Ok(Value::Object(projection))
+}
+
 fn validate_configuration_projection(schema: &Value, projection: &Value) -> Result {
     schema_valid(schema, projection).map_err(|error| {
         format!(
@@ -621,22 +654,7 @@ fn run(root: &Path) -> Result<Report> {
         .ok_or("configuration TOML missing")?;
     let configuration: toml::Value = source[2].parse()?;
     let configuration = json_codec::to_value(configuration)?;
-    let mut projection = json_codec::Map::new();
-    for (section, shape) in object(&config["properties"])? {
-        let mut value = json_codec::Map::new();
-        for key in object(&shape["properties"])?.keys() {
-            value.insert(
-                key.clone(),
-                configuration
-                    .get(section)
-                    .and_then(|section| section.get(key))
-                    .ok_or_else(|| format!("configuration projection missing {section}.{key}"))?
-                    .clone(),
-            );
-        }
-        projection.insert(section.clone(), Value::Object(value));
-    }
-    let projection = Value::Object(projection);
+    let projection = configuration_projection(&config, &configuration)?;
     validate_configuration_projection(&config, &projection)?;
     let expected = array(&vectors["positive"])?
         .iter()

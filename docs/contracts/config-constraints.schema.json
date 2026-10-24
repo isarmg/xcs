@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "title": "完整配置的协议断言及运行额度投影",
+  "title": "目标配置的协议断言、当前额度来源及设计目标投影",
   "$defs": {
     "UInt64": {
       "type": "string",
@@ -127,69 +127,79 @@
     "resource_limits": {
       "type": "object",
       "properties": {
-        "workspaces_per_account": {
+        "max_workspaces": {
           "type": "integer",
-          "minimum": 1
+          "minimum": 1,
+          "description": "当前引擎 JSON Config 的全池 open/sealed 工作区额度；文档投影，不是 TOML 输入。"
         },
-        "uploads_per_account": {
+        "http_transfer_slots": {
           "type": "integer",
-          "minimum": 1
+          "minimum": 1,
+          "description": "当前 --http-transfer-slots；上传和读取两个独立池各自的容量。"
         },
-        "uploads_per_pool": {
-          "type": "integer",
-          "minimum": 1
+        "http_spool_bytes_per_account": {
+          "$ref": "#/$defs/UInt64",
+          "description": "当前 --http-spool-bytes-per-account；仅约束 HTTP spool，与另一协议独立。"
         },
-        "staging_bytes_per_account": {
-          "$ref": "#/$defs/UInt64"
+        "http_spool_bytes_total": {
+          "$ref": "#/$defs/UInt64",
+          "description": "当前 --http-spool-bytes-total；仅约束 HTTP spool，与另一协议独立。"
         },
-        "staging_bytes_per_pool": {
-          "$ref": "#/$defs/UInt64"
+        "http_spool_recovery_reserve_bytes": {
+          "$ref": "#/$defs/UInt64",
+          "description": "当前 --http-spool-recovery-reserve-bytes；仅约束 HTTP spool，与另一协议独立。"
         },
-        "handles_per_session": {
-          "type": "integer",
-          "minimum": 1
+        "smb_spool_bytes_per_account": {
+          "$ref": "#/$defs/UInt64",
+          "description": "当前 --smb-spool-bytes-per-account；仅约束 SMB spool，与另一协议独立。"
         },
-        "handles_per_pool": {
-          "type": "integer",
-          "minimum": 1
+        "smb_spool_bytes_total": {
+          "$ref": "#/$defs/UInt64",
+          "description": "当前 --smb-spool-bytes-total；仅约束 SMB spool，与另一协议独立。"
         },
-        "queued_tasks_per_pool": {
-          "type": "integer",
-          "minimum": 1
+        "smb_spool_recovery_reserve_bytes": {
+          "$ref": "#/$defs/UInt64",
+          "description": "当前 --smb-spool-recovery-reserve-bytes；仅约束 SMB spool，与另一协议独立。"
         },
         "default_page_items": {
           "type": "integer",
-          "minimum": 1
+          "minimum": 1,
+          "description": "尚未实现的设计目标，不是当前进程配置入口。"
         },
         "maximum_page_items": {
           "type": "integer",
-          "minimum": 1
+          "minimum": 1,
+          "description": "尚未实现的设计目标，不是当前进程配置入口。"
         },
         "page_snapshot_ttl_seconds": {
           "type": "integer",
-          "minimum": 1
+          "minimum": 1,
+          "description": "尚未实现的设计目标，不是当前进程配置入口。"
         },
         "event_retention_days": {
           "type": "integer",
-          "minimum": 1
+          "minimum": 1,
+          "description": "尚未实现的设计目标，不是当前进程配置入口。"
         },
         "event_retention_bytes": {
-          "$ref": "#/$defs/UInt64"
+          "$ref": "#/$defs/UInt64",
+          "description": "尚未实现的设计目标，不是当前进程配置入口。"
         },
         "workspace_reminder_days": {
           "type": "integer",
-          "minimum": 1
+          "minimum": 1,
+          "description": "尚未实现的设计目标，不是当前进程配置入口。"
         }
       },
       "required": [
-        "workspaces_per_account",
-        "uploads_per_account",
-        "uploads_per_pool",
-        "staging_bytes_per_account",
-        "staging_bytes_per_pool",
-        "handles_per_session",
-        "handles_per_pool",
-        "queued_tasks_per_pool",
+        "max_workspaces",
+        "http_transfer_slots",
+        "http_spool_bytes_per_account",
+        "http_spool_bytes_total",
+        "http_spool_recovery_reserve_bytes",
+        "smb_spool_bytes_per_account",
+        "smb_spool_bytes_total",
+        "smb_spool_recovery_reserve_bytes",
         "default_page_items",
         "maximum_page_items",
         "page_snapshot_ttl_seconds",
@@ -197,7 +207,8 @@
         "event_retention_bytes",
         "workspace_reminder_days"
       ],
-      "additionalProperties": false
+      "additionalProperties": false,
+      "description": "已实现 JSON/CLI 额度入口的文档投影与明确标注的设计目标；不建立统一跨协议预算。"
     },
     "observability": {
       "type": "object",
@@ -220,7 +231,8 @@
         "decision_critical_seconds",
         "queue_warning_seconds"
       ],
-      "additionalProperties": false
+      "additionalProperties": false,
+      "description": "诊断告警设计目标，不表示当前已有相应告警器或应用等待队列。"
     }
   },
   "required": [

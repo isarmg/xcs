@@ -152,7 +152,7 @@ fn fixture() -> (tempfile::TempDir, Arc<Shared>, Arc<LostCommitReply>, String) {
     let shared = Arc::new(Shared {
         budget,
         max_file_bytes: 4096,
-        sessions_per_account: Mutex::new(BTreeMap::new()),
+        authenticated_sessions: Mutex::new(0),
         backend: backend.clone(),
         username: "alice".into(),
         auth,

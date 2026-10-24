@@ -3,35 +3,25 @@ use futures::{StreamExt, stream};
 use std::sync::atomic::{AtomicUsize, Ordering};
 
 #[test]
-fn admission_is_atomic_account_scoped_and_reclaims_keys() {
-    let limits = TransferLimits {
-        slots_total: 3,
-        slots_per_account: 2,
-        ..TransferLimits::default()
-    };
+fn admission_enforces_the_single_capacity_and_releases_permits() {
+    let limits = TransferLimits::default();
+    assert_eq!(limits.slots, 2);
     let admission = Admission::new(&limits);
-    let a = admission.acquire("alice").unwrap();
-    let b = admission.acquire("alice").unwrap();
-    assert_eq!(admission.acquire("alice").err().unwrap().status, 429);
-    let c = admission.acquire("bob").unwrap();
-    assert_eq!(admission.acquire("carol").err().unwrap().status, 429);
+    let a = admission.acquire().unwrap();
+    let b = admission.acquire().unwrap();
+    assert_eq!(admission.acquire().err().unwrap().status, 429);
     drop(a);
-    let d = admission.acquire("carol").unwrap();
-    drop((b, c, d));
-    let counts = admission.counts.lock().unwrap();
-    assert_eq!(counts.total, 0);
-    assert!(counts.accounts.is_empty());
+    let c = admission.acquire().unwrap();
+    assert_eq!(admission.acquire().err().unwrap().status, 429);
+    drop((b, c));
+    assert_eq!(*admission.active.lock().unwrap(), 0);
 }
 
 #[test]
-fn invalid_limits_cannot_disable_fairness_or_deadlines() {
+fn invalid_limits_cannot_disable_capacity_or_deadlines() {
     for limits in [
         TransferLimits {
-            slots_per_account: 0,
-            ..TransferLimits::default()
-        },
-        TransferLimits {
-            slots_per_account: 8,
+            slots: 0,
             ..TransferLimits::default()
         },
         TransferLimits {
@@ -121,7 +111,7 @@ async fn timeout_does_not_release_a_running_blocking_read() {
     let lease = Lease(dropped.clone());
     let limits = short_limits();
     let admission = Admission::new(&limits);
-    let permit = admission.acquire("alice").unwrap();
+    let permit = admission.acquire().unwrap();
     let (started_tx, started_rx) = tokio::sync::oneshot::channel();
     let (finish_tx, finish_rx) = std::sync::mpsc::channel();
     let source = stream::once(async move {
@@ -146,10 +136,10 @@ async fn timeout_does_not_release_a_running_blocking_read() {
     started_rx.await.unwrap();
     let body = pending.await.unwrap();
     assert_eq!(dropped.load(Ordering::SeqCst), 0);
-    assert_eq!(admission.counts.lock().unwrap().total, 1);
+    assert_eq!(*admission.active.lock().unwrap(), 1);
     finish_tx.send(()).unwrap();
     wait_for_drop(&dropped).await;
-    assert_eq!(admission.counts.lock().unwrap().total, 0);
+    assert_eq!(*admission.active.lock().unwrap(), 0);
     drop(body);
     assert_eq!(dropped.load(Ordering::SeqCst), 1);
 }

@@ -22,7 +22,7 @@ use std::{
 use storage_contract::{Entry, Workspace, new_id, parse_u64_decimal};
 
 const MAX_CONNECTIONS: usize = 64;
-const MAX_SESSIONS_PER_ACCOUNT: usize = 8;
+const MAX_AUTHENTICATED_SESSIONS: usize = 8;
 const MAX_HANDLES: usize = 1024;
 
 mod budget;
@@ -48,7 +48,7 @@ struct Shared {
     spool: PathBuf,
     budget: Arc<budget::Budget>,
     max_file_bytes: u64,
-    sessions_per_account: Mutex<BTreeMap<String, usize>>,
+    authenticated_sessions: Mutex<usize>,
     file_writers: Mutex<BTreeSet<(String, String)>>,
     namespace_operations: Mutex<BTreeSet<String>>,
 }

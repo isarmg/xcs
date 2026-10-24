@@ -250,14 +250,14 @@
           "allow_history_rewrite": false
         },
         "resource_limits": {
-          "workspaces_per_account": 32,
-          "uploads_per_account": 4,
-          "uploads_per_pool": 16,
-          "staging_bytes_per_account": "107374182400",
-          "staging_bytes_per_pool": "536870912000",
-          "handles_per_session": 256,
-          "handles_per_pool": 4096,
-          "queued_tasks_per_pool": 128,
+          "max_workspaces": 128,
+          "http_transfer_slots": 2,
+          "http_spool_bytes_per_account": "107374182400",
+          "http_spool_bytes_total": "536870912000",
+          "http_spool_recovery_reserve_bytes": "1073741824",
+          "smb_spool_bytes_per_account": "107374182400",
+          "smb_spool_bytes_total": "536870912000",
+          "smb_spool_recovery_reserve_bytes": "1073741824",
           "default_page_items": 200,
           "maximum_page_items": 1000,
           "page_snapshot_ttl_seconds": 900,
@@ -794,14 +794,14 @@
           "allow_history_rewrite": false
         },
         "resource_limits": {
-          "workspaces_per_account": 32,
-          "uploads_per_account": 4,
-          "uploads_per_pool": 16,
-          "staging_bytes_per_account": "107374182400",
-          "staging_bytes_per_pool": "536870912000",
-          "handles_per_session": 256,
-          "handles_per_pool": 4096,
-          "queued_tasks_per_pool": 128,
+          "max_workspaces": 128,
+          "http_transfer_slots": 2,
+          "http_spool_bytes_per_account": "107374182400",
+          "http_spool_bytes_total": "536870912000",
+          "http_spool_recovery_reserve_bytes": "1073741824",
+          "smb_spool_bytes_per_account": "107374182400",
+          "smb_spool_bytes_total": "536870912000",
+          "smb_spool_recovery_reserve_bytes": "1073741824",
           "default_page_items": 200,
           "maximum_page_items": 1000,
           "page_snapshot_ttl_seconds": 900,
@@ -850,14 +850,14 @@
           "allow_history_rewrite": false
         },
         "resource_limits": {
-          "workspaces_per_account": 32,
-          "uploads_per_account": 4,
-          "uploads_per_pool": 16,
-          "staging_bytes_per_account": "107374182400",
-          "staging_bytes_per_pool": "536870912000",
-          "handles_per_session": 256,
-          "handles_per_pool": 4096,
-          "queued_tasks_per_pool": 128,
+          "max_workspaces": 128,
+          "http_transfer_slots": 2,
+          "http_spool_bytes_per_account": "107374182400",
+          "http_spool_bytes_total": "536870912000",
+          "http_spool_recovery_reserve_bytes": "1073741824",
+          "smb_spool_bytes_per_account": "107374182400",
+          "smb_spool_bytes_total": "536870912000",
+          "smb_spool_recovery_reserve_bytes": "1073741824",
           "default_page_items": 200,
           "maximum_page_items": 1000,
           "page_snapshot_ttl_seconds": 900,
@@ -906,14 +906,14 @@
           "allow_history_rewrite": false
         },
         "resource_limits": {
-          "workspaces_per_account": 32,
-          "uploads_per_account": 4,
-          "uploads_per_pool": 16,
-          "staging_bytes_per_account": "107374182400",
-          "staging_bytes_per_pool": "536870912000",
-          "handles_per_session": 256,
-          "handles_per_pool": 4096,
-          "queued_tasks_per_pool": 128,
+          "max_workspaces": 128,
+          "http_transfer_slots": 2,
+          "http_spool_bytes_per_account": "107374182400",
+          "http_spool_bytes_total": "536870912000",
+          "http_spool_recovery_reserve_bytes": "1073741824",
+          "smb_spool_bytes_per_account": "107374182400",
+          "smb_spool_bytes_total": "536870912000",
+          "smb_spool_recovery_reserve_bytes": "1073741824",
           "default_page_items": 200,
           "maximum_page_items": 1000,
           "page_snapshot_ttl_seconds": 900,
@@ -1138,6 +1138,116 @@
         "changed": true,
         "reauthentication_required": true
       }
+    },
+    {
+      "name": "config-independent-nondefault-runtime-budgets",
+      "schema": "config",
+      "value": {
+        "metadata": {
+          "replica_members": 3,
+          "decision_members": 2,
+          "recovery_evidence_members": 2,
+          "publish_after_all_members": true,
+          "acknowledge_after_all_members": true,
+          "max_inflight_decision_slots": 1,
+          "require_fenced_membership_change": true,
+          "allow_automatic_degraded_writes": false,
+          "sqlite_role": "rebuildable-index",
+          "application_log": true
+        },
+        "storage": {
+          "minimum_disks_for_protected_write": 1,
+          "allow_cross_version_reflink": false,
+          "allow_content_hardlinks": false,
+          "allow_implicit_content_deduplication": false,
+          "allow_cross_tree_dependencies": false
+        },
+        "branches": {
+          "creation_mode": "record-until-write",
+          "content_mode": "inherit-parent-until-first-write",
+          "materialize_all_files_on_create": false,
+          "merge_behavior": "link-only",
+          "merge_creates_content_version": false,
+          "merge_updates_branch_head": false,
+          "allow_history_rewrite": false
+        },
+        "resource_limits": {
+          "max_workspaces": 256,
+          "http_transfer_slots": 5,
+          "http_spool_bytes_per_account": "65536",
+          "http_spool_bytes_total": "131072",
+          "http_spool_recovery_reserve_bytes": "1",
+          "smb_spool_bytes_per_account": "262144",
+          "smb_spool_bytes_total": "1048576",
+          "smb_spool_recovery_reserve_bytes": "2",
+          "default_page_items": 200,
+          "maximum_page_items": 1000,
+          "page_snapshot_ttl_seconds": 900,
+          "event_retention_days": 7,
+          "event_retention_bytes": "1073741824",
+          "workspace_reminder_days": 7
+        },
+        "observability": {
+          "decision_warning_seconds": 30,
+          "decision_critical_seconds": 120,
+          "queue_warning_seconds": 30
+        }
+      }
+    },
+    {
+      "name": "config-spool-u64-boundary",
+      "schema": "config",
+      "value": {
+        "metadata": {
+          "replica_members": 3,
+          "decision_members": 2,
+          "recovery_evidence_members": 2,
+          "publish_after_all_members": true,
+          "acknowledge_after_all_members": true,
+          "max_inflight_decision_slots": 1,
+          "require_fenced_membership_change": true,
+          "allow_automatic_degraded_writes": false,
+          "sqlite_role": "rebuildable-index",
+          "application_log": true
+        },
+        "storage": {
+          "minimum_disks_for_protected_write": 1,
+          "allow_cross_version_reflink": false,
+          "allow_content_hardlinks": false,
+          "allow_implicit_content_deduplication": false,
+          "allow_cross_tree_dependencies": false
+        },
+        "branches": {
+          "creation_mode": "record-until-write",
+          "content_mode": "inherit-parent-until-first-write",
+          "materialize_all_files_on_create": false,
+          "merge_behavior": "link-only",
+          "merge_creates_content_version": false,
+          "merge_updates_branch_head": false,
+          "allow_history_rewrite": false
+        },
+        "resource_limits": {
+          "max_workspaces": 128,
+          "http_transfer_slots": 2,
+          "http_spool_bytes_per_account": "18446744073709551615",
+          "http_spool_bytes_total": "18446744073709551615",
+          "http_spool_recovery_reserve_bytes": "18446744073709551615",
+          "smb_spool_bytes_per_account": "107374182400",
+          "smb_spool_bytes_total": "536870912000",
+          "smb_spool_recovery_reserve_bytes": "1073741824",
+          "default_page_items": 200,
+          "maximum_page_items": 1000,
+          "page_snapshot_ttl_seconds": 900,
+          "event_retention_days": 7,
+          "event_retention_bytes": "1073741824",
+          "workspace_reminder_days": 7
+        },
+        "observability": {
+          "decision_warning_seconds": 30,
+          "decision_critical_seconds": 120,
+          "queue_warning_seconds": 30
+        }
+      }
     }
   ],
   "negative": [
@@ -1329,14 +1439,14 @@
           "allow_history_rewrite": false
         },
         "resource_limits": {
-          "workspaces_per_account": 32,
-          "uploads_per_account": 4,
-          "uploads_per_pool": 16,
-          "staging_bytes_per_account": "107374182400",
-          "staging_bytes_per_pool": "536870912000",
-          "handles_per_session": 256,
-          "handles_per_pool": 4096,
-          "queued_tasks_per_pool": 128,
+          "max_workspaces": 128,
+          "http_transfer_slots": 2,
+          "http_spool_bytes_per_account": "107374182400",
+          "http_spool_bytes_total": "536870912000",
+          "http_spool_recovery_reserve_bytes": "1073741824",
+          "smb_spool_bytes_per_account": "107374182400",
+          "smb_spool_bytes_total": "536870912000",
+          "smb_spool_recovery_reserve_bytes": "1073741824",
           "default_page_items": 200,
           "maximum_page_items": 1000,
           "page_snapshot_ttl_seconds": 900,
@@ -1385,14 +1495,14 @@
           "allow_history_rewrite": true
         },
         "resource_limits": {
-          "workspaces_per_account": 32,
-          "uploads_per_account": 4,
-          "uploads_per_pool": 16,
-          "staging_bytes_per_account": "107374182400",
-          "staging_bytes_per_pool": "536870912000",
-          "handles_per_session": 256,
-          "handles_per_pool": 4096,
-          "queued_tasks_per_pool": 128,
+          "max_workspaces": 128,
+          "http_transfer_slots": 2,
+          "http_spool_bytes_per_account": "107374182400",
+          "http_spool_bytes_total": "536870912000",
+          "http_spool_recovery_reserve_bytes": "1073741824",
+          "smb_spool_bytes_per_account": "107374182400",
+          "smb_spool_bytes_total": "536870912000",
+          "smb_spool_recovery_reserve_bytes": "1073741824",
           "default_page_items": 200,
           "maximum_page_items": 1000,
           "page_snapshot_ttl_seconds": 900,
@@ -1408,7 +1518,7 @@
       }
     },
     {
-      "name": "cross-limit",
+      "name": "http-spool-owner-exceeds-total",
       "schema": "config",
       "layer": "semantic",
       "value": {
@@ -1441,14 +1551,14 @@
           "allow_history_rewrite": false
         },
         "resource_limits": {
-          "workspaces_per_account": 32,
-          "uploads_per_account": 17,
-          "uploads_per_pool": 16,
-          "staging_bytes_per_account": "107374182400",
-          "staging_bytes_per_pool": "536870912000",
-          "handles_per_session": 256,
-          "handles_per_pool": 4096,
-          "queued_tasks_per_pool": 128,
+          "max_workspaces": 128,
+          "http_transfer_slots": 2,
+          "http_spool_bytes_per_account": "536870912001",
+          "http_spool_bytes_total": "536870912000",
+          "http_spool_recovery_reserve_bytes": "1073741824",
+          "smb_spool_bytes_per_account": "107374182400",
+          "smb_spool_bytes_total": "536870912000",
+          "smb_spool_recovery_reserve_bytes": "1073741824",
           "default_page_items": 200,
           "maximum_page_items": 1000,
           "page_snapshot_ttl_seconds": 900,
@@ -3258,14 +3368,14 @@
           "allow_history_rewrite": false
         },
         "resource_limits": {
-          "workspaces_per_account": 32,
-          "uploads_per_account": 4,
-          "uploads_per_pool": 16,
-          "staging_bytes_per_account": "107374182400",
-          "staging_bytes_per_pool": "536870912000",
-          "handles_per_session": 256,
-          "handles_per_pool": 4096,
-          "queued_tasks_per_pool": 128,
+          "max_workspaces": 128,
+          "http_transfer_slots": 2,
+          "http_spool_bytes_per_account": "107374182400",
+          "http_spool_bytes_total": "536870912000",
+          "http_spool_recovery_reserve_bytes": "1073741824",
+          "smb_spool_bytes_per_account": "107374182400",
+          "smb_spool_bytes_total": "536870912000",
+          "smb_spool_recovery_reserve_bytes": "1073741824",
           "default_page_items": 200,
           "maximum_page_items": 1000,
           "page_snapshot_ttl_seconds": 900,
@@ -3314,14 +3424,14 @@
           "allow_history_rewrite": false
         },
         "resource_limits": {
-          "workspaces_per_account": 32,
-          "uploads_per_account": 4,
-          "uploads_per_pool": 16,
-          "staging_bytes_per_account": "107374182400",
-          "staging_bytes_per_pool": "536870912000",
-          "handles_per_session": 256,
-          "handles_per_pool": 4096,
-          "queued_tasks_per_pool": 128,
+          "max_workspaces": 128,
+          "http_transfer_slots": 2,
+          "http_spool_bytes_per_account": "107374182400",
+          "http_spool_bytes_total": "536870912000",
+          "http_spool_recovery_reserve_bytes": "1073741824",
+          "smb_spool_bytes_per_account": "107374182400",
+          "smb_spool_bytes_total": "536870912000",
+          "smb_spool_recovery_reserve_bytes": "1073741824",
           "default_page_items": 200,
           "maximum_page_items": 1000,
           "page_snapshot_ttl_seconds": 900,
@@ -3370,14 +3480,14 @@
           "allow_history_rewrite": false
         },
         "resource_limits": {
-          "workspaces_per_account": 32,
-          "uploads_per_account": 4,
-          "uploads_per_pool": 16,
-          "staging_bytes_per_account": "107374182400",
-          "staging_bytes_per_pool": "536870912000",
-          "handles_per_session": 256,
-          "handles_per_pool": 4096,
-          "queued_tasks_per_pool": 128,
+          "max_workspaces": 128,
+          "http_transfer_slots": 2,
+          "http_spool_bytes_per_account": "107374182400",
+          "http_spool_bytes_total": "536870912000",
+          "http_spool_recovery_reserve_bytes": "1073741824",
+          "smb_spool_bytes_per_account": "107374182400",
+          "smb_spool_bytes_total": "536870912000",
+          "smb_spool_recovery_reserve_bytes": "1073741824",
           "default_page_items": 200,
           "maximum_page_items": 1000,
           "page_snapshot_ttl_seconds": 900,
@@ -3426,14 +3536,14 @@
           "allow_history_rewrite": false
         },
         "resource_limits": {
-          "workspaces_per_account": 32,
-          "uploads_per_account": 4,
-          "uploads_per_pool": 16,
-          "staging_bytes_per_account": "107374182400",
-          "staging_bytes_per_pool": "536870912000",
-          "handles_per_session": 256,
-          "handles_per_pool": 4096,
-          "queued_tasks_per_pool": 128,
+          "max_workspaces": 128,
+          "http_transfer_slots": 2,
+          "http_spool_bytes_per_account": "107374182400",
+          "http_spool_bytes_total": "536870912000",
+          "http_spool_recovery_reserve_bytes": "1073741824",
+          "smb_spool_bytes_per_account": "107374182400",
+          "smb_spool_bytes_total": "536870912000",
+          "smb_spool_recovery_reserve_bytes": "1073741824",
           "default_page_items": 200,
           "maximum_page_items": 1000,
           "page_snapshot_ttl_seconds": 900,
@@ -3482,14 +3592,14 @@
           "allow_history_rewrite": false
         },
         "resource_limits": {
-          "workspaces_per_account": 32,
-          "uploads_per_account": 4,
-          "uploads_per_pool": 16,
-          "staging_bytes_per_account": "107374182400",
-          "staging_bytes_per_pool": "536870912000",
-          "handles_per_session": 256,
-          "handles_per_pool": 4096,
-          "queued_tasks_per_pool": 128,
+          "max_workspaces": 128,
+          "http_transfer_slots": 2,
+          "http_spool_bytes_per_account": "107374182400",
+          "http_spool_bytes_total": "536870912000",
+          "http_spool_recovery_reserve_bytes": "1073741824",
+          "smb_spool_bytes_per_account": "107374182400",
+          "smb_spool_bytes_total": "536870912000",
+          "smb_spool_recovery_reserve_bytes": "1073741824",
           "default_page_items": 200,
           "maximum_page_items": 1000,
           "page_snapshot_ttl_seconds": 900,
@@ -3538,14 +3648,14 @@
           "allow_history_rewrite": false
         },
         "resource_limits": {
-          "workspaces_per_account": 32,
-          "uploads_per_account": 4,
-          "uploads_per_pool": 16,
-          "staging_bytes_per_account": "107374182400",
-          "staging_bytes_per_pool": "536870912000",
-          "handles_per_session": 256,
-          "handles_per_pool": 4096,
-          "queued_tasks_per_pool": 128,
+          "max_workspaces": 128,
+          "http_transfer_slots": 2,
+          "http_spool_bytes_per_account": "107374182400",
+          "http_spool_bytes_total": "536870912000",
+          "http_spool_recovery_reserve_bytes": "1073741824",
+          "smb_spool_bytes_per_account": "107374182400",
+          "smb_spool_bytes_total": "536870912000",
+          "smb_spool_recovery_reserve_bytes": "1073741824",
           "default_page_items": 200,
           "maximum_page_items": 1000,
           "page_snapshot_ttl_seconds": 900,
@@ -3922,6 +4032,736 @@
         "warning": "ok",
         "automatic_retirement": false
       }
+    },
+    {
+      "name": "http-spool-owner-below-metadata-allowance",
+      "schema": "config",
+      "value": {
+        "metadata": {
+          "replica_members": 3,
+          "decision_members": 2,
+          "recovery_evidence_members": 2,
+          "publish_after_all_members": true,
+          "acknowledge_after_all_members": true,
+          "max_inflight_decision_slots": 1,
+          "require_fenced_membership_change": true,
+          "allow_automatic_degraded_writes": false,
+          "sqlite_role": "rebuildable-index",
+          "application_log": true
+        },
+        "storage": {
+          "minimum_disks_for_protected_write": 1,
+          "allow_cross_version_reflink": false,
+          "allow_content_hardlinks": false,
+          "allow_implicit_content_deduplication": false,
+          "allow_cross_tree_dependencies": false
+        },
+        "branches": {
+          "creation_mode": "record-until-write",
+          "content_mode": "inherit-parent-until-first-write",
+          "materialize_all_files_on_create": false,
+          "merge_behavior": "link-only",
+          "merge_creates_content_version": false,
+          "merge_updates_branch_head": false,
+          "allow_history_rewrite": false
+        },
+        "resource_limits": {
+          "max_workspaces": 128,
+          "http_transfer_slots": 2,
+          "http_spool_bytes_per_account": "65535",
+          "http_spool_bytes_total": "536870912000",
+          "http_spool_recovery_reserve_bytes": "1073741824",
+          "smb_spool_bytes_per_account": "107374182400",
+          "smb_spool_bytes_total": "536870912000",
+          "smb_spool_recovery_reserve_bytes": "1073741824",
+          "default_page_items": 200,
+          "maximum_page_items": 1000,
+          "page_snapshot_ttl_seconds": 900,
+          "event_retention_days": 7,
+          "event_retention_bytes": "1073741824",
+          "workspace_reminder_days": 7
+        },
+        "observability": {
+          "decision_warning_seconds": 30,
+          "decision_critical_seconds": 120,
+          "queue_warning_seconds": 30
+        }
+      },
+      "layer": "semantic"
+    },
+    {
+      "name": "http-spool-no-recovery-reserve",
+      "schema": "config",
+      "value": {
+        "metadata": {
+          "replica_members": 3,
+          "decision_members": 2,
+          "recovery_evidence_members": 2,
+          "publish_after_all_members": true,
+          "acknowledge_after_all_members": true,
+          "max_inflight_decision_slots": 1,
+          "require_fenced_membership_change": true,
+          "allow_automatic_degraded_writes": false,
+          "sqlite_role": "rebuildable-index",
+          "application_log": true
+        },
+        "storage": {
+          "minimum_disks_for_protected_write": 1,
+          "allow_cross_version_reflink": false,
+          "allow_content_hardlinks": false,
+          "allow_implicit_content_deduplication": false,
+          "allow_cross_tree_dependencies": false
+        },
+        "branches": {
+          "creation_mode": "record-until-write",
+          "content_mode": "inherit-parent-until-first-write",
+          "materialize_all_files_on_create": false,
+          "merge_behavior": "link-only",
+          "merge_creates_content_version": false,
+          "merge_updates_branch_head": false,
+          "allow_history_rewrite": false
+        },
+        "resource_limits": {
+          "max_workspaces": 128,
+          "http_transfer_slots": 2,
+          "http_spool_bytes_per_account": "107374182400",
+          "http_spool_bytes_total": "536870912000",
+          "http_spool_recovery_reserve_bytes": "0",
+          "smb_spool_bytes_per_account": "107374182400",
+          "smb_spool_bytes_total": "536870912000",
+          "smb_spool_recovery_reserve_bytes": "1073741824",
+          "default_page_items": 200,
+          "maximum_page_items": 1000,
+          "page_snapshot_ttl_seconds": 900,
+          "event_retention_days": 7,
+          "event_retention_bytes": "1073741824",
+          "workspace_reminder_days": 7
+        },
+        "observability": {
+          "decision_warning_seconds": 30,
+          "decision_critical_seconds": 120,
+          "queue_warning_seconds": 30
+        }
+      },
+      "layer": "semantic"
+    },
+    {
+      "name": "http-spool-byte-overflow",
+      "schema": "config",
+      "value": {
+        "metadata": {
+          "replica_members": 3,
+          "decision_members": 2,
+          "recovery_evidence_members": 2,
+          "publish_after_all_members": true,
+          "acknowledge_after_all_members": true,
+          "max_inflight_decision_slots": 1,
+          "require_fenced_membership_change": true,
+          "allow_automatic_degraded_writes": false,
+          "sqlite_role": "rebuildable-index",
+          "application_log": true
+        },
+        "storage": {
+          "minimum_disks_for_protected_write": 1,
+          "allow_cross_version_reflink": false,
+          "allow_content_hardlinks": false,
+          "allow_implicit_content_deduplication": false,
+          "allow_cross_tree_dependencies": false
+        },
+        "branches": {
+          "creation_mode": "record-until-write",
+          "content_mode": "inherit-parent-until-first-write",
+          "materialize_all_files_on_create": false,
+          "merge_behavior": "link-only",
+          "merge_creates_content_version": false,
+          "merge_updates_branch_head": false,
+          "allow_history_rewrite": false
+        },
+        "resource_limits": {
+          "max_workspaces": 128,
+          "http_transfer_slots": 2,
+          "http_spool_bytes_per_account": "107374182400",
+          "http_spool_bytes_total": "18446744073709551616",
+          "http_spool_recovery_reserve_bytes": "1073741824",
+          "smb_spool_bytes_per_account": "107374182400",
+          "smb_spool_bytes_total": "536870912000",
+          "smb_spool_recovery_reserve_bytes": "1073741824",
+          "default_page_items": 200,
+          "maximum_page_items": 1000,
+          "page_snapshot_ttl_seconds": 900,
+          "event_retention_days": 7,
+          "event_retention_bytes": "1073741824",
+          "workspace_reminder_days": 7
+        },
+        "observability": {
+          "decision_warning_seconds": 30,
+          "decision_critical_seconds": 120,
+          "queue_warning_seconds": 30
+        }
+      },
+      "layer": "schema"
+    },
+    {
+      "name": "smb-spool-owner-exceeds-total",
+      "schema": "config",
+      "value": {
+        "metadata": {
+          "replica_members": 3,
+          "decision_members": 2,
+          "recovery_evidence_members": 2,
+          "publish_after_all_members": true,
+          "acknowledge_after_all_members": true,
+          "max_inflight_decision_slots": 1,
+          "require_fenced_membership_change": true,
+          "allow_automatic_degraded_writes": false,
+          "sqlite_role": "rebuildable-index",
+          "application_log": true
+        },
+        "storage": {
+          "minimum_disks_for_protected_write": 1,
+          "allow_cross_version_reflink": false,
+          "allow_content_hardlinks": false,
+          "allow_implicit_content_deduplication": false,
+          "allow_cross_tree_dependencies": false
+        },
+        "branches": {
+          "creation_mode": "record-until-write",
+          "content_mode": "inherit-parent-until-first-write",
+          "materialize_all_files_on_create": false,
+          "merge_behavior": "link-only",
+          "merge_creates_content_version": false,
+          "merge_updates_branch_head": false,
+          "allow_history_rewrite": false
+        },
+        "resource_limits": {
+          "max_workspaces": 128,
+          "http_transfer_slots": 2,
+          "http_spool_bytes_per_account": "107374182400",
+          "http_spool_bytes_total": "536870912000",
+          "http_spool_recovery_reserve_bytes": "1073741824",
+          "smb_spool_bytes_per_account": "536870912001",
+          "smb_spool_bytes_total": "536870912000",
+          "smb_spool_recovery_reserve_bytes": "1073741824",
+          "default_page_items": 200,
+          "maximum_page_items": 1000,
+          "page_snapshot_ttl_seconds": 900,
+          "event_retention_days": 7,
+          "event_retention_bytes": "1073741824",
+          "workspace_reminder_days": 7
+        },
+        "observability": {
+          "decision_warning_seconds": 30,
+          "decision_critical_seconds": 120,
+          "queue_warning_seconds": 30
+        }
+      },
+      "layer": "semantic"
+    },
+    {
+      "name": "smb-spool-owner-below-metadata-allowance",
+      "schema": "config",
+      "value": {
+        "metadata": {
+          "replica_members": 3,
+          "decision_members": 2,
+          "recovery_evidence_members": 2,
+          "publish_after_all_members": true,
+          "acknowledge_after_all_members": true,
+          "max_inflight_decision_slots": 1,
+          "require_fenced_membership_change": true,
+          "allow_automatic_degraded_writes": false,
+          "sqlite_role": "rebuildable-index",
+          "application_log": true
+        },
+        "storage": {
+          "minimum_disks_for_protected_write": 1,
+          "allow_cross_version_reflink": false,
+          "allow_content_hardlinks": false,
+          "allow_implicit_content_deduplication": false,
+          "allow_cross_tree_dependencies": false
+        },
+        "branches": {
+          "creation_mode": "record-until-write",
+          "content_mode": "inherit-parent-until-first-write",
+          "materialize_all_files_on_create": false,
+          "merge_behavior": "link-only",
+          "merge_creates_content_version": false,
+          "merge_updates_branch_head": false,
+          "allow_history_rewrite": false
+        },
+        "resource_limits": {
+          "max_workspaces": 128,
+          "http_transfer_slots": 2,
+          "http_spool_bytes_per_account": "107374182400",
+          "http_spool_bytes_total": "536870912000",
+          "http_spool_recovery_reserve_bytes": "1073741824",
+          "smb_spool_bytes_per_account": "65535",
+          "smb_spool_bytes_total": "536870912000",
+          "smb_spool_recovery_reserve_bytes": "1073741824",
+          "default_page_items": 200,
+          "maximum_page_items": 1000,
+          "page_snapshot_ttl_seconds": 900,
+          "event_retention_days": 7,
+          "event_retention_bytes": "1073741824",
+          "workspace_reminder_days": 7
+        },
+        "observability": {
+          "decision_warning_seconds": 30,
+          "decision_critical_seconds": 120,
+          "queue_warning_seconds": 30
+        }
+      },
+      "layer": "semantic"
+    },
+    {
+      "name": "smb-spool-no-recovery-reserve",
+      "schema": "config",
+      "value": {
+        "metadata": {
+          "replica_members": 3,
+          "decision_members": 2,
+          "recovery_evidence_members": 2,
+          "publish_after_all_members": true,
+          "acknowledge_after_all_members": true,
+          "max_inflight_decision_slots": 1,
+          "require_fenced_membership_change": true,
+          "allow_automatic_degraded_writes": false,
+          "sqlite_role": "rebuildable-index",
+          "application_log": true
+        },
+        "storage": {
+          "minimum_disks_for_protected_write": 1,
+          "allow_cross_version_reflink": false,
+          "allow_content_hardlinks": false,
+          "allow_implicit_content_deduplication": false,
+          "allow_cross_tree_dependencies": false
+        },
+        "branches": {
+          "creation_mode": "record-until-write",
+          "content_mode": "inherit-parent-until-first-write",
+          "materialize_all_files_on_create": false,
+          "merge_behavior": "link-only",
+          "merge_creates_content_version": false,
+          "merge_updates_branch_head": false,
+          "allow_history_rewrite": false
+        },
+        "resource_limits": {
+          "max_workspaces": 128,
+          "http_transfer_slots": 2,
+          "http_spool_bytes_per_account": "107374182400",
+          "http_spool_bytes_total": "536870912000",
+          "http_spool_recovery_reserve_bytes": "1073741824",
+          "smb_spool_bytes_per_account": "107374182400",
+          "smb_spool_bytes_total": "536870912000",
+          "smb_spool_recovery_reserve_bytes": "0",
+          "default_page_items": 200,
+          "maximum_page_items": 1000,
+          "page_snapshot_ttl_seconds": 900,
+          "event_retention_days": 7,
+          "event_retention_bytes": "1073741824",
+          "workspace_reminder_days": 7
+        },
+        "observability": {
+          "decision_warning_seconds": 30,
+          "decision_critical_seconds": 120,
+          "queue_warning_seconds": 30
+        }
+      },
+      "layer": "semantic"
+    },
+    {
+      "name": "smb-spool-byte-overflow",
+      "schema": "config",
+      "value": {
+        "metadata": {
+          "replica_members": 3,
+          "decision_members": 2,
+          "recovery_evidence_members": 2,
+          "publish_after_all_members": true,
+          "acknowledge_after_all_members": true,
+          "max_inflight_decision_slots": 1,
+          "require_fenced_membership_change": true,
+          "allow_automatic_degraded_writes": false,
+          "sqlite_role": "rebuildable-index",
+          "application_log": true
+        },
+        "storage": {
+          "minimum_disks_for_protected_write": 1,
+          "allow_cross_version_reflink": false,
+          "allow_content_hardlinks": false,
+          "allow_implicit_content_deduplication": false,
+          "allow_cross_tree_dependencies": false
+        },
+        "branches": {
+          "creation_mode": "record-until-write",
+          "content_mode": "inherit-parent-until-first-write",
+          "materialize_all_files_on_create": false,
+          "merge_behavior": "link-only",
+          "merge_creates_content_version": false,
+          "merge_updates_branch_head": false,
+          "allow_history_rewrite": false
+        },
+        "resource_limits": {
+          "max_workspaces": 128,
+          "http_transfer_slots": 2,
+          "http_spool_bytes_per_account": "107374182400",
+          "http_spool_bytes_total": "536870912000",
+          "http_spool_recovery_reserve_bytes": "1073741824",
+          "smb_spool_bytes_per_account": "107374182400",
+          "smb_spool_bytes_total": "18446744073709551616",
+          "smb_spool_recovery_reserve_bytes": "1073741824",
+          "default_page_items": 200,
+          "maximum_page_items": 1000,
+          "page_snapshot_ttl_seconds": 900,
+          "event_retention_days": 7,
+          "event_retention_bytes": "1073741824",
+          "workspace_reminder_days": 7
+        },
+        "observability": {
+          "decision_warning_seconds": 30,
+          "decision_critical_seconds": 120,
+          "queue_warning_seconds": 30
+        }
+      },
+      "layer": "schema"
+    },
+    {
+      "name": "config-zero-http-transfer-slots",
+      "schema": "config",
+      "value": {
+        "metadata": {
+          "replica_members": 3,
+          "decision_members": 2,
+          "recovery_evidence_members": 2,
+          "publish_after_all_members": true,
+          "acknowledge_after_all_members": true,
+          "max_inflight_decision_slots": 1,
+          "require_fenced_membership_change": true,
+          "allow_automatic_degraded_writes": false,
+          "sqlite_role": "rebuildable-index",
+          "application_log": true
+        },
+        "storage": {
+          "minimum_disks_for_protected_write": 1,
+          "allow_cross_version_reflink": false,
+          "allow_content_hardlinks": false,
+          "allow_implicit_content_deduplication": false,
+          "allow_cross_tree_dependencies": false
+        },
+        "branches": {
+          "creation_mode": "record-until-write",
+          "content_mode": "inherit-parent-until-first-write",
+          "materialize_all_files_on_create": false,
+          "merge_behavior": "link-only",
+          "merge_creates_content_version": false,
+          "merge_updates_branch_head": false,
+          "allow_history_rewrite": false
+        },
+        "resource_limits": {
+          "max_workspaces": 128,
+          "http_transfer_slots": 0,
+          "http_spool_bytes_per_account": "107374182400",
+          "http_spool_bytes_total": "536870912000",
+          "http_spool_recovery_reserve_bytes": "1073741824",
+          "smb_spool_bytes_per_account": "107374182400",
+          "smb_spool_bytes_total": "536870912000",
+          "smb_spool_recovery_reserve_bytes": "1073741824",
+          "default_page_items": 200,
+          "maximum_page_items": 1000,
+          "page_snapshot_ttl_seconds": 900,
+          "event_retention_days": 7,
+          "event_retention_bytes": "1073741824",
+          "workspace_reminder_days": 7
+        },
+        "observability": {
+          "decision_warning_seconds": 30,
+          "decision_critical_seconds": 120,
+          "queue_warning_seconds": 30
+        }
+      },
+      "layer": "schema"
+    },
+    {
+      "name": "config-zero-active-workspaces",
+      "schema": "config",
+      "value": {
+        "metadata": {
+          "replica_members": 3,
+          "decision_members": 2,
+          "recovery_evidence_members": 2,
+          "publish_after_all_members": true,
+          "acknowledge_after_all_members": true,
+          "max_inflight_decision_slots": 1,
+          "require_fenced_membership_change": true,
+          "allow_automatic_degraded_writes": false,
+          "sqlite_role": "rebuildable-index",
+          "application_log": true
+        },
+        "storage": {
+          "minimum_disks_for_protected_write": 1,
+          "allow_cross_version_reflink": false,
+          "allow_content_hardlinks": false,
+          "allow_implicit_content_deduplication": false,
+          "allow_cross_tree_dependencies": false
+        },
+        "branches": {
+          "creation_mode": "record-until-write",
+          "content_mode": "inherit-parent-until-first-write",
+          "materialize_all_files_on_create": false,
+          "merge_behavior": "link-only",
+          "merge_creates_content_version": false,
+          "merge_updates_branch_head": false,
+          "allow_history_rewrite": false
+        },
+        "resource_limits": {
+          "max_workspaces": 0,
+          "http_transfer_slots": 2,
+          "http_spool_bytes_per_account": "107374182400",
+          "http_spool_bytes_total": "536870912000",
+          "http_spool_recovery_reserve_bytes": "1073741824",
+          "smb_spool_bytes_per_account": "107374182400",
+          "smb_spool_bytes_total": "536870912000",
+          "smb_spool_recovery_reserve_bytes": "1073741824",
+          "default_page_items": 200,
+          "maximum_page_items": 1000,
+          "page_snapshot_ttl_seconds": 900,
+          "event_retention_days": 7,
+          "event_retention_bytes": "1073741824",
+          "workspace_reminder_days": 7
+        },
+        "observability": {
+          "decision_warning_seconds": 30,
+          "decision_critical_seconds": 120,
+          "queue_warning_seconds": 30
+        }
+      },
+      "layer": "schema"
+    },
+    {
+      "name": "config-obsolete-upload-account-field",
+      "schema": "config",
+      "value": {
+        "metadata": {
+          "replica_members": 3,
+          "decision_members": 2,
+          "recovery_evidence_members": 2,
+          "publish_after_all_members": true,
+          "acknowledge_after_all_members": true,
+          "max_inflight_decision_slots": 1,
+          "require_fenced_membership_change": true,
+          "allow_automatic_degraded_writes": false,
+          "sqlite_role": "rebuildable-index",
+          "application_log": true
+        },
+        "storage": {
+          "minimum_disks_for_protected_write": 1,
+          "allow_cross_version_reflink": false,
+          "allow_content_hardlinks": false,
+          "allow_implicit_content_deduplication": false,
+          "allow_cross_tree_dependencies": false
+        },
+        "branches": {
+          "creation_mode": "record-until-write",
+          "content_mode": "inherit-parent-until-first-write",
+          "materialize_all_files_on_create": false,
+          "merge_behavior": "link-only",
+          "merge_creates_content_version": false,
+          "merge_updates_branch_head": false,
+          "allow_history_rewrite": false
+        },
+        "resource_limits": {
+          "max_workspaces": 128,
+          "http_transfer_slots": 2,
+          "http_spool_bytes_per_account": "107374182400",
+          "http_spool_bytes_total": "536870912000",
+          "http_spool_recovery_reserve_bytes": "1073741824",
+          "smb_spool_bytes_per_account": "107374182400",
+          "smb_spool_bytes_total": "536870912000",
+          "smb_spool_recovery_reserve_bytes": "1073741824",
+          "default_page_items": 200,
+          "maximum_page_items": 1000,
+          "page_snapshot_ttl_seconds": 900,
+          "event_retention_days": 7,
+          "event_retention_bytes": "1073741824",
+          "workspace_reminder_days": 7,
+          "uploads_per_account": 4
+        },
+        "observability": {
+          "decision_warning_seconds": 30,
+          "decision_critical_seconds": 120,
+          "queue_warning_seconds": 30
+        }
+      },
+      "layer": "schema"
+    },
+    {
+      "name": "config-obsolete-application-queue-field",
+      "schema": "config",
+      "value": {
+        "metadata": {
+          "replica_members": 3,
+          "decision_members": 2,
+          "recovery_evidence_members": 2,
+          "publish_after_all_members": true,
+          "acknowledge_after_all_members": true,
+          "max_inflight_decision_slots": 1,
+          "require_fenced_membership_change": true,
+          "allow_automatic_degraded_writes": false,
+          "sqlite_role": "rebuildable-index",
+          "application_log": true
+        },
+        "storage": {
+          "minimum_disks_for_protected_write": 1,
+          "allow_cross_version_reflink": false,
+          "allow_content_hardlinks": false,
+          "allow_implicit_content_deduplication": false,
+          "allow_cross_tree_dependencies": false
+        },
+        "branches": {
+          "creation_mode": "record-until-write",
+          "content_mode": "inherit-parent-until-first-write",
+          "materialize_all_files_on_create": false,
+          "merge_behavior": "link-only",
+          "merge_creates_content_version": false,
+          "merge_updates_branch_head": false,
+          "allow_history_rewrite": false
+        },
+        "resource_limits": {
+          "max_workspaces": 128,
+          "http_transfer_slots": 2,
+          "http_spool_bytes_per_account": "107374182400",
+          "http_spool_bytes_total": "536870912000",
+          "http_spool_recovery_reserve_bytes": "1073741824",
+          "smb_spool_bytes_per_account": "107374182400",
+          "smb_spool_bytes_total": "536870912000",
+          "smb_spool_recovery_reserve_bytes": "1073741824",
+          "default_page_items": 200,
+          "maximum_page_items": 1000,
+          "page_snapshot_ttl_seconds": 900,
+          "event_retention_days": 7,
+          "event_retention_bytes": "1073741824",
+          "workspace_reminder_days": 7,
+          "queued_tasks_per_pool": 128
+        },
+        "observability": {
+          "decision_warning_seconds": 30,
+          "decision_critical_seconds": 120,
+          "queue_warning_seconds": 30
+        }
+      },
+      "layer": "schema"
+    },
+    {
+      "name": "config-default-page-exceeds-maximum",
+      "schema": "config",
+      "value": {
+        "metadata": {
+          "replica_members": 3,
+          "decision_members": 2,
+          "recovery_evidence_members": 2,
+          "publish_after_all_members": true,
+          "acknowledge_after_all_members": true,
+          "max_inflight_decision_slots": 1,
+          "require_fenced_membership_change": true,
+          "allow_automatic_degraded_writes": false,
+          "sqlite_role": "rebuildable-index",
+          "application_log": true
+        },
+        "storage": {
+          "minimum_disks_for_protected_write": 1,
+          "allow_cross_version_reflink": false,
+          "allow_content_hardlinks": false,
+          "allow_implicit_content_deduplication": false,
+          "allow_cross_tree_dependencies": false
+        },
+        "branches": {
+          "creation_mode": "record-until-write",
+          "content_mode": "inherit-parent-until-first-write",
+          "materialize_all_files_on_create": false,
+          "merge_behavior": "link-only",
+          "merge_creates_content_version": false,
+          "merge_updates_branch_head": false,
+          "allow_history_rewrite": false
+        },
+        "resource_limits": {
+          "max_workspaces": 128,
+          "http_transfer_slots": 2,
+          "http_spool_bytes_per_account": "107374182400",
+          "http_spool_bytes_total": "536870912000",
+          "http_spool_recovery_reserve_bytes": "1073741824",
+          "smb_spool_bytes_per_account": "107374182400",
+          "smb_spool_bytes_total": "536870912000",
+          "smb_spool_recovery_reserve_bytes": "1073741824",
+          "default_page_items": 1001,
+          "maximum_page_items": 1000,
+          "page_snapshot_ttl_seconds": 900,
+          "event_retention_days": 7,
+          "event_retention_bytes": "1073741824",
+          "workspace_reminder_days": 7
+        },
+        "observability": {
+          "decision_warning_seconds": 30,
+          "decision_critical_seconds": 120,
+          "queue_warning_seconds": 30
+        }
+      },
+      "layer": "semantic"
+    },
+    {
+      "name": "config-empty-event-budget",
+      "schema": "config",
+      "value": {
+        "metadata": {
+          "replica_members": 3,
+          "decision_members": 2,
+          "recovery_evidence_members": 2,
+          "publish_after_all_members": true,
+          "acknowledge_after_all_members": true,
+          "max_inflight_decision_slots": 1,
+          "require_fenced_membership_change": true,
+          "allow_automatic_degraded_writes": false,
+          "sqlite_role": "rebuildable-index",
+          "application_log": true
+        },
+        "storage": {
+          "minimum_disks_for_protected_write": 1,
+          "allow_cross_version_reflink": false,
+          "allow_content_hardlinks": false,
+          "allow_implicit_content_deduplication": false,
+          "allow_cross_tree_dependencies": false
+        },
+        "branches": {
+          "creation_mode": "record-until-write",
+          "content_mode": "inherit-parent-until-first-write",
+          "materialize_all_files_on_create": false,
+          "merge_behavior": "link-only",
+          "merge_creates_content_version": false,
+          "merge_updates_branch_head": false,
+          "allow_history_rewrite": false
+        },
+        "resource_limits": {
+          "max_workspaces": 128,
+          "http_transfer_slots": 2,
+          "http_spool_bytes_per_account": "107374182400",
+          "http_spool_bytes_total": "536870912000",
+          "http_spool_recovery_reserve_bytes": "1073741824",
+          "smb_spool_bytes_per_account": "107374182400",
+          "smb_spool_bytes_total": "536870912000",
+          "smb_spool_recovery_reserve_bytes": "1073741824",
+          "default_page_items": 200,
+          "maximum_page_items": 1000,
+          "page_snapshot_ttl_seconds": 900,
+          "event_retention_days": 7,
+          "event_retention_bytes": "0",
+          "workspace_reminder_days": 7
+        },
+        "observability": {
+          "decision_warning_seconds": 30,
+          "decision_critical_seconds": 120,
+          "queue_warning_seconds": 30
+        }
+      },
+      "layer": "semantic"
     }
   ],
   "canonical": [

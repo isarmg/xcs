@@ -54,10 +54,8 @@ struct Args {
     #[arg(long, default_value_t = 1_073_741_824)]
     pub(crate) http_spool_recovery_reserve_bytes: u64,
     /// Independent capacity for each HTTP upload/read pool.
-    #[arg(long, default_value_t = 8)]
-    pub(crate) http_transfer_slots_total: usize,
     #[arg(long, default_value_t = 2)]
-    pub(crate) http_transfer_slots_per_account: usize,
+    pub(crate) http_transfer_slots: usize,
     #[arg(long, default_value_t = 60)]
     pub(crate) http_transfer_idle_seconds: u64,
     #[arg(long, default_value_t = 3600)]
@@ -141,8 +139,7 @@ async fn run(args: Args) -> Result<()> {
         http_spool_bytes_per_account,
         http_spool_bytes_total,
         http_spool_recovery_reserve_bytes,
-        http_transfer_slots_total,
-        http_transfer_slots_per_account,
+        http_transfer_slots,
         http_transfer_idle_seconds,
         http_transfer_total_seconds,
         smb_socket,
@@ -178,8 +175,7 @@ async fn run(args: Args) -> Result<()> {
         recovery_reserve_bytes: http_spool_recovery_reserve_bytes,
     };
     config.http_transfer_limits = storage_server::TransferLimits {
-        slots_total: http_transfer_slots_total,
-        slots_per_account: http_transfer_slots_per_account,
+        slots: http_transfer_slots,
         idle_timeout: std::time::Duration::from_secs(http_transfer_idle_seconds),
         total_timeout: std::time::Duration::from_secs(http_transfer_total_seconds),
     };

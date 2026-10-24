@@ -23,7 +23,7 @@ Samba 配置由经版本验收的部署模板另行生成。设备清单通过�
 
 除系统盘外最低只需一块存储盘，二级及后续备份层均为可选。单盘配置只有一级盘、一个元数据成员和一份业务内容；没有磁盘冗余，也不承诺唯一盘丢失后的恢复。下列多层、三元数据成员示例展示可选扩展，不是最小部署要求。
 
-示例是完整有效配置的展示，包含协议常量断言、运行参数和初始化目标；不表示每个字段都可由运维自由切换。分类及冲突处理见[第 21.3 节](#s21-03)。
+示例展示目标配置的组织方式，包含协议常量断言、当前运行额度的文档投影和尚未实现的设计目标；通过文档契约检查不表示整份 TOML 已实现或可交给进程。只有下文明确列出的 JSON 字段或 CLI 参数是当前配置入口。分类及冲突处理见[第 21.3 节](#s21-03)。
 
 ```toml
 [server]
@@ -272,14 +272,17 @@ pause_when_recovery_incomplete = true
 pause_when_transaction_in_doubt = true
 
 [resource_limits]
-workspaces_per_account = 32
-uploads_per_account = 4
-uploads_per_pool = 16
-staging_bytes_per_account = "107374182400"
-staging_bytes_per_pool = "536870912000"
-handles_per_session = 256
-handles_per_pool = 4096
-queued_tasks_per_pool = 128
+# 当前入口的文档投影，不是新增 TOML 配置接口。
+# max_workspaces 来自引擎 JSON Config；其余当前字段对应同名连字符 CLI 参数。
+max_workspaces = 128
+http_transfer_slots = 2
+http_spool_bytes_per_account = "107374182400"
+http_spool_bytes_total = "536870912000"
+http_spool_recovery_reserve_bytes = "1073741824"
+smb_spool_bytes_per_account = "107374182400"
+smb_spool_bytes_total = "536870912000"
+smb_spool_recovery_reserve_bytes = "1073741824"
+# 以下分页、事件重放和提醒字段仅为设计目标，当前没有对应运行配置入口。
 default_page_items = 200
 maximum_page_items = 1000
 page_snapshot_ttl_seconds = 900
@@ -288,6 +291,7 @@ event_retention_bytes = "1073741824"
 workspace_reminder_days = 7
 
 [observability]
+# 诊断目标，不表示当前已有相应告警器或应用等待队列。
 decision_warning_seconds = 30
 decision_critical_seconds = 120
 queue_warning_seconds = 30
@@ -317,6 +321,21 @@ queue_warning_seconds = 30
 
 `verification_mode` 是默认服务端校验模式，保留的受控 HTTP 客户端库支持完整性验证，产品 CLI 不提供正文传输或验证协商入口；SMB 客户端不需要实现本系统校验协议，由服务端在返回字节前校验。段参数仅对新版本生效；读取旧版本时以其描述为准。容量阈值与校验段默认值都是待实测的初始配置，不能宣称为适合所有设备的最优参数。
 
+`resource_limits` 中当前额度投影的实际来源如下；字节值以十进制字符串展示，CLI 则接受十进制整数参数。`max_workspaces` 是全池 open/sealed 工作区数，不是每账户额度；128 是当前初始化草稿的值，不是不可调协议常量。唯一管理员的所有会话共同占用额度。
+
+| 文档投影字段 | 当前入口及作用域 |
+| --- | --- |
+| `max_workspaces` | 引擎 JSON `Config.max_workspaces`；初始化前的受审查草稿，见[救援配置草稿](components/rescue.md#uninitialized-configuration-drafts) |
+| `http_transfer_slots` | `--http-transfer-slots` → `ServerConfig.http_transfer_limits.slots`；上传、读取各自一池，每池默认 2，不是两池合计 2 |
+| `http_spool_bytes_per_account` / `http_spool_bytes_total` / `http_spool_recovery_reserve_bytes` | 对应 `--http-spool-*` 参数 → `ServerConfig.http_spool_limits`；只约束 HTTP spool |
+| `smb_spool_bytes_per_account` / `smb_spool_bytes_total` / `smb_spool_recovery_reserve_bytes` | 对应 `--smb-spool-*` 参数 → `SmbConfig.spool_limits`；只约束 SMB spool |
+
+两种协议的 spool 各自要求账户额至少 65536 字节、总额不低于账户额、恢复余量大于零。`per_account` 是现有入口与账本的所有者维度名称，不表示存在多账户管理；未知归属字节也不能绕过唯一主体准入。HTTP 与 SMB 的默认 100 GiB / 500 GiB 分别生效，不能解释为跨协议共享的 500 GiB 池。核心 `max_workspace_bytes` 和持久工作区证据四维额度仍独立，见[当前资源边界](19-capacity-and-performance.md#s19-10)。
+
+普通 HTTP 后端的 8 槽是 `HTTP_BACKEND_SLOTS` 内部常量；SMB 的 64 条连接、8 条已认证会话和每会话 1024 个句柄分别由 `MAX_CONNECTIONS`、`MAX_AUTHENTICATED_SESSIONS`、`MAX_HANDLES` 限制。这些不是本 TOML 或 CLI 开关，也没有另一个 4096 全池句柄上限。HTTP 传输及后端准入池满时立即拒绝，不存在旧示例所写的 128 项应用等待队列。
+
+`default_page_items` 至 `workspace_reminder_days` 以及 `observability` 只保留设计目标约束，不声明当前分页接口、事件重放、定时提醒或这些告警器已经实现。实际 SMB 目录页固定最多 256 项，不能用这里的 200/1000 目标覆盖它。修改文档投影不会修改任何运行额度；schema 的范围和关系检查也不意味着进程已接受整份目标配置。
+
 只实现当前唯一存储格式，不提供可配置的旧格式读取列表或兼容分支。格式修改必须同步更新写入、恢复、校验和测试向量，不自动迁移真实数据。resource_limits 与 observability 的数值、计费口径和超限动作见[第 19.9 节](19-capacity-and-performance.md#s19-09)及[第 19.10 节](19-capacity-and-performance.md#s19-10)。告警秒数不是提交取消期限。
 
 <a id="s21-03"></a>
@@ -326,7 +345,7 @@ queue_warning_seconds = 30
 | 类别 | 示例 | 修改与校验规则 |
 | --- | --- | --- |
 | 协议常量或构建能力断言 | metadata 的非空配置成员集合及固定多数 floor(N/2)+1、max_inflight_decision_slots=1、全部成员发布/确认、禁止自动降级、full-only、旧MergeLink的link-only语义、禁历史改写与跨树依赖 | schema 使用 const 或固定枚举；冲突返回 CONFIG_INVARIANT_VIOLATION，不能当作可调布尔开关；文件分支合并能力单独声明 |
-| 运行参数 | 网络监听、缓存及维护并发、resource_limits、observability、容量告警与安全预留 | 进行类型、范围和交叉检查；仅明确支持的字段允许热更新，记录配置修订号 |
+| 运行参数及待实现目标 | 当前已支持的网络监听和资源额度入口；分页、observability、维护并发等目标另行标注 | 实际入口进行类型、范围和交叉检查；目标字段不是可用开关。当前资源额度不由此 TOML 热更新，运行行为以组件文档及实现为准 |
 | 受事务管理的持久状态 | 成员集合、盘位/物理绑定、拓扑代际、共享归属、命名策略、一级规则和保护策略 | 配置只提出初始化目标或变更计划；有效检查点和日志决定当前值，必须经对应业务事务修改 |
 
 首版未明确列为运行参数或已实现可选能力的字段，均不得通过配置扩展新语义。命名策略中的长度、Unicode 版本和比较规则是同一策略身份的一部分，不能只热改数值而保留原策略版本。协议常量文件可用于核对和能力展示，不是绕过规范的入口。
@@ -337,7 +356,7 @@ queue_warning_seconds = 30
 
 ## 21.4 启动校验与变更
 
-启动依次执行：严格解析并拒绝重复键/未知字段 → 常量及范围检查 → 账户/全池额度关系检查 → 物理身份和拓扑检查 → 权威代际比较 → 事务恢复 → 发布就绪状态。不得把校验失败自动修正成默认值后继续写入。
+目标启动校验顺序为：严格解析并拒绝重复键/未知字段 → 常量及范围检查 → 各独立预算的所有者/总额关系检查 → 物理身份和拓扑检查 → 权威代际比较 → 事务恢复 → 发布就绪状态。此处不声明当前进程解析上文 TOML；当前 JSON 和 CLI 分别执行其已实现的校验。不得把校验失败自动修正成默认值后继续写入。
 
 减少运行额度只限制新增准入，已有占用超限时显示超额并停止增长，不删除工作数据。修改告警值不改变决定状态；修改份数、成员或绑定也不能通过热更新生效。动态配置验证失败保留上一份有效运行配置，持久业务状态不变。
 
@@ -356,12 +375,11 @@ queue_warning_seconds = 30
 
 HTTP 传输准入及期限参数（上传/读取各自独立一池）：
 
-- `--http-transfer-slots-total`：默认 `8`。
-- `--http-transfer-slots-per-account`：默认 `2`，必须大于零且小于全局值。
+- `--http-transfer-slots`：默认 `2`，必须大于零；唯一管理员的全部会话共享各池额度。
 - `--http-transfer-idle-seconds`：默认 `60`，无非空正文进度的期限。
 - `--http-transfer-total-seconds`：默认 `3600`，必须不低于 idle，且最多 `604800`（7 天）。
 
-映射到 `ServerConfig.http_transfer_limits`。额度耗尽立即 429；响应头前超时为 408 `TRANSFER_TIMEOUT`，已开始的正文以流错误终止。超时不删除留存数据，也不提前归还仍被阻塞 I/O 使用的许可/租约。详见[HTTP 并发公平性与传输期限](components/server.md#http-transfer-limits)。
+映射到 `ServerConfig.http_transfer_limits`；旧 `--http-transfer-slots-total` 和 `--http-transfer-slots-per-account` 参数明确拒绝，不保留别名。额度耗尽立即 429；响应头前超时为 408 `TRANSFER_TIMEOUT`，已开始的正文以流错误终止。超时不删除留存数据，也不提前归还仍被阻塞 I/O 使用的许可/租约。详见[HTTP 并发准入与传输期限](components/server.md#http-transfer-limits)。
 
 ## 当前配置应用入口
 

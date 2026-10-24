@@ -312,7 +312,7 @@ fn invalid_server_security_and_admission_configuration_still_fails_closed() {
             "origin" => config.external_origin = Some("http://example.invalid".into()),
             "proxy" => config.trusted_proxy_ips.push("192.0.2.1".parse().unwrap()),
             "spool_limits" => config.http_spool_limits.bytes_total = 0,
-            "transfer_limits" => config.http_transfer_limits.slots_total = 0,
+            "transfer_limits" => config.http_transfer_limits.slots = 0,
             "upload_limit" => config.max_upload_bytes = 0,
             _ => {
                 #[cfg(unix)]

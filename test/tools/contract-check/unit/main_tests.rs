@@ -667,6 +667,156 @@ fn configuration_projection_failure_names_document_and_schema() {
     assert!(error.contains("1 was expected"));
 }
 
+fn configuration_fixture() -> (Value, Value) {
+    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../docs/contracts");
+    let schema = read(&root.join("config-constraints.schema.json")).unwrap();
+    let vectors = read(&root.join("vectors.json")).unwrap();
+    let value = array(&vectors["positive"])
+        .unwrap()
+        .iter()
+        .find(|case| case["name"] == "config")
+        .unwrap()["value"]
+        .clone();
+    (schema, value)
+}
+
+#[test]
+fn resource_projection_keeps_current_fields_and_rejects_obsolete_limits() {
+    let (schema, base) = configuration_fixture();
+    let draft = storage_contract::Config::development(std::iter::empty::<PathBuf>());
+    assert_eq!(
+        base["resource_limits"]["max_workspaces"],
+        json!(draft.max_workspaces)
+    );
+    assert_eq!(configuration_projection(&schema, &base).unwrap(), base);
+    for key in [
+        "workspaces_per_account",
+        "uploads_per_account",
+        "uploads_per_pool",
+        "staging_bytes_per_account",
+        "staging_bytes_per_pool",
+        "handles_per_session",
+        "handles_per_pool",
+        "queued_tasks_per_pool",
+    ] {
+        let mut document = base.clone();
+        document["resource_limits"][key] = json!(128);
+        let projection = configuration_projection(&schema, &document).unwrap();
+        assert_eq!(projection["resource_limits"][key], json!(128));
+        assert!(validate_configuration_projection(&schema, &projection).is_err());
+    }
+    for key in object(&schema["properties"]["resource_limits"]["properties"])
+        .unwrap()
+        .keys()
+    {
+        let mut document = base.clone();
+        document["resource_limits"]
+            .as_object_mut()
+            .unwrap()
+            .remove(key);
+        let error = configuration_projection(&schema, &document)
+            .unwrap_err()
+            .to_string();
+        assert!(error.contains(&format!("resource_limits.{key}")));
+    }
+    let mut document = base.clone();
+    document["server"] = json!({"mode":"single-writer"});
+    document["metadata"]["member_slot_ids"] = json!(["P01", "B01", "C01"]);
+    assert_eq!(configuration_projection(&schema, &document).unwrap(), base);
+}
+
+#[test]
+fn runtime_resource_projection_accepts_nondefault_and_independent_protocol_budgets() {
+    let (schema, base) = configuration_fixture();
+    for smaller in ["http", "smb"] {
+        let mut value = base.clone();
+        let r = &mut value["resource_limits"];
+        r["max_workspaces"] = json!(256);
+        r["http_transfer_slots"] = json!(5);
+        r[format!("{smaller}_spool_bytes_per_account")] = json!("65536");
+        r[format!("{smaller}_spool_bytes_total")] = json!("65536");
+        r[format!("{smaller}_spool_recovery_reserve_bytes")] = json!("1");
+        validate_configuration_projection(&schema, &value).unwrap();
+    }
+    for key in ["max_workspaces", "http_transfer_slots"] {
+        for invalid in [json!(0), json!(-1), json!("2"), json!(null)] {
+            let mut value = base.clone();
+            value["resource_limits"][key] = invalid;
+            assert!(schema_valid(&schema, &value).is_err(), "{key}");
+        }
+    }
+}
+
+#[test]
+fn spool_projection_preserves_each_protocols_byte_and_cross_limit_boundaries() {
+    let (schema, base) = configuration_fixture();
+    for protocol in ["http", "smb"] {
+        for (suffix, invalid, message) in [
+            ("bytes_per_account", "65535", "owner/total limit"),
+            ("bytes_per_account", "536870912001", "owner/total limit"),
+            ("bytes_total", "107374182399", "owner/total limit"),
+            ("recovery_reserve_bytes", "0", "recovery reserve"),
+        ] {
+            let mut value = base.clone();
+            value["resource_limits"][format!("{protocol}_spool_{suffix}")] = json!(invalid);
+            schema_valid(&schema, &value).unwrap();
+            let error = semantics("config", &value).unwrap_err().to_string();
+            assert!(error.contains(&format!("{protocol} spool {message}")));
+        }
+        let mut maximum = base.clone();
+        for suffix in ["bytes_per_account", "bytes_total", "recovery_reserve_bytes"] {
+            let key = format!("{protocol}_spool_{suffix}");
+            maximum["resource_limits"][&key] = json!(u64::MAX.to_string());
+            for invalid in [
+                json!("18446744073709551616"),
+                json!("065536"),
+                json!(65536),
+                json!(null),
+            ] {
+                let mut value = base.clone();
+                value["resource_limits"][&key] = invalid;
+                assert!(schema_valid(&schema, &value).is_err(), "{key}");
+            }
+        }
+        validate_configuration_projection(&schema, &maximum).unwrap();
+    }
+}
+
+#[test]
+fn target_resource_and_alert_constraints_remain_checked_without_runtime_claims() {
+    let (schema, base) = configuration_fixture();
+    for (section, key, invalid, message) in [
+        (
+            "resource_limits",
+            "default_page_items",
+            json!(1001),
+            "page limit",
+        ),
+        (
+            "resource_limits",
+            "event_retention_bytes",
+            json!("0"),
+            "event budget",
+        ),
+        (
+            "observability",
+            "decision_warning_seconds",
+            json!(120),
+            "alert order",
+        ),
+    ] {
+        let mut value = base.clone();
+        value[section][key] = invalid;
+        schema_valid(&schema, &value).unwrap();
+        assert!(
+            semantics("config", &value)
+                .unwrap_err()
+                .to_string()
+                .contains(message)
+        );
+    }
+}
+
 #[test]
 fn single_administrator_authentication_contract_matches_existing_http_endpoints() {
     let root = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../..");

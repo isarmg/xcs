@@ -35,7 +35,7 @@ pub(crate) async fn upload_status(
     ApiPath((workspace, item)): ApiPath<(String, String)>,
 ) -> Result<Json<Value>, ApiError> {
     state.http_spool()?;
-    let read_permit = state.read_slots.acquire(&identity.principal)?;
+    let read_permit = state.read_slots.acquire()?;
     let backend_permit = state
         .backend_slots
         .clone()
@@ -159,7 +159,7 @@ async fn upload_inner(
     request: Request,
     deadline: &UploadDeadline,
 ) -> Result<Json<Value>, ApiError> {
-    let _permit = state.upload_slots.acquire(&identity.principal)?;
+    let _permit = state.upload_slots.acquire()?;
     let key = uploads::key(&workspace, &item);
     {
         let mut claims = lock(&state.upload_claims)?;
@@ -574,7 +574,7 @@ pub(crate) async fn content(
 ) -> Result<Response, ApiError> {
     let limits = state.config.http_transfer_limits.clone();
     let deadline = tokio::time::Instant::now() + limits.total_timeout;
-    let permit = state.read_slots.acquire(&identity.principal)?;
+    let permit = state.read_slots.acquire()?;
     let content = tokio::time::timeout_at(
         deadline,
         tokio::task::spawn_blocking(move || {
@@ -625,7 +625,7 @@ pub(crate) async fn workspace_content(
 ) -> Result<Response, ApiError> {
     let limits = state.config.http_transfer_limits.clone();
     let deadline = tokio::time::Instant::now() + limits.total_timeout;
-    let permit = state.read_slots.acquire(&identity.principal)?;
+    let permit = state.read_slots.acquire()?;
     let content = tokio::time::timeout_at(
         deadline,
         tokio::task::spawn_blocking(move || {
@@ -648,7 +648,7 @@ pub(crate) async fn checksums(
 ) -> Result<Response, ApiError> {
     let limits = state.config.http_transfer_limits.clone();
     let deadline = tokio::time::Instant::now() + limits.total_timeout;
-    let permit = state.read_slots.acquire(&identity.principal)?;
+    let permit = state.read_slots.acquire()?;
     let (bytes, permit) = tokio::time::timeout_at(
         deadline,
         tokio::task::spawn_blocking(move || {

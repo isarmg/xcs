@@ -36,35 +36,26 @@ impl Drop for ConnectionGuard {
 /// Multiple shares must not bypass the sole account's authenticated session cap.
 struct SessionPermit {
     shared: Arc<Shared>,
-    principal: String,
 }
 impl SessionPermit {
-    fn acquire(shared: &Arc<Shared>, principal: &str) -> Result<Self, ApiError> {
+    fn acquire(shared: &Arc<Shared>) -> Result<Self, ApiError> {
         let mut sessions = shared
-            .sessions_per_account
+            .authenticated_sessions
             .lock()
             .map_err(|_| ApiError::new(503, "SMB_UNAVAILABLE", "SMB session registry poisoned"))?;
-        let count = sessions.entry(principal.to_owned()).or_default();
-        if *count >= MAX_SESSIONS_PER_ACCOUNT {
-            return Err(ApiError::limit("too many SMB sessions for this account"));
+        if *sessions >= MAX_AUTHENTICATED_SESSIONS {
+            return Err(ApiError::limit("too many authenticated SMB sessions"));
         }
-        *count += 1;
+        *sessions += 1;
         Ok(Self {
             shared: shared.clone(),
-            principal: principal.to_owned(),
         })
     }
 }
 impl Drop for SessionPermit {
     fn drop(&mut self) {
-        if let Ok(mut sessions) = self.shared.sessions_per_account.lock()
-            && let Some(count) = sessions.get_mut(&self.principal)
-        {
-            if *count > 1 {
-                *count -= 1;
-            } else {
-                sessions.remove(&self.principal);
-            }
+        if let Ok(mut sessions) = self.shared.authenticated_sessions.lock() {
+            *sessions -= 1;
         }
     }
 }
@@ -102,7 +93,7 @@ pub(super) fn run_connection(mut stream: FrameStream, shared: Arc<Shared>) -> io
             return Err(ApiError::forbidden());
         }
         let mut identity = crate::lock(&shared.auth)?.sole_identity()?;
-        let permit = SessionPermit::acquire(&shared, &identity.principal)?;
+        let permit = SessionPermit::acquire(&shared)?;
         let repo = shared.backend.call(
             crate::BackendAction::Repository,
             &identity,
@@ -320,7 +311,7 @@ pub async fn serve(
     let shared = Arc::new(Shared {
         budget,
         max_file_bytes,
-        sessions_per_account: Mutex::new(BTreeMap::new()),
+        authenticated_sessions: Mutex::new(0),
         backend,
         username,
         auth,

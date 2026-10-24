@@ -381,13 +381,14 @@ fn upload_total_timeout_retains_unfinished_evidence_despite_progress() {
 }
 
 #[tokio::test]
-async fn account_upload_slots_are_shared_across_items_and_released_on_cancel() {
+async fn upload_slots_are_shared_across_sessions_and_items_and_released_on_cancel() {
     let root = crate::tests::private_tempdir();
     let app = application(root.path());
     let (token, _, _) = authenticated(&app).await;
+    let (other_token, _, _) = authenticated(&app).await;
     let hash = blake3::hash(b"").to_hex().to_string();
     let mut tasks = Vec::new();
-    for item in ["one", "two"] {
+    for (item, session) in [("one", &token), ("two", &other_token)] {
         let (ready_tx, ready_rx) = tokio::sync::oneshot::channel();
         let mut ready = Some(ready_tx);
         let stream = futures::stream::poll_fn(move |_| {
@@ -396,7 +397,7 @@ async fn account_upload_slots_are_shared_across_items_and_released_on_cancel() {
             }
             std::task::Poll::Pending::<Option<Result<Bytes, std::io::Error>>>
         });
-        let req = request(&token, item, 1, 0, &hash, Body::from_stream(stream));
+        let req = request(session, item, 1, 0, &hash, Body::from_stream(stream));
         let app = app.clone();
         tasks.push(tokio::spawn(async move { app.oneshot(req).await }));
         tokio::time::timeout(Duration::from_secs(5), ready_rx)
@@ -436,7 +437,7 @@ async fn account_upload_slots_are_shared_across_items_and_released_on_cancel() {
 }
 
 #[tokio::test]
-async fn account_read_slots_remain_held_by_unconsumed_bodies() {
+async fn read_slots_remain_held_by_unconsumed_bodies() {
     let root = crate::tests::private_tempdir();
     let app = application(root.path());
     let (token, _, _) = authenticated(&app).await;

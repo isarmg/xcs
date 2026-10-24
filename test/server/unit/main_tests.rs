@@ -88,6 +88,26 @@ const WORKSPACE_LIMIT_FLAGS: [&str; 4] = [
 ];
 
 #[test]
+fn http_transfer_slots_use_one_limit_and_reject_old_flags() {
+    assert_eq!(
+        Args::try_parse_from(["zxs"]).unwrap().http_transfer_slots,
+        2
+    );
+    assert_eq!(
+        Args::try_parse_from(["zxs", "--http-transfer-slots", "3"])
+            .unwrap()
+            .http_transfer_slots,
+        3
+    );
+    for old in [
+        "--http-transfer-slots-total",
+        "--http-transfer-slots-per-account",
+    ] {
+        assert!(Args::try_parse_from(["zxs", old, "2"]).is_err(), "{old}");
+    }
+}
+
+#[test]
 fn retained_workspace_flags_require_all_positive_values_or_none() {
     let base = vec!["zxs"];
     assert_eq!(
