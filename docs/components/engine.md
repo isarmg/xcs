@@ -19,7 +19,9 @@
 | `journal.rs` / `metadata_budget.rs` | 哈希对象、日志帧、证明与实际序列化大小限制 |
 | `container_storage.rs` | 普通版本文件、真实容器改名、继承引用缓存与格式准入 |
 | `historical_save.rs` / `maintenance.rs` | 历史另存分支、计划、清理与历史拆分 |
-| `history_package.rs` | 可独立校验、导出、恢复的完整历史包 |
+| `history_package.rs` | 历史包证明、精确图对象选择与修复、离线校验、导出及恢复导入 |
+| `history_package/manifest.rs` | `HistoryManifest` 的历史域 State 投影与逻辑闭包校验；不执行存储 I/O |
+| `history_package/graph.rs` | 确定性分页根、索引与叶页编码和解析；校验图形状与引用闭包 |
 | `repair.rs` / `degraded_recovery.rs` | 修复原始候选与显式永久丢失恢复 |
 | `wire.rs` / `protection.rs` | 冻结上传清单、请求摘要、后续版本放置与保护规则 |
 
@@ -36,7 +38,7 @@ SQLite、容器 container.json 及当前名称是可重建投影，不能替代�
 ## 共享规则与扩展位置
 
 - 名称与路径只调用 `name-policy`，固定 Unicode 16.0 NFC / case folding。显示拼写可以不同，祖先关系必须按规范化键判断；移动子树时按路径组件处理显示名称，不能用另一种拼写的字节长度截断 UTF-8。
-- 新写入备注调用 `storage_contract::validate_note`，最多 `MAX_NOTE_BYTES = 128` UTF-8 字节，空串清空，拒绝控制字符。历史包读取明确保留旧 4096 字节上限，不隐式重写旧证明。
+- 新写入备注调用 `storage_contract::validate_note`，最多 `MAX_NOTE_BYTES = 128` UTF-8 字节，空串清空，拒绝控制字符。历史包读取同样验证当前备注格式，不隐式重写不匹配的证明。
 - 校验块大小由 `storage_contract::SUPPORTED_CHECKSUM_CHUNK_BYTES` 统一提供，编码器、配置和历史包使用同一集合。
 - 新业务操作在 `business/` 或相应维护模块组合状态，经 `mutate` / `mutate_digest` 发布；不得自行写日志、提交 SQLite、改写既有版本正文。
 - 目录分支选择按替换子树后完整仓库树检查 `Config.max_entries`，目录和文件均计入；单个冻结子树合法不代表与当前兄弟子树组合后仍合法。超额返回 `RESOURCE_LIMIT`，不改变选择、提交、代际、操作记录或发布日志；根目录选择替换整棵树，不叠加旧树条目。
@@ -53,6 +55,6 @@ cargo test --locked --offline -p storage-engine --test directory_selection_limit
 cargo check --locked --offline -p storage-engine
 ```
 
-测试覆盖发布屏障、幂等、恢复、读租约、兼容树拆分及完整包恢复。新分支回归检查无正文复制或空 stub、真实空首写、缓存/改名/旧 inode、来源清除、目录组合和不可变子树闭包、共享文件身份、选择代际、目录 head 固定与历史清理；含目录组合的旧拆分明确拒绝。目录额度回归覆盖两个合法四条目状态组合为六条目时的原子拒绝、释放额度后同操作 ID 重试，以及根组合在额度边界切换并重启恢复。所有 fixture 使用临时目录，不代表物理设备故障或发行验收。
+测试覆盖发布屏障、幂等、恢复、读租约、受支持的历史树拆分及完整包恢复。新分支回归检查无正文复制或空 stub、真实空首写、缓存/改名/旧 inode、来源清除、目录组合和不可变子树闭包、共享文件身份、选择代际、目录 head 固定与历史清理；含目录组合、文件节点或独立文件分支的历史拆分明确拒绝。目录额度回归覆盖两个合法四条目状态组合为六条目时的原子拒绝、释放额度后同操作 ID 重试，以及根组合在额度边界切换并重启恢复。所有 fixture 使用临时目录，不代表物理设备故障或发行验收。
 
 打开已有池时，缺失根目录或权限安全且完全为空的根目录视为不可用成员，可由剩余配置元数据成员的多数证明恢复只读服务；不会在这些未验证目录创建锁或恢复文件。非空目录缺少 disk.json、身份冲突、符号链接和不安全权限仍拒绝启动；配置多数门槛不会随失联成员缩小。

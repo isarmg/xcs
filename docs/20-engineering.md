@@ -79,7 +79,7 @@ zxs/
 
 认证算法在独立可移植 `authentication` 中只有一个实现；服务端与救援工具直接依赖 `authentication`，服务端与平台均不保留旧认证路径兼容导出，业务会话持久化仍属于服务端。
 
-核心按责任拆分：business/repository 管仓库与共享绑定，workspace 管完整上传和提交，history 管文件历史和关系，namespace 管路径，file 管共享文件分支与备注，directory 管稳定目录分支、不可变子树、选择及默认视图。container_storage 管普通正文唯一路径、真实容器改名、继承缓存与旧 stub 清理；边界见其[README](components/engine/src/container_storage.md)。engine/{publication,recovery,reads,index,workspace_storage} 管发布、恢复、读取、索引和工作区；journal 管状态分页及证明，metadata_budget 管决定前限额，maintenance 管计划/清理/兼容拆分，history_package 管完整恢复闭包，repair/degraded_recovery 区分可修复与永久损失。入口复用核心规则，不直接操作业务盘。
+核心按责任拆分：business/repository 管仓库与共享绑定，workspace 管完整上传和提交，history 管文件历史和关系，namespace 管路径，file 管共享文件分支与备注，directory 管稳定目录分支、不可变子树、选择及默认视图。container_storage 管普通正文唯一路径、真实容器改名、继承缓存与不支持布局的拒绝，拒绝时保留原字节和目录，不执行旧 stub 清理或迁移；边界见其[README](components/engine/src/container_storage.md)。engine/{publication,recovery,reads,index,workspace_storage} 管发布、恢复、读取、索引和工作区；journal 管状态分页及证明，metadata_budget 管决定前限额，maintenance 管计划、清理与当前支持范围内的历史树拆分（含目录组合、文件节点或独立文件分支时拒绝），不承担旧版本兼容；history_package 管历史包证明、对象图 I/O、导出与恢复导入，history_package/manifest 管历史域 State 投影和纯逻辑闭包校验，history_package/graph 管分页编码和图解析；repair/degraded_recovery 区分可修复与永久损失。入口复用核心规则，不直接操作业务盘。
 
 文件节点的统一解析与继承标签由 `business/file_nodes` 管理；`file_tags` 新增标签子节点，`file_merges` 保存采用结果和归属，`file_publication` 按精确引用统一推进目录组成。旧 `history` 中的 `MergeLink` 仍只记关系线；新 `FileBranchMerge` 会推进归属分支与参与目录引用，两者不是同一操作。节点正文继续通过真实 `version_id` 读取，语义边界见[合并、标签与备份规则](design/file-merge-tags-backup.md)。
 

@@ -42,7 +42,9 @@
 
 | 入口 | 职责 |
 | --- | --- |
-| [history_package.rs](../../src/engine/src/history_package.rs) | 严格分页根读取、图准备/遍历/修复；`PackageProof`、大小预检、导出和加载分派；保留逻辑校验与导入规则 |
+| [history_package.rs](../../src/engine/src/history_package.rs) | `PackageProof`、大小预检、准确图对象的读取与修复、离线校验、导出和恢复导入；协调逻辑校验与图编解码 |
+| [manifest.rs](../../src/engine/src/history_package/manifest.rs) | `HistoryManifest` 的历史域 State 投影与逻辑闭包校验；不执行存储 I/O，不改变序列化字段与校验顺序 |
+| [graph.rs](../../src/engine/src/history_package/graph.rs) | 严格分页根、索引与叶页的确定性编码和解析；校验图形状、引用闭包和分路约束 |
 | [publication.rs](../../src/engine/src/engine/publication.rs) | 准备完整图、冻结准确根、依赖先于决定落盘；不在构造候选后更换根 |
 | [recovery.rs](../../src/engine/src/engine/recovery.rs)、[degraded_recovery.rs](../../src/engine/src/degraded_recovery.rs) | 按准确绑定图修复，不调用当前编码器重新生成全部清单；修复去重以对象域和哈希共同为键 |
 | [publication_evidence.rs](../../src/engine/src/publication_evidence.rs) | 逐依赖、跨可信成员的只读哈希验证，不要求单个成员拥有完整图 |
