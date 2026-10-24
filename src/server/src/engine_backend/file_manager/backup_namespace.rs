@@ -153,7 +153,7 @@ pub(super) fn entries(
         .state()
         .repositories
         .values()
-        .filter(|repo| authorize(identity, repo, false, false).is_ok())
+        .filter(|repo| authorize_access(identity, repo, RepositoryAccess::Read).is_ok())
         .map(|repo| (repo.history_tree_id.as_str(), repo))
         .collect::<BTreeMap<_, _>>();
     // Keep one file container, including retained files absent from the live

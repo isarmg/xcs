@@ -117,16 +117,16 @@ fn split_repository_accepts_independent_account_admission_and_still_requires_its
         repositories: BTreeSet::from(["source repository".into()]),
         ..direct.clone()
     };
-    assert!(authorize(&direct, &repository, false, false).is_ok());
-    assert!(authorize(&inherited, &repository, false, false).is_ok());
+    assert!(authorize_access(&direct, &repository, RepositoryAccess::Read).is_ok());
+    assert!(authorize_access(&inherited, &repository, RepositoryAccess::Read).is_ok());
     let unrelated = Identity {
         admission_session: None,
         smb_binding: None,
         repositories: BTreeSet::from(["unrelated repository".into()]),
         ..direct.clone()
     };
-    assert!(authorize(&unrelated, &repository, false, false).is_err());
+    assert!(authorize_access(&unrelated, &repository, RepositoryAccess::Read).is_err());
     repository.grants = Grants::default();
-    assert!(authorize(&direct, &repository, false, false).is_err());
-    assert!(authorize(&inherited, &repository, false, false).is_err());
+    assert!(authorize_access(&direct, &repository, RepositoryAccess::Read).is_err());
+    assert!(authorize_access(&inherited, &repository, RepositoryAccess::Read).is_err());
 }

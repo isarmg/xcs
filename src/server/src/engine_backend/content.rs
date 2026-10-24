@@ -1,7 +1,7 @@
 //! Authorized content read plans and their unlocked I/O execution.
 use super::{
-    EngineBackend, authorize, current_protected_identity, error, repo_for_history,
-    workspace_authorize,
+    EngineBackend, RepositoryAccess, authorize_access, current_protected_identity, error,
+    repo_for_history, workspace_authorize,
 };
 use crate::{ApiError, Content, auth::Identity};
 
@@ -21,11 +21,10 @@ impl EngineBackend {
             .versions
             .get(version)
             .ok_or_else(|| ApiError::new(404, "NOT_FOUND", "version not found"))?;
-        authorize(
+        authorize_access(
             &current,
             repo_for_history(&engine, &record.history_tree_id)?,
-            false,
-            false,
+            RepositoryAccess::Read,
         )?;
         let plan = engine.prepare_content(version).map_err(error)?;
         let repo = repo_for_history(&engine, &record.history_tree_id)?;
@@ -107,11 +106,10 @@ impl EngineBackend {
             .versions
             .get(version)
             .ok_or_else(|| ApiError::new(404, "NOT_FOUND", "version not found"))?;
-        authorize(
+        authorize_access(
             &current,
             repo_for_history(&engine, &record.history_tree_id)?,
-            false,
-            false,
+            RepositoryAccess::Read,
         )?;
         let plan = engine.prepare_content(version).map_err(error)?;
         drop(engine);

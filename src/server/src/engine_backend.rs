@@ -138,25 +138,6 @@ fn repo_for_branch<'a>(engine: &'a Engine, id: &str) -> Result<&'a Repository, A
     }
     repo_for_history(engine, &branch.history_tree_id)
 }
-fn authorize(
-    identity: &Identity,
-    repo: &Repository,
-    write: bool,
-    manage: bool,
-) -> Result<(), ApiError> {
-    authorize_access(
-        identity,
-        repo,
-        if manage {
-            RepositoryAccess::Manage
-        } else if write {
-            RepositoryAccess::Write
-        } else {
-            RepositoryAccess::Read
-        },
-    )
-}
-
 pub use storage_contract::RepositoryAccess;
 
 pub fn authorize_access(
@@ -191,11 +172,10 @@ fn workspace_authorize(
     if workspace.principal != identity.principal && !identity.admin {
         return Err(ApiError::forbidden());
     }
-    authorize(
+    authorize_access(
         identity,
         repo_for_branch(engine, &workspace.branch_id)?,
-        true,
-        false,
+        RepositoryAccess::Write,
     )?;
     Ok(workspace)
 }
@@ -346,18 +326,18 @@ impl Backend for EngineBackend {
                     .state()
                     .repositories
                     .values()
-                    .filter(|repo| authorize(identity, repo, false, false).is_ok())
+                    .filter(|repo| authorize_access(identity, repo, RepositoryAccess::Read).is_ok())
                     .collect::<Vec<_>>();
                 Ok(json!({"repositories":values}))
             }
             crate::BackendAction::Repository => {
                 let repo = repository(&engine, field(&input, "repository_id")?)?;
-                authorize(identity, repo, false, false)?;
+                authorize_access(identity, repo, RepositoryAccess::Read)?;
                 encode(repo)
             }
             crate::BackendAction::Branches => {
                 let repo = repository(&engine, field(&input, "repository_id")?)?;
-                authorize(identity, repo, false, false)?;
+                authorize_access(identity, repo, RepositoryAccess::Read)?;
                 Ok(
                     json!({"branches":engine.state().branches.values().filter(|branch|branch.history_tree_id==repo.history_tree_id).map(|branch| branch_wire(&engine, branch)).collect::<Result<Vec<_>, _>>()?}),
                 )
@@ -376,7 +356,7 @@ impl Backend for EngineBackend {
             }
             crate::BackendAction::SmbBinding => {
                 let repo = repository(&engine, field(&input, "repository_id")?)?;
-                authorize(identity, repo, false, true)?;
+                authorize_access(identity, repo, RepositoryAccess::Manage)?;
                 let history = engine
                     .state()
                     .histories
@@ -390,7 +370,7 @@ impl Backend for EngineBackend {
             }
             crate::BackendAction::DefaultBranch => {
                 let repo = repository(&engine, field(&input, "repository_id")?)?;
-                authorize(identity, repo, true, false)?;
+                authorize_access(identity, repo, RepositoryAccess::Write)?;
                 let selected = engine.state().directory_selections.get(&repo.repository_id);
                 let name = selected
                     .and_then(|id| engine.state().directory_branches.get(id))
@@ -416,7 +396,11 @@ impl Backend for EngineBackend {
             crate::BackendAction::InitializeDirectoryScope => {
                 keys(&input, &["repository_id", "path", "operation_id"])?;
                 let repo = field(&input, "repository_id")?;
-                authorize(identity, repository(&engine, repo)?, true, false)?;
+                authorize_access(
+                    identity,
+                    repository(&engine, repo)?,
+                    RepositoryAccess::Write,
+                )?;
                 // The empty path explicitly identifies the repository root.
                 let path = input
                     .get("path")
@@ -436,7 +420,11 @@ impl Backend for EngineBackend {
                     &["repository_id", "directory_branch_id", "operation_id"],
                 )?;
                 let repo = field(&input, "repository_id")?;
-                authorize(identity, repository(&engine, repo)?, true, false)?;
+                authorize_access(
+                    identity,
+                    repository(&engine, repo)?,
+                    RepositoryAccess::Write,
+                )?;
                 let result = engine
                     .select_default_directory_branch(
                         repo,
@@ -458,7 +446,11 @@ impl Backend for EngineBackend {
                     ],
                 )?;
                 let repo = field(&input, "repository_id")?;
-                authorize(identity, repository(&engine, repo)?, true, false)?;
+                authorize_access(
+                    identity,
+                    repository(&engine, repo)?,
+                    RepositoryAccess::Write,
+                )?;
                 let result = engine
                     .rename_directory_branch(
                         repo,
@@ -483,7 +475,11 @@ impl Backend for EngineBackend {
                     ],
                 )?;
                 let repo = field(&input, "repository_id")?;
-                authorize(identity, repository(&engine, repo)?, true, true)?;
+                authorize_access(
+                    identity,
+                    repository(&engine, repo)?,
+                    RepositoryAccess::Manage,
+                )?;
                 let enabled = input
                     .get("enabled")
                     .and_then(Value::as_bool)
@@ -508,7 +504,11 @@ impl Backend for EngineBackend {
             crate::BackendAction::SetGrants => {
                 keys(&input, &["repository_id", "grants", "operation_id"])?;
                 let repository_id = field(&input, "repository_id")?;
-                authorize(identity, repository(&engine, repository_id)?, true, true)?;
+                authorize_access(
+                    identity,
+                    repository(&engine, repository_id)?,
+                    RepositoryAccess::Manage,
+                )?;
                 let grants: Grants = json_codec::from_value(
                     input
                         .get("grants")
@@ -530,7 +530,11 @@ impl Backend for EngineBackend {
             crate::BackendAction::Resolve => {
                 keys(&input, &["branch_id", "path", "commit_id"])?;
                 let branch_id = field(&input, "branch_id")?;
-                authorize(identity, repo_for_branch(&engine, branch_id)?, false, false)?;
+                authorize_access(
+                    identity,
+                    repo_for_branch(&engine, branch_id)?,
+                    RepositoryAccess::Read,
+                )?;
                 let branch = engine.state().branches.get(branch_id).unwrap();
                 let path = field(&input, "path")?;
                 name_policy::validate_path(path).map_err(ApiError::invalid)?;
@@ -573,11 +577,14 @@ impl Backend for EngineBackend {
                 if plan.principal != identity.principal && !identity.admin {
                     return Err(ApiError::forbidden());
                 }
-                authorize(
+                authorize_access(
                     identity,
                     repo_for_history(&engine, field(&plan.input, "history_tree_id")?)?,
-                    true,
-                    plan.kind != "historical_save",
+                    if plan.kind != "historical_save" {
+                        RepositoryAccess::Manage
+                    } else {
+                        RepositoryAccess::Write
+                    },
                 )?;
                 encode(plan)
             }
@@ -607,7 +614,11 @@ impl Backend for EngineBackend {
             crate::BackendAction::WriteSession => {
                 keys(&input, &["branch_id"])?;
                 let branch = field(&input, "branch_id")?;
-                authorize(identity, repo_for_branch(&engine, branch)?, true, false)?;
+                authorize_access(
+                    identity,
+                    repo_for_branch(&engine, branch)?,
+                    RepositoryAccess::Write,
+                )?;
                 let workspace = engine
                     .create_workspace(branch, &identity.principal)
                     .map_err(error)?;
@@ -623,11 +634,10 @@ impl Backend for EngineBackend {
                     let commit = engine.state().commits.get(id).ok_or_else(|| {
                         ApiError::new(404, "NOT_FOUND", "comparison commit not found")
                     })?;
-                    authorize(
+                    authorize_access(
                         identity,
                         repo_for_history(&engine, &commit.history_tree_id)?,
-                        false,
-                        false,
+                        RepositoryAccess::Read,
                     )?;
                 }
                 engine.compare_commits(left, right).map_err(error)
@@ -638,11 +648,14 @@ impl Backend for EngineBackend {
                 if plan.principal != identity.principal && !identity.admin {
                     return Err(ApiError::forbidden());
                 }
-                authorize(
+                authorize_access(
                     identity,
                     repo_for_history(&engine, field(&plan.input, "history_tree_id")?)?,
-                    true,
-                    plan.kind != "historical_save",
+                    if plan.kind != "historical_save" {
+                        RepositoryAccess::Manage
+                    } else {
+                        RepositoryAccess::Write
+                    },
                 )?;
                 encode(
                     engine
@@ -657,7 +670,11 @@ impl Backend for EngineBackend {
             crate::BackendAction::CreateWorkspace => {
                 keys(&input, &["branch_id", "source_commit_id"])?;
                 let branch = field(&input, "branch_id")?;
-                authorize(identity, repo_for_branch(&engine, branch)?, true, false)?;
+                authorize_access(
+                    identity,
+                    repo_for_branch(&engine, branch)?,
+                    RepositoryAccess::Write,
+                )?;
                 let workspace =
                     if let Some(source) = wire::optional_identity(&input, "source_commit_id")? {
                         engine
@@ -672,7 +689,11 @@ impl Backend for EngineBackend {
             }
             crate::BackendAction::Branch => {
                 let id = field(&input, "branch_id")?;
-                authorize(identity, repo_for_branch(&engine, id)?, false, false)?;
+                authorize_access(
+                    identity,
+                    repo_for_branch(&engine, id)?,
+                    RepositoryAccess::Read,
+                )?;
                 branch_wire(
                     &engine,
                     engine
@@ -695,7 +716,11 @@ impl Backend for EngineBackend {
                     ],
                 )?;
                 let history = field(&input, "history_tree_id")?;
-                authorize(identity, repo_for_history(&engine, history)?, true, false)?;
+                authorize_access(
+                    identity,
+                    repo_for_history(&engine, history)?,
+                    RepositoryAccess::Write,
+                )?;
                 let mut options = input.clone();
                 options.as_object_mut().unwrap().remove("history_tree_id");
                 let options: storage_engine::HistoricalSaveOptions =
@@ -928,8 +953,9 @@ impl Backend for EngineBackend {
                 let visible = versions
                     .into_iter()
                     .filter(|version| {
-                        repo_for_history(&engine, &version.history_tree_id)
-                            .is_ok_and(|repo| authorize(identity, repo, false, false).is_ok())
+                        repo_for_history(&engine, &version.history_tree_id).is_ok_and(|repo| {
+                            authorize_access(identity, repo, RepositoryAccess::Read).is_ok()
+                        })
                     })
                     .collect::<Vec<_>>();
                 if visible.is_empty() {
@@ -939,7 +965,11 @@ impl Backend for EngineBackend {
             }
             crate::BackendAction::Graph => {
                 let history = field(&input, "history_tree_id")?;
-                authorize(identity, repo_for_history(&engine, history)?, false, false)?;
+                authorize_access(
+                    identity,
+                    repo_for_history(&engine, history)?,
+                    RepositoryAccess::Read,
+                )?;
                 encode(engine.graph(history).map_err(error)?)
             }
             crate::BackendAction::Commit => {
@@ -948,11 +978,10 @@ impl Backend for EngineBackend {
                     .commits
                     .get(field(&input, "commit_id")?)
                     .ok_or_else(|| ApiError::new(404, "NOT_FOUND", "commit not found"))?;
-                authorize(
+                authorize_access(
                     identity,
                     repo_for_history(&engine, &commit.history_tree_id)?,
-                    false,
-                    false,
+                    RepositoryAccess::Read,
                 )?;
                 encode(commit)
             }
@@ -963,11 +992,10 @@ impl Backend for EngineBackend {
                     .versions
                     .get(id)
                     .ok_or_else(|| ApiError::new(404, "NOT_FOUND", "version not found"))?;
-                authorize(
+                authorize_access(
                     identity,
                     repo_for_history(&engine, &version.history_tree_id)?,
-                    false,
-                    false,
+                    RepositoryAccess::Read,
                 )?;
                 if action == crate::BackendAction::Version {
                     let mut value = encode(version)?;
@@ -1017,7 +1045,11 @@ impl Backend for EngineBackend {
             crate::BackendAction::PurgePlan => {
                 keys(&input, &["history_tree_id", "version_ids"])?;
                 let history = field(&input, "history_tree_id")?;
-                authorize(identity, repo_for_history(&engine, history)?, true, true)?;
+                authorize_access(
+                    identity,
+                    repo_for_history(&engine, history)?,
+                    RepositoryAccess::Manage,
+                )?;
                 let versions: Vec<String> = json_codec::from_value(
                     input
                         .get("version_ids")
@@ -1034,7 +1066,11 @@ impl Backend for EngineBackend {
             crate::BackendAction::SplitPlan => {
                 keys(&input, &["history_tree_id", "cut_commit_id"])?;
                 let history = field(&input, "history_tree_id")?;
-                authorize(identity, repo_for_history(&engine, history)?, true, true)?;
+                authorize_access(
+                    identity,
+                    repo_for_history(&engine, history)?,
+                    RepositoryAccess::Manage,
+                )?;
                 encode(
                     engine
                         .create_split_plan(
@@ -1060,11 +1096,10 @@ impl Backend for EngineBackend {
                     .ok_or_else(|| {
                         ApiError::new(404, "NOT_FOUND", "protection policy not found")
                     })?;
-                authorize(
+                authorize_access(
                     identity,
                     repository(&engine, &policy.repository_id)?,
-                    false,
-                    false,
+                    RepositoryAccess::Read,
                 )?;
                 encode(policy)
             }
@@ -1074,11 +1109,10 @@ impl Backend for EngineBackend {
                     .placement_rules
                     .get(field(&input, "rule_id")?)
                     .ok_or_else(|| ApiError::new(404, "NOT_FOUND", "placement rule not found"))?;
-                authorize(
+                authorize_access(
                     identity,
                     repository(&engine, &rule.repository_id)?,
-                    false,
-                    false,
+                    RepositoryAccess::Read,
                 )?;
                 encode(rule)
             }
@@ -1095,7 +1129,11 @@ impl Backend for EngineBackend {
                     ],
                 )?;
                 let repo = field(&input, "repository_id")?;
-                authorize(identity, repository(&engine, repo)?, true, true)?;
+                authorize_access(
+                    identity,
+                    repository(&engine, repo)?,
+                    RepositoryAccess::Manage,
+                )?;
                 // Retain the transport's key/admission error ordering while the
                 // application also enforces ACLs for non-HTTP callers.
                 let command = json_codec::from_value(input).map_err(ApiError::invalid)?;
@@ -1116,7 +1154,11 @@ impl Backend for EngineBackend {
                     ],
                 )?;
                 let repo = field(&input, "repository_id")?;
-                authorize(identity, repository(&engine, repo)?, true, true)?;
+                authorize_access(
+                    identity,
+                    repository(&engine, repo)?,
+                    RepositoryAccess::Manage,
+                )?;
                 // Retain the transport's key/admission error ordering while the
                 // application also enforces ACLs for non-HTTP callers.
                 let command = json_codec::from_value(input).map_err(ApiError::invalid)?;
@@ -1167,7 +1209,9 @@ impl Backend for EngineBackend {
                             .get(&event.operation_id)
                             .and_then(|op| op.history_tree_id.as_ref())
                             .and_then(|history| repo_for_history(&engine, history).ok())
-                            .is_some_and(|repo| authorize(identity, repo, false, false).is_ok())
+                            .is_some_and(|repo| {
+                                authorize_access(identity, repo, RepositoryAccess::Read).is_ok()
+                            })
                     {
                         events.push(event);
                     }

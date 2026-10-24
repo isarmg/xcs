@@ -1,9 +1,9 @@
-//! Request-scoped public projections. Authorization and version selection happen
-//! against the same locked engine; only owned response data crosses the boundary.
+//! Request-scoped owned transport projections. Authorization and version selection
+//! happen against the same locked engine; only owned data crosses the boundary.
 //! This is not a cache or a reusable authorization grant, and carries no State,
 //! private authentication data, content read plan, or publication capability.
 use super::wire::PendingSources;
-use super::{authorize, encode, error, field, repo_for_branch};
+use super::{RepositoryAccess, authorize_access, encode, error, field, repo_for_branch};
 use crate::{ApiError, auth::Identity};
 use data_serialization::Serialize;
 use json_codec::Value;
@@ -25,7 +25,11 @@ impl Tree {
         input: &Value,
     ) -> Result<Self, ApiError> {
         let branch = field(input, "branch_id")?;
-        authorize(identity, repo_for_branch(engine, branch)?, false, false)?;
+        authorize_access(
+            identity,
+            repo_for_branch(engine, branch)?,
+            RepositoryAccess::Read,
+        )?;
         let branch_info = engine.state().branches.get(branch).unwrap();
         let commit = input
             .get("query")
@@ -63,7 +67,11 @@ impl SmbLookup {
         input: &Value,
     ) -> Result<Self, ApiError> {
         let branch = field(input, "branch_id")?;
-        authorize(identity, repo_for_branch(engine, branch)?, false, false)?;
+        authorize_access(
+            identity,
+            repo_for_branch(engine, branch)?,
+            RepositoryAccess::Read,
+        )?;
         let branch_info = &engine.state().branches[branch];
         engine
             .state()
@@ -101,7 +109,11 @@ impl SmbDirectory {
         input: &Value,
     ) -> Result<Self, ApiError> {
         let branch = field(input, "branch_id")?;
-        authorize(identity, repo_for_branch(engine, branch)?, false, false)?;
+        authorize_access(
+            identity,
+            repo_for_branch(engine, branch)?,
+            RepositoryAccess::Read,
+        )?;
         let branch_info = engine.state().branches.get(branch).unwrap();
         let commit = input
             .get("commit_id")

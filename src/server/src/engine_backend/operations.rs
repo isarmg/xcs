@@ -1,5 +1,5 @@
 //! Operation ownership and current repository access must precede health I/O.
-use super::{authorize, repo_for_history};
+use super::{RepositoryAccess, authorize_access, repo_for_history};
 use crate::{ApiError, auth::Identity};
 use storage_engine::{Engine, OperationRecord};
 
@@ -12,7 +12,11 @@ pub(super) fn authorize_record(
         return Err(ApiError::forbidden());
     }
     if let Some(history) = &record.result().history_tree_id {
-        authorize(identity, repo_for_history(engine, history)?, false, false)
+        authorize_access(
+            identity,
+            repo_for_history(engine, history)?,
+            RepositoryAccess::Read,
+        )
     } else {
         identity.require_admin()
     }

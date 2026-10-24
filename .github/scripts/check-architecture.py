@@ -2,9 +2,11 @@
 """Check declared first-party Cargo boundaries, without Cargo or network access.
 
 All target/optional declarations are checked, not just the current host feature
-set. Foundation package internals belong to tools/rust-sources/architecture.py;
-this gate validates paths from first-party packages but does not traverse those
-internals. Policies are reviewed inputs, never inferred approvals.
+set. tools/rust-sources/architecture.py indexes Foundation consumer declarations;
+source and layout validation belongs to tools/rust-sources/manage.py. This gate
+validates paths from first-party packages but does not traverse Foundation
+internals or enforce their layering. Policies are reviewed inputs, never inferred
+approvals.
 """
 import argparse
 import json
