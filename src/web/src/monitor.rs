@@ -3,7 +3,7 @@ mod chart;
 use crate::{
     api, format,
     icons::FileIcon,
-    ui::{State, current_session, fail, feedback, list},
+    ui::{State, accept_read_response, current_session, fail, feedback, list},
 };
 use json_codec::Value;
 use storage_contract::{CapacityWarning, WorkspaceCapacity, WorkspaceCapacityScope};
@@ -175,22 +175,30 @@ fn load_history(state: RwSignal<State>) {
     });
     spawn_local(async move {
         let result = api::request("GET", &format!("/api/system/history?range={range}"), None).await;
-        if !current_session(state, epoch)
-            || !state.with_untracked(|s| history_matches(&s.monitor, generation, &range))
-        {
-            return;
-        }
-        match result {
-            Ok(value) => state.update(|s| {
-                s.monitor.history = value.into();
-                s.monitor.history_loaded = true;
-                s.monitor.history_failure = None;
-            }),
-            Err(error) if error.status == 401 => fail(state, error),
-            Err(error) => state.update(|s| s.monitor.history_failure = Some(feedback(&error))),
-        }
-        state.update(|s| s.monitor.history_loading = false);
+        complete_history_load(state, epoch, generation, &range, result);
     });
+}
+fn complete_history_load(
+    state: RwSignal<State>,
+    epoch: u64,
+    generation: u64,
+    range: &str,
+    result: Result<Value, api::Error>,
+) {
+    if !accept_read_response(state, epoch, &result)
+        || !state.with_untracked(|s| history_matches(&s.monitor, generation, range))
+    {
+        return;
+    }
+    match result {
+        Ok(value) => state.update(|s| {
+            s.monitor.history = value.into();
+            s.monitor.history_loaded = true;
+            s.monitor.history_failure = None;
+        }),
+        Err(error) => state.update(|s| s.monitor.history_failure = Some(feedback(&error))),
+    }
+    state.update(|s| s.monitor.history_loading = false);
 }
 fn history_matches(model: &Model, generation: u64, range: &str) -> bool {
     model.history_generation == generation && model.range == range

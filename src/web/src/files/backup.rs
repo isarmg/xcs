@@ -2,7 +2,7 @@
 use super::{actions, model::file_context, review};
 use crate::{
     api, format,
-    ui::{State, current_session, fail, text},
+    ui::{State, accept_read_response, fail, text},
 };
 use json_codec::{Value, json};
 use std::collections::BTreeMap;
@@ -73,45 +73,52 @@ fn start(state: RwSignal<State>, repository: String, path: String) {
             None,
         )
         .await;
-        if !current_session(state, epoch)
-            || !state
-                .with_untracked(|s| s.files.backup.as_ref().is_some_and(|draft| draft.id == id))
-        {
-            return;
-        }
-        match result {
-            Ok(configuration) => state.update(|s| {
+        complete_configuration_load(state, epoch, &id, result);
+    });
+}
+fn complete_configuration_load(
+    state: RwSignal<State>,
+    epoch: u64,
+    id: &str,
+    result: Result<Value, api::Error>,
+) {
+    if !accept_read_response(state, epoch, &result)
+        || !state.with_untracked(|s| s.files.backup.as_ref().is_some_and(|draft| draft.id == id))
+    {
+        return;
+    }
+    match result {
+        Ok(configuration) => state.update(|s| {
+            if let Some(draft) = s.files.backup.as_mut() {
+                draft.target = format::parse_u64(&configuration["target_copies"])
+                    .and_then(|n| u32::try_from(n).ok())
+                    .unwrap_or(0);
+                draft.generation = text(&configuration, &["generation"]);
+                draft.scope_id = text(&configuration["scope"], &["id"]);
+                draft.prefixes = configuration["backup_prefixes"]
+                    .as_object()
+                    .into_iter()
+                    .flatten()
+                    .filter_map(|(slot, prefix)| {
+                        prefix
+                            .as_str()
+                            .map(|prefix| (slot.clone(), prefix.to_owned()))
+                    })
+                    .collect();
+                draft.configuration = configuration;
+                draft.loading = false;
+            }
+        }),
+        Err(error) => {
+            state.update(|s| {
                 if let Some(draft) = s.files.backup.as_mut() {
-                    draft.target = format::parse_u64(&configuration["target_copies"])
-                        .and_then(|n| u32::try_from(n).ok())
-                        .unwrap_or(0);
-                    draft.generation = text(&configuration, &["generation"]);
-                    draft.scope_id = text(&configuration["scope"], &["id"]);
-                    draft.prefixes = configuration["backup_prefixes"]
-                        .as_object()
-                        .into_iter()
-                        .flatten()
-                        .filter_map(|(slot, prefix)| {
-                            prefix
-                                .as_str()
-                                .map(|prefix| (slot.clone(), prefix.to_owned()))
-                        })
-                        .collect();
-                    draft.configuration = configuration;
                     draft.loading = false;
                 }
-            }),
-            Err(error) => {
-                state.update(|s| {
-                    if let Some(draft) = s.files.backup.as_mut() {
-                        draft.loading = false;
-                    }
-                });
-                review::error(state, review::Kind::Backup, error.to_string());
-                fail(state, error);
-            }
+            });
+            review::error(state, review::Kind::Backup, error.to_string());
+            fail(state, error);
         }
-    });
+    }
 }
 fn routes(configuration: &Value) -> Vec<Vec<String>> {
     let Some(chains) = configuration["backup_routes"].as_array() else {

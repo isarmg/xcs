@@ -1,4 +1,105 @@
 use super::*;
+
+fn unauthorized() -> api::Error {
+    api::Error {
+        code: "UNAUTHORIZED".into(),
+        message: "Session expired".into(),
+        status: 401,
+        retryable: false,
+        request_id: Some("expired-backup".into()),
+    }
+}
+
+#[test]
+fn closed_backup_read_still_revokes_its_expired_session() {
+    Owner::new().with(|| {
+        let state = RwSignal::new(State {
+            authenticated: true,
+            session_epoch: 7,
+            ..Default::default()
+        });
+        // The user closed the panel before this request completed.
+        assert!(state.with_untracked(|s| s.files.backup.is_none()));
+        complete_configuration_load(state, 7, "closed-draft", Err(unauthorized()));
+        state.with_untracked(|s| {
+            assert!(!s.session_active());
+            assert!(s.files.backup.is_none());
+            assert_eq!(s.errors.len(), 1);
+            assert_eq!(s.errors[0].request_id.as_deref(), Some("expired-backup"));
+        });
+    });
+}
+
+#[test]
+fn stale_backup_rejection_cannot_revoke_a_replacement_session() {
+    Owner::new().with(|| {
+        for (epoch, transition) in [
+            (8, crate::ui::SessionTransition::Idle),
+            (7, crate::ui::SessionTransition::LoggingOut),
+            (7, crate::ui::SessionTransition::LogoutUnconfirmed),
+        ] {
+            let state = RwSignal::new(State {
+                authenticated: true,
+                session_epoch: epoch,
+                session_transition: transition,
+                ..Default::default()
+            });
+            complete_configuration_load(state, 7, "closed-draft", Err(unauthorized()));
+            state.with_untracked(|s| {
+                assert!(s.authenticated);
+                assert_eq!(s.session_transition, transition);
+                assert!(s.errors.is_empty());
+            });
+        }
+    });
+}
+
+#[test]
+fn replaced_backup_panel_ignores_old_data_but_not_a_current_session_revocation() {
+    Owner::new().with(|| {
+        let state = RwSignal::new(State {
+            authenticated: true,
+            session_epoch: 7,
+            ..Default::default()
+        });
+        state.update(|s| {
+            s.files.backup = Some(Draft {
+                id: "new-draft".into(),
+                repository: "repo".into(),
+                path: "new-path".into(),
+                configuration: Value::Null,
+                generation: String::new(),
+                scope_id: String::new(),
+                target: 0,
+                prefixes: BTreeMap::new(),
+                loading: true,
+            });
+        });
+        complete_configuration_load(state, 7, "old-draft", Ok(json!({"target_copies":2})));
+        let mut ordinary_error = unauthorized();
+        ordinary_error.status = 503;
+        complete_configuration_load(state, 7, "old-draft", Err(ordinary_error));
+        state.with_untracked(|s| {
+            assert!(s.session_active());
+            assert!(s.errors.is_empty());
+            let draft = s.files.backup.as_ref().unwrap();
+            assert!(draft.loading);
+            assert!(draft.configuration.is_null());
+        });
+        complete_configuration_load(state, 7, "old-draft", Err(unauthorized()));
+        // A concurrent rejection must not report the same expired session twice.
+        complete_configuration_load(state, 7, "new-draft", Err(unauthorized()));
+        state.with_untracked(|s| {
+            assert!(!s.session_active());
+            assert_eq!(s.errors.len(), 1);
+            let draft = s.files.backup.as_ref().unwrap();
+            assert_eq!(draft.path, "new-path");
+            assert!(draft.loading);
+            assert!(draft.configuration.is_null());
+        });
+    });
+}
+
 #[test]
 fn multi_primary_routes_use_each_selected_prefix_and_the_shortest_capacity() {
     let configuration = json!({"route_slot_ids":["P01","B01","C01"],"backup_routes":[["P01","B01","C01"],["P02","B02"]],"backup_slot_ids":["B01","C01","B02"],"max_copies":2});

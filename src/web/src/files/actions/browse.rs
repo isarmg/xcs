@@ -3,7 +3,7 @@ use super::disk_path;
 use crate::{
     api,
     files::model::Disk,
-    ui::{State, current_session, fail, list, text},
+    ui::{State, accept_read_response, current_session, fail, list, text},
 };
 use json_codec::Value;
 use web_interface::prelude::*;
@@ -160,7 +160,9 @@ pub(crate) fn load_entries(state: RwSignal<State>) {
             None,
         )
         .await;
-        if !current_listing(state, epoch, &slot, &directory, generation) {
+        if !accept_read_response(state, epoch, &result)
+            || !current_listing(state, epoch, &slot, &directory, generation)
+        {
             return;
         }
         let refreshed = result.is_ok();
@@ -259,7 +261,7 @@ pub(crate) fn load_file_history(state: RwSignal<State>) {
             None,
         )
         .await;
-        if !current_session(state, epoch)
+        if !accept_read_response(state, epoch, &result)
             || !state.with_untracked(|s| {
                 s.files.history_generation == generation
                     && s.files

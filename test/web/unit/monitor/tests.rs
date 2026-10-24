@@ -1,4 +1,82 @@
 use super::*;
+
+#[test]
+fn superseded_history_read_revokes_authentication_without_settling_the_new_read() {
+    Owner::new().with(|| {
+        let state = RwSignal::new(State {
+            authenticated: true,
+            session_epoch: 7,
+            ..Default::default()
+        });
+        state.update(|s| {
+            s.monitor.range = "24h".into();
+            s.monitor.history_generation = 2;
+            s.monitor.history_loading = true;
+            s.monitor.history = json_codec::json!({"current":"snapshot"}).into();
+        });
+        complete_history_load(
+            state,
+            7,
+            1,
+            "1min",
+            Err(api::Error {
+                code: "UNAUTHORIZED".into(),
+                message: "Session expired".into(),
+                status: 401,
+                retryable: false,
+                request_id: Some("expired-history".into()),
+            }),
+        );
+        state.with_untracked(|s| {
+            assert!(!s.session_active());
+            assert!(s.monitor.history_loading);
+            assert_eq!(s.monitor.history_generation, 2);
+            assert_eq!(s.monitor.history["current"], "snapshot");
+            assert_eq!(s.errors.len(), 1);
+        });
+    });
+}
+
+#[test]
+fn superseded_history_data_and_prior_session_errors_leave_current_state_unchanged() {
+    Owner::new().with(|| {
+        let state = RwSignal::new(State {
+            authenticated: true,
+            session_epoch: 8,
+            ..Default::default()
+        });
+        state.update(|s| {
+            s.monitor.range = "24h".into();
+            s.monitor.history_generation = 2;
+            s.monitor.history_loading = true;
+            s.monitor.history = json_codec::json!({"current":"snapshot"}).into();
+        });
+        complete_history_load(state, 8, 1, "1min", Ok(json_codec::json!({"stale":true})));
+        for (epoch, status) in [(7, 401), (8, 503)] {
+            complete_history_load(
+                state,
+                epoch,
+                1,
+                "1min",
+                Err(api::Error {
+                    code: "STALE".into(),
+                    message: "Old request".into(),
+                    status,
+                    retryable: false,
+                    request_id: None,
+                }),
+            );
+        }
+        state.with_untracked(|s| {
+            assert!(s.session_active());
+            assert!(s.monitor.history_loading);
+            assert_eq!(s.monitor.history["current"], "snapshot");
+            assert!(s.monitor.history_failure.is_none());
+            assert!(s.errors.is_empty());
+        });
+    });
+}
+
 #[test]
 fn missing_or_invalid_samples_are_never_reported_as_zero_usage_or_power() {
     assert_eq!(percent(&Value::Null), None);

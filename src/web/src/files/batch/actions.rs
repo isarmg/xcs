@@ -90,7 +90,7 @@ pub(crate) fn start(state: RwSignal<State>, kind: Kind, entry: Option<Value>) {
             None,
         )
         .await;
-        if !current_session(state, epoch) || !same_draft(state, &id) {
+        if !accept_read_response(state, epoch, &result) || !same_draft(state, &id) {
             return;
         }
         match result {
@@ -221,7 +221,7 @@ pub(super) fn load_target(state: RwSignal<State>) {
     update(state, |draft| draft.loading = true);
     spawn_local(async move {
         let result = api::request("GET", &endpoint, None).await;
-        if !current_session(state, epoch)
+        if !accept_read_response(state, epoch, &result)
             || !same_draft(state, &id)
             || !state.with_untracked(|s| {
                 s.files

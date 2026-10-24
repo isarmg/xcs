@@ -6,7 +6,7 @@ use super::{
 };
 use crate::{
     api,
-    ui::{State, current_session, fail, list, set_notice, text},
+    ui::{State, accept_read_response, current_session, fail, list, set_notice, text},
 };
 use json_codec::{Value, json};
 use std::collections::{BTreeMap, BTreeSet};
