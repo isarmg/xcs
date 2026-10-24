@@ -36,9 +36,17 @@ pub(crate) fn receipt_binds(
     object: &str,
 ) -> Result<bool> {
     let r = &receipt.record;
+    Ok(r.record_type == kind
+        && r.sequence == sequence
+        && r.candidate_hash == candidate
+        && r.object_hash == object
+        && r.previous_frame_hash.len() == 64
+        && record_frame_hash(r)?.is_some_and(|hash| hash.to_hex().as_str() == receipt.frame_hash))
+}
+fn record_frame_hash(r: &Record) -> Result<Option<blake3::Hash>> {
     let payload = canonical_json(r)?;
     if payload.len() > MAX_FRAME {
-        return Ok(false);
+        return Ok(None);
     }
     let mut header = Vec::with_capacity(LOG_HEADER_BYTES);
     header.extend(LOG_MAGIC);
@@ -46,17 +54,13 @@ pub(crate) fn receipt_binds(
     let mut digest = blake3::Hasher::new();
     digest.update(&header);
     digest.update(&payload);
-    Ok(r.record_type == kind
-        && r.sequence == sequence
-        && r.candidate_hash == candidate
-        && r.object_hash == object
-        && r.previous_frame_hash.len() == 64
-        && digest.finalize().to_hex().as_str() == receipt.frame_hash)
+    Ok(Some(digest.finalize()))
 }
 pub(crate) struct Scan {
     pub records: Vec<(Record, String)>,
     pub valid_bytes: u64,
     pub torn_tail: bool,
+    pub stamp: Option<FileStamp>,
 }
 pub(crate) fn log_path(d: &DiskConfig) -> PathBuf {
     d.root.join("metadata/application-log/journal.bin")
@@ -74,12 +78,15 @@ pub(crate) fn scan(d: &DiskConfig) -> Result<Scan> {
             records: Vec::new(),
             valid_bytes: 0,
             torn_tail: false,
+            stamp: None,
         });
     };
+    let before = FileStamp::of(&file)?;
     let mut out = Scan {
         records: Vec::new(),
         valid_bytes: 0,
         torn_tail: false,
+        stamp: None,
     };
     let mut previous = "0".repeat(64);
     let mut last_sequence = 0;
@@ -157,6 +164,14 @@ pub(crate) fn scan(d: &DiskConfig) -> Result<Scan> {
         out.records.push((record, previous.clone()));
         out.valid_bytes += LOG_HEADER_BYTES as u64 + len as u64 + 32;
     }
+    // Bind reuse to the exact descriptor whose bytes were verified, not a new
+    // fingerprint captured later. Torn or concurrently changed logs get no hint.
+    if !out.torn_tail
+        && FileStamp::of(&file)? == before
+        && FileStamp::of(&open_regular(&path)?)? == before
+    {
+        out.stamp = Some(before);
+    }
     Ok(out)
 }
 // A process-local optimization, never a recovery authority. Keep only the current
@@ -164,7 +179,7 @@ pub(crate) fn scan(d: &DiskConfig) -> Result<Scan> {
 // Device/inode plus ctime detect replacement, truncation and same-size rewrites
 // (including writers that restore mtime). Restart always verifies from byte zero.
 #[derive(Clone, Debug, PartialEq, Eq)]
-struct FileStamp {
+pub(crate) struct FileStamp {
     dev: u64,
     ino: u64,
     len: u64,
@@ -200,10 +215,57 @@ pub(crate) fn append(
     candidate: &str,
     object: &str,
 ) -> Result<Receipt> {
-    append_with_sync(d, kind, sequence, candidate, object, |file, parent| {
-        file.sync_all()?;
-        sync_dir(parent)
-    })
+    append_with_sync(d, kind, sequence, candidate, object, None, sync_journal)
+}
+
+// Borrow only the current record and the prefix hashes already held by recovery.
+// This is same-invocation evidence, not a persistent or all-history receipt cache.
+pub(crate) struct ScannedReceipt<'a> {
+    pub stamp: &'a FileStamp,
+    pub hashes: &'a BTreeSet<String>,
+    pub record: &'a Record,
+}
+pub(crate) fn replay_publication(
+    d: &DiskConfig,
+    sequence: u64,
+    candidate: &str,
+    object: &str,
+    scanned: Option<ScannedReceipt<'_>>,
+) -> Result<Receipt> {
+    append_with_sync(
+        d,
+        "PUBLICATION",
+        sequence,
+        candidate,
+        object,
+        scanned,
+        sync_journal,
+    )
+}
+fn sync_journal(file: &std::fs::File, parent: &Path) -> Result<()> {
+    file.sync_all()?;
+    sync_dir(parent)
+}
+fn sync_existing(
+    file: &std::fs::File,
+    path: &Path,
+    before: &FileStamp,
+    synchronize: impl FnOnce(&std::fs::File, &Path) -> Result<()>,
+) -> Result<()> {
+    if FileStamp::of(file)? != *before || FileStamp::of(&open_regular(path)?)? != *before {
+        return Err(Error::new(
+            "RECOVERY_REQUIRED",
+            "journal changed during verification",
+        ));
+    }
+    synchronize(file, path.parent().expect("log parent"))?;
+    if FileStamp::of(file)? != *before || FileStamp::of(&open_regular(path)?)? != *before {
+        return Err(Error::new(
+            "RECOVERY_REQUIRED",
+            "journal changed during synchronization",
+        ));
+    }
+    Ok(())
 }
 
 fn append_with_sync(
@@ -212,6 +274,7 @@ fn append_with_sync(
     sequence: u64,
     candidate: &str,
     object: &str,
+    scanned_receipt: Option<ScannedReceipt<'_>>,
     synchronize: impl FnOnce(&std::fs::File, &Path) -> Result<()>,
 ) -> Result<Receipt> {
     let path = log_path(d);
@@ -224,6 +287,25 @@ fn append_with_sync(
     let cached = tails.remove(&path);
     let mut file = open_append_regular(&path)?;
     let before = FileStamp::of(&file)?;
+    if let Some(scanned) = scanned_receipt.filter(|s| *s.stamp == before) {
+        let r = scanned.record;
+        if r.record_type == kind
+            && r.sequence == sequence
+            && r.candidate_hash == candidate
+            && r.object_hash == object
+            && let Some(hash) =
+                record_frame_hash(r)?.filter(|hash| scanned.hashes.contains(hash.to_hex().as_str()))
+        {
+            sync_existing(&file, &path, &before, synchronize)?;
+            // Never seed the latest-slot cache with a historical receipt.
+            return Ok(Receipt {
+                disk_id: d.disk_id.clone(),
+                slot_id: d.slot_id.clone(),
+                frame_hash: hash.to_hex().to_string(),
+                record: r.clone(),
+            });
+        }
+    }
     let scanned = match cached {
         Some(tail)
             if tail.stamp == before
@@ -236,18 +318,11 @@ fn append_with_sync(
                 records: tail.records,
                 valid_bytes: before.len,
                 torn_tail: false,
+                stamp: None,
             }
         }
         _ => scan(d)?,
     };
-    // Reject concurrent replacement/modification while scanning. Engine locks
-    // serialize supported writers; this also catches accidental outside writes.
-    if FileStamp::of(&file)? != before || FileStamp::of(&open_regular(&path)?)? != before {
-        return Err(Error::new(
-            "RECOVERY_REQUIRED",
-            "journal changed during verification",
-        ));
-    }
     if let Some((record, hash)) = scanned.records.iter().find(|(r, _)| {
         r.sequence == sequence
             && r.record_type == kind
@@ -256,13 +331,7 @@ fn append_with_sync(
     }) {
         // Visible bytes are not a durable receipt: the preceding attempt may
         // have failed after writing the frame but before either sync completed.
-        synchronize(&file, path.parent().expect("log parent"))?;
-        if FileStamp::of(&file)? != before || FileStamp::of(&open_regular(&path)?)? != before {
-            return Err(Error::new(
-                "RECOVERY_REQUIRED",
-                "journal changed during synchronization",
-            ));
-        }
+        sync_existing(&file, &path, &before, synchronize)?;
         let receipt = Receipt {
             disk_id: d.disk_id.clone(),
             slot_id: d.slot_id.clone(),
@@ -273,6 +342,14 @@ fn append_with_sync(
             cache_tail(&mut tails, path, before, scanned.records);
         }
         return Ok(receipt);
+    }
+    // Reject concurrent replacement/modification while scanning. Engine locks
+    // serialize supported writers; this also catches accidental outside writes.
+    if FileStamp::of(&file)? != before || FileStamp::of(&open_regular(&path)?)? != before {
+        return Err(Error::new(
+            "RECOVERY_REQUIRED",
+            "journal changed during verification",
+        ));
     }
     if scanned
         .records

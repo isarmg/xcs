@@ -341,6 +341,115 @@ impl Engine {
     ) -> Result<()> {
         self.complete_candidate_verified(c, hash, next, existing, None, None)
     }
+    pub(super) fn complete_published_candidate(
+        &mut self,
+        c: &Candidate,
+        hash: &str,
+        next: &State,
+        publication: Publication,
+        mut append_receipt: impl FnMut(&DiskConfig, &str) -> Result<Receipt>,
+    ) -> Result<()> {
+        self.verify_candidate_membership(c)?;
+        if publication.candidate_hash != hash
+            || publication.result.request_digest != c.request_digest
+            || (publication.recovery.is_none()
+                && publication.finalize.accepts.len() != c.metadata_disk_ids.len())
+            || publication.finalize_receipts.len() != c.metadata_disk_ids.len()
+        {
+            return Err(Error::new(
+                "PUBLICATION_INVALID",
+                "stored publication does not bind this candidate",
+            ));
+        }
+        crate::container_storage::repair_historical_names(&self.config, &self.state, next)?;
+        let pub_hash = object_hash("publication", &publication)?;
+        let mut publication_receipts = Vec::new();
+        for (index, d) in self.members().into_iter().enumerate() {
+            store_object(&d, "publication", &publication)?;
+            publication_receipts.push(append_receipt(&d, &pub_hash)?);
+            if publication.recovery.is_some() {
+                self.failpoint(&format!("after_recovery_publication_{}", index + 1))?;
+            }
+        }
+        let seal = PublicationSeal {
+            candidate_hash: hash.into(),
+            publication_hash: pub_hash,
+            receipts: publication_receipts.clone(),
+        };
+        verify_publication_seal(c, &publication, &seal)?;
+        for d in self.members() {
+            write_json(&publication_seal_path(&d, hash), &seal, false)?;
+        }
+        // Historical success is preserved even if bytes were later purged or lost.
+        // Reconstruct only its original proof, never claim a newly verified payload.
+        for evidence in &c.versions {
+            for slot in &evidence.placement.route_slot_ids {
+                let d = self.disk(slot)?;
+                if validate_seal(&self.config, d).is_err() {
+                    continue;
+                }
+                let dir = version_dir(
+                    d,
+                    &evidence.version.history_tree_id,
+                    &evidence.version.version_id,
+                );
+                if !dir.exists() {
+                    continue;
+                }
+                let proof = CommitProof {
+                    candidate_hash: hash.into(),
+                    finalize: publication.finalize.clone(),
+                    version_hash: object_hash("version", &evidence.version)?,
+                    disk_id: d.disk_id.clone(),
+                    slot_id: slot.clone(),
+                    route_slot_ids: evidence.placement.route_slot_ids.clone(),
+                };
+                let expected = publication
+                    .payload_receipts
+                    .iter()
+                    .find(|r| r.version_id == evidence.version.version_id && r.slot_id == *slot);
+                let Some(expected) = expected else {
+                    if publication.recovery.is_some() {
+                        continue;
+                    }
+                    return Err(Error::new(
+                        "PUBLICATION_INVALID",
+                        "stored local receipt missing",
+                    ));
+                };
+                if expected.proof_hash != object_hash("commit-proof", &proof)? {
+                    return Err(Error::new(
+                        "PUBLICATION_INVALID",
+                        "stored local receipt differs",
+                    ));
+                }
+                // The first published placement on this slot owns the root
+                // proof. Derive that fact from the replayed prefix, not a
+                // possibly corrupt local commit-proof candidate pointer.
+                let first_on_slot = self
+                    .state
+                    .placements
+                    .get(&evidence.version.version_id)
+                    .is_none_or(|placement| !placement.route_slot_ids.contains(slot));
+                let proof_dir = if first_on_slot {
+                    dir
+                } else {
+                    local_proof_directory(&dir, hash)?
+                };
+                repair_local_proof(&proof_dir.join("commit-proof.json"), &proof)?;
+                repair_local_proof(
+                    &proof_dir.join("publication-proof.json"),
+                    &LocalPublication {
+                        candidate: c.clone(),
+                        publication: publication.clone(),
+                        commit_proof: proof,
+                        publication_receipts: publication_receipts.clone(),
+                    },
+                )?;
+            }
+        }
+        Ok(())
+    }
     fn complete_candidate_verified(
         &mut self,
         c: &Candidate,
@@ -350,107 +459,12 @@ impl Engine {
         verified: Option<&VerifiedPayloadSet>,
         names: Option<crate::container_storage::PreparedNames>,
     ) -> Result<()> {
-        self.verify_candidate_membership(c)?;
         if let Some(publication) = existing {
-            if publication.candidate_hash != hash
-                || publication.result.request_digest != c.request_digest
-                || (publication.recovery.is_none()
-                    && publication.finalize.accepts.len() != c.metadata_disk_ids.len())
-                || publication.finalize_receipts.len() != c.metadata_disk_ids.len()
-            {
-                return Err(Error::new(
-                    "PUBLICATION_INVALID",
-                    "stored publication does not bind this candidate",
-                ));
-            }
-            crate::container_storage::repair_historical_names(&self.config, &self.state, next)?;
-            let pub_hash = object_hash("publication", &publication)?;
-            let mut publication_receipts = Vec::new();
-            for (index, d) in self.members().into_iter().enumerate() {
-                store_object(&d, "publication", &publication)?;
-                publication_receipts.push(append(&d, "PUBLICATION", c.sequence, hash, &pub_hash)?);
-                if publication.recovery.is_some() {
-                    self.failpoint(&format!("after_recovery_publication_{}", index + 1))?;
-                }
-            }
-            let seal = PublicationSeal {
-                candidate_hash: hash.into(),
-                publication_hash: pub_hash,
-                receipts: publication_receipts.clone(),
-            };
-            verify_publication_seal(c, &publication, &seal)?;
-            for d in self.members() {
-                write_json(&publication_seal_path(&d, hash), &seal, false)?;
-            }
-            // Historical success is preserved even if bytes were later purged or lost.
-            // Reconstruct only its original proof, never claim a newly verified payload.
-            for evidence in &c.versions {
-                for slot in &evidence.placement.route_slot_ids {
-                    let d = self.disk(slot)?;
-                    if validate_seal(&self.config, d).is_err() {
-                        continue;
-                    }
-                    let dir = version_dir(
-                        d,
-                        &evidence.version.history_tree_id,
-                        &evidence.version.version_id,
-                    );
-                    if !dir.exists() {
-                        continue;
-                    }
-                    let proof = CommitProof {
-                        candidate_hash: hash.into(),
-                        finalize: publication.finalize.clone(),
-                        version_hash: object_hash("version", &evidence.version)?,
-                        disk_id: d.disk_id.clone(),
-                        slot_id: slot.clone(),
-                        route_slot_ids: evidence.placement.route_slot_ids.clone(),
-                    };
-                    let expected = publication.payload_receipts.iter().find(|r| {
-                        r.version_id == evidence.version.version_id && r.slot_id == *slot
-                    });
-                    let Some(expected) = expected else {
-                        if publication.recovery.is_some() {
-                            continue;
-                        }
-                        return Err(Error::new(
-                            "PUBLICATION_INVALID",
-                            "stored local receipt missing",
-                        ));
-                    };
-                    if expected.proof_hash != object_hash("commit-proof", &proof)? {
-                        return Err(Error::new(
-                            "PUBLICATION_INVALID",
-                            "stored local receipt differs",
-                        ));
-                    }
-                    // The first published placement on this slot owns the root
-                    // proof. Derive that fact from the replayed prefix, not a
-                    // possibly corrupt local commit-proof candidate pointer.
-                    let first_on_slot = self
-                        .state
-                        .placements
-                        .get(&evidence.version.version_id)
-                        .is_none_or(|placement| !placement.route_slot_ids.contains(slot));
-                    let proof_dir = if first_on_slot {
-                        dir
-                    } else {
-                        local_proof_directory(&dir, hash)?
-                    };
-                    repair_local_proof(&proof_dir.join("commit-proof.json"), &proof)?;
-                    repair_local_proof(
-                        &proof_dir.join("publication-proof.json"),
-                        &LocalPublication {
-                            candidate: c.clone(),
-                            publication: publication.clone(),
-                            commit_proof: proof,
-                            publication_receipts: publication_receipts.clone(),
-                        },
-                    )?;
-                }
-            }
-            return Ok(());
+            return self.complete_published_candidate(c, hash, next, publication, |d, pub_hash| {
+                append(d, "PUBLICATION", c.sequence, hash, pub_hash)
+            });
         }
+        self.verify_candidate_membership(c)?;
         let names = match names {
             Some(names) => names,
             None => crate::container_storage::prepare_names(

@@ -73,6 +73,7 @@ impl Engine {
         let members = self.members();
         let mut online = Vec::new();
         let mut prefixes = BTreeMap::<String, BTreeSet<String>>::new();
+        let mut journal_stamps = BTreeMap::new();
         let mut torn_tail = false;
         let mut records = BTreeMap::<u64, BTreeMap<String, Vec<(String, Record)>>>::new();
         for d in &members {
@@ -81,6 +82,9 @@ impl Engine {
             }
             let scanned = scan(d)?;
             torn_tail |= scanned.torn_tail;
+            if let Some(stamp) = scanned.stamp {
+                journal_stamps.insert(d.disk_id.clone(), stamp);
+            }
             prefixes.insert(
                 d.disk_id.clone(),
                 scanned
@@ -262,7 +266,30 @@ impl Engine {
                     .as_ref()
                     .filter(|p| p.recovery.is_some())
                     .map(|p| p.result.clone());
-                self.complete_candidate(&candidate, &hash, &next, publication)?;
+                if let Some(publication) = publication {
+                    self.complete_published_candidate(
+                        &candidate,
+                        &hash,
+                        &next,
+                        publication,
+                        |d, pub_hash| {
+                            let scanned = journal_stamps
+                                .get(&d.disk_id)
+                                .zip(prefixes.get(&d.disk_id))
+                                .zip(rs.iter().find(|(slot, r)| {
+                                    slot == &d.slot_id && r.record_type == "PUBLICATION"
+                                }))
+                                .map(|((stamp, hashes), (_, record))| ScannedReceipt {
+                                    stamp,
+                                    hashes,
+                                    record,
+                                });
+                            replay_publication(d, candidate.sequence, &hash, pub_hash, scanned)
+                        },
+                    )?;
+                } else {
+                    self.complete_candidate(&candidate, &hash, &next, None)?;
+                }
                 if let Some(result) = recovered_result {
                     next.operations
                         .insert(candidate.operation_id.clone(), result);
