@@ -4839,7 +4839,7 @@
                     "max_copies": {
                       "type": "integer",
                       "minimum": 1,
-                      "description": "所选默认主盘、覆盖文件后续写入主盘及可用历史版本主盘的完整链长度最小值；available_route_slot_ids只描述默认来源链，不能替代完整backup_routes。"
+                      "description": "所选默认主盘、覆盖文件后续写入主盘、仍继承此目录策略的后代放置前缀及可用历史版本主盘的完整链长度最小值；available_route_slot_ids只描述默认来源链，不能替代完整backup_routes。"
                     },
                     "backup_routes": {
                       "type": "array",
@@ -4851,7 +4851,7 @@
                         "minItems": 1,
                         "uniqueItems": true
                       },
-                      "description": "所选默认主盘、实际覆盖文件后续写入主盘及可用历史版本主盘涉及的去重完整链，包含各primary本身；用于同时验证后续写入与历史回填的备份前缀。"
+                      "description": "所选默认主盘、实际覆盖文件后续写入主盘、范围内仍继承此目录策略的后代放置前缀（含空目录或尚无文件的路径），以及可用历史版本主盘涉及的去重完整链，包含各primary本身；独立子备份规则不纳入父目录，用于同时验证后续写入与历史回填的备份前缀。"
                     },
                     "backup_slot_ids": {
                       "type": "array",

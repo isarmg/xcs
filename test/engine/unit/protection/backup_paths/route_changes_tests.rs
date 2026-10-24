@@ -1,5 +1,8 @@
 use super::*;
 
+#[path = "descendant_routes_tests.rs"]
+mod descendant_routes_tests;
+
 fn initialize_routes(root: &Path) -> (Engine, Repository) {
     let mut config = Config::development([root.join("p"), root.join("b"), root.join("c")]);
     for (slot, level, upstream) in [("P02", 1, None), ("B02", 2, Some("P02"))] {

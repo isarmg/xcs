@@ -239,6 +239,20 @@ fn exact_policy<'a>(
             })
         })
 }
+fn inherited_by_scope(
+    state: &State,
+    scope_root: &str,
+    previous: Option<&ProtectionPolicy>,
+    effective: Option<&ProtectionPolicy>,
+) -> bool {
+    let Some(effective) = effective else {
+        return true;
+    };
+    effective.inheritable
+        && (previous.is_some_and(|own| own.policy_id == effective.policy_id)
+            || (effective.scope_file_id.is_none()
+                && scope_path(state, effective).is_some_and(|root| within(root, scope_root))))
+}
 fn retain_inherited_files(
     state: &State,
     repository: &str,
@@ -249,15 +263,12 @@ fn retain_inherited_files(
         return;
     }
     scope.files.retain(|file, entry| {
-        let Some(effective) = effective_policy(state, repository, Some(file), &entry.path) else {
-            return true;
-        };
-        if !effective.inheritable {
-            return false;
-        }
-        previous.is_some_and(|own| own.policy_id == effective.policy_id)
-            || (effective.scope_file_id.is_none()
-                && scope_path(state, effective).is_some_and(|root| within(root, &scope.path)))
+        inherited_by_scope(
+            state,
+            &scope.path,
+            previous,
+            effective_policy(state, repository, Some(file), &entry.path),
+        )
     });
 }
 
@@ -265,6 +276,23 @@ fn backup_primaries(engine: &Engine, repository: &str, scope: &Scope) -> Result<
     let mut primaries = BTreeSet::from([engine
         .file_placement_settings(repository, None, &scope.path)?
         .0]);
+    // Empty and future descendants also inherit this directory's settings.
+    // Independent child backup policies do not constrain the parent's routes.
+    if scope.kind == "directory" {
+        let previous = exact_policy(&engine.state, repository, scope);
+        for rule in engine.state.placement_rules.values().filter(|rule| {
+            rule.repository_id == repository && within(&scope.path, &rule.path_prefix)
+        }) {
+            if inherited_by_scope(
+                &engine.state,
+                &scope.path,
+                previous,
+                effective_policy(&engine.state, repository, None, &rule.path_prefix),
+            ) {
+                primaries.insert(rule.primary_slot_id.clone());
+            }
+        }
+    }
     // Existing files may have a more specific future placement rule than the
     // directory itself, even before their first version on that primary.
     for (file, entry) in &scope.files {
