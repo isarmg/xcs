@@ -31,6 +31,7 @@ pub(super) fn receipt(id: &str, value: Value) -> Value {
 pub(crate) fn record_operation(state: RwSignal<State>, value: Value) {
     let id = text(&value, &["operation_id"]);
     let status = operation_status(&value);
+    let mut reload_scope = false;
     state.update(|s| {
         if !id.is_empty() {
             s.files
@@ -39,12 +40,15 @@ pub(crate) fn record_operation(state: RwSignal<State>, value: Value) {
             s.files.operations.insert(0, value);
             s.files.operations.truncate(100);
         }
-        crate::files::batch::settle_operation(&mut s.files, &id, status);
+        reload_scope = crate::files::batch::settle_operation(&mut s.files, &id, status);
         crate::files::review::settle(&mut s.files, &id, status);
         s.notice = publication_notice(status);
     });
     if matches!(status, SaveStatus::Published | SaveStatus::Degraded) {
         load_entries(state);
+    }
+    if reload_scope {
+        crate::files::batch::reload_registered_scope(state);
     }
 }
 /// Project only scheduling identities; never clone histories, drafts or State.

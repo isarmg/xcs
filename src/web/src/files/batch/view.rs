@@ -8,7 +8,10 @@ pub(crate) fn view(state: RwSignal<State>) -> impl IntoView {
     let blocked = Signal::derive(move || {
         state.with(|s| {
             !file_actions::write_allowed(s)
-                || s.files.batch.as_ref().is_some_and(|draft| draft.loading)
+                || s.files
+                    .batch
+                    .as_ref()
+                    .is_some_and(|draft| draft.loading || draft.registration.is_some())
         })
     });
     let sources = Memo::new(move |_| {
@@ -63,6 +66,7 @@ pub(crate) fn view(state: RwSignal<State>) -> impl IntoView {
                 <div class="zxs-stack">{move ||(0..mapping_count.get()).map(move |index|mapping_view(state,index,blocked)).collect_view()}</div>
                 <button class="zxs-button" disabled=move ||blocked.get()||state.with(|s|s.files.batch.as_ref().is_none_or(|draft|draft.selected_sources.is_empty())) on:click=move |_|update(state,|draft|{if let Some(source)=draft.selected_sources.first(){draft.mappings.push(Mapping{source:source.clone(),target:String::new()});}})>{t("添加分支映射","Add branch mapping")}</button>
             </Show>
+            <Show when=move ||state.with(|s|s.files.batch.as_ref().is_some_and(|draft|draft.registration.as_ref().is_some_and(|registration|registration.published)))><button class="zxs-button" disabled=move ||state.with(|s|!s.session_active()||file_actions::pending(s)||s.files.batch.as_ref().is_none_or(|draft|draft.loading)) on:click=move |_|reload_registered_scope(state)>{t("重试读取目录分支", "Retry loading folder branches")}</button></Show>
             <p class="zxs-row zxs-inline-error" role="status">{move ||state.with(|s|s.files.batch.as_ref().map(|draft|draft.error.clone()).unwrap_or_default())}</p>
             <div class="zxs-file-toolbar zxs-flow"><button class="zxs-button" disabled=move ||blocked.get() on:click=move |_|submit(state)>{t("执行所选操作","Apply selected operation")}</button></div>
         </section>

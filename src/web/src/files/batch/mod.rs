@@ -47,6 +47,14 @@ pub(crate) struct Mapping {
     target: String,
 }
 #[derive(Clone)]
+struct ScopeRegistration {
+    operation_id: String,
+    destination: bool,
+    path: String,
+    generation: u64,
+    published: bool,
+}
+#[derive(Clone)]
 pub(crate) struct Draft {
     id: String,
     kind: Kind,
@@ -57,13 +65,13 @@ pub(crate) struct Draft {
     names: BTreeMap<String, String>,
     sources: Vec<Value>,
     selected_sources: BTreeSet<String>,
-    catalogue: Vec<Value>,
     target_path: String,
     targets: Vec<Value>,
     target_resolved: bool,
     mappings: Vec<Mapping>,
     loading: bool,
     submitted_operation: Option<String>,
+    registration: Option<ScopeRegistration>,
     generation: u64,
     error: String,
 }
@@ -91,19 +99,51 @@ pub(crate) fn available(model: &Model) -> bool {
 mod actions;
 mod request;
 mod view;
-pub(crate) use actions::start;
+pub(crate) use actions::{reload_registered_scope, start};
 use request::{request, valid_path};
 pub(crate) use view::view;
 
-/// Keep an uncertain transaction tied to its original operation. A later poll
-/// closes only that draft, so retrying cannot duplicate a completed copy.
-pub(crate) fn settle_operation(model: &mut Model, id: &str, status: super::model::SaveStatus) {
+/// Keep uncertain transactions tied to their original operation. A namespace
+/// receipt closes only its matching draft; a registration receipt requests one
+/// follow-on read without discarding the review or repeating the registration.
+pub(crate) fn settle_operation(
+    model: &mut Model,
+    id: &str,
+    status: super::model::SaveStatus,
+) -> bool {
+    if let Some(draft) = model.batch.as_mut()
+        && draft
+            .registration
+            .as_ref()
+            .is_some_and(|registration| registration.operation_id == id)
+    {
+        let registration = draft.registration.as_mut().unwrap();
+        // Publication is terminal. Older receipts cannot revoke its association
+        // or release the follow-on read (including a failed read awaiting retry).
+        if registration.published {
+            return false;
+        }
+        match status {
+            super::model::SaveStatus::Published | super::model::SaveStatus::Degraded => {
+                registration.published = true;
+                draft.loading = false;
+                return true;
+            }
+            super::model::SaveStatus::Rejected => {
+                draft.registration = None;
+                draft.loading = false;
+                draft.error = super::model::publication_notice(status);
+            }
+            super::model::SaveStatus::Unknown => draft.loading = false,
+        }
+        return false;
+    }
     if !model
         .batch
         .as_ref()
         .is_some_and(|draft| draft.submitted_operation.as_deref() == Some(id))
     {
-        return;
+        return false;
     }
     match status {
         super::model::SaveStatus::Published | super::model::SaveStatus::Degraded => {
@@ -117,4 +157,5 @@ pub(crate) fn settle_operation(model: &mut Model, id: &str, status: super::model
         }
         _ => {}
     }
+    false
 }
