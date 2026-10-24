@@ -309,14 +309,15 @@ fn file_history_contract_requires_true_parent_arrays_without_limiting_multi_pare
 }
 
 #[test]
-fn note_writes_enforce_bytes_and_control_characters_without_rejecting_legacy_reads() {
+fn note_write_contracts_enforce_utf8_bytes_and_control_characters() {
     let path = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../docs/contracts/openapi.json");
     let api = read(&path).unwrap();
-    for route in [
-        "/api/file-manager/files/{file}/metadata",
-        "/api/file-manager/versions/{version}/metadata",
+    for (route, method) in [
+        ("/api/file-manager/files/{file}/metadata", "post"),
+        ("/api/file-manager/versions/{version}/metadata", "post"),
+        ("/api/file-manager/files/{file}/nodes/{node}", "patch"),
     ] {
-        let note = &api["paths"][route]["post"]["requestBody"]["content"]["application/json"]["schema"]
+        let note = &api["paths"][route][method]["requestBody"]["content"]["application/json"]["schema"]
             ["properties"]["note"];
         let schema = validator(note).unwrap();
         // JSON Schema maxLength counts Unicode characters, not UTF-8 bytes.
@@ -343,19 +344,49 @@ fn note_writes_enforce_bytes_and_control_characters_without_rejecting_legacy_rea
             assert!(!accepts(&invalid), "invalid note accepted: {route}");
         }
     }
+}
+
+#[test]
+fn note_read_shapes_accept_current_valid_notes() {
+    let path = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../docs/contracts/openapi.json");
+    let api = read(&path).unwrap();
     let entries = &api["paths"]["/api/file-manager/disks/{slot}/entries"]["get"]["responses"]["200"]
         ["content"]["application/json"]["schema"]["properties"]["entries"]["items"]["properties"]["note"];
     let history = &api["paths"]["/api/file-manager/files/{file}/history"]["get"]["responses"]["200"]
         ["content"]["application/json"]["schema"]["properties"];
-    for note in [
-        entries,
-        &history["note"],
-        &history["versions"]["items"]["properties"]["note"],
+    // Response shapes are deliberately broader than the current note semantics.
+    // Passing a shape check does not authorize an invalid persisted note or an
+    // older format; the engine validates notes at write and history-read boundaries.
+    for (scope, note) in [
+        ("directory entry", entries),
+        ("file history", &history["note"]),
+        (
+            "version history",
+            &history["versions"]["items"]["properties"]["note"],
+        ),
+        (
+            "history node",
+            &api["components"]["schemas"]["FileHistoryNode"]["properties"]["note"],
+        ),
     ] {
         let schema = validator(note).unwrap();
-        assert!(schema.is_valid(&json!(format!("{}\nlegacy", "文".repeat(60)))));
-        assert!(schema.is_valid(&json!("a".repeat(4096))));
-        assert!(note.get("x-maxUtf8Bytes").is_none());
+        for valid in [
+            String::new(),
+            "a".repeat(128),
+            format!("{}ab", "文".repeat(42)),
+        ] {
+            storage_contract::validate_note(&valid).unwrap();
+            assert!(
+                schema.is_valid(&json!(valid)),
+                "valid note rejected: {scope}"
+            );
+        }
+        for invalid in [Value::Null, json!(false), json!(1), json!([]), json!({})] {
+            assert!(
+                !schema.is_valid(&invalid),
+                "non-string note accepted: {scope}"
+            );
+        }
     }
 }
 
