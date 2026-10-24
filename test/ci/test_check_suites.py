@@ -60,6 +60,13 @@ class SuiteCoverageTests(unittest.TestCase):
         self.assertIn("--offline", call["args"])
         self.assertFalse({"--tests", "--lib", "--bins", "--no-run", "--doc"}.intersection(call["args"]))
 
+    def test_workspace_checks_native_capabilities_before_product_tests(self):
+        calls = self.suite("workspace")
+        self.assertEqual(calls[0], {
+            "tool": "python3", "args": [".github/scripts/check-native-consumer-features.py"],
+        })
+        self.assertEqual(calls[1], {"tool": "cargo", "args": ["test", "--locked", "--offline"]})
+
     def test_build_tools_keep_log_filter_and_formatter_regressions(self):
         calls = self.suite("build-tools")
         self.assertIn({"tool": "python3", "args": [".github/scripts/check-logging.py"]}, calls)

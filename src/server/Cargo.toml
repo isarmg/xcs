@@ -17,7 +17,7 @@ core = ["dep:storage-engine"]
 [dependencies]
 command-line.workspace = true
 authentication.workspace = true
-http-routing = { version = "0.8.9", default-features = false, features = ["form", "http1", "json", "query", "tokio", "tower-log", "tracing"], path = "../foundation/networking/http-routing"}
+http-routing = { version = "0.8.9", default-features = false, features = ["http1", "json", "query", "tokio", "tower-log", "tracing"], path = "../foundation/networking/http-routing"}
 blake3.workspace = true
 bytes = {version = "1", path = "../foundation/collections/bytes"}
 futures = { version = "0.3.34", path = "../foundation/concurrency/futures", default-features = false, features = ["std", "utilities"] }

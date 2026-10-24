@@ -8,6 +8,8 @@ Clippy 和编译门禁经由 [Cargo 诊断包装器](../.github/scripts/check-ru
 
 产品入口为 Web 和 SMB；普通协议检查不要求 Samba SDK，独立 `smb-sdk` 任务使用固定的官方 SDK。真实 VFS Clippy、测试编译和 release 构建使用相同诊断门禁；测试先以 `--no-run` 检查纯编译 JSON，再正常执行测试，以免把测试输出当成编译消息。发布工作流的原生 release 编译和本地 Web 绑定工具也使用该门禁。
 
+原生工作区门禁还通过 `check-native-consumer-features.py` 分别检查七个实际应用／工具消费者的生产与开发依赖图，避免统一 features 掩盖多余能力：文件系统保留 `fs`／`process`，不默认选择 `rustix/mount`；HTTP 路由保留 JSON／Query，不选择未使用的 Form 提取器。基础实现仍可在显式回归中启用这些能力，不因此删除包或宣称产物体积下降。
+
 `bash .github/scripts/check.sh foundation` 同时纳入 CI 和 Release 验证，包含以下限定回归，并非全部上游测试：
 
 - Linux amd64 UAPI、libc ABI、rustix 双后端 syscall，以及系统/socket/mio、停车锁、搜索/进程和随机数后端的消费者探针；另运行 `socket2`、`mio` 与 `parking_lot_core` 的 lib 测试。

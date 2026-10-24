@@ -78545,7 +78545,7 @@
     "Cargo.lock": "e23a70f2b76a80a81d35e5c58058ca1987e2dae7a598ba4c2dbe09a0c4b1468a"
   },
   "manifests_sha256": {
-    "Cargo.toml": "2915aa60a121d18f665872ccaf51d9dcc3b5bb3465df5dc684dca366f7aed03e",
+    "Cargo.toml": "cf46884191c109e9c82e420f01da1f562b6a3255395352a876d9ca0c8cbdd34b",
     "src/auth/Cargo.toml": "e6986ad60c15d48e2b3d60a5157de60ac7318f1ecc80befc1adfd60059b5dab3",
     "src/client/Cargo.toml": "31f7eb0739b17cc0b590ded751c0dc3cefde9e9ec60387db0e204e6bd334570b",
     "src/contract/Cargo.toml": "3cdb429c2617fb934312c73d89045b838d1329b4db8e317701fa4daa04c95d8f",
@@ -78774,7 +78774,7 @@
     "src/naming/Cargo.toml": "5dea667ea941dfde629bfc5e809ba6d6c12ca018507c4030ecdfdddcc2a01aff",
     "src/platform/Cargo.toml": "8b667ac649113e5e58334f7b8c3fddb47aa10873ac610a073868874b77dba968",
     "src/rescue/Cargo.toml": "8d5bd0f02eff46f12595c50064d4f801718b022f1bc37fc9e09f47dae31760d1",
-    "src/server/Cargo.toml": "3bf472feb52c968d18959b01f42d0efbf6f5ad2b4f38e46b718f9cfe3bc7a2dc",
+    "src/server/Cargo.toml": "7a5c618e52d50e5dc19ff8b63e3476e5742a0e5fb0acce4c2fa264179a286a34",
     "src/smb-vfs/Cargo.toml": "8513f0d76d84f2e345de71376e751d36313fb2c42878af69b6d71ec37b3a3817",
     "src/smb/Cargo.toml": "66ca64b286cff2b2a6b2f551145e267b2eac6017affcd4c239605a9d080ecec4",
     "src/web/Cargo.toml": "4c982faef6a598e2084fc3e42cc17f096b27c4b1299bf07db9cfa20ccbfa8399",
@@ -112450,7 +112450,6 @@
         },
         "src/foundation/networking/http-routing": {
           "features": [
-            "form",
             "http1",
             "json",
             "query",
@@ -112695,7 +112694,6 @@
             "alloc",
             "default",
             "fs",
-            "mount",
             "process",
             "std"
           ],
@@ -115406,7 +115404,6 @@
         },
         "src/foundation/networking/http-routing": {
           "features": [
-            "form",
             "http1",
             "json",
             "query",
@@ -115578,7 +115575,6 @@
             "alloc",
             "default",
             "fs",
-            "mount",
             "process",
             "std"
           ],
@@ -116537,7 +116533,6 @@
             "alloc",
             "default",
             "fs",
-            "mount",
             "process",
             "std"
           ],
