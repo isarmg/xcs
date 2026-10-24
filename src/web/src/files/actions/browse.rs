@@ -2,40 +2,70 @@
 use super::disk_path;
 use crate::{
     api,
+    files::model::Disk,
     ui::{State, current_session, fail, list, text},
 };
 use json_codec::Value;
 use web_interface::prelude::*;
 use web_interface::tasks::spawn_local;
 
-pub(crate) fn load_disks(state: RwSignal<State>) {
-    if state.with_untracked(|s| !s.session_active() || s.files.loading_disks) {
-        return;
+fn begin_disk_load(state: &mut State) -> Option<(u64, u64)> {
+    if !state.session_active() || state.files.loading_disks {
+        return None;
     }
-    state.update(|s| s.files.loading_disks = true);
-    let epoch = state.with_untracked(|s| s.session_epoch);
+    state.files.loading_disks = true;
+    Some((state.session_epoch, state.files.disks_generation))
+}
+
+/// Return true only when recovery invalidated this read and storage is readable.
+/// Old-session completions cannot write data, release a newer read, or reload.
+fn complete_disk_load(
+    state: &mut State,
+    epoch: u64,
+    generation: u64,
+    result: Result<Vec<Disk>, api::Error>,
+) -> Result<bool, api::Error> {
+    if !state.session_active() || state.session_epoch != epoch {
+        return Ok(false);
+    }
+    state.files.loading_disks = false;
+    // A current-session 401 revokes authentication, not just this disk snapshot.
+    if state.files.disks_generation != generation
+        && !matches!(&result, Err(error) if error.status == 401)
+    {
+        state.files.disks_loaded = false;
+        // Storage may have become unavailable again while this read was pending.
+        return Ok(state.management.storage.readable());
+    }
+    match result {
+        Ok(disks) => {
+            state.files.disks = disks;
+            state.files.disks_loaded = true;
+            Ok(false)
+        }
+        Err(error) => {
+            // Keep cached rows, but retain the demand for a fresh snapshot.
+            // Healthy management polling will retry this current-generation read.
+            state.files.disks_loaded = false;
+            Err(error)
+        }
+    }
+}
+
+pub(crate) fn load_disks(state: RwSignal<State>) {
+    let Some((epoch, generation)) = state.try_update(begin_disk_load).flatten() else {
+        return;
+    };
     spawn_local(async move {
         let result = api::request("GET", "/api/file-manager/disks", None)
             .await
             .and_then(|value| super::super::model::parse_disks(&value));
-        if !current_session(state, epoch) {
-            return;
+        match state.try_update(|s| complete_disk_load(s, epoch, generation, result)) {
+            Some(Ok(true)) => load_disks(state),
+            Some(Err(error)) => fail(state, error),
+            _ => {}
         }
-        match result {
-            Ok(value) => state.update(|s| {
-                s.files.disks = value;
-                s.files.disks_loaded = true;
-            }),
-            Err(error) => fail_disk_load(state, error),
-        }
-        state.update(|s| s.files.loading_disks = false);
     });
-}
-fn fail_disk_load(state: RwSignal<State>, error: api::Error) {
-    // Preserve the last rows, but let healthy status polling retry a failed
-    // initial read or a failed refresh after storage recovery.
-    state.update(|s| s.files.disks_loaded = false);
-    fail(state, error);
 }
 
 pub(crate) fn open_disk(state: RwSignal<State>, slot: String) {

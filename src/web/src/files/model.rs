@@ -46,6 +46,7 @@ pub(crate) struct Model {
     pub disks: Vec<Disk>,
     pub disks_loaded: bool,
     pub loading_disks: bool,
+    pub disks_generation: u64,
     pub slot: String,
     pub directory: String,
     pub writable: bool,
@@ -77,6 +78,13 @@ pub(crate) struct Model {
     pub query: String,
 }
 impl Model {
+    /// A recovered store needs a fresh disk snapshot, even if an older read is
+    /// still in flight. Only this generation may mark the listing loaded again.
+    pub(crate) fn invalidate_disks(&mut self) {
+        self.disks_generation += 1;
+        self.disks_loaded = false;
+    }
+
     pub(crate) fn clear_selection(&mut self) {
         self.merge = None;
         self.backup = None;

@@ -153,3 +153,57 @@ fn failed_disk_reads_retry_and_storage_recovery_refreshes_loaded_disks() {
     state.authenticated = false;
     assert!(!needs_disk_refresh(&state, false));
 }
+
+#[test]
+fn recovery_invalidates_inflight_disk_snapshots_but_repeated_ready_polls_do_not() {
+    for storage in [Storage::Ready, Storage::ReadOnly] {
+        let mut state = State {
+            authenticated: true,
+            ..Default::default()
+        };
+        state.management.storage = Storage::Unavailable;
+        state.files.disks_loaded = true;
+        state.files.loading_disks = true;
+        state.files.disks_generation = 7;
+        let was_readable = state.management.storage.readable();
+        state.management.storage = storage;
+        invalidate_restored_disks(&mut state, was_readable);
+        assert_eq!(state.files.disks_generation, 8);
+        assert!(!state.files.disks_loaded);
+        assert!(
+            state.files.loading_disks,
+            "the old read keeps its admission until completion"
+        );
+        assert!(needs_disk_refresh(&state, was_readable));
+        for _ in 0..3 {
+            invalidate_restored_disks(&mut state, true);
+            assert_eq!(state.files.disks_generation, 8);
+            assert!(needs_disk_refresh(&state, true));
+        }
+        state.files.loading_disks = false;
+        state.files.disks_loaded = true;
+        assert!(!needs_disk_refresh(&state, true));
+    }
+}
+
+#[test]
+fn an_already_ready_retry_response_retains_refresh_demand_for_the_following_status_read() {
+    let mut state = State {
+        authenticated: true,
+        ..Default::default()
+    };
+    state.management.storage = Storage::Unavailable;
+    state.files.disks_loaded = true;
+    // The retry POST may itself report Ready before the subsequent status GET.
+    let was_readable = state.management.storage.readable();
+    state.management.storage = Storage::Ready;
+    invalidate_restored_disks(&mut state, was_readable);
+    assert!(!state.files.disks_loaded);
+    assert_eq!(state.files.disks_generation, 1);
+
+    let was_readable = state.management.storage.readable();
+    accept(&mut state.management, &json!({"storage":{"state":"ready"}}));
+    invalidate_restored_disks(&mut state, was_readable);
+    assert_eq!(state.files.disks_generation, 1);
+    assert!(needs_disk_refresh(&state, was_readable));
+}

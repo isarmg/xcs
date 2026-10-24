@@ -88,16 +88,12 @@ fn a_failed_disk_refresh_invalidates_readiness_without_discarding_cached_rows() 
                 s.files.disks = disks.clone();
                 s.files.disks_loaded = true;
             });
-            fail_disk_load(
-                state,
-                api::Error {
-                    status: 503,
-                    code: "UNAVAILABLE".into(),
-                    message: "Transient disk listing failure".into(),
-                    retryable: true,
-                    request_id: None,
-                },
-            );
+            let (epoch, generation) = state.try_update(begin_disk_load).flatten().unwrap();
+            let error = state
+                .try_update(|s| complete_disk_load(s, epoch, generation, Err(disk_read_error(503))))
+                .unwrap()
+                .unwrap_err();
+            fail(state, error);
             state.with_untracked(|s| {
                 assert!(
                     !s.files.disks_loaded,
@@ -109,4 +105,227 @@ fn a_failed_disk_refresh_invalidates_readiness_without_discarding_cached_rows() 
             });
         }
     });
+}
+
+fn disk_read_error(status: u16) -> api::Error {
+    api::Error {
+        status,
+        code: "UNAVAILABLE".into(),
+        message: "Delayed disk listing failure".into(),
+        retryable: true,
+        request_id: None,
+    }
+}
+
+fn disk_snapshot(online: bool, available_bytes: u64) -> Vec<Disk> {
+    vec![Disk {
+        slot_id: "B01".into(),
+        online,
+        writable: false,
+        available_bytes,
+    }]
+}
+
+#[test]
+fn recovery_replaces_an_inflight_disk_read_after_either_old_success_or_failure() {
+    for old_result in [Ok(disk_snapshot(false, 512)), Err(disk_read_error(503))] {
+        let mut state = State {
+            authenticated: true,
+            session_epoch: 3,
+            ..Default::default()
+        };
+        let cached = disk_snapshot(false, 1024);
+        state.management.storage = crate::management::Storage::Ready;
+        state.files.disks = cached.clone();
+        state.files.disks_loaded = true;
+        let (epoch_a, generation_a) = begin_disk_load(&mut state).unwrap();
+
+        // H1 reports unavailable; H2 reports restored storage before A's old
+        // payload (already generated before the outage) finishes arriving.
+        state.files.invalidate_disks();
+        assert!(begin_disk_load(&mut state).is_none());
+        assert!(!state.files.disks_loaded);
+        assert!(complete_disk_load(&mut state, epoch_a, generation_a, old_result).unwrap());
+        assert_eq!(state.files.disks, cached, "A must not overwrite the cache");
+        assert!(
+            !state.files.disks_loaded,
+            "A cannot consume H2's refresh demand"
+        );
+        assert!(!state.files.loading_disks);
+
+        let (epoch_b, generation_b) = begin_disk_load(&mut state).unwrap();
+        assert_eq!(epoch_b, epoch_a);
+        assert_eq!(generation_b, generation_a + 1);
+        assert!(
+            begin_disk_load(&mut state).is_none(),
+            "only one replacement B"
+        );
+        let fresh = disk_snapshot(true, 4096);
+        assert!(!complete_disk_load(&mut state, epoch_b, generation_b, Ok(fresh.clone())).unwrap());
+        assert_eq!(state.files.disks, fresh);
+        assert!(state.files.disks_loaded);
+        assert!(!state.files.loading_disks);
+    }
+}
+
+#[test]
+fn repeated_recovery_coalesces_and_a_failed_replacement_still_needs_a_fresh_read() {
+    let mut state = State {
+        authenticated: true,
+        session_epoch: 4,
+        ..Default::default()
+    };
+    let cached = disk_snapshot(false, 1024);
+    state.management.storage = crate::management::Storage::Ready;
+    state.files.disks = cached.clone();
+    state.files.disks_loaded = true;
+    let (epoch_a, generation_a) = begin_disk_load(&mut state).unwrap();
+    for _ in 0..2 {
+        state.files.invalidate_disks();
+        assert!(begin_disk_load(&mut state).is_none());
+    }
+    assert!(
+        complete_disk_load(&mut state, epoch_a, generation_a, Err(disk_read_error(503))).unwrap()
+    );
+    let (epoch_b, generation_b) = begin_disk_load(&mut state).unwrap();
+    assert_eq!(generation_b, generation_a + 2);
+    assert!(begin_disk_load(&mut state).is_none());
+    assert!(
+        complete_disk_load(&mut state, epoch_b, generation_b, Err(disk_read_error(503))).is_err()
+    );
+    assert_eq!(state.files.disks, cached);
+    assert!(
+        !state.files.disks_loaded,
+        "healthy polling must still retry"
+    );
+    assert!(!state.files.loading_disks);
+
+    let (epoch_c, generation_c) = begin_disk_load(&mut state).unwrap();
+    assert_eq!(generation_c, generation_b);
+    assert!(!complete_disk_load(&mut state, epoch_c, generation_c, Ok(vec![])).unwrap());
+    assert!(
+        state.files.disks_loaded,
+        "an authorized empty list is a settled read"
+    );
+    assert!(state.files.disks.is_empty());
+}
+
+#[test]
+fn obsolete_disk_completions_cannot_write_or_release_another_session_or_reload() {
+    use crate::ui::SessionTransition;
+    for (authenticated, transition, current_epoch) in [
+        (true, SessionTransition::LoggingOut, 5),
+        (false, SessionTransition::LogoutUnconfirmed, 5),
+        (true, SessionTransition::Restoring, 5),
+        (false, SessionTransition::Idle, 5),
+        (true, SessionTransition::Idle, 6),
+    ] {
+        for old_result in [Ok(disk_snapshot(false, 512)), Err(disk_read_error(401))] {
+            let mut state = State {
+                authenticated: true,
+                session_epoch: 5,
+                ..Default::default()
+            };
+            let (epoch_a, generation_a) = begin_disk_load(&mut state).unwrap();
+            state.files.invalidate_disks();
+            state.authenticated = authenticated;
+            state.session_transition = transition;
+            state.session_epoch = current_epoch;
+            let current = disk_snapshot(true, 4096);
+            state.files.disks = current.clone();
+            state.files.disks_loaded = true;
+            // This may now belong to the new session's in-flight request.
+            state.files.loading_disks = true;
+            assert!(!complete_disk_load(&mut state, epoch_a, generation_a, old_result).unwrap());
+            assert_eq!(state.files.disks, current);
+            assert!(state.files.disks_loaded);
+            assert!(state.files.loading_disks);
+            assert_eq!(state.files.disks_generation, generation_a + 1);
+            assert_eq!(state.authenticated, authenticated);
+            assert_eq!(state.session_epoch, current_epoch);
+        }
+    }
+}
+
+#[test]
+fn a_current_session_unauthorized_disk_read_is_not_hidden_by_recovery() {
+    Owner::new().with(|| {
+        for invalidate in [false, true] {
+            let state = RwSignal::new(State {
+                authenticated: true,
+                session_epoch: 7,
+                ..Default::default()
+            });
+            let cached = disk_snapshot(true, 1024);
+            state.update(|s| {
+                s.management.storage = crate::management::Storage::Ready;
+                s.files.disks = cached.clone();
+                s.files.disks_loaded = true;
+            });
+            let (epoch, generation) = state.try_update(begin_disk_load).flatten().unwrap();
+            if invalidate {
+                state.update(|s| s.files.invalidate_disks());
+            }
+            // The production continuation routes Err to fail, never to a replacement read.
+            let error = state
+                .try_update(|s| complete_disk_load(s, epoch, generation, Err(disk_read_error(401))))
+                .unwrap()
+                .unwrap_err();
+            assert_eq!(error.status, 401);
+            fail(state, error);
+            state.with_untracked(|s| {
+                assert!(!s.session_active());
+                assert!(!s.files.loading_disks);
+                assert!(!s.files.disks_loaded);
+                assert_eq!(s.files.disks, cached);
+                assert_eq!(s.errors.len(), 1);
+            });
+            assert!(state.try_update(begin_disk_load).flatten().is_none());
+        }
+    });
+}
+
+#[test]
+fn an_obsolete_disk_read_waits_for_readable_storage_before_reloading() {
+    use crate::management::Storage;
+    for storage in [
+        Storage::Unknown,
+        Storage::Unavailable,
+        Storage::Unconfigured,
+        Storage::RecoveryRequired,
+    ] {
+        for old_result in [Ok(disk_snapshot(false, 512)), Err(disk_read_error(503))] {
+            let mut state = State {
+                authenticated: true,
+                session_epoch: 8,
+                ..Default::default()
+            };
+            let cached = disk_snapshot(false, 1024);
+            state.management.storage = Storage::Ready;
+            state.files.disks = cached.clone();
+            state.files.disks_loaded = true;
+            let (epoch_a, generation_a) = begin_disk_load(&mut state).unwrap();
+            state.files.invalidate_disks();
+            // Recovery was observed, but a newer health response is no longer readable.
+            state.management.storage = storage;
+            assert!(!complete_disk_load(&mut state, epoch_a, generation_a, old_result).unwrap());
+            assert_eq!(state.files.disks, cached);
+            assert!(!state.files.loading_disks);
+            assert!(
+                !state.files.disks_loaded,
+                "the next readable health poll must still request a fresh snapshot"
+            );
+
+            state.management.storage = Storage::Ready;
+            state.files.invalidate_disks();
+            let (epoch_b, generation_b) = begin_disk_load(&mut state).unwrap();
+            let fresh = disk_snapshot(true, 4096);
+            assert!(
+                !complete_disk_load(&mut state, epoch_b, generation_b, Ok(fresh.clone())).unwrap()
+            );
+            assert_eq!(state.files.disks, fresh);
+            assert!(state.files.disks_loaded);
+            assert!(!state.files.loading_disks);
+        }
+    }
 }

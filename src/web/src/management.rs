@@ -26,7 +26,7 @@ impl Storage {
     pub(crate) fn writable(self) -> bool {
         self == Self::Ready
     }
-    fn readable(self) -> bool {
+    pub(crate) fn readable(self) -> bool {
         matches!(self, Self::Ready | Self::ReadOnly)
     }
     fn parse(value: &Value) -> Self {
@@ -84,6 +84,11 @@ fn accept(model: &mut Model, value: &Value) {
     model.recovering = value["storage"]["recovering"] == true;
     model.failure = None;
 }
+fn invalidate_restored_disks(state: &mut State, was_readable: bool) {
+    if !was_readable && state.management.storage.readable() {
+        state.files.invalidate_disks();
+    }
+}
 fn needs_disk_refresh(state: &State, was_readable: bool) -> bool {
     state.session_active()
         && state.management.storage.readable()
@@ -132,6 +137,7 @@ pub(crate) fn load(state: RwSignal<State>) {
                 Ok(value) => {
                     let was_readable = s.management.storage.readable();
                     accept(&mut s.management, &value);
+                    invalidate_restored_disks(s, was_readable);
                     // A successful status check resolves the retry admission fence,
                     // not any outstanding data mutation's outcome.
                     s.management.retry_unknown = false;
@@ -182,9 +188,13 @@ fn retry(state: RwSignal<State>) {
             s.management.retrying = false;
             match result {
                 Ok(value) => {
+                    let was_readable = s.management.storage.readable();
                     s.management.storage = Storage::parse(&value);
                     s.management.retryable = value["retryable"] == true;
                     s.management.recovering = value["recovering"] == true;
+                    // Fast recovery may already be ready in the POST response.
+                    // Keep its refresh demand for the following status read too.
+                    invalidate_restored_disks(s, was_readable);
                 }
                 Err(error) => {
                     s.management.retry_unknown = error.mutation_outcome_unknown();
