@@ -1,6 +1,45 @@
 use super::*;
 
 #[test]
+fn request_digest_preserves_envelope_and_borrowed_body() {
+    let payload = json_codec::json!({
+        "message": "目录 😀",
+        "file_placement": {
+            "文件": {"primary_slot_id": "slot-1", "target_copies": 2}
+        },
+        "nested": {"request_digest": "keep nested digest"}
+    });
+    let path = json_codec::json!({"workspace": "workspace-1"});
+    let query = json_codec::json!({"label": "é"});
+    let expected = object_hash(
+        "request",
+        &json_codec::json!({
+            "method": "POST",
+            "route": "/api/workspaces/{workspace}/commit",
+            "path_parameters": path,
+            "query": query,
+            "body": payload
+        }),
+    )
+    .unwrap();
+    let mut body = payload;
+    body["request_digest"] = "ignore top-level digest".into();
+    let original = body.clone();
+    assert_eq!(
+        request_digest(
+            "pOsT",
+            "/api/workspaces/{workspace}/commit",
+            path,
+            query,
+            &body,
+        )
+        .unwrap(),
+        expected
+    );
+    assert_eq!(body, original);
+}
+
+#[test]
 fn encoded_object_preserves_canonical_bytes_and_domain_digest() {
     let value = json_codec::json!({"z": [true, null], "a": 1});
     let (bytes, hash) = encode_hashed_object("state-page", &value).unwrap();

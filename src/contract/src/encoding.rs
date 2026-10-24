@@ -193,7 +193,7 @@ pub fn request_digest(
     body.as_object_mut()
         .ok_or_else(|| Error::new("INVALID_REQUEST", "request body must be an object"))?
         .remove("request_digest");
-    object_hash(
+    object_hash_value(
         "request",
         &json_codec::json!({"method":method.to_ascii_uppercase(),"route":route,"path_parameters":path_parameters,"query":query,"body":body}),
     )

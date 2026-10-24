@@ -203,10 +203,13 @@ async fn cancelling_an_in_progress_download_removes_its_private_tempfile() {
     // Wait for bytes on disk, rather than guessing when the transfer started.
     tokio::time::timeout(std::time::Duration::from_secs(5), async {
         loop {
-            if std::fs::read_dir(directory.path())
-                .unwrap()
-                .any(|entry| entry.unwrap().metadata().unwrap().len() > 0)
-            {
+            if std::fs::read_dir(directory.path()).unwrap().any(|entry| {
+                match std::fs::read(entry.unwrap().path().join("payload")) {
+                    Ok(bytes) => bytes == b"unfin",
+                    Err(error) if error.kind() == std::io::ErrorKind::NotFound => false,
+                    Err(error) => panic!("could not read download payload: {error}"),
+                }
+            }) {
                 break;
             }
             tokio::task::yield_now().await;
