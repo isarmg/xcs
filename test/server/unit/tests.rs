@@ -610,17 +610,17 @@ async fn successful_new_generation_preserves_old_bytes_and_retry_reuses_its_file
     assert_eq!(retained.data_file, records[0].data_file);
 }
 
-#[tokio::test]
-async fn disconnected_upload_keeps_its_claim_until_publication_and_status_are_durable() {
-    upload_publication_keeps_its_claim(true).await;
+#[test]
+fn disconnected_upload_keeps_its_claim_until_publication_and_status_are_durable() {
+    upload_publication_keeps_its_claim(true);
 }
 
-#[tokio::test]
-async fn upload_publication_timeout_reports_an_unknown_outcome_until_status_is_durable() {
-    upload_publication_keeps_its_claim(false).await;
+#[test]
+fn upload_publication_timeout_reports_an_unknown_outcome_until_status_is_durable() {
+    upload_publication_keeps_its_claim(false);
 }
 
-async fn upload_publication_keeps_its_claim(disconnect: bool) {
+fn upload_publication_keeps_its_claim(disconnect: bool) {
     struct BlockingUpload {
         delegate: TestBackend,
         started: Mutex<Option<tokio::sync::oneshot::Sender<()>>>,
@@ -666,99 +666,100 @@ async fn upload_publication_keeps_its_claim(disconnect: bool) {
         }
     }
     let root = crate::tests::private_tempdir();
-    let auth = AuthStore::initialize(root.path(), "admin", "a-long-test-password").unwrap();
-    let (started, started_rx) = tokio::sync::oneshot::channel();
-    let gate = Arc::new((Mutex::new(false), std::sync::Condvar::new()));
-    let release = Release(gate.clone());
-    let mut config = ServerConfig::loopback(root.path());
-    if !disconnect {
-        config.http_transfer_limits.total_timeout = Duration::from_secs(3);
-        config.http_transfer_limits.idle_timeout = Duration::from_secs(3);
-    }
-    let app = router(
-        Arc::new(BlockingUpload {
-            delegate: TestBackend {
-                path: root.path().join("content"),
-            },
-            started: Mutex::new(Some(started)),
-            gate,
-        }),
-        auth,
-        config,
-    )
-    .unwrap();
-    let (token, _, _) = authenticated(&app).await;
-    let request = || {
-        Request::builder()
-            .method("PUT")
-            .uri("/api/workspaces/ws/files/item/content?path=file")
-            .header("authorization", format!("Bearer {token}"))
-            .header("x-zxs-logical-size", "4")
-            .header(
-                "x-zxs-content-hash",
-                blake3::hash(b"body").to_hex().to_string(),
-            )
-            .body(Body::from("body"))
-            .unwrap()
-    };
-    let pending = tokio::spawn(app.clone().oneshot(request()));
-    tokio::time::timeout(Duration::from_secs(5), started_rx)
-        .await
-        .unwrap()
+    let runtime = tokio::runtime::Builder::new_current_thread()
+        .enable_all()
+        .build()
         .unwrap();
-    let timed_out = if disconnect {
-        pending.abort();
-        assert!(pending.await.unwrap_err().is_cancelled());
-        None
-    } else {
-        Some(pending.await.unwrap().unwrap())
-    };
-    let retry = app.clone().oneshot(request()).await.unwrap();
-    assert_eq!(retry.status(), StatusCode::CONFLICT);
-    let error: Value = json_codec::from_slice(
-        &http_routing::body::to_bytes(retry.into_body(), 8192)
-            .await
-            .unwrap(),
-    )
-    .unwrap();
-    assert_eq!(error["error"]["code"], "FILE_WRITE_BUSY");
-    drop(release);
-    tokio::time::timeout(Duration::from_secs(5), async {
-        loop {
-            if uploads::load(&root.path().join("api-spool"), "ws", "item")
-                .unwrap()
-                .unwrap()
-                .state
-                == "complete"
-            {
-                break;
-            }
-            tokio::time::sleep(Duration::from_millis(5)).await;
+    runtime.block_on(async {
+        let auth = AuthStore::initialize(root.path(), "admin", "a-long-test-password").unwrap();
+        let (started, started_rx) = tokio::sync::oneshot::channel();
+        let gate = Arc::new((Mutex::new(false), std::sync::Condvar::new()));
+        let release = Release(gate.clone());
+        let mut config = ServerConfig::loopback(root.path());
+        if !disconnect {
+            config.http_transfer_limits.total_timeout = Duration::from_secs(3);
+            config.http_transfer_limits.idle_timeout = Duration::from_secs(3);
         }
-    })
-    .await
-    .unwrap();
-    if let Some(response) = timed_out {
-        // The backend has now completed despite the earlier HTTP timeout.
-        // It is therefore not a definite client-side rejection (4xx).
-        assert_eq!(response.status(), StatusCode::SERVICE_UNAVAILABLE);
-        assert!(storage_contract::client_protocol::mutation_outcome_unknown(
-            response.status().as_u16()
-        ));
-        let body: Value = json_codec::from_slice(
-            &http_routing::body::to_bytes(response.into_body(), 8192)
+        let app = router(
+            Arc::new(BlockingUpload {
+                delegate: TestBackend {
+                    path: root.path().join("content"),
+                },
+                started: Mutex::new(Some(started)),
+                gate,
+            }),
+            auth,
+            config,
+        )
+        .unwrap();
+        let (token, _, _) = authenticated(&app).await;
+        let request = || {
+            Request::builder()
+                .method("PUT")
+                .uri("/api/workspaces/ws/files/item/content?path=file")
+                .header("authorization", format!("Bearer {token}"))
+                .header("x-zxs-logical-size", "4")
+                .header(
+                    "x-zxs-content-hash",
+                    blake3::hash(b"body").to_hex().to_string(),
+                )
+                .body(Body::from("body"))
+                .unwrap()
+        };
+        let pending = tokio::spawn(app.clone().oneshot(request()));
+        tokio::time::timeout(Duration::from_secs(5), started_rx)
+            .await
+            .unwrap()
+            .unwrap();
+        let timed_out = if disconnect {
+            pending.abort();
+            assert!(pending.await.unwrap_err().is_cancelled());
+            None
+        } else {
+            Some(pending.await.unwrap().unwrap())
+        };
+        let retry = app.clone().oneshot(request()).await.unwrap();
+        assert_eq!(retry.status(), StatusCode::CONFLICT);
+        let error: Value = json_codec::from_slice(
+            &http_routing::body::to_bytes(retry.into_body(), 8192)
                 .await
                 .unwrap(),
         )
         .unwrap();
-        assert_eq!(body["error"]["code"], "TRANSFER_TIMEOUT");
-        assert!(
-            body["error"]["message"]
-                .as_str()
-                .unwrap()
-                .contains("status")
-        );
-    }
+        assert_eq!(error["error"]["code"], "FILE_WRITE_BUSY");
+        drop(release);
+        if let Some(response) = timed_out {
+            // The admitted backend can complete despite the HTTP timeout.
+            // It is therefore not a definite client-side rejection (4xx).
+            assert_eq!(response.status(), StatusCode::SERVICE_UNAVAILABLE);
+            assert!(storage_contract::client_protocol::mutation_outcome_unknown(
+                response.status().as_u16()
+            ));
+            let body: Value = json_codec::from_slice(
+                &http_routing::body::to_bytes(response.into_body(), 8192)
+                    .await
+                    .unwrap(),
+            )
+            .unwrap();
+            assert_eq!(body["error"]["code"], "TRANSFER_TIMEOUT");
+            assert!(
+                body["error"]["message"]
+                    .as_str()
+                    .unwrap()
+                    .contains("status")
+            );
+        }
+    });
+    // Wait for admitted blocking publication, including its final atomic status
+    // replacement, before reading that status or removing the temporary root.
+    drop(runtime);
+    assert_eq!(
+        uploads::load(&root.path().join("api-spool"), "ws", "item")
+            .unwrap()
+            .unwrap()
+            .state,
+        "complete"
+    );
 }
 
 #[path = "tests/spool_budget.rs"]
