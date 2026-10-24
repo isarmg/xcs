@@ -217,7 +217,7 @@ impl Model {
             #[doc = #builder_name_doc]
             #[doc = ""]
             #docs_and_prop_docs
-            #[derive(::web_interface::typed_builder_macro::TypedBuilder)]
+            #[derive(::web_interface::typed_builder::TypedBuilder)]
             #[builder(crate_module_path=::web_interface::typed_builder)]
             #[allow(non_snake_case)]
             #vis struct #props_name #impl_generics #where_clause {

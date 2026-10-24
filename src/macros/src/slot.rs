@@ -71,7 +71,7 @@ impl Model {
             #[doc = ""]
             #docs
             #prop_docs
-            #[derive(::web_interface::typed_builder_macro::TypedBuilder)]
+            #[derive(::web_interface::typed_builder::TypedBuilder)]
             #[builder(doc, crate_module_path=::web_interface::typed_builder)]
             #vis struct #name #declaration_generics #where_clause {
                 #prop_builder_fields

@@ -75,8 +75,6 @@ pub mod text_prop;
 
 #[doc(hidden)]
 pub use typed_builder;
-#[doc(hidden)]
-pub use typed_builder_macro;
 pub use view_macros::*;
 mod into_view;
 #[doc(inline)]

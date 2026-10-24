@@ -11,7 +11,6 @@ crate-type = ["cdylib", "rlib"]
 web-interface = { path = "../interface" }
 storage-contract = { path = "../contract" }
 name-policy = { path = "../naming" }
-system-entropy = { version = "0.4", features = ["wasm_js"], path = "../foundation/cryptography/system-entropy"}
 uuid = { version = "1", features = ["js"], path = "../foundation/core-types/uuid"}
 json-codec = {version = "1", path = "../foundation/data-storage/json-codec"}
 wasm-bindgen = {version = "=0.2.129", path = "../foundation/web-runtime/wasm-bindgen"}

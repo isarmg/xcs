@@ -1433,9 +1433,7 @@ name = "system-entropy"
 version = "0.4.3"
 dependencies = [
  "cfg-if",
- "js-sys",
  "libc",
- "wasm-bindgen",
 ]
 
 [[package]]
@@ -1812,7 +1810,6 @@ dependencies = [
  "name-policy",
  "send_wrapper",
  "storage-contract",
- "system-entropy",
  "uuid",
  "wasm-bindgen",
  "web-interface",
@@ -1858,7 +1855,6 @@ dependencies = [
  "task-dispatch",
  "throw_error",
  "typed-builder",
- "typed-builder-macro",
  "view-alternatives",
  "view-macros",
  "view-renderer",
