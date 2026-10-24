@@ -240,6 +240,11 @@ impl Engine {
             ) && op.result["plan_id"].as_str() == Some(id)
                 && self.operation_owner(operation).as_deref() == Some(principal)
             {
+                // The receipt proves publication, not completion of physical
+                // cleanup. Resume that idempotent phase after a failed attempt.
+                if matches!(op.kind.as_str(), "content.purge" | "history.split") {
+                    self.cleanup_purged()?;
+                }
                 return self.operation(operation);
             }
             return Err(Error::new(
@@ -889,3 +894,7 @@ mod split_tests;
 #[cfg(test)]
 #[path = "../../../test/engine/unit/maintenance_corruption_tests.rs"]
 mod corruption_tests;
+
+#[cfg(test)]
+#[path = "../../../test/engine/unit/maintenance/cleanup_tests.rs"]
+mod cleanup_tests;
