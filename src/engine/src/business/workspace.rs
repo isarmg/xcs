@@ -432,12 +432,34 @@ impl Engine {
     pub fn validate_workspace_file_selection(&self, workspace: &str, path: &str) -> Result<()> {
         let workspace = self.workspace(workspace)?;
         validate_directory_selection(&self.state, &workspace, path)?;
-        if let Some(entry) = self
+        let mut entry = self
             .state
             .commits
             .get(&workspace.base_head)
-            .and_then(|c| find(&c.entries, path))
+            .and_then(|c| find(&c.entries, path));
+        // First-created files are absent from the original base, but completion
+        // records their published destination. The current entry supplies only
+        // its identity; the saved context still decides whether it is writable.
+        if entry.is_none()
+            && self.state.repositories.values().any(|repo| {
+                repo.main_branch_id == workspace.branch_id
+                    && workspace
+                        .selected_file_contexts
+                        .contains_key(&directory::context_key(&repo.repository_id, path))
+            })
         {
+            entry = Some(
+                self.state
+                    .branches
+                    .get(&workspace.branch_id)
+                    .and_then(|branch| self.state.commits.get(&branch.head_commit_id))
+                    .and_then(|commit| find(&commit.entries, path))
+                    .ok_or_else(|| {
+                        Error::new("FILE_NOT_FOUND", "published workspace file is absent")
+                    })?,
+            );
+        }
+        if let Some(entry) = entry {
             validate_file_context(&self.state, &workspace, &entry.file_id, path)?;
         }
         Ok(())
@@ -1484,6 +1506,9 @@ impl Engine {
     }
 }
 
+#[cfg(test)]
+#[path = "../../../../test/engine/unit/business/workspace_published_selection_tests.rs"]
+mod published_selection_tests;
 #[cfg(test)]
 #[path = "../../../../test/engine/unit/business/workspace_selection_tests.rs"]
 mod selection_tests;

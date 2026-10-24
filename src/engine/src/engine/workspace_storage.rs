@@ -5,6 +5,7 @@ use std::{
     collections::BTreeMap,
     fs,
     path::{Component, Path, PathBuf},
+    sync::Arc,
 };
 
 impl Engine {
@@ -420,10 +421,10 @@ impl Engine {
         Ok(())
     }
 
-    /// This exceptional read is only needed for differing completion contexts.
+    /// Reconstruct incomplete completion contexts from their original decision.
     /// Current selections may have changed since the save, so they cannot prove
     /// the receipt. Bind the original snapshot to the verified operation/slot.
-    fn workspace_publication_snapshot(&self, workspace: &Workspace) -> Result<State> {
+    fn workspace_publication_snapshot(&self, workspace: &Workspace) -> Result<Arc<State>> {
         let directories = [
             self.root.join("workspaces").join(&workspace.workspace_id),
             self.workspace_recovery_directory(workspace)?,
@@ -459,7 +460,16 @@ impl Engine {
                     {
                         continue;
                     }
-                    let state = self.load_bound_snapshot(&candidate.snapshot_hash)?;
+                    // Recovery already verified the current root. Reuse it only
+                    // for this exact publication, never for a later selection.
+                    // Degraded recovery overlays its operation result, not the
+                    // snapshot's file contexts or operation ownership.
+                    let state =
+                        if self.snapshot.as_deref() == Some(candidate.snapshot_hash.as_str()) {
+                            Arc::clone(&self.state)
+                        } else {
+                            Arc::new(self.load_bound_snapshot(&candidate.snapshot_hash)?)
+                        };
                     if state
                         .operations
                         .get(&request.operation_id)
@@ -552,6 +562,14 @@ impl Engine {
             }
         }
         if let Some(fence) = completion {
+            if workspace.purpose == "normal"
+                && matches!(workspace.state.as_str(), "open" | "sealed")
+            {
+                // Both mirrors may predate completion. Later selections cannot
+                // replace the destination bound by this workspace's publication.
+                let published = self.workspace_publication_snapshot(workspace)?;
+                Self::refresh_workspace_contexts(&published, workspace);
+            }
             workspace.state = "committed".into();
             workspace.fencing_token = fence;
         }
