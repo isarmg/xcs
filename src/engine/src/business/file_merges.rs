@@ -20,16 +20,22 @@ fn reaches(state: &State, start: &str, needle: &str) -> bool {
 impl Engine {
     pub fn merge_file_branches(
         &mut self,
-        file: &str,
-        inputs: &[FileMergeInput],
-        chosen_node: &str,
-        survivor: &str,
-        principal: &str,
-        operation: &str,
+        request: FileBranchMergeRequest<'_>,
     ) -> Result<OperationResult> {
+        let body = request.body();
+        let FileBranchMergeRequest {
+            file_id: file,
+            inputs,
+            chosen_node_id: chosen_node,
+            surviving_branch_id: survivor,
+            location,
+            principal,
+            operation_id: operation,
+        } = request;
         self.mutate("file.branches.merge", principal, operation,
-            json!({"file_id":file,"inputs":inputs,"chosen_node_id":chosen_node,"surviving_branch_id":survivor}),
+            body,
             |engine,state,_| {
+                super::file_requests::validate_location(engine, file, location)?;
                 if inputs.len() < 2 || inputs.len() > engine.config.max_entries {
                     return Err(Error::new("INVALID_REQUEST", "merge requires at least two bounded file branches"));
                 }

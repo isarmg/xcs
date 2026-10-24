@@ -253,18 +253,19 @@ fn file_node_publication_rejects_missing_main_without_leaking_new_nodes() {
         }
         let before = canonical_json(engine.state()).unwrap();
         let error = engine
-            .update_file_node_tags(
-                &entry.file_id,
-                &[FileTagTarget {
+            .update_file_node_tags(crate::FileNodeTagsUpdateRequest {
+                file_id: &entry.file_id,
+                targets: &[FileTagTarget {
                     branch_id: branch,
                     source_node_id: entry.version_id.clone(),
                     expected_node_id: entry.version_id,
                 }],
-                &["tag".into()],
-                &[],
-                "admin",
-                &new_id("op"),
-            )
+                add: &["tag".into()],
+                remove: &[],
+                location: None,
+                principal: "admin",
+                operation_id: &new_id("op"),
+            })
             .unwrap_err();
         assert_eq!(error.code(), "STATE_INVALID", "{missing}");
         assert_eq!(canonical_json(engine.state()).unwrap(), before, "{missing}");
@@ -316,18 +317,19 @@ fn file_node_publication_requires_frozen_path_contexts_without_publication() {
         let slot = engine.next_slot;
         let operation = new_id("op");
         let error = engine
-            .update_file_node_tags(
-                &entry.file_id,
-                &[FileTagTarget {
+            .update_file_node_tags(crate::FileNodeTagsUpdateRequest {
+                file_id: &entry.file_id,
+                targets: &[FileTagTarget {
                     branch_id: file_branch,
                     source_node_id: entry.version_id.clone(),
                     expected_node_id: entry.version_id,
                 }],
-                &["tag".into()],
-                &[],
-                "admin",
-                &operation,
-            )
+                add: &["tag".into()],
+                remove: &[],
+                location: None,
+                principal: "admin",
+                operation_id: &operation,
+            })
             .unwrap_err();
         assert_eq!(error.code(), "STATE_INVALID", "{missing}");
         assert_eq!(canonical_json(engine.state()).unwrap(), before, "{missing}");
@@ -383,18 +385,19 @@ fn missing_file_nodes_and_bodies_return_errors_without_publication() {
         };
         let before = canonical_json(engine.state()).unwrap();
         let error = engine
-            .update_file_node_tags(
-                &entry.file_id,
-                &[FileTagTarget {
+            .update_file_node_tags(crate::FileNodeTagsUpdateRequest {
+                file_id: &entry.file_id,
+                targets: &[FileTagTarget {
                     branch_id: branch,
                     source_node_id: head.clone(),
                     expected_node_id: head.clone(),
                 }],
-                &["tag".into()],
-                &[],
-                "admin",
-                &new_id("op"),
-            )
+                add: &["tag".into()],
+                remove: &[],
+                location: None,
+                principal: "admin",
+                operation_id: &new_id("op"),
+            })
             .unwrap_err();
         assert!(
             matches!(error.code(), "STATE_INVALID" | "FILE_NODE_NOT_FOUND"),
@@ -473,40 +476,46 @@ fn exhausted_branch_generations_reject_metadata_mutations_atomically() {
                 "admin",
                 &operation,
             ),
-            "tags_file" | "tags_main" => engine.update_file_node_tags(
-                &entry.file_id,
-                &[FileTagTarget {
-                    branch_id: if action == "tags_file" {
-                        draft.clone()
-                    } else {
-                        owner.clone()
-                    },
-                    source_node_id: entry.version_id.clone(),
-                    expected_node_id: entry.version_id.clone(),
-                }],
-                &["tag".into()],
-                &[],
-                "admin",
-                &operation,
-            ),
+            "tags_file" | "tags_main" => {
+                engine.update_file_node_tags(crate::FileNodeTagsUpdateRequest {
+                    file_id: &entry.file_id,
+                    targets: &[FileTagTarget {
+                        branch_id: if action == "tags_file" {
+                            draft.clone()
+                        } else {
+                            owner.clone()
+                        },
+                        source_node_id: entry.version_id.clone(),
+                        expected_node_id: entry.version_id.clone(),
+                    }],
+                    add: &["tag".into()],
+                    remove: &[],
+                    location: None,
+                    principal: "admin",
+                    operation_id: &operation,
+                })
+            }
             "archive" => engine.archive_branch(&draft, "admin", &operation),
-            "merge_survivor" | "merge_alias" => engine.merge_file_branches(
-                &entry.file_id,
-                &[
-                    FileMergeInput {
-                        branch_id: owner.clone(),
-                        expected_node_id: entry.version_id.clone(),
-                    },
-                    FileMergeInput {
-                        branch_id: draft.clone(),
-                        expected_node_id: entry.version_id.clone(),
-                    },
-                ],
-                &entry.version_id,
-                &owner,
-                "admin",
-                &operation,
-            ),
+            "merge_survivor" | "merge_alias" => {
+                engine.merge_file_branches(crate::FileBranchMergeRequest {
+                    file_id: &entry.file_id,
+                    inputs: &[
+                        FileMergeInput {
+                            branch_id: owner.clone(),
+                            expected_node_id: entry.version_id.clone(),
+                        },
+                        FileMergeInput {
+                            branch_id: draft.clone(),
+                            expected_node_id: entry.version_id.clone(),
+                        },
+                    ],
+                    chosen_node_id: &entry.version_id,
+                    surviving_branch_id: &owner,
+                    location: None,
+                    principal: "admin",
+                    operation_id: &operation,
+                })
+            }
             _ => unreachable!(),
         };
         assert_eq!(result.unwrap_err().code(), "RESOURCE_LIMIT", "{action}");

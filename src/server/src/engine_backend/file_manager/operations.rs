@@ -1,7 +1,7 @@
 //! Strict wire requests for node adoption, inherited tags and backup policy.
 use super::*;
 
-fn location(input: &Value) -> Result<Option<application::FileLocation>, ApiError> {
+fn location(input: &Value) -> Result<Option<storage_engine::FileLocation>, ApiError> {
     let requested_repo = input.get("repository_id");
     let requested_path = input.get("path");
     if requested_repo.is_some() != requested_path.is_some() {
@@ -12,7 +12,7 @@ fn location(input: &Value) -> Result<Option<application::FileLocation>, ApiError
     if requested_repo.is_none() {
         return Ok(None);
     }
-    Ok(Some(application::FileLocation {
+    Ok(Some(storage_engine::FileLocation {
         repository_id: field(input, "repository_id")?.into(),
         path: field(input, "path")?.into(),
     }))
@@ -74,8 +74,8 @@ pub(super) fn call(
                 ],
             )?;
             let file = field(input, "file_id")?;
-            Application::new(engine, identity)
-                .authorize_file_location(file, location(input)?.as_ref())?;
+            let location = location(input)?;
+            Application::new(engine, identity).authorize_file(file)?;
             let targets: Vec<storage_contract::FileTagTarget> = json_codec::from_value(
                 input
                     .get("targets")
@@ -93,14 +93,15 @@ pub(super) fn call(
                 .map_err(ApiError::invalid)
             };
             let result = engine
-                .update_file_node_tags(
-                    file,
-                    &targets,
-                    &strings("add")?,
-                    &strings("remove")?,
-                    &identity.principal,
-                    operation(input)?,
-                )
+                .update_file_node_tags(storage_engine::FileNodeTagsUpdateRequest {
+                    file_id: file,
+                    targets: &targets,
+                    add: &strings("add")?,
+                    remove: &strings("remove")?,
+                    location: location.as_ref(),
+                    principal: &identity.principal,
+                    operation_id: operation(input)?,
+                })
                 .map_err(error)?;
             operation_wire(result)
         }

@@ -226,6 +226,138 @@ async fn file_selection_replays_after_its_branch_is_merged_and_path_is_renamed()
 }
 
 #[tokio::test]
+async fn metadata_mutation_replay_binds_location_after_rename_and_reopen() {
+    let root = tempfile::tempdir().unwrap();
+    let app = application(root.path());
+    let token = login(&app, "admin", "integration-test-password").await;
+    manager_upload(&app, &token, "report.txt", b"base body").await;
+    let listing = success(
+        &app,
+        &token,
+        "GET",
+        "/api/file-manager/disks/P01/entries",
+        None,
+    )
+    .await;
+    let file = listing["entries"][0]["file_id"].as_str().unwrap();
+    let base = listing["entries"][0]["version_id"].as_str().unwrap();
+    let repo = listing["context"]["repository_id"].as_str().unwrap();
+    let left = branch(&app, &token, file, base, "left").await;
+    let right = branch(&app, &token, file, base, "right").await;
+    let tag_route = format!("/api/file-manager/files/{file}/tags");
+    let tag_request = json!({
+        "targets":[{"branch_id":left,"source_node_id":base,"expected_node_id":base}],
+        "add":["reviewed"],"remove":[],"repository_id":repo,"path":"report.txt","operation_id":new_id("op")
+    });
+    let tagged = success(&app, &token, "POST", &tag_route, Some(tag_request.clone())).await;
+    let merge_route = format!("/api/file-manager/files/{file}/merge");
+    let merge_request = json!({
+        "inputs":[{"branch_id":left,"expected_node_id":tagged["result"]["nodes"][0]["node_id"]},{"branch_id":right,"expected_node_id":base}],
+        "chosen_node_id":base,"surviving_branch_id":left,"confirmed":true,
+        "repository_id":repo,"path":"report.txt","operation_id":new_id("op")
+    });
+    let merged = success(
+        &app,
+        &token,
+        "POST",
+        &merge_route,
+        Some(merge_request.clone()),
+    )
+    .await;
+    manager_namespace(&app, &token, "rename", "report.txt", Some("renamed.txt")).await;
+    drop(app);
+    let system = root.path().join("system");
+    let backend = Arc::new(EngineBackend::new(reopen_after_router_drop(&system).await));
+    let auth = backend.open_auth(&system).unwrap();
+    let app = storage_server::router(backend, auth, ServerConfig::loopback(&system)).unwrap();
+    let token = login(&app, "admin", "integration-test-password").await;
+    let before = history(&app, &token, file).await;
+    let events = success(&app, &token, "GET", "/api/events", None).await;
+    for (route, request, original) in [
+        (tag_route, tag_request, tagged),
+        (merge_route, merge_request, merged),
+    ] {
+        let operation = request["operation_id"].as_str().unwrap();
+        let queried = success(
+            &app,
+            &token,
+            "GET",
+            &format!("/api/operations/{operation}"),
+            None,
+        )
+        .await;
+        let replay = success(&app, &token, "POST", &route, Some(request.clone())).await;
+        for field in [
+            "operation_id",
+            "request_digest",
+            "publication_sequence",
+            "result",
+        ] {
+            assert_eq!(queried[field], original[field], "{field}");
+            assert_eq!(replay[field], original[field], "{field}");
+        }
+        let mut path_changed = request.clone();
+        path_changed["path"] = "renamed.txt".into();
+        let mut repository_changed = request.clone();
+        repository_changed["repository_id"] = new_id("repo").into();
+        let mut context_removed = request.clone();
+        context_removed
+            .as_object_mut()
+            .unwrap()
+            .remove("repository_id");
+        context_removed.as_object_mut().unwrap().remove("path");
+        let mut payload_changed = request.clone();
+        if payload_changed.get("add").is_some() {
+            payload_changed["add"] = json!(["different"]);
+        } else {
+            payload_changed["surviving_branch_id"] = right.clone().into();
+        }
+        for changed in [
+            path_changed,
+            repository_changed,
+            context_removed,
+            payload_changed,
+        ] {
+            let (status, response) = send(&app, Some(&token), "POST", &route, Some(changed)).await;
+            assert_eq!(status, StatusCode::CONFLICT, "{response}");
+            assert_eq!(response["error"]["code"], "IDEMPOTENCY_KEY_REUSED");
+        }
+        let mut unpaired = request.clone();
+        unpaired.as_object_mut().unwrap().remove("path");
+        let mut null_path = request.clone();
+        null_path["path"] = Value::Null;
+        for malformed in [unpaired, null_path] {
+            assert_eq!(
+                send(&app, Some(&token), "POST", &route, Some(malformed))
+                    .await
+                    .0,
+                StatusCode::BAD_REQUEST
+            );
+        }
+        if request.get("confirmed").is_some() {
+            let mut unconfirmed = request.clone();
+            unconfirmed["confirmed"] = false.into();
+            assert_eq!(
+                send(&app, Some(&token), "POST", &route, Some(unconfirmed))
+                    .await
+                    .0,
+                StatusCode::BAD_REQUEST
+            );
+        }
+        let mut fresh = request;
+        fresh["operation_id"] = new_id("op").into();
+        let (status, response) = send(&app, Some(&token), "POST", &route, Some(fresh)).await;
+        assert_eq!(status, StatusCode::NOT_FOUND);
+        assert_eq!(response["error"]["code"], "FILE_NOT_FOUND");
+    }
+    assert_eq!(history(&app, &token, file).await, before);
+    assert_eq!(
+        success(&app, &token, "GET", "/api/events", None).await,
+        events
+    );
+}
+
+#[tokio::test]
 async fn tags_and_file_merges_publish_reviewed_node_graphs_without_new_bodies() {
     let root = tempfile::tempdir().unwrap();
     let app = application(root.path());

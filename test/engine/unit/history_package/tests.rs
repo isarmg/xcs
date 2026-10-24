@@ -1742,18 +1742,19 @@ fn metadata_merges_labels_and_backup_paths_export_restore_without_rewriting_full
         .unwrap()
         .branch_id;
     let tagged = engine
-        .update_file_node_tags(
-            &entry.file_id,
-            &[FileTagTarget {
+        .update_file_node_tags(crate::FileNodeTagsUpdateRequest {
+            file_id: &entry.file_id,
+            targets: &[FileTagTarget {
                 branch_id: branch.clone(),
                 source_node_id: entry.version_id.clone(),
                 expected_node_id: engine.file_branch_head(&branch).unwrap(),
             }],
-            &["release".into(), "中文".into()],
-            &[],
-            "alice",
-            &new_id("op"),
-        )
+            add: &["release".into(), "中文".into()],
+            remove: &[],
+            location: None,
+            principal: "alice",
+            operation_id: &new_id("op"),
+        })
         .unwrap()
         .result["nodes"][0]["node_id"]
         .as_str()
@@ -1801,14 +1802,15 @@ fn metadata_merges_labels_and_backup_paths_export_restore_without_rewriting_full
         })
         .collect::<Vec<_>>();
     let merged = engine
-        .merge_file_branches(
-            &entry.file_id,
-            &inputs,
-            &chosen,
-            &left,
-            "alice",
-            &new_id("op"),
-        )
+        .merge_file_branches(crate::FileBranchMergeRequest {
+            file_id: &entry.file_id,
+            inputs: &inputs,
+            chosen_node_id: &chosen,
+            surviving_branch_id: &left,
+            location: None,
+            principal: "alice",
+            operation_id: &new_id("op"),
+        })
         .unwrap()
         .result["node_id"]
         .as_str()

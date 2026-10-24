@@ -61,7 +61,15 @@ fn adopting_an_arbitrary_third_node_creates_one_metadata_node_and_only_participa
     let operation = new_id("op");
     let receipt = p
         .engine
-        .merge_file_branches(&base.file_id, &request, &chosen, &left, "admin", &operation)
+        .merge_file_branches(storage_engine::FileBranchMergeRequest {
+            file_id: &base.file_id,
+            inputs: &request,
+            chosen_node_id: &chosen,
+            surviving_branch_id: &left,
+            location: None,
+            principal: "admin",
+            operation_id: &operation,
+        })
         .unwrap();
     let node = receipt.result["node_id"].as_str().unwrap().to_owned();
     assert!(node.starts_with("fmeta_"));
@@ -85,11 +93,45 @@ fn adopting_an_arbitrary_third_node_creates_one_metadata_node_and_only_participa
     assert_eq!(p.bytes(&chosen), b"chosen third body");
     assert_eq!(
         p.engine
-            .merge_file_branches(&base.file_id, &request, &chosen, &left, "admin", &operation)
+            .merge_file_branches(storage_engine::FileBranchMergeRequest {
+                file_id: &base.file_id,
+                inputs: &request,
+                chosen_node_id: &chosen,
+                surviving_branch_id: &left,
+                location: None,
+                principal: "admin",
+                operation_id: &operation
+            })
             .unwrap()
             .result,
         receipt.result
     );
+    let location = storage_engine::FileLocation {
+        repository_id: p.repo.repository_id.clone(),
+        path: "docs/report.txt".into(),
+    };
+    let state = storage_engine::canonical_json(p.engine.state()).unwrap();
+    for (principal, location) in [("other-actor", None), ("admin", Some(&location))] {
+        assert_eq!(
+            p.engine
+                .merge_file_branches(storage_engine::FileBranchMergeRequest {
+                    file_id: &base.file_id,
+                    inputs: &request,
+                    chosen_node_id: &chosen,
+                    surviving_branch_id: &left,
+                    location,
+                    principal,
+                    operation_id: &operation,
+                })
+                .unwrap_err()
+                .code(),
+            "IDEMPOTENCY_KEY_REUSED"
+        );
+        assert_eq!(
+            storage_engine::canonical_json(p.engine.state()).unwrap(),
+            state
+        );
+    }
     p.reopen(|engine| assert_eq!(engine.file_branch_head(&left).unwrap(), node));
 }
 
@@ -112,14 +154,15 @@ fn reused_ancestor_head_omits_cycle_edges_and_stale_merges_publish_nothing() {
     stale[1].expected_node_id = base.version_id.clone();
     assert_eq!(
         p.engine
-            .merge_file_branches(
-                &base.file_id,
-                &stale,
-                &ancestor,
-                &left,
-                "admin",
-                &new_id("op")
-            )
+            .merge_file_branches(storage_engine::FileBranchMergeRequest {
+                file_id: &base.file_id,
+                inputs: &stale,
+                chosen_node_id: &ancestor,
+                surviving_branch_id: &left,
+                location: None,
+                principal: "admin",
+                operation_id: &new_id("op")
+            })
             .unwrap_err()
             .code(),
         "FILE_BRANCH_CONFLICT"
@@ -130,14 +173,15 @@ fn reused_ancestor_head_omits_cycle_edges_and_stale_merges_publish_nothing() {
     );
     let result = p
         .engine
-        .merge_file_branches(
-            &base.file_id,
-            &request,
-            &ancestor,
-            &left,
-            "admin",
-            &new_id("op"),
-        )
+        .merge_file_branches(storage_engine::FileBranchMergeRequest {
+            file_id: &base.file_id,
+            inputs: &request,
+            chosen_node_id: &ancestor,
+            surviving_branch_id: &left,
+            location: None,
+            principal: "admin",
+            operation_id: &new_id("op"),
+        })
         .unwrap();
     assert_eq!(result.result["node_id"], ancestor);
     assert_eq!(result.result["reused_node"], true);
@@ -183,14 +227,15 @@ fn merge_preserves_an_unselected_alias_context_of_the_same_stable_file() {
     let before_a = p.branch(&n).head_tree_id;
     let request = inputs(&p, &[&selected, &second]);
     p.engine
-        .merge_file_branches(
-            &base.file_id,
-            &request,
-            &chosen,
-            &selected,
-            "admin",
-            &new_id("op"),
-        )
+        .merge_file_branches(storage_engine::FileBranchMergeRequest {
+            file_id: &base.file_id,
+            inputs: &request,
+            chosen_node_id: &chosen,
+            surviving_branch_id: &selected,
+            location: None,
+            principal: "admin",
+            operation_id: &new_id("op"),
+        })
         .unwrap();
     assert_eq!(
         p.engine
@@ -222,24 +267,26 @@ fn historical_alias_ownership_follows_a_later_owner_merge_without_moving_its_fro
     let c = fork(&mut p, &base.file_id, &base.version_id, "c");
     let frozen_b = p.engine.file_branch_head(&b).unwrap();
     p.engine
-        .merge_file_branches(
-            &base.file_id,
-            &inputs(&p, &[&a, &b]),
-            &base.version_id,
-            &a,
-            "admin",
-            &new_id("op"),
-        )
+        .merge_file_branches(storage_engine::FileBranchMergeRequest {
+            file_id: &base.file_id,
+            inputs: &inputs(&p, &[&a, &b]),
+            chosen_node_id: &base.version_id,
+            surviving_branch_id: &a,
+            location: None,
+            principal: "admin",
+            operation_id: &new_id("op"),
+        })
         .unwrap();
     p.engine
-        .merge_file_branches(
-            &base.file_id,
-            &inputs(&p, &[&a, &c]),
-            &base.version_id,
-            &c,
-            "admin",
-            &new_id("op"),
-        )
+        .merge_file_branches(storage_engine::FileBranchMergeRequest {
+            file_id: &base.file_id,
+            inputs: &inputs(&p, &[&a, &c]),
+            chosen_node_id: &base.version_id,
+            surviving_branch_id: &c,
+            location: None,
+            principal: "admin",
+            operation_id: &new_id("op"),
+        })
         .unwrap();
     assert_eq!(p.engine.state().file_branch_aliases[&a], c);
     assert_eq!(p.engine.state().file_branch_aliases[&b], c);
@@ -272,14 +319,15 @@ fn a_frozen_parent_derives_its_own_changed_child_without_following_the_childs_ne
     let old_child_record = p.engine.state().directory_trees[&frozen_child].clone();
     let request = inputs(&p, &[&left, &right]);
     p.engine
-        .merge_file_branches(
-            &file.file_id,
-            &request,
-            &file.version_id,
-            &left,
-            "admin",
-            &new_id("op"),
-        )
+        .merge_file_branches(storage_engine::FileBranchMergeRequest {
+            file_id: &file.file_id,
+            inputs: &request,
+            chosen_node_id: &file.version_id,
+            surviving_branch_id: &left,
+            location: None,
+            principal: "admin",
+            operation_id: &new_id("op"),
+        })
         .unwrap();
     let next = p.branch(&parent);
     let reference = &next.directory_refs[&child_entry.entry_id];

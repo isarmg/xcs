@@ -54,14 +54,15 @@ fn edit(
 ) -> String {
     let t = target(engine, branch, node);
     engine
-        .update_file_node_tags(
-            file,
-            &[t],
-            &add.iter().map(|s| s.to_string()).collect::<Vec<_>>(),
-            &remove.iter().map(|s| s.to_string()).collect::<Vec<_>>(),
-            "admin",
-            &new_id("op"),
-        )
+        .update_file_node_tags(crate::FileNodeTagsUpdateRequest {
+            file_id: file,
+            targets: &[t],
+            add: &add.iter().map(|s| s.to_string()).collect::<Vec<_>>(),
+            remove: &remove.iter().map(|s| s.to_string()).collect::<Vec<_>>(),
+            location: None,
+            principal: "admin",
+            operation_id: &new_id("op"),
+        })
         .unwrap()
         .result["nodes"][0]["node_id"]
         .as_str()
@@ -178,23 +179,61 @@ fn stale_and_over_capacity_batches_are_atomic_and_retry_is_idempotent() {
     let op = new_id("op");
     let add = vec!["one".into()];
     let receipt = e
-        .update_file_node_tags(&first.file_id, &[t.clone()], &add, &[], "admin", &op)
+        .update_file_node_tags(crate::FileNodeTagsUpdateRequest {
+            file_id: &first.file_id,
+            targets: &[t.clone()],
+            add: &add,
+            remove: &[],
+            location: None,
+            principal: "admin",
+            operation_id: &op,
+        })
         .unwrap();
     let state = canonical_json(e.state()).unwrap();
     let retry = e
-        .update_file_node_tags(&first.file_id, &[t.clone()], &add, &[], "admin", &op)
+        .update_file_node_tags(crate::FileNodeTagsUpdateRequest {
+            file_id: &first.file_id,
+            targets: &[t.clone()],
+            add: &add,
+            remove: &[],
+            location: None,
+            principal: "admin",
+            operation_id: &op,
+        })
         .unwrap();
     assert_eq!(receipt.result, retry.result);
     assert_eq!(canonical_json(e.state()).unwrap(), state);
+    let location = crate::FileLocation {
+        repository_id: r.repository_id.clone(),
+        path: "a.txt".into(),
+    };
+    for (principal, location) in [("other-actor", None), ("admin", Some(&location))] {
+        assert_eq!(
+            e.update_file_node_tags(crate::FileNodeTagsUpdateRequest {
+                file_id: &first.file_id,
+                targets: &[t.clone()],
+                add: &add,
+                remove: &[],
+                location,
+                principal,
+                operation_id: &op,
+            })
+            .unwrap_err()
+            .code(),
+            "IDEMPOTENCY_KEY_REUSED"
+        );
+        assert_eq!(canonical_json(e.state()).unwrap(), state);
+    }
     assert_eq!(
-        e.update_file_node_tags(
-            &first.file_id,
-            &[t.clone()],
-            &["two".into()],
-            &[],
-            "admin",
-            &new_id("op")
-        )
+        e.update_file_node_tags(crate::FileNodeTagsUpdateRequest {
+            file_id: &first.file_id,
+            targets: &[t.clone()],
+            add: &["two".into()],
+            remove: &[],
+            location: None,
+            principal: "admin",
+            operation_id: &new_id("op")
+        })
         .unwrap_err()
         .code(),
         "FILE_BRANCH_CONFLICT"
@@ -206,14 +245,15 @@ fn stale_and_over_capacity_batches_are_atomic_and_retry_is_idempotent() {
     t.expected_node_id = e.file_branch_head(&branch).unwrap();
     let additions = (0..16).map(|i| format!("tag{i}")).collect::<Vec<_>>();
     assert_eq!(
-        e.update_file_node_tags(
-            &first.file_id,
-            &[t],
-            &additions,
-            &[],
-            "admin",
-            &new_id("op")
-        )
+        e.update_file_node_tags(crate::FileNodeTagsUpdateRequest {
+            file_id: &first.file_id,
+            targets: &[t],
+            add: &additions,
+            remove: &[],
+            location: None,
+            principal: "admin",
+            operation_id: &new_id("op")
+        })
         .unwrap_err()
         .code(),
         "TAG_LIMIT_EXCEEDED"
@@ -284,14 +324,15 @@ fn pending_file_labels_preserve_first_write_and_batches_keep_branch_snapshots_in
         target(&e, &pending, &written.version_id),
     ];
     let receipt = e
-        .update_file_node_tags(
-            &file.file_id,
-            &targets,
-            &["shared".into()],
-            &[],
-            "admin",
-            &new_id("op"),
-        )
+        .update_file_node_tags(crate::FileNodeTagsUpdateRequest {
+            file_id: &file.file_id,
+            targets: &targets,
+            add: &["shared".into()],
+            remove: &[],
+            location: None,
+            principal: "admin",
+            operation_id: &new_id("op"),
+        })
         .unwrap();
     assert_eq!(receipt.result["nodes"].as_array().unwrap().len(), 2);
     assert_eq!(

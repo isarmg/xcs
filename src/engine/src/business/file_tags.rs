@@ -40,13 +40,17 @@ fn belongs_to_branch(state: &State, branch: &str, head: &str, source: &str) -> b
 impl Engine {
     pub fn update_file_node_tags(
         &mut self,
-        file: &str,
-        targets: &[FileTagTarget],
-        add: &[String],
-        remove: &[String],
-        principal: &str,
-        operation: &str,
+        request: FileNodeTagsUpdateRequest<'_>,
     ) -> Result<OperationResult> {
+        let FileNodeTagsUpdateRequest {
+            file_id: file,
+            targets,
+            add,
+            remove,
+            location,
+            principal,
+            operation_id: operation,
+        } = request;
         if targets.is_empty()
             || targets.len() > self.config.max_entries
             || add.len() > MAX_FILE_TAGS
@@ -68,9 +72,11 @@ impl Engine {
                 "a tag cannot be added and removed in one operation",
             ));
         }
+        let body = request.body();
         self.mutate("file.tags.update", principal, operation,
-            json!({"file_id":file,"targets":targets,"add":add,"remove":remove}),
+            body,
             |engine,state,_| {
+                super::file_requests::validate_location(engine, file, location)?;
                 // Complete preflight before any branch, context or tree advances.
                 let mut seen = BTreeSet::new();
                 let mut changes = Vec::new();

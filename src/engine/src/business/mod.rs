@@ -10,12 +10,14 @@ mod file_metadata;
 pub(crate) mod file_nodes;
 mod file_paths;
 pub(crate) mod file_publication;
+mod file_requests;
 mod file_tags;
 mod history;
 mod namespace;
 mod repository;
 mod workspace;
 pub(crate) use ancestry::descendant_commits;
+pub use file_requests::{FileBranchMergeRequest, FileLocation, FileNodeTagsUpdateRequest};
 pub(crate) use namespace::{
     apply_namespace, apply_workspace_namespace, ensure_parents, find, sorted, validate_entries,
     validate_workspace_dependencies,

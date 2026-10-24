@@ -71,18 +71,19 @@ fn file_history_and_activity_emit_one_utc_form_without_changing_stored_facts() {
         .unwrap();
     let head = engine.file_branch_head(&context.branch_id).unwrap();
     engine
-        .update_file_node_tags(
-            &entry.file_id,
-            &[FileTagTarget {
+        .update_file_node_tags(storage_engine::FileNodeTagsUpdateRequest {
+            file_id: &entry.file_id,
+            targets: &[FileTagTarget {
                 branch_id: context.branch_id,
                 source_node_id: head.clone(),
                 expected_node_id: head,
             }],
-            &["utc".into()],
-            &[],
-            "owner",
-            &new_id("op"),
-        )
+            add: &["utc".into()],
+            remove: &[],
+            location: None,
+            principal: "owner",
+            operation_id: &new_id("op"),
+        })
         .unwrap();
     let before = json_codec::to_value(engine.state()).unwrap();
     let history = file_history(&engine, &json!({"file_id":entry.file_id})).unwrap();

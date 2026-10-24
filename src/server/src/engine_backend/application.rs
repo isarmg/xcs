@@ -8,7 +8,7 @@ use super::{error, repo_for_branch, repo_for_history, repository, workspace_auth
 use crate::{ApiError, auth::Identity};
 use data_serialization::{Deserialize, Serialize};
 use std::collections::BTreeMap;
-use storage_engine::{CommitRequest, Engine, NamespaceOperation};
+use storage_engine::{CommitRequest, Engine, FileLocation, NamespaceOperation};
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
 #[serialization(deny_unknown_fields)]
@@ -91,12 +91,6 @@ pub struct CommitPlan {
     pub plan_id: String,
     pub operation_id: String,
     pub plan_digest: String,
-}
-
-#[derive(Debug, Clone)]
-pub struct FileLocation {
-    pub repository_id: String,
-    pub path: String,
 }
 
 pub struct MergeFileBranches {
@@ -442,11 +436,7 @@ impl<'a> Application<'a> {
             .map_err(error)
     }
 
-    pub(crate) fn authorize_file_location(
-        &self,
-        file: &str,
-        location: Option<&FileLocation>,
-    ) -> Result<(), ApiError> {
+    pub(crate) fn authorize_file(&self, file: &str) -> Result<(), ApiError> {
         let version = self
             .engine
             .state()
@@ -454,28 +444,7 @@ impl<'a> Application<'a> {
             .values()
             .find(|version| version.file_id == file)
             .ok_or_else(|| ApiError::new(404, "FILE_NOT_FOUND", "file not found"))?;
-        let repo = repo_for_history(self.engine, &version.history_tree_id)?;
-        if let Some(location) = location {
-            name_policy::validate_path(&location.path).map_err(ApiError::invalid)?;
-            if location.repository_id != repo.repository_id
-                || !self
-                    .engine
-                    .list_tree(&repo.main_branch_id)
-                    .map_err(error)?
-                    .iter()
-                    .any(|entry| {
-                        entry.kind == "file"
-                            && entry.file_id == file
-                            && entry.lookup_key == name_policy::path_key(&location.path)
-                    })
-            {
-                return Err(ApiError::new(
-                    404,
-                    "FILE_NOT_FOUND",
-                    "file is not present at this logical path",
-                ));
-            }
-        }
+        repo_for_history(self.engine, &version.history_tree_id)?;
         Ok(())
     }
 
@@ -483,21 +452,22 @@ impl<'a> Application<'a> {
         &mut self,
         command: MergeFileBranches,
     ) -> Result<storage_engine::OperationResult, ApiError> {
-        self.authorize_file_location(&command.file_id, command.location.as_ref())?;
+        self.authorize_file(&command.file_id)?;
         if !command.confirmed {
             return Err(ApiError::invalid(
                 "confirm the chosen result and surviving branch before merging",
             ));
         }
         self.engine
-            .merge_file_branches(
-                &command.file_id,
-                &command.inputs,
-                &command.chosen_node_id,
-                &command.surviving_branch_id,
-                &self.identity.principal,
-                &command.operation_id,
-            )
+            .merge_file_branches(storage_engine::FileBranchMergeRequest {
+                file_id: &command.file_id,
+                inputs: &command.inputs,
+                chosen_node_id: &command.chosen_node_id,
+                surviving_branch_id: &command.surviving_branch_id,
+                location: command.location.as_ref(),
+                principal: &self.identity.principal,
+                operation_id: &command.operation_id,
+            })
             .map_err(error)
     }
 
