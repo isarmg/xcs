@@ -338,9 +338,30 @@ impl<'a> Application<'a> {
         command: MergeLink,
     ) -> Result<storage_contract::MergeLink, ApiError> {
         repo_for_history(self.engine, &command.history_tree_id)?;
-        for branch in [&command.source_branch_id, &command.target_branch_id] {
-            if repo_for_branch(self.engine, branch)?.history_tree_id != command.history_tree_id {
-                return Err(ApiError::forbidden());
+        // A split can move both original endpoints after this operation was
+        // published. Admit only its original owner/history to core replay;
+        // the core still requires the exact original request digest.
+        let replay = self
+            .engine
+            .state()
+            .operations
+            .get(&command.operation_id)
+            .is_some_and(|operation| {
+                operation.kind == "merge-link.create"
+                    && operation.history_tree_id.as_deref()
+                        == Some(command.history_tree_id.as_str())
+            })
+            && self
+                .engine
+                .operation_owner(&command.operation_id)
+                .as_deref()
+                == Some(self.identity.principal.as_str());
+        if !replay {
+            for branch in [&command.source_branch_id, &command.target_branch_id] {
+                if repo_for_branch(self.engine, branch)?.history_tree_id != command.history_tree_id
+                {
+                    return Err(ApiError::forbidden());
+                }
             }
         }
         self.engine

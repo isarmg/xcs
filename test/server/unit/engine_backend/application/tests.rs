@@ -338,6 +338,97 @@ fn typed_branch_rejects_cross_repository_source() {
     });
     assert_eq!(result.unwrap_err().code, "HISTORY_NODE_NOT_FOUND");
 }
+
+#[test]
+fn merge_link_retry_replays_original_scope_after_split_and_restart() {
+    let (root, mut engine, repo, owner) = fixture();
+    let root_commit = engine.state().histories[&repo.history_tree_id]
+        .root_commit_id
+        .clone();
+    let side = engine
+        .create_branch(&root_commit, "side", &owner.principal, &new_id("op"))
+        .unwrap();
+    let workspace = engine
+        .create_workspace(&repo.main_branch_id, &owner.principal)
+        .unwrap();
+    engine
+        .stage_bytes(&workspace.workspace_id, "file.txt", b"body")
+        .unwrap();
+    let cut = engine
+        .commit_workspace(storage_engine::CommitRequest {
+            workspace_id: workspace.workspace_id,
+            operation_id: new_id("op"),
+            principal: owner.principal.clone(),
+            expected_head: workspace.base_head,
+            fencing_token: workspace.fencing_token,
+            message: "cut".into(),
+            request_digest: None,
+        })
+        .unwrap()
+        .commit_id
+        .unwrap();
+    let command = MergeLink {
+        history_tree_id: repo.history_tree_id.clone(),
+        source_branch_id: side.branch_id,
+        source_commit_id: side.head_commit_id,
+        target_branch_id: repo.main_branch_id,
+        target_commit_id: cut.clone(),
+        operation_id: new_id("op"),
+    };
+    let original = Application::new(&mut engine, &owner)
+        .merge_link(command.clone())
+        .unwrap();
+    let plan = engine
+        .create_split_plan(&repo.history_tree_id, &cut, &owner.principal)
+        .unwrap();
+    let split = engine
+        .commit_plan(&plan.plan_id, &owner.principal, &new_id("op"))
+        .unwrap();
+    for reopened in [false, true] {
+        if reopened {
+            drop(engine);
+            engine = Engine::open(&root.path().join("system")).unwrap();
+        }
+        let before = storage_engine::canonical_json(engine.state()).unwrap();
+        let replay = Application::new(&mut engine, &owner)
+            .merge_link(command.clone())
+            .unwrap();
+        assert_eq!(
+            storage_engine::canonical_json(&replay).unwrap(),
+            storage_engine::canonical_json(&original).unwrap()
+        );
+        let mut changed = command.clone();
+        changed.target_commit_id = root_commit.clone();
+        assert_eq!(
+            Application::new(&mut engine, &owner)
+                .merge_link(changed)
+                .unwrap_err()
+                .code,
+            "IDEMPOTENCY_KEY_REUSED"
+        );
+        let mut wrong_history = command.clone();
+        wrong_history.history_tree_id = split.history_tree_id.clone().unwrap();
+        assert!(
+            Application::new(&mut engine, &owner)
+                .merge_link(wrong_history)
+                .is_err()
+        );
+        let mut new_request = command.clone();
+        new_request.operation_id = new_id("op");
+        assert_eq!(
+            Application::new(&mut engine, &owner)
+                .merge_link(new_request)
+                .unwrap_err()
+                .code,
+            "TREE_MOVED"
+        );
+        assert_eq!(
+            storage_engine::canonical_json(engine.state()).unwrap(),
+            before
+        );
+    }
+}
+
 #[test]
 fn upload_finalization_rechecks_completed_session_revocation() {
     for password_change in [false, true] {

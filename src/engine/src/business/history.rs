@@ -29,6 +29,7 @@ fn branch_contains_commit(state: &State, branch: &Branch, target: &str) -> Resul
         }
     }
 }
+
 impl Engine {
     /// The frozen readable parent of a file that has no branch-owned body yet.
     pub fn pending_file_source(&self, branch_id: &str, file_id: &str) -> Option<&str> {
@@ -310,11 +311,24 @@ impl Engine {
                 Ok(json!({"merge_link_id":id,"history_tree_id":history}))
             },
         )?;
-        self.state
-            .merge_links
-            .get(op.result["merge_link_id"].as_str().unwrap_or(""))
-            .cloned()
-            .ok_or_else(|| Error::new("STATE_INVALID", "merge-link result missing"))
+        // A later split can remap the link or replace it with audit boundaries.
+        // Reconstruct the original response only after mutate has matched the
+        // immutable receipt to this exact request and actor.
+        Ok(MergeLink {
+            merge_link_id: op.result["merge_link_id"]
+                .as_str()
+                .ok_or_else(|| Error::new("STATE_INVALID", "merge-link receipt identity missing"))?
+                .into(),
+            history_tree_id: op
+                .history_tree_id
+                .ok_or_else(|| Error::new("STATE_INVALID", "merge-link receipt history missing"))?,
+            source_branch_id: source_branch.into(),
+            source_commit_id: source_commit.into(),
+            target_branch_id: target_branch.into(),
+            target_commit_id: target_commit.into(),
+            author: principal.into(),
+            operation_id: operation.into(),
+        })
     }
     pub fn archive_branch(
         &mut self,
@@ -407,3 +421,7 @@ impl Engine {
         Ok(json!({"left":left,"right":right,"changes":changes}))
     }
 }
+
+#[cfg(test)]
+#[path = "../../../../test/engine/unit/business/history/replay_tests.rs"]
+mod replay_tests;
