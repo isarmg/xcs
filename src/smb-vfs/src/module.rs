@@ -572,7 +572,8 @@ unsafe extern "C" fn deny_sendfile(
     _offset: sdk::off_t,
     _count: usize,
 ) -> isize {
-    // Require the read callback so current ACLs are checked for every read.
+    // Require the read callback so authentication and share binding are checked
+    // for every read.
     errno(libc::ENOTSUP);
     -1
 }

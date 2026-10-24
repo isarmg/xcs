@@ -3,7 +3,8 @@
 //! Framework- and database-independent administrator authentication primitives.
 //!
 //! ZXS's HTTP adapters own admission, persistence, cookies, expiry and security
-//! audit. File-user and repository ACL decisions belong to the storage core.
+//! audit. The storage core enforces object and transaction invariants; the system
+//! has no per-user ACLs.
 //! This crate establishes credential primitives, never storage authority.
 
 use argon2::{
