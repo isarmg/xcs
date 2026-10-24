@@ -335,7 +335,7 @@ async fn self_password_change_is_csrf_protected_and_restored_from_pool_control_s
 }
 
 #[tokio::test]
-async fn maximum_password_change_accepts_escaped_json_and_rejects_errors_without_logout() {
+async fn maximum_password_login_and_change_accept_escaped_json_without_losing_body_bounds() {
     let root = tempfile::tempdir().unwrap();
     let system = root.path().join("system");
     let config = Config::development([
@@ -352,15 +352,48 @@ async fn maximum_password_change_accepts_escaped_json_and_rejects_errors_without
         .protect_auth(AuthStore::initialize(&system, "admin", &current_password).unwrap())
         .unwrap();
     let app = storage_server::router(backend, auth, ServerConfig::loopback(&system)).unwrap();
-    let (status, session) = send(
-        &app,
-        None,
-        "POST",
-        "/api/auth/login",
-        Some(json!({"username":"admin", "password":current_password})),
+    // The login boundary must admit the same legal JSON encoding as a password
+    // change, even when every decoded password byte uses a Unicode escape.
+    let encoded_login = format!(
+        "{{\"username\":\"admin\",\"password\":\"{}\"}}",
+        r"\u005c".repeat(1024)
+    );
+    assert!(encoded_login.len() > 6 * 1024 && encoded_login.len() < 8 * 1024);
+    let mut oversized_login = encoded_login.as_bytes().to_vec();
+    oversized_login.resize(8 * 1024 + 1, b' ');
+    let logged_in = app
+        .clone()
+        .oneshot(
+            Request::builder()
+                .method("POST")
+                .uri("/api/auth/login")
+                .header("content-type", "application/json")
+                .body(Body::from(encoded_login))
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(logged_in.status(), StatusCode::OK);
+    let session: Value = json_codec::from_slice(
+        &http_routing::body::to_bytes(logged_in.into_body(), 8192)
+            .await
+            .unwrap(),
     )
-    .await;
-    assert_eq!(status, StatusCode::OK);
+    .unwrap();
+    let oversized = app
+        .clone()
+        .oneshot(
+            Request::builder()
+                .method("POST")
+                .uri("/api/auth/login")
+                .header("content-type", "application/json")
+                .body(Body::from(oversized_login))
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(oversized.status(), StatusCode::PAYLOAD_TOO_LARGE);
+    assert!(!oversized.headers().contains_key("set-cookie"));
     let token = session["token"].as_str().expect("login token missing");
     let csrf = session["csrf_token"].as_str().expect("CSRF token missing");
     let cookie = format!("zxs_session={token}");

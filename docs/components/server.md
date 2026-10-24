@@ -54,6 +54,8 @@ HTTP 监听地址必须是回环地址。对外部署由同机反向代理终止
 
 `POST /api/auth/login` 接受严格的 `{username,password}`，返回 `token`、`csrf_token`、`principal` 与十进制字符串 `expires_at`，同时设置 HttpOnly、SameSite=Strict 的 `zxs_session` cookie；生产 HTTPS 模式带 Secure。会话默认 12 小时有效，最多 64 个，达到上限返回 429。密码采用 Argon2id，持久状态只保存会话 token 摘要。每个来源 IP 与用户名组合每分钟最多尝试登录 10 次；密码验证保持独立有界并发。
 
+登录 JSON 请求体上限为 8 KiB，改密为 16 KiB，容纳合法密码的 JSON Unicode 转义膨胀；解码后的密码规则不变。超过字节上限返回 413，普通请求体仍受 30 秒总期限约束，不放宽密码验证并发或尝试次数限制。
+
 `GET /api/auth/me` 只返回 `principal`、`csrf_token`。`POST /api/auth/logout` 持久撤销当前会话并返回 `{logged_out:true}`，清除 cookie。Cookie 变更请求需要精确 Origin 和 `X-CSRF-Token`；Bearer 认证不要求 CSRF，但提供的 Origin 仍必须通过检查。令牌、CSRF 和密码不进入日志。
 
 `POST /api/auth/password` 只接受 `current_password`、`new_password`。新密码遵守 12 至 1024 UTF-8 字节且无 ASCII 控制字符的共享规则。旧密码不正确返回 `403 CURRENT_PASSWORD_INVALID` 并保留会话；成功返回 `{changed:true,reauthentication_required:true}`，推进凭据代数、撤销全部会话并清除 cookie。每个来源 IP 和管理员主体分别限制每分钟 10 次改密尝试，与登录共享密码计算并发上限。变更先耐久发布到系统盘主库，不以数据盘可用作为登录或改密的前提。

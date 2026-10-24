@@ -207,7 +207,7 @@ async fn bounded_json_routes_return_payload_too_large() {
     let app = application(root.path());
     let (token, _, _) = authenticated(&app).await;
     for (path, limit) in [
-        ("/api/auth/login", 4096),
+        ("/api/auth/login", 8 * 1024),
         ("/api/auth/password", 16 * 1024),
         ("/api/repositories", 1024 * 1024),
     ] {

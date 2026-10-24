@@ -369,7 +369,8 @@ pub(crate) async fn login(
 ) -> Result<Response, ApiError> {
     same_origin(request.headers(), &state.config, false)?;
     let ip = client_ip(&request, &state.config)?;
-    let bytes = crate::http_boundary::read_body(request, 4096).await?;
+    // Legal JSON Unicode escapes can use six bytes per decoded password byte.
+    let bytes = crate::http_boundary::read_body(request, 8 * 1024).await?;
     let body: Login = storage_contract::decode_strict(&bytes).map_err(ApiError::invalid)?;
     let pending = PendingLogin::acquire(&state.pending_logins, &body.username)?;
     let delay = admit_login(&state.attempts, ip, &body.username)?;
