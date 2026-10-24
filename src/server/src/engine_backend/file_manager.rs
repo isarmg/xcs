@@ -98,6 +98,39 @@ fn admit_root_operation(
     Ok(())
 }
 
+/// Named repositories and a disk-root tree share one displayed namespace.
+/// A normalized first component must select exactly one owner, for both reads
+/// and writes. Explicit repository/entry identities remain independent of it.
+fn ensure_unambiguous_disk_path(
+    engine: &Engine,
+    root: &Repository,
+    path: &str,
+) -> Result<(), ApiError> {
+    let first = path.split('/').next().unwrap_or("");
+    let key = name_policy::lookup_key(first);
+    let names = engine
+        .state()
+        .repositories
+        .values()
+        .filter(|repo| repo.primary_slot_id == root.primary_slot_id && !repo.file_manager_root)
+        .map(|repo| name_policy::lookup_key(&repo.name))
+        .filter(|name| path.is_empty() || *name == key)
+        .collect::<BTreeSet<_>>();
+    if !names.is_empty()
+        && engine
+            .list_tree_ref(&root.main_branch_id)
+            .map_err(error)?
+            .iter()
+            .any(|entry| names.contains(&entry.lookup_key))
+    {
+        return Err(ApiError::conflict(
+            "NAME_COLLISION",
+            "a named repository conflicts with a disk-root entry; use an explicit repository identity to rename the entry",
+        ));
+    }
+    Ok(())
+}
+
 fn resolve_existing(
     engine: &Engine,
     slot: &str,
@@ -113,6 +146,15 @@ fn resolve_existing(
         ));
     }
     let (primary, relative) = (slot.to_owned(), value);
+    let existing = engine
+        .state()
+        .repositories
+        .values()
+        .find(|r| r.primary_slot_id == primary && r.file_manager_root)
+        .cloned();
+    if let Some(root) = &existing {
+        ensure_unambiguous_disk_path(engine, root, relative)?;
+    }
     let first = relative.split('/').next().unwrap_or("");
     if let Some(repo) = engine
         .state()
@@ -141,12 +183,6 @@ fn resolve_existing(
                 .into(),
         )));
     }
-    let existing = engine
-        .state()
-        .repositories
-        .values()
-        .find(|r| r.primary_slot_id == primary && r.file_manager_root)
-        .cloned();
     let Some(repo) = existing else {
         return Ok(None);
     };

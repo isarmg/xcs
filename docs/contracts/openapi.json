@@ -1237,7 +1237,7 @@
             }
           },
           "409": {
-            "description": "BACKUP_PATH_CONFLICT：已授权容器的规范化备份逻辑路径冲突（文件/文件或文件/目录），不覆盖任何正文；修改用户prefix后重试。不可访问的仓库先过滤，不因其冲突泄露信息。",
+            "description": "NAME_COLLISION：主盘命名仓库与磁盘根顶层条目的规范化名称冲突，拒绝根列表及冲突子路径，显式仓库身份与无冲突路径仍可使用。BACKUP_PATH_CONFLICT：已授权容器的规范化备份逻辑路径冲突（文件/文件或文件/目录），不覆盖任何正文；修改用户prefix后重试。不可访问的仓库先过滤，不因其冲突泄露信息。",
             "content": {
               "application/json": {
                 "schema": {
