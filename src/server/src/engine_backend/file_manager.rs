@@ -100,7 +100,6 @@ fn admit_root_operation(
 
 fn resolve_existing(
     engine: &Engine,
-    identity: &Identity,
     slot: &str,
     value: &str,
     access: DiskAccess,
@@ -126,15 +125,6 @@ fn resolve_existing(
         })
         .cloned()
     {
-        authorize_access(
-            identity,
-            &repo,
-            if write {
-                RepositoryAccess::Write
-            } else {
-                RepositoryAccess::Read
-            },
-        )?;
         if !eligible(engine, slot, &repo) {
             return Err(ApiError::new(
                 404,
@@ -160,15 +150,6 @@ fn resolve_existing(
     let Some(repo) = existing else {
         return Ok(None);
     };
-    authorize_access(
-        identity,
-        &repo,
-        if write {
-            RepositoryAccess::Write
-        } else {
-            RepositoryAccess::Read
-        },
-    )?;
     Ok(Some((repo, relative.into())))
 }
 fn empty_directory() -> ApiError {
@@ -177,11 +158,10 @@ fn empty_directory() -> ApiError {
 
 fn resolve_read(
     engine: &Engine,
-    identity: &Identity,
     slot: &str,
     value: &str,
 ) -> Result<(Repository, String), ApiError> {
-    resolve_existing(engine, identity, slot, value, DiskAccess::Read)?.ok_or_else(empty_directory)
+    resolve_existing(engine, slot, value, DiskAccess::Read)?.ok_or_else(empty_directory)
 }
 
 fn resolve(
@@ -191,26 +171,20 @@ fn resolve(
     value: &str,
     access: DiskAccess,
 ) -> Result<(Repository, String), ApiError> {
-    if let Some(resolved) = resolve_existing(engine, identity, slot, value, access)? {
+    if let Some(resolved) = resolve_existing(engine, slot, value, access)? {
         return Ok(resolved);
     }
     if access != DiskAccess::Create {
         return Err(empty_directory());
     }
-    identity.require_admin()?;
+
     let repo = engine
         .create_disk_root(slot, &identity.principal, &storage_engine::new_id("op"))
         .map_err(error)?;
-    authorize_access(identity, &repo, RepositoryAccess::Write)?;
     Ok((repo, value.into()))
 }
 
-fn file_repo<'a>(
-    engine: &'a Engine,
-    identity: &Identity,
-    file: &str,
-    write: bool,
-) -> Result<&'a Repository, ApiError> {
+fn file_repo<'a>(engine: &'a Engine, file: &str) -> Result<&'a Repository, ApiError> {
     let version = engine
         .state()
         .versions
@@ -218,15 +192,6 @@ fn file_repo<'a>(
         .find(|v| v.file_id == file)
         .ok_or_else(|| ApiError::new(404, "FILE_NOT_FOUND", "file not found"))?;
     let repo = repo_for_history(engine, &version.history_tree_id)?;
-    authorize_access(
-        identity,
-        repo,
-        if write {
-            RepositoryAccess::Write
-        } else {
-            RepositoryAccess::Read
-        },
-    )?;
     Ok(repo)
 }
 fn listed_entry(
@@ -290,12 +255,10 @@ fn directory(name: &str, display: &str, id: &str) -> Value {
 /// projection, so scope discovery must use stable directory identities.
 pub(super) fn directory_branch_scopes(
     engine: &Engine,
-    identity: &Identity,
     repo: &str,
     requested_path: Option<&str>,
 ) -> Result<Value, ApiError> {
     let repository = repository(engine, repo)?;
-    authorize_access(identity, repository, RepositoryAccess::Read)?;
     if let Some(path) = requested_path.filter(|path| !path.is_empty()) {
         name_policy::validate_path(path).map_err(ApiError::invalid)?;
     }
@@ -357,46 +320,41 @@ pub(super) fn directory_branch_scopes(
     Ok(json!({"repository_id":repo,"directory_branches":branches}))
 }
 
-fn root_has_virtual_directories(engine: &Engine, identity: &Identity, slot: &str) -> bool {
-    engine.state().repositories.values().any(|repo| {
-        repo.primary_slot_id == slot
-            && !repo.file_manager_root
-            && authorize_access(identity, repo, RepositoryAccess::Read).is_ok()
-    })
+fn root_has_virtual_directories(engine: &Engine, slot: &str) -> bool {
+    engine
+        .state()
+        .repositories
+        .values()
+        .any(|repo| repo.primary_slot_id == slot && !repo.file_manager_root)
 }
-fn entries(engine: &Engine, identity: &Identity, input: &Value) -> Result<Value, ApiError> {
+fn entries(engine: &Engine, input: &Value) -> Result<Value, ApiError> {
     let slot = field(input, "slot_id")?;
     let value = path(input)?;
     let is_primary = disk(engine, slot)?.level == 1;
     if !is_primary {
-        return backup_namespace::entries(engine, identity, slot, value);
+        return backup_namespace::entries(engine, slot, value);
     }
     let (primary, relative) = (slot.to_owned(), value);
     let mut values = Vec::new();
     let root = relative.is_empty();
     if root {
         for repo in engine.state().repositories.values().filter(|r| {
-            r.primary_slot_id == primary
-                && !r.file_manager_root
-                && eligible(engine, slot, r)
-                && authorize_access(identity, r, RepositoryAccess::Read).is_ok()
+            r.primary_slot_id == primary && !r.file_manager_root && eligible(engine, slot, r)
         }) {
             let display = repo.name.clone();
             values.push(directory(&repo.name, &display, &repo.repository_id));
         }
     }
-    let resolved = resolve_read(engine, identity, slot, value);
+    let resolved = resolve_read(engine, slot, value);
     let mut context = Value::Null;
     let mut directory_file_count = 0;
     let mut directory_branches = Vec::new();
     let mut default_branch_scope = false;
-    let directory_branches_supported =
-        !(root && root_has_virtual_directories(engine, identity, &primary));
-    let mut writable = identity.admin;
+    let directory_branches_supported = !(root && root_has_virtual_directories(engine, &primary));
+    let writable = true;
     match resolved {
         Ok((repo, within)) => {
             default_branch_scope = within.is_empty();
-            writable = authorize_access(identity, &repo, RepositoryAccess::Write).is_ok();
             let tree = engine.list_tree_ref(&repo.main_branch_id).map_err(error)?;
             let within_key = name_policy::path_key(&within);
             if !within.is_empty()
@@ -416,12 +374,14 @@ fn entries(engine: &Engine, identity: &Identity, input: &Value) -> Result<Value,
                 repo.name.clone()
             };
             if directory_branches_supported {
-                directory_branches =
-                    directory_branch_scopes(engine, identity, &repo.repository_id, Some(&within))?
-                        ["directory_branches"]
-                        .as_array()
-                        .cloned()
-                        .unwrap_or_default();
+                directory_branches = directory_branch_scopes(
+                    engine,
+                    &repo.repository_id,
+                    Some(&within),
+                )?["directory_branches"]
+                    .as_array()
+                    .cloned()
+                    .unwrap_or_default();
             }
             let selected_prefix = if within.is_empty() {
                 String::new()
@@ -469,9 +429,9 @@ fn entries(engine: &Engine, identity: &Identity, input: &Value) -> Result<Value,
     )
 }
 
-fn file_history(engine: &Engine, identity: &Identity, input: &Value) -> Result<Value, ApiError> {
+fn file_history(engine: &Engine, input: &Value) -> Result<Value, ApiError> {
     let file = field(input, "file_id")?;
-    let repo = file_repo(engine, identity, file, false)?;
+    let repo = file_repo(engine, file)?;
     let state = engine.state();
     let requested_repo = query(input, "repository_id");
     let requested_path = query(input, "path");
@@ -643,45 +603,27 @@ fn file_history(engine: &Engine, identity: &Identity, input: &Value) -> Result<V
 }
 
 /// Capture admission before physical disk probes leave the engine lock.
-pub(super) fn disk_access(engine: &Engine, identity: &Identity) -> BTreeMap<String, bool> {
+pub(super) fn disk_access(engine: &Engine) -> BTreeMap<String, bool> {
     engine
         .config()
         .disks
         .iter()
-        .filter_map(|disk| {
-            let visible = identity.admin
-                || engine.state().repositories.values().any(|repo| {
-                    eligible(engine, &disk.slot_id, repo)
-                        && authorize_access(identity, repo, RepositoryAccess::Read).is_ok()
-                });
-            if !visible {
-                return None;
-            }
-            let writable = disk.level == 1
-                && (identity.admin
-                    || engine.state().repositories.values().any(|repo| {
-                        repo.primary_slot_id == disk.slot_id
-                            && authorize_access(identity, repo, RepositoryAccess::Write).is_ok()
-                    }));
-            Some((disk.slot_id.clone(), writable))
-        })
+        .map(|disk| (disk.slot_id.clone(), disk.level == 1))
         .collect()
 }
 
 /// Read handlers cannot obtain mutable Engine access or create lazy disk roots.
 pub(super) fn read(
     engine: &Engine,
-    identity: &Identity,
     action: crate::BackendAction,
     input: Value,
 ) -> Result<Value, ApiError> {
     match action {
-        crate::BackendAction::FileManagerEntries => entries(engine, identity, &input),
-        crate::BackendAction::FileManagerFileHistory => file_history(engine, identity, &input),
+        crate::BackendAction::FileManagerEntries => entries(engine, &input),
+        crate::BackendAction::FileManagerFileHistory => file_history(engine, &input),
         crate::BackendAction::FileManagerDownloadContext => {
             keys(&input, &["repository_id", "path", "version_id"])?;
             let repo = repository(engine, field(&input, "repository_id")?)?;
-            authorize_access(identity, repo, RepositoryAccess::Read)?;
             let path = field(&input, "path")?;
             name_policy::validate_path(path).map_err(ApiError::invalid)?;
             let version = engine
@@ -720,9 +662,6 @@ pub(super) fn read(
                 let Ok(repo) = repo_for_history(engine, &commit.history_tree_id) else {
                     continue;
                 };
-                if authorize_access(identity, repo, RepositoryAccess::Read).is_err() {
-                    continue;
-                }
                 if matches!(
                     commit.kind.as_str(),
                     "root"
@@ -853,7 +792,7 @@ pub(super) fn read(
                 let Some(file) = operation.result.get("file_id").and_then(Value::as_str) else {
                     continue;
                 };
-                let Ok(repo) = file_repo(engine, identity, file, false) else {
+                let Ok(repo) = file_repo(engine, file) else {
                     continue;
                 };
                 let path_node = operation
@@ -915,9 +854,6 @@ pub(super) fn read(
                 let Some(repo) = engine.state().repositories.get(&branch.repository_id) else {
                     continue;
                 };
-                if authorize_access(identity, repo, RepositoryAccess::Read).is_err() {
-                    continue;
-                }
                 let relative = operation
                     .result
                     .get("path")
@@ -956,9 +892,6 @@ pub(super) fn read(
                 else {
                     continue;
                 };
-                if authorize_access(identity, repo, RepositoryAccess::Read).is_err() {
-                    continue;
-                }
                 let path = operation.result["scope"]["path"].as_str().unwrap_or("");
                 let display = if repo.file_manager_root {
                     path.to_owned()
@@ -979,9 +912,6 @@ pub(super) fn read(
                 let Ok(repo) = repo_for_history(engine, &node.history_tree_id) else {
                     continue;
                 };
-                if authorize_access(identity, repo, RepositoryAccess::Read).is_err() {
-                    continue;
-                }
                 let display = if repo.file_manager_root {
                     node.path.clone()
                 } else {
@@ -1023,9 +953,6 @@ pub(super) fn read(
                 let Some(repo) = engine.state().repositories.get(&branch.repository_id) else {
                     continue;
                 };
-                if authorize_access(identity, repo, RepositoryAccess::Read).is_err() {
-                    continue;
-                }
                 let display = if repo.file_manager_root {
                     tree.path.clone()
                 } else if tree.path.is_empty() {
@@ -1060,13 +987,9 @@ pub(super) fn read(
         }
         crate::BackendAction::FileManagerBackupConfiguration => {
             let repo = field(&input, "repository_id")?;
-            authorize_access(identity, repository(engine, repo)?, RepositoryAccess::Read)?;
+            repository(engine, repo)?;
             engine
-                .backup_configuration_for(
-                    repo,
-                    query(&input, "path").unwrap_or(""),
-                    &identity.principal,
-                )
+                .backup_configuration(repo, query(&input, "path").unwrap_or(""))
                 .map_err(error)
         }
         _ => Err(ApiError::unsupported()),
@@ -1094,7 +1017,7 @@ pub(super) fn call(
             storage_engine::validate_branch_name(name).map_err(error)?;
             let operation = operation(&input)?;
             storage_contract::validate_id(operation, "op").map_err(ApiError::invalid)?;
-            if display.is_empty() && root_has_virtual_directories(engine, identity, slot) {
+            if display.is_empty() && root_has_virtual_directories(engine, slot) {
                 return Err(ApiError::new(
                     409,
                     "DIRECTORY_SCOPE_REQUIRED",
@@ -1296,7 +1219,7 @@ pub(super) fn call(
             } else {
                 field(&input, "file_id")?.into()
             };
-            file_repo(engine, identity, &file, true)?;
+            file_repo(engine, &file)?;
             let note = input
                 .get("note")
                 .and_then(Value::as_str)
@@ -1324,7 +1247,7 @@ pub(super) fn call(
                 ],
             )?;
             let file = field(&input, "file_id")?;
-            file_repo(engine, identity, file, true)?;
+            file_repo(engine, file)?;
             let result = if let Some(node) = input.get("source_node_id") {
                 let node = node
                     .as_str()
@@ -1355,7 +1278,7 @@ pub(super) fn call(
         crate::BackendAction::FileManagerNodeNote => {
             keys(&input, &["file_id", "node_id", "note", "operation_id"])?;
             let file = field(&input, "file_id")?;
-            file_repo(engine, identity, file, true)?;
+            file_repo(engine, file)?;
             let note = input
                 .get("note")
                 .and_then(Value::as_str)
@@ -1383,9 +1306,7 @@ pub(super) fn call(
                 ],
             )?;
             let file = field(&input, "file_id")?;
-            let repo = file_repo(engine, identity, file, true)?
-                .repository_id
-                .clone();
+            let repo = file_repo(engine, file)?.repository_id.clone();
             if engine
                 .state()
                 .branches
@@ -1436,7 +1357,7 @@ pub(super) fn call(
         crate::BackendAction::FileManagerRenameBranch => {
             keys(&input, &["file_id", "branch_id", "name", "operation_id"])?;
             let file = field(&input, "file_id")?;
-            file_repo(engine, identity, file, true)?;
+            file_repo(engine, file)?;
             let result = engine
                 .rename_file_branch(
                     file,

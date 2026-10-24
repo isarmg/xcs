@@ -122,13 +122,9 @@ fn fixture() -> (tempfile::TempDir, Arc<Shared>, Arc<LostCommitReply>, String) {
             request_digest: None,
         })
         .unwrap();
-    let identity = Identity {
-        admission_session: None,
-        smb_binding: None,
-        principal: "alice".into(),
-        admin: false,
-        repositories: BTreeSet::from([repo.repository_id.clone()]),
-    };
+    let auth = Arc::new(Mutex::new(
+        AuthStore::initialize(&temp.path().join("auth"), "alice", "long-test-password").unwrap(),
+    ));
     let spool = temp.path().join("spool");
     fs::create_dir(&spool).unwrap();
     fs::set_permissions(&spool, fs::Permissions::from_mode(0o700)).unwrap();
@@ -140,6 +136,10 @@ fn fixture() -> (tempfile::TempDir, Arc<Shared>, Arc<LostCommitReply>, String) {
         revoked: AtomicBool::new(false),
         change_before_workspace: AtomicBool::new(false),
     });
+    backend
+        .inner
+        .set_management_auth(Arc::downgrade(&auth))
+        .unwrap();
     let budget = budget::Budget::recover(
         &spool,
         crate::SpoolLimits {
@@ -154,16 +154,34 @@ fn fixture() -> (tempfile::TempDir, Arc<Shared>, Arc<LostCommitReply>, String) {
         max_file_bytes: 4096,
         sessions_per_account: Mutex::new(BTreeMap::new()),
         backend: backend.clone(),
-        identities: BTreeMap::from([("alice".into(), identity)]),
+        username: "alice".into(),
+        auth,
         spool,
         file_writers: Mutex::new(BTreeSet::new()),
         namespace_operations: Mutex::new(BTreeSet::new()),
     });
     (temp, shared, backend, repo.main_branch_id)
 }
+fn identity(shared: &Shared) -> Identity {
+    shared.auth.lock().unwrap().sole_identity().unwrap()
+}
+fn repository(shared: &Shared) -> String {
+    shared
+        .backend
+        .call(
+            crate::BackendAction::Repositories,
+            &identity(shared),
+            json!({}),
+        )
+        .unwrap()["repositories"][0]["repository_id"]
+        .as_str()
+        .unwrap()
+        .to_owned()
+}
+
 fn session(shared: Arc<Shared>, branch: &str) -> Session {
     Session {
-        identity: shared.identities["alice"].clone(),
+        identity: identity(&shared),
         shared,
         branch: branch.into(),
         handles: BTreeMap::new(),
@@ -183,7 +201,7 @@ fn open_file(session: &mut Session, writable: bool) -> (OpenResult, File) {
 }
 
 fn select_pending_file(shared: &Shared, branch: &str) -> String {
-    let identity = &shared.identities["alice"];
+    let identity = &identity(shared);
     let tree = shared
         .backend
         .call(
@@ -209,7 +227,7 @@ fn select_pending_file(shared: &Shared, branch: &str) -> String {
 }
 
 fn directory_fixture(shared: &Shared) -> (String, String, String) {
-    let identity = &shared.identities["alice"];
+    let identity = &identity(shared);
     let repositories = shared
         .backend
         .call(crate::BackendAction::Repositories, identity, json!({}))
@@ -247,7 +265,7 @@ fn directory_fixture(shared: &Shared) -> (String, String, String) {
 }
 
 fn select_directory(shared: &Shared, repository: &str, directory: &str) {
-    shared.backend.call(crate::BackendAction::UpdateDefaultBranch, &shared.identities["alice"], json!({
+    shared.backend.call(crate::BackendAction::UpdateDefaultBranch, &identity(shared), json!({
         "repository_id":repository,"directory_branch_id":directory,"operation_id":new_id("op")
     })).unwrap();
 }
@@ -316,7 +334,7 @@ fn namespace_move_transfers_only_selected_directory_views_and_keeps_read_handle(
         client.dirty(opened.handle).unwrap();
         client.close(opened.handle, false).unwrap();
     }
-    let identity = &shared.identities["alice"];
+    let identity = &identity(&shared);
     let repo = shared
         .backend
         .call(crate::BackendAction::Repositories, identity, json!({}))
@@ -430,7 +448,7 @@ fn newly_created_ancestor_selection_fences_an_existing_create_handle() {
         .backend
         .call(
             crate::BackendAction::FileManagerDirectoryBranches,
-            &shared.identities["alice"],
+            &identity(&shared),
             json!({
                 "slot_id":"P01","path":"资料/future","name":"alternate","operation_id":new_id("op")
             }),
@@ -440,7 +458,7 @@ fn newly_created_ancestor_selection_fences_an_existing_create_handle() {
         .backend
         .call(
             crate::BackendAction::FileManagerDirectorySelect,
-            &shared.identities["alice"],
+            &identity(&shared),
             json!({
                 "slot_id":"P01","path":"资料/future","name":"alternate","operation_id":new_id("op")
             }),
@@ -476,7 +494,7 @@ fn nested_directory_switch_does_not_fence_an_unrelated_open_file() {
         .backend
         .call(
             crate::BackendAction::FileManagerDirectoryBranches,
-            &shared.identities["alice"],
+            &identity(&shared),
             json!({
                 "slot_id":"P01","path":"资料/nested","name":"alternate","operation_id":new_id("op")
             }),
@@ -488,7 +506,7 @@ fn nested_directory_switch_does_not_fence_an_unrelated_open_file() {
         .backend
         .call(
             crate::BackendAction::FileManagerDirectorySelect,
-            &shared.identities["alice"],
+            &identity(&shared),
             json!({
                 "slot_id":"P01","path":"资料/nested","name":"alternate","operation_id":new_id("op")
             }),
@@ -529,7 +547,10 @@ fn unix_rpc_default_switch_preserves_read_fds_and_targets_new_writes() {
         &mut wire,
         Request::Hello {
             protocol: PROTOCOL.into(),
-            capabilities: vec![WRITE_RESERVATION_CAPABILITY.into()],
+            capabilities: REQUIRED_CAPABILITIES
+                .iter()
+                .map(|value| (*value).into())
+                .collect(),
             username: "alice".into(),
             repository_id: repository.clone(),
         },
@@ -636,7 +657,7 @@ fn unwritten_branch_reads_parent_and_materializes_only_on_dirty_save() {
             .backend
             .call(
                 crate::BackendAction::FileManagerFileHistory,
-                &shared.identities["alice"],
+                &identity(&shared),
                 json!({"file_id":file}),
             )
             .unwrap()
@@ -725,7 +746,7 @@ fn explicit_truncation_materializes_an_empty_pending_branch() {
         .backend
         .call(
             crate::BackendAction::FileManagerFileHistory,
-            &shared.identities["alice"],
+            &identity(&shared),
             json!({"file_id":file}),
         )
         .unwrap();
@@ -1104,19 +1125,16 @@ async fn cancellation_closes_blocked_rpc_sessions_and_removes_its_socket() {
     fs::set_permissions(&parent, fs::Permissions::from_mode(0o700)).unwrap();
     let socket = parent.join("smb.sock");
     let server_socket = socket.clone();
-    let repository = shared.identities["alice"]
-        .repositories
-        .iter()
-        .next()
-        .unwrap()
-        .clone();
-    let identities = shared.identities.clone();
+    let repository = repository(&shared);
+    let username = shared.username.clone();
+    let auth = shared.auth.clone();
     let backend = shared.backend.clone();
     let server = tokio::spawn(async move {
         serve(
             &server_socket,
             smb_protocol::protocol::effective_uid(),
-            identities,
+            username,
+            auth,
             backend,
             crate::SpoolLimits::default(),
             4096,
@@ -1142,7 +1160,10 @@ async fn cancellation_closes_blocked_rpc_sessions_and_removes_its_socket() {
             wire.send(
                 &Request::Hello {
                     protocol: PROTOCOL.into(),
-                    capabilities: vec![WRITE_RESERVATION_CAPABILITY.into()],
+                    capabilities: REQUIRED_CAPABILITIES
+                        .iter()
+                        .map(|value| (*value).into())
+                        .collect(),
                     username: "alice".into(),
                     repository_id: repository,
                 },
@@ -1332,12 +1353,7 @@ fn unchanged_writable_close_cleans_up_but_disconnect_remains_uncertain() {
 fn established_sessions_preserve_idle_no_handle_read_and_unsaved_write() {
     use std::time::Duration;
     let (_temp, shared, _backend, _branch) = fixture();
-    let repository = shared.identities["alice"]
-        .repositories
-        .iter()
-        .next()
-        .unwrap()
-        .clone();
+    let repository = repository(&shared);
     let (client, server) = std::os::unix::net::UnixStream::pair().unwrap();
     let worker = std::thread::spawn(move || {
         run_connection(
@@ -1358,7 +1374,10 @@ fn established_sessions_preserve_idle_no_handle_read_and_unsaved_write() {
         &mut wire,
         Request::Hello {
             protocol: PROTOCOL.into(),
-            capabilities: vec![WRITE_RESERVATION_CAPABILITY.into()],
+            capabilities: REQUIRED_CAPABILITIES
+                .iter()
+                .map(|value| (*value).into())
+                .collect(),
             username: "alice".into(),
             repository_id: repository,
         },
@@ -1477,13 +1496,18 @@ fn oversized_existing_file_is_rejected_before_private_copy() {
 #[test]
 fn hello_rejects_missing_write_reservations_before_admitting_a_session() {
     let (_temp, shared, _backend, _branch) = fixture();
-    let repository = shared.identities["alice"]
-        .repositories
-        .iter()
-        .next()
-        .unwrap()
-        .clone();
-    for capabilities in [None, Some(json!([])), Some(json!(["unrelated"]))] {
+    let repository = repository(&shared);
+    for capabilities in [
+        None,
+        Some(json!([])),
+        Some(json!(["unrelated"])),
+        Some(json!([
+            smb_protocol::protocol::WRITE_RESERVATION_CAPABILITY
+        ])),
+        Some(json!([
+            smb_protocol::protocol::AUTHENTICATED_ACCOUNT_CAPABILITY
+        ])),
+    ] {
         let mut hello = json!({
             "op":"hello","protocol":PROTOCOL,"username":"alice","repository_id":repository
         });

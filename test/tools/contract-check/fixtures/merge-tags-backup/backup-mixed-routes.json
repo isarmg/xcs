@@ -27,20 +27,19 @@
     "B02",
     "C01"
   ],
-  "can_manage": false,
   "effective_generation": "1",
-  "effective_policy_id": "policy_049697a435044a919e8a45bd5432ee14",
+  "effective_policy_id": "policy_c1f78c72e099479fb20befbbad96e7f1",
   "file_count": "1",
   "generation": "1",
   "inherited": false,
   "max_copies": 2,
-  "policy_id": "policy_049697a435044a919e8a45bd5432ee14",
+  "policy_id": "policy_c1f78c72e099479fb20befbbad96e7f1",
   "route_slot_ids": [
     "P02",
     "B02"
   ],
   "scope": {
-    "id": "file_e86d95e8423a47249b703eec59152477",
+    "id": "file_cb78bbf9a84e4f8da200a64f78629093",
     "kind": "file",
     "path": "a.txt"
   },

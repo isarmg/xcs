@@ -62,12 +62,13 @@ struct Args {
     pub(crate) http_transfer_idle_seconds: u64,
     #[arg(long, default_value_t = 3600)]
     pub(crate) http_transfer_total_seconds: u64,
-    #[arg(long)]
+    #[arg(long, requires_all = ["smb_peer_uid", "smb_user"])]
     pub(crate) smb_socket: Option<PathBuf>,
     #[arg(long, requires = "smb_socket")]
     pub(crate) smb_peer_uid: Option<u32>,
-    #[arg(long, requires = "smb_socket")]
-    pub(crate) smb_user: Vec<String>,
+    /// Exact authenticated Samba account bound to the sole current ZXS account.
+    #[arg(long, requires = "smb_socket", value_parser = parse_smb_user)]
+    pub(crate) smb_user: Option<String>,
     /// SMB admitted private-copy extents, including retained disconnected descriptors.
     #[arg(long, default_value_t = 107_374_182_400)]
     pub(crate) smb_spool_bytes_per_account: u64,
@@ -184,20 +185,7 @@ async fn run(args: Args) -> Result<()> {
     };
     if let Some(socket) = smb_socket {
         let allowed_uid = smb_peer_uid.ok_or("--smb-peer-uid is required with --smb-socket")?;
-        let mut users = std::collections::BTreeMap::new();
-        for mapping in smb_user {
-            let (alias, principal) = mapping
-                .split_once('=')
-                .ok_or("--smb-user must be SambaUser=CoreAccount")?;
-            if alias.is_empty()
-                || users
-                    .insert(alias.to_owned(), principal.to_owned())
-                    .is_some()
-            {
-                return Err("SMB user mappings must be nonempty and unique".into());
-            }
-            authentication::require_canonical_administrator_username(principal)?;
-        }
+        let username = smb_user.ok_or("--smb-user is required with --smb-socket")?;
         config.smb = Some(storage_server::SmbConfig {
             spool_limits: storage_server::SpoolLimits {
                 bytes_per_account: smb_spool_bytes_per_account,
@@ -206,7 +194,7 @@ async fn run(args: Args) -> Result<()> {
             },
             socket,
             allowed_uid,
-            users,
+            username,
         });
     }
     let (backend, auth) = storage_server::management::open_service_with_options(
@@ -220,6 +208,12 @@ async fn run(args: Args) -> Result<()> {
         },
     )?;
     storage_server::serve(backend, auth, config).await
+}
+
+fn parse_smb_user(value: &str) -> std::result::Result<String, String> {
+    smb_protocol::protocol::validate_username(value)
+        .map(|()| value.to_owned())
+        .map_err(|error| error.to_string())
 }
 
 fn parse_setup_map(

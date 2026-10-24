@@ -122,7 +122,15 @@ fn all_named_directory_heads_pin_sources_until_every_head_advances() {
                     commit_id: source_commit.clone(),
                     entries: vec![source.clone()],
                     file_branches: BTreeMap::from([(source.file_id.clone(), shared.clone())]),
-                    file_contexts: BTreeMap::new(),
+                    file_contexts: BTreeMap::from([(
+                        source.lookup_key.clone(),
+                        FileContext {
+                            node_id: None,
+                            selection_generation: 0,
+                            branch_id: shared.clone(),
+                            inherited_from: None,
+                        },
+                    )]),
                     inherited_files: BTreeMap::new(),
                     directory_refs: BTreeMap::new(),
                     materialized: true,
@@ -663,7 +671,7 @@ fn split_keeps_pending_prefix_snapshots_and_remaps_mixed_snapshot_reservations()
 }
 
 #[test]
-fn split_preserves_identity_per_file_and_independent_acl_without_rebinding() {
+fn split_preserves_identity_per_file_and_requires_explicit_rebinding() {
     let (temp, mut engine, repo) = fixture();
     let cut = save(&mut engine, &repo.main_branch_id, b"first");
     let original = engine
@@ -691,10 +699,6 @@ fn split_preserves_identity_per_file_and_independent_acl_without_rebinding() {
     let new_repo_id = result.result["repository_id"].as_str().unwrap();
     let new_repo = &engine.state.repositories[new_repo_id];
     assert_ne!(new_repo_id, repo.repository_id);
-    assert_eq!(
-        new_repo.account_scope_repository_id.as_deref(),
-        Some(repo.repository_id.as_str())
-    );
     assert!(!new_repo.smb_enabled);
     assert_eq!(new_repo.smb_binding_generation, 1);
     assert!(!engine.state.repositories[&repo.repository_id].smb_enabled);
@@ -734,21 +738,6 @@ fn split_preserves_identity_per_file_and_independent_acl_without_rebinding() {
     assert_eq!(
         engine.graph(&repo.history_tree_id).unwrap().commits.len(),
         1
-    );
-    engine
-        .set_grants(new_repo_id, Grants::owner("bob"), "alice", &new_id("op"))
-        .unwrap();
-    assert!(
-        engine.state.repositories[&repo.repository_id]
-            .grants
-            .manage
-            .contains("alice")
-    );
-    assert!(
-        !engine.state.repositories[new_repo_id]
-            .grants
-            .manage
-            .contains("alice")
     );
     assert_graph_closed(&engine, &repo.history_tree_id);
     assert_graph_closed(&engine, history);

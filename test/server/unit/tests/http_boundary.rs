@@ -142,7 +142,6 @@ async fn bounded_json_routes_return_payload_too_large() {
     for (path, limit) in [
         ("/api/auth/login", 4096),
         ("/api/auth/password", 16 * 1024),
-        ("/api/admin/accounts", 8192),
         ("/api/repositories", 1024 * 1024),
     ] {
         let response = app

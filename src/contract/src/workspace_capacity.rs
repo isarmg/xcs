@@ -28,22 +28,11 @@ pub enum CapacityWarning {
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq)]
 #[serialization(deny_unknown_fields)]
 pub struct WorkspaceCapacity {
-    #[serialization(
-        default,
-        skip_serializing_if = "Option::is_none",
-        deserialize_with = "present_scope"
-    )]
-    pub global: Option<WorkspaceCapacityScope>,
+    pub global: WorkspaceCapacityScope,
     pub principal: WorkspaceCapacityScope,
     pub warning: CapacityWarning,
     #[serialization(deserialize_with = "no_automatic_retirement")]
     pub automatic_retirement: bool,
-}
-
-fn present_scope<'de, D: data_serialization::Deserializer<'de>>(
-    deserializer: D,
-) -> Result<Option<WorkspaceCapacityScope>, D::Error> {
-    WorkspaceCapacityScope::deserialize(deserializer).map(Some)
 }
 
 fn no_automatic_retirement<'de, D: data_serialization::Deserializer<'de>>(

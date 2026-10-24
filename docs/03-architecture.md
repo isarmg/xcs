@@ -30,14 +30,14 @@ flowchart TB
         SACCESS[桌面及移动端 SMB 访问]
         SAMBA[Samba SMB 服务]
         SBRIDGE[受控 SMB 业务桥接]
-        SAUTH[SMB 身份映射 / 共享主分支绑定 / 基础操作授权]
+        SAUTH[SMB 单一认证身份 / 共享主分支绑定 / 基础操作约束]
         SACCESS --> SAMBA
         SAMBA --> SBRIDGE
         SBRIDGE --> SAUTH
     end
 
     subgraph MANAGEMENT[系统盘管理面]
-        PRIMARY[本机账户 / 授权 / 会话主存储]
+        PRIMARY[唯一管理员凭据 / 会话主存储]
         HOST[主机诊断 / 受保护初始化与恢复]
     end
     API --> PRIMARY
@@ -98,7 +98,7 @@ flowchart TB
     MAINT --> GC
 ```
 
-Web 经 HTTPS 业务 API 接入，SMB 经 Samba 和服务端桥接接入；两条用户路径分别建立连接，在服务端共用权限校验、存储核心、持久化和分层备份。SMB 的主分支与基础操作限制由服务端执行，Web 私有工作区的分支选择不改变 SMB 目标。
+Web 经 HTTPS 业务 API 接入，SMB 经 Samba 和服务端桥接接入；两条用户路径分别建立连接，在服务端共用认证边界、存储核心、持久化和分层备份。SMB 的主分支与基础操作限制由服务端执行，Web 私有工作区的分支选择不改变 SMB 目标。
 
 <a id="s03-02"></a>
 
@@ -112,7 +112,7 @@ SMB 服务及 API 网关不直接共享版本对象目录。Storage Daemon 仍�
 
 Web 在浏览器中提供认证、文件元数据、历史与管理状态界面，不提供文件上传、下载、正文预览或传输任务页。SMB 入口由 Samba 和服务端业务桥接独立提供；受控 HTTP 内容接口和客户端库仍保留，但不是产品 CLI。`zxs` 直接启动守护进程；`zxs-rescue` 只提供明确的离线恢复、历史包与未初始化配置草稿工具，不提供日常管理命令或远程客户端。
 
-管理 HTTP、登录和主机诊断不等待数据引擎打开。`management-auth.json` 是账户、授权和会话的系统盘主存储；数据盘只接收不含会话的凭据灾备快照，不是离线授权回退。缺失已有主存储时保持恢复要求，不因数据盘可读而自动回滚凭据。详见[管理面边界](management/control-plane.md)。
+管理 HTTP、登录和主机诊断不等待数据引擎打开。`management-auth.json` 是唯一管理员凭据和会话的系统盘主存储；数据盘只接收不含会话的凭据灾备快照，不是离线授权回退。缺失已有主存储时保持恢复要求，不因数据盘可读而自动回滚凭据。详见[管理面边界](management/control-plane.md)。
 
 系统盘不是“仅可丢弃索引”：除独立管理主存储外，池系统目录还保存配置、工作区记录与请求证据；`stage_bytes` 和范围写入会在该目录创建真实正文临时文件，HTTP 暂存也有独立预算与保留规则。不能按“都是缓存”清空系统目录，也不宣称已经将所有正文暂存搬到数据盘。
 

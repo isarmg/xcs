@@ -114,10 +114,6 @@ pub(crate) fn package_proof_bytes(
     )?
     .len())
 }
-// Previously published packages accepted notes up to 4096 bytes. Keep the
-// reader compatible; new metadata writes use storage_contract::validate_note.
-const LEGACY_NOTE_READ_MAX_BYTES: usize = 4096;
-
 impl HistoryManifest {
     fn from_state(state: &State, history_id: &str) -> Result<Self> {
         let history = state
@@ -469,22 +465,20 @@ impl HistoryManifest {
                 "directory composition file branch coverage differs",
             ));
         }
-        if !branch.file_contexts.is_empty() {
-            let file_entries = branch
-                .entries
-                .iter()
-                .filter(|entry| entry.kind == "file")
-                .collect::<Vec<_>>();
-            if branch.file_contexts.len() != file_entries.len() {
-                return Err(invalid("directory path context coverage differs"));
-            }
-            for entry in file_entries {
-                let context = branch
-                    .file_contexts
-                    .get(&entry.lookup_key)
-                    .ok_or_else(|| invalid("directory path write context is missing"))?;
-                self.validate_file_context(context, &entry.file_id, &entry.version_id)?;
-            }
+        let file_entries = branch
+            .entries
+            .iter()
+            .filter(|entry| entry.kind == "file")
+            .collect::<Vec<_>>();
+        if branch.file_contexts.len() != file_entries.len() {
+            return Err(invalid("directory path context coverage differs"));
+        }
+        for entry in file_entries {
+            let context = branch
+                .file_contexts
+                .get(&entry.lookup_key)
+                .ok_or_else(|| invalid("directory path write context is missing"))?;
+            self.validate_file_context(context, &entry.file_id, &entry.version_id)?;
         }
         for (file, origin) in &branch.inherited_files {
             if !branch.file_branches.contains_key(file)
@@ -1255,12 +1249,12 @@ impl HistoryManifest {
             }
         }
         if self.file_notes.iter().any(|(file, note)| {
-            note.len() > LEGACY_NOTE_READ_MAX_BYTES || !file_ids.contains(file.as_str())
+            storage_contract::validate_note(note).is_err() || !file_ids.contains(file.as_str())
         }) || self.version_notes.iter().any(|(version, note)| {
-            note.len() > LEGACY_NOTE_READ_MAX_BYTES || !self.versions.contains_key(version)
+            storage_contract::validate_note(note).is_err() || !self.versions.contains_key(version)
         }) {
             return Err(invalid(
-                "file or version notes escape the history or exceed the size limit",
+                "file or version notes escape the history or violate the current 128-byte single-line format",
             ));
         }
         for (file, name) in &self.file_names {
@@ -1614,13 +1608,8 @@ impl Engine {
         &self,
         history: &str,
         destination: &Path,
-        principal: &str,
     ) -> Result<HistoryPackageReport> {
-        self.require_grant(
-            self.repository_for_history(history)?,
-            principal,
-            storage_contract::RepositoryAccess::Manage,
-        )?;
+        self.repository_for_history(history)?;
         let manifest = HistoryManifest::from_state(&self.state, history)?;
         let mut proof = None;
         let mut graph_objects = Vec::new();
@@ -1859,12 +1848,11 @@ impl Engine {
             state.sequence = state.sequence.max(after_source);
             let mut repository = manifest.repository.clone();
             repository.primary_slot_id = primary.into(); repository.target_copies = copies;
-            repository.account_scope_repository_id = None; repository.smb_enabled = false;
+            repository.smb_enabled = false;
             // This newly admitted repository has no existing destination
             // binding; imported source revisions do not authorize SMB sessions.
             repository.smb_binding_generation = 1;
             repository.file_manager_root=false;
-            repository.grants.manage.insert(principal.into());
             state.repositories.insert(repository.repository_id.clone(),repository.clone());
             state.histories.insert(manifest.history.history_tree_id.clone(),manifest.history.clone());
             state.commits.extend(manifest.commits.clone()); state.branches.extend(manifest.branches.clone());

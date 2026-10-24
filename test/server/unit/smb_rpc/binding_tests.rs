@@ -3,12 +3,7 @@ use super::*;
 use std::{os::unix::net::UnixStream, thread::JoinHandle};
 
 pub(super) fn wire(shared: Arc<Shared>) -> (FrameStream, JoinHandle<io::Result<()>>, Response) {
-    let repository = shared.identities["alice"]
-        .repositories
-        .iter()
-        .next()
-        .unwrap()
-        .clone();
+    let repository = repository(&shared);
     let (client, server) = UnixStream::pair().unwrap();
     let worker =
         std::thread::spawn(move || run_connection(FrameStream::new(server).unwrap(), shared));
@@ -17,7 +12,10 @@ pub(super) fn wire(shared: Arc<Shared>) -> (FrameStream, JoinHandle<io::Result<(
         .send(
             &Request::Hello {
                 protocol: PROTOCOL.into(),
-                capabilities: vec![WRITE_RESERVATION_CAPABILITY.into()],
+                capabilities: REQUIRED_CAPABILITIES
+                    .iter()
+                    .map(|value| (*value).into())
+                    .collect(),
                 username: "alice".into(),
                 repository_id: repository,
             },
@@ -32,10 +30,9 @@ pub(super) fn exchange(wire: &mut FrameStream, request: Request) -> (Response, O
     wire.send(&request, None).unwrap();
     wire.receive().unwrap()
 }
-fn rebind(shared: &Shared, branch: &str, enabled: bool) {
-    let mut administrator = shared.identities["alice"].clone();
-    administrator.admin = true;
-    let repository = administrator.repositories.iter().next().unwrap().clone();
+pub(super) fn rebind(shared: &Shared, branch: &str, enabled: bool) {
+    let administrator = identity(shared);
+    let repository = repository(shared);
     let binding = shared
         .backend
         .call(
@@ -236,9 +233,8 @@ fn live_writer_cannot_prepare_or_publish_after_disable_and_failed_close_retains_
     ));
     // Active workspaces correctly block administrative rebind. A published
     // writer remains open without an active workspace, so disable is allowed.
-    let mut administrator = shared.identities["alice"].clone();
-    administrator.admin = true;
-    let repository = administrator.repositories.iter().next().unwrap().clone();
+    let administrator = identity(&shared);
+    let repository = repository(&shared);
     let binding = shared
         .backend
         .call(

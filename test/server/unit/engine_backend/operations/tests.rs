@@ -1,19 +1,23 @@
-use crate::{Backend, BackendAction, auth::Identity, engine_backend::EngineBackend};
+use crate::{
+    Backend, BackendAction,
+    auth::{AuthStore, Identity},
+    engine_backend::EngineBackend,
+};
 use json_codec::{Value, json};
-use std::{
-    collections::BTreeSet,
-    sync::{
-        Arc,
-        atomic::{AtomicUsize, Ordering},
-    },
+use std::sync::{
+    Arc,
+    atomic::{AtomicUsize, Ordering},
 };
 use storage_contract::{Config, new_id};
-use storage_engine::{CommitRequest, Engine, Grants};
+use storage_engine::{CommitRequest, Engine};
+
+const PASSWORD: &str = "integration-test-password";
 
 fn fixture() -> (
     tempfile::TempDir,
     Arc<EngineBackend>,
-    storage_engine::Repository,
+    AuthStore,
+    String,
     Identity,
     Value,
 ) {
@@ -49,17 +53,16 @@ fn fixture() -> (
             request_digest: None,
         })
         .unwrap();
-    let identity = Identity {
-        admission_session: None,
-        smb_binding: None,
-        principal: "owner".into(),
-        admin: false,
-        repositories: BTreeSet::from([repo.repository_id.clone()]),
-    };
+    let backend = Arc::new(EngineBackend::new(engine));
+    let auth = AuthStore::initialize(root.path(), "owner", PASSWORD).unwrap();
+    let mut auth = backend.protect_auth(auth).unwrap();
+    let login = auth.login("owner", PASSWORD).unwrap();
+    let identity = auth.authenticate(&login.token).unwrap();
     (
         root,
-        Arc::new(EngineBackend::new(engine)),
-        repo,
+        backend,
+        auth,
+        login.token,
         identity,
         json!({"operation_id": operation}),
     )
@@ -67,31 +70,27 @@ fn fixture() -> (
 
 #[test]
 fn unauthorized_operations_never_start_payload_observation() {
-    let (_root, backend, repo, identity, input) = fixture();
+    let (_root, backend, mut auth, token, identity, input) = fixture();
     let calls = Arc::new(AtomicUsize::new(0));
     let probe = calls.clone();
     *backend.operation_health_hook.lock().unwrap() = Some(Arc::new(move || {
         probe.fetch_add(1, Ordering::SeqCst);
     }));
     let foreign = Identity {
-        admission_session: None,
-        smb_binding: None,
         principal: "other".into(),
         ..identity.clone()
     };
-    let denied_account = Identity {
-        admission_session: None,
-        smb_binding: None,
-        repositories: BTreeSet::new(),
+    let unknown_session = Identity {
+        admission_session: Some("0".repeat(64)),
         ..identity.clone()
     };
-    for denied in [&foreign, &denied_account] {
+    for denied in [&foreign, &unknown_session] {
         assert_eq!(
             backend
                 .call(BackendAction::Operation, denied, input.clone())
                 .unwrap_err()
                 .code,
-            "FORBIDDEN"
+            "UNAUTHORIZED"
         );
     }
     assert_eq!(calls.load(Ordering::SeqCst), 0);
@@ -106,35 +105,42 @@ fn unauthorized_operations_never_start_payload_observation() {
             .code,
         "OPERATION_NOT_FOUND"
     );
+    // Account admission does not waive durable operation ownership. This is a
+    // storage fixture owned by another principal, not a second login account.
+    let foreign_operation = new_id("op");
     backend
         .engine
         .lock()
         .unwrap()
-        .set_grants(
-            &repo.repository_id,
-            Grants {
-                manage: BTreeSet::from(["replacement".into()]),
-                ..Default::default()
-            },
-            "owner",
-            &new_id("op"),
-        )
+        .create_repository("Foreign receipt", "P01", 3, "other", &foreign_operation)
         .unwrap();
+    assert_eq!(
+        backend
+            .call(
+                BackendAction::Operation,
+                &identity,
+                json!({"operation_id": foreign_operation})
+            )
+            .unwrap_err()
+            .code,
+        "FORBIDDEN"
+    );
+    auth.logout(&token).unwrap();
     assert_eq!(
         backend
             .call(BackendAction::Operation, &identity, input)
             .unwrap_err()
             .code,
-        "FORBIDDEN"
+        "UNAUTHORIZED"
     );
     assert_eq!(calls.load(Ordering::SeqCst), 0);
 }
 
 #[test]
-fn slow_operation_health_releases_engine_and_rechecks_revoked_acl() {
+fn slow_operation_health_releases_engine_and_rechecks_logged_out_session() {
     use std::sync::mpsc;
     use std::time::Duration;
-    let (_root, backend, repo, identity, input) = fixture();
+    let (_root, backend, mut auth, token, identity, input) = fixture();
     let (started, receive_started) = mpsc::sync_channel(0);
     let (release, receive_release) = mpsc::sync_channel(0);
     let receive_release = std::sync::Mutex::new(receive_release);
@@ -143,87 +149,112 @@ fn slow_operation_health_releases_engine_and_rechecks_revoked_acl() {
         receive_release.lock().unwrap().recv().unwrap();
     }));
     std::thread::scope(|scope| {
-        let request = scope.spawn(|| backend.call(BackendAction::Operation, &identity, input));
+        let request =
+            scope.spawn(|| backend.call(BackendAction::Operation, &identity, input.clone()));
         receive_started
             .recv_timeout(Duration::from_secs(10))
             .unwrap();
-        // Deterministic barrier, not a timing-based large-file benchmark.
-        // A different thread can acquire Engine while the read is paused.
-        let available = backend.engine.try_lock();
-        if let Ok(mut engine) = available {
-            engine
-                .set_grants(
-                    &repo.repository_id,
-                    Grants {
-                        manage: BTreeSet::from(["replacement".into()]),
-                        ..Default::default()
-                    },
-                    "owner",
-                    &new_id("op"),
-                )
-                .unwrap();
-        } else {
+        // A deterministic barrier proves another thread can acquire Engine
+        // before publishing the session revocation through that same mutex.
+        if backend.engine.try_lock().is_err() {
             release.send(()).unwrap();
             panic!("health observation retained the Engine mutex");
         }
+        let revoked = auth.logout(&token);
         release.send(()).unwrap();
-        assert_eq!(request.join().unwrap().unwrap_err().code, "FORBIDDEN");
+        revoked.unwrap();
+        assert_eq!(request.join().unwrap().unwrap_err().code, "UNAUTHORIZED");
     });
+    *backend.operation_health_hook.lock().unwrap() = None;
+    let login = auth.login("owner", PASSWORD).unwrap();
+    let fresh_identity = auth.authenticate(&login.token).unwrap();
+    assert!(
+        backend
+            .call(BackendAction::Operation, &fresh_identity, input)
+            .is_ok()
+    );
 }
 
 #[test]
-fn health_observation_rechecks_protected_account_after_unlocked_io() {
-    use crate::auth::AuthStore;
+fn health_observation_rechecks_password_generation_after_unlocked_io() {
     use std::{sync::mpsc, time::Duration};
-    for disabled in [true, false] {
-        let (root, backend, repo, identity, input) = fixture();
-        let mut auth =
-            AuthStore::initialize(root.path(), "admin", "integration-test-password").unwrap();
-        auth.upsert_account(
-            "owner",
-            Some("integration-test-password"),
-            false,
-            BTreeSet::from([repo.repository_id.clone()]),
-            false,
-        )
-        .unwrap();
-        let mut auth = backend.protect_auth(auth).unwrap();
-        let (started, receive_started) = mpsc::sync_channel(0);
-        let (release, receive_release) = mpsc::sync_channel(0);
-        let receive_release = std::sync::Mutex::new(receive_release);
-        *backend.operation_health_hook.lock().unwrap() = Some(Arc::new(move || {
-            started.send(()).unwrap();
-            receive_release.lock().unwrap().recv().unwrap();
-        }));
-        std::thread::scope(|scope| {
-            let request = scope.spawn(|| backend.call(BackendAction::Operation, &identity, input));
-            receive_started
-                .recv_timeout(Duration::from_secs(10))
-                .unwrap();
-            // Auth publishes its protected snapshot through the free Engine
-            // mutex. The read path must never reacquire an AuthStore lock.
-            let revoked = auth.upsert_account("owner", None, false, BTreeSet::new(), disabled);
+    let (_root, backend, mut auth, token, identity, input) = fixture();
+    // Rotation from another valid session must also revoke an in-flight read
+    // authenticated with the first session, not only the rotating session.
+    let rotating_session = auth.login("owner", PASSWORD).unwrap();
+    let (started, receive_started) = mpsc::sync_channel(0);
+    let (release, receive_release) = mpsc::sync_channel(0);
+    let receive_release = std::sync::Mutex::new(receive_release);
+    *backend.operation_health_hook.lock().unwrap() = Some(Arc::new(move || {
+        started.send(()).unwrap();
+        receive_release.lock().unwrap().recv().unwrap();
+    }));
+    std::thread::scope(|scope| {
+        let request =
+            scope.spawn(|| backend.call(BackendAction::Operation, &identity, input.clone()));
+        receive_started
+            .recv_timeout(Duration::from_secs(10))
+            .unwrap();
+        if backend.engine.try_lock().is_err() {
             release.send(()).unwrap();
-            revoked.unwrap();
-            assert_eq!(
-                request.join().unwrap().unwrap_err().code,
-                if disabled {
-                    "UNAUTHORIZED"
-                } else {
-                    "FORBIDDEN"
-                }
-            );
-        });
-    }
+            panic!("health observation retained the Engine mutex");
+        }
+        // Auth publishes its protected snapshot through the free Engine mutex;
+        // the read must revalidate the new generation after unlocked I/O.
+        let revoked = auth.change_password(
+            &rotating_session.token,
+            PASSWORD,
+            "replacement-integration-password",
+        );
+        release.send(()).unwrap();
+        revoked.unwrap();
+        assert_eq!(request.join().unwrap().unwrap_err().code, "UNAUTHORIZED");
+    });
+    assert_eq!(auth.authenticate(&token).unwrap_err().code, "UNAUTHORIZED");
+    assert_eq!(
+        auth.authenticate(&rotating_session.token).unwrap_err().code,
+        "UNAUTHORIZED"
+    );
+    *backend.operation_health_hook.lock().unwrap() = None;
+    let login = auth
+        .login("owner", "replacement-integration-password")
+        .unwrap();
+    let fresh_identity = auth.authenticate(&login.token).unwrap();
+    assert!(
+        backend
+            .call(BackendAction::Operation, &fresh_identity, input)
+            .is_ok()
+    );
 }
 
 #[test]
 fn operation_observation_preserves_publication_wire_facts() {
-    let (_root, backend, _, identity, input) = fixture();
+    let (_root, backend, _auth, _token, identity, input) = fixture();
     let before = backend
         .call(BackendAction::Operation, &identity, input.clone())
         .unwrap();
     assert_eq!(before["current_health"]["state"], "HEALTHY");
+    let sequence = backend.engine.lock().unwrap().state().sequence;
+    let replay = backend
+        .call(BackendAction::Operation, &identity, input.clone())
+        .unwrap();
+    // Health timestamps are fresh observations, not publication facts.
+    assert!(before["current_health"]["checked_at"].is_string());
+    assert!(replay["current_health"]["checked_at"].is_string());
+    assert_eq!(replay["current_health"]["state"], "HEALTHY");
+    for field in [
+        "operation_id",
+        "operation_kind",
+        "request_digest",
+        "state",
+        "commit_state",
+        "result",
+        "error",
+    ] {
+        assert_eq!(replay[field], before[field], "{field}");
+    }
+    assert!(before["result"]["publication_sequence"].is_string());
+    assert_eq!(backend.engine.lock().unwrap().state().sequence, sequence);
     {
         let engine = backend.engine.lock().unwrap();
         for disk in &engine.config().disks {
@@ -239,4 +270,9 @@ fn operation_observation_preserves_publication_wire_facts() {
     assert_eq!(after["commit_state"], before["commit_state"]);
     assert_eq!(after["result"], before["result"]);
     assert_eq!(after["request_digest"], before["request_digest"]);
+    assert_eq!(
+        after["result"]["publication_sequence"],
+        before["result"]["publication_sequence"]
+    );
+    assert_eq!(backend.engine.lock().unwrap().state().sequence, sequence);
 }

@@ -1,13 +1,10 @@
 //! Typed, transport-independent mutation boundary.
 //!
 //! HTTP and SMB decode their envelopes before entering this service. Account
-//! admission, repository ACLs and workspace ownership are checked here, before
+//! admission happens at the backend entrance; domain and workspace ownership checks precede
 //! delegating durable state changes to the core. Results remain domain records;
 //! presentation/redaction belongs to the transport adapter.
-use super::{
-    RepositoryAccess, authorize_access, error, repo_for_branch, repo_for_history, repository,
-    workspace_authorize,
-};
+use super::{error, repo_for_branch, repo_for_history, repository, workspace_authorize};
 use crate::{ApiError, auth::Identity};
 use data_serialization::{Deserialize, Serialize};
 use std::collections::BTreeMap;
@@ -166,7 +163,7 @@ pub struct Application<'a> {
 }
 
 impl<'a> Application<'a> {
-    pub fn new(engine: &'a mut Engine, identity: &'a Identity) -> Self {
+    pub(super) fn new(engine: &'a mut Engine, identity: &'a Identity) -> Self {
         Self { engine, identity }
     }
 
@@ -174,11 +171,7 @@ impl<'a> Application<'a> {
         &mut self,
         command: UpdateProtectionPolicy,
     ) -> Result<storage_engine::OperationResult, ApiError> {
-        authorize_access(
-            self.identity,
-            repository(self.engine, &command.repository_id)?,
-            RepositoryAccess::Manage,
-        )?;
+        repository(self.engine, &command.repository_id)?;
         self.engine
             .update_protection_policy(storage_engine::ProtectionPolicyUpdate {
                 policy_id: &command.policy_id,
@@ -196,11 +189,7 @@ impl<'a> Application<'a> {
         &mut self,
         command: UpdatePlacementRule,
     ) -> Result<storage_engine::OperationResult, ApiError> {
-        authorize_access(
-            self.identity,
-            repository(self.engine, &command.repository_id)?,
-            RepositoryAccess::Manage,
-        )?;
+        repository(self.engine, &command.repository_id)?;
         self.engine
             .update_placement_rule(storage_engine::PlacementRuleUpdate {
                 rule_id: &command.rule_id,
@@ -307,7 +296,6 @@ impl<'a> Application<'a> {
         command: CreateBranch,
     ) -> Result<storage_contract::Branch, ApiError> {
         let repo = repository(self.engine, &command.repository_id)?;
-        authorize_access(self.identity, repo, RepositoryAccess::Manage)?;
         if self
             .engine
             .state()
@@ -335,11 +323,7 @@ impl<'a> Application<'a> {
         &mut self,
         command: ArchiveBranch,
     ) -> Result<storage_engine::OperationResult, ApiError> {
-        authorize_access(
-            self.identity,
-            repo_for_branch(self.engine, &command.branch_id)?,
-            RepositoryAccess::Manage,
-        )?;
+        repo_for_branch(self.engine, &command.branch_id)?;
         self.engine
             .archive_branch(
                 &command.branch_id,
@@ -353,11 +337,7 @@ impl<'a> Application<'a> {
         &mut self,
         command: MergeLink,
     ) -> Result<storage_contract::MergeLink, ApiError> {
-        authorize_access(
-            self.identity,
-            repo_for_history(self.engine, &command.history_tree_id)?,
-            RepositoryAccess::Manage,
-        )?;
+        repo_for_history(self.engine, &command.history_tree_id)?;
         for branch in [&command.source_branch_id, &command.target_branch_id] {
             if repo_for_branch(self.engine, branch)?.history_tree_id != command.history_tree_id {
                 return Err(ApiError::forbidden());
@@ -413,7 +393,6 @@ impl<'a> Application<'a> {
                         )
                     })?;
                 let repo = repository(self.engine, &branch.repository_id)?;
-                authorize_access(self.identity, repo, RepositoryAccess::Write)?;
                 if repo.primary_slot_id != command.slot_id {
                     return Err(ApiError::invalid(
                         "batch branches must belong to this primary disk",
@@ -455,7 +434,6 @@ impl<'a> Application<'a> {
             .find(|version| version.file_id == file)
             .ok_or_else(|| ApiError::new(404, "FILE_NOT_FOUND", "file not found"))?;
         let repo = repo_for_history(self.engine, &version.history_tree_id)?;
-        authorize_access(self.identity, repo, RepositoryAccess::Write)?;
         if let Some(location) = location {
             name_policy::validate_path(&location.path).map_err(ApiError::invalid)?;
             if location.repository_id != repo.repository_id
@@ -502,14 +480,14 @@ impl<'a> Application<'a> {
             .map_err(error)
     }
 
-    /// Destructive purge/clear and split plans retain owner, digest and ACL
+    /// Destructive purge/clear and split plans retain owner, digest and domain
     /// checks at execution time, even when prepared by a different adapter.
     pub fn commit_plan(
         &mut self,
         command: CommitPlan,
     ) -> Result<storage_engine::OperationResult, ApiError> {
         let plan = self.engine.plan(&command.plan_id).map_err(error)?;
-        if plan.principal != self.identity.principal && !self.identity.admin {
+        if plan.principal != self.identity.principal {
             return Err(ApiError::forbidden());
         }
         if command.plan_digest != plan.digest {
@@ -523,15 +501,7 @@ impl<'a> Application<'a> {
             ));
         }
         let history = super::field(&plan.input, "history_tree_id")?;
-        authorize_access(
-            self.identity,
-            repo_for_history(self.engine, history)?,
-            if plan.kind == "historical_save" {
-                RepositoryAccess::Write
-            } else {
-                RepositoryAccess::Manage
-            },
-        )?;
+        repo_for_history(self.engine, history)?;
         self.engine
             .commit_plan(
                 &command.plan_id,

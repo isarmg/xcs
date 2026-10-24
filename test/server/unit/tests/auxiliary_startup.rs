@@ -80,7 +80,6 @@ async fn unavailable_http_spool_isolates_only_upload_staging() {
         let (token, _, cookie) = authenticated(&app).await;
         for path in [
             "/api/auth/me",
-            "/api/admin/accounts",
             "/api/system/storage",
             "/api/system/status",
             "/api/capabilities",
@@ -191,7 +190,7 @@ async fn missing_or_rejected_web_assets_leave_management_apis_but_not_a_fake_ui(
         assert_assets_unavailable(&app).await;
         let (token, _, _) = authenticated(&app).await;
         assert_eq!(
-            response(&app, "GET", "/api/admin/accounts", Some(&token))
+            response(&app, "GET", "/api/auth/me", Some(&token))
                 .await
                 .status(),
             StatusCode::OK

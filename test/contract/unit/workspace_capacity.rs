@@ -1,7 +1,7 @@
 use super::*;
 use json_codec::json;
 #[test]
-fn capacity_roundtrip_uses_canonical_decimal_strings_and_omits_private_totals() {
+fn capacity_roundtrip_requires_both_scopes_with_canonical_decimal_strings() {
     let measure = CapacityMeasure {
         used: 0,
         limit: u64::MAX,
@@ -12,13 +12,13 @@ fn capacity_roundtrip_uses_canonical_decimal_strings_and_omits_private_totals() 
         metadata_bytes: measure,
     };
     let value = WorkspaceCapacity {
-        global: None,
+        global: scope.clone(),
         principal: scope,
         warning: CapacityWarning::Ok,
         automatic_retirement: false,
     };
     let encoded = json_codec::to_value(&value).unwrap();
-    assert!(encoded.get("global").is_none());
+    assert_eq!(encoded["global"], encoded["principal"]);
     assert_eq!(
         encoded["principal"]["records"]["limit"],
         u64::MAX.to_string()
@@ -38,6 +38,9 @@ fn capacity_roundtrip_uses_canonical_decimal_strings_and_omits_private_totals() 
     let mut null_scope = encoded.clone();
     null_scope["global"] = json!(null);
     assert!(json_codec::from_value::<WorkspaceCapacity>(null_scope).is_err());
+    let mut missing_scope = encoded.clone();
+    missing_scope.as_object_mut().unwrap().remove("global");
+    assert!(json_codec::from_value::<WorkspaceCapacity>(missing_scope).is_err());
     let mut automatic = encoded.clone();
     automatic["automatic_retirement"] = json!(true);
     assert!(json_codec::from_value::<WorkspaceCapacity>(automatic).is_err());

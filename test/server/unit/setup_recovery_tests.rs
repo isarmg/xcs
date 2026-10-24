@@ -55,8 +55,6 @@ fn admin() -> Identity {
         admission_session: None,
         smb_binding: None,
         principal: "admin".into(),
-        admin: true,
-        repositories: BTreeSet::new(),
     }
 }
 
@@ -204,30 +202,8 @@ fn exclusive_lock_blocks_concurrent_setup() {
     assert_eq!(result.unwrap_err().code, "SETUP_BUSY");
 }
 #[test]
-fn no_non_admin_recovery_or_implicit_loss_acknowledgement() {
+fn recovery_requires_explicit_permanent_loss_acknowledgement() {
     let f = fixture();
-    let mut identity = admin();
-    identity.admin = false;
-    assert_eq!(
-        f.service
-            .offline_check(&identity, "one")
-            .unwrap_err()
-            .status,
-        403
-    );
-    assert_eq!(
-        f.service
-            .recovery_preview(
-                &identity,
-                RecoveryPreviewRequest {
-                    operation_id: "op".into(),
-                    reason: "test".into()
-                }
-            )
-            .unwrap_err()
-            .status,
-        403
-    );
     assert_eq!(
         f.service
             .recovery_commit(
@@ -1025,7 +1001,14 @@ fn recoverable_fixture() -> Fixture {
     .unwrap();
     engine
         .persist_auth_state(
-            json_codec::json!({"accounts": {}, "sessions": {}}),
+            crate::auth::AuthStore::initialize(
+                &f._temp.path().join("snapshot-auth"),
+                "admin",
+                "long-test-password",
+            )
+            .unwrap()
+            .snapshot()
+            .unwrap(),
             "system_auth",
             &storage_engine::new_id("op"),
         )
@@ -1110,8 +1093,8 @@ fn raised_workspace_limits(config: &Config) -> RetainedWorkspaceLimits {
 }
 
 fn assert_workspace_limits(engine: &Engine, limits: RetainedWorkspaceLimits) {
-    let capacity = engine.workspace_capacity("admin", true);
-    let global = capacity.global.unwrap();
+    let capacity = engine.workspace_capacity("admin");
+    let global = capacity.global;
     assert_eq!(global.records.limit, limits.max_retained_workspaces as u64);
     assert_eq!(
         global.metadata_bytes.limit,

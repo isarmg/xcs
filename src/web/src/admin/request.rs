@@ -64,27 +64,14 @@ pub(super) fn build(
                 .to_string(),
         )
     };
-    if kind != "account" && operation.is_empty() {
+    if operation.is_empty() {
         return Err("Secure operation ID unavailable".into());
     }
     Ok(match kind {
-        "account" => {
-            let password = value("password");
-            (
-                "POST",
-                "/api/admin/accounts".into(),
-                json!({"username":required("username")?,"password":if password.is_empty(){None}else{Some(password)},"admin":value("admin")=="true","disabled":value("disabled")=="true","repositories":items(&value("repositories"))}),
-            )
-        }
         "repository" => (
             "POST",
             "/api/repositories".into(),
             json!({"name":required("name")?,"primary_slot_id":required("slot")?,"target_copies":copies()?,"operation_id":operation}),
-        ),
-        "grants" => (
-            "PUT",
-            path("/api/repositories", "repository", "grants")?,
-            json!({"grants":{"read":items(&value("read")),"write":items(&value("write")),"manage":items(&value("manage"))},"operation_id":operation}),
         ),
         "smb" => (
             "PUT",

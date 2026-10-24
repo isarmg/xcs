@@ -37,7 +37,6 @@ fn health_failure_does_not_revoke_session_or_overwrite_data_outcomes() {
     let mut state = State {
         authenticated: true,
         principal: "admin".into(),
-        admin: true,
         ..Default::default()
     };
     state.management.storage = Storage::RecoveryRequired;
@@ -54,7 +53,6 @@ fn authentication_lock_contention_is_not_recovery_or_session_revocation() {
     let mut state = State {
         authenticated: true,
         principal: "admin".into(),
-        admin: true,
         ..Default::default()
     };
     accept(
@@ -71,7 +69,6 @@ fn status_reads_wait_until_storage_retry_settles() {
     Owner::new().with(|| {
         let state = RwSignal::new(State {
             authenticated: true,
-            admin: true,
             ..Default::default()
         });
         state.update(|s| {

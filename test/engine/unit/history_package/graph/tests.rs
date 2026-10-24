@@ -15,10 +15,10 @@ fn manifest() -> HistoryManifest {
             "main_branch_id": "branch",
             "primary_slot_id": "P01",
             "target_copies": 3,
+            "smb_enabled": true,
             "smb_binding_generation": "1",
             "name_policy": "portable",
-            "unicode_version": "15.1",
-            "grants": {"read": [], "write": [], "manage": []}
+            "unicode_version": "15.1"
         },
         "history": {
             "history_tree_id": "history",

@@ -116,6 +116,7 @@ impl Engine {
         source_commit: &str,
         principal: &str,
     ) -> Result<Workspace> {
+        Self::require_actor(principal)?;
         self.require_write()?;
         let repository = self.repository_for_branch(branch)?;
         if self
@@ -129,16 +130,7 @@ impl Engine {
                 "historical file versions must be saved as independent file branches",
             ));
         }
-        self.require_grant(
-            repository,
-            principal,
-            storage_contract::RepositoryAccess::Read,
-        )?;
-        self.require_grant(
-            repository,
-            principal,
-            storage_contract::RepositoryAccess::Write,
-        )?;
+
         let selected =
             self.state.commits.get(source_commit).ok_or_else(|| {
                 Error::new("COMMIT_NOT_FOUND", "historical source commit is missing")
@@ -201,6 +193,7 @@ impl Engine {
         options: HistoricalSaveOptions,
         principal: &str,
     ) -> Result<Plan> {
+        Self::require_actor(principal)?;
         self.require_write()?;
         if self
             .state
@@ -215,16 +208,7 @@ impl Engine {
         }
         crate::business::validate_branch_name(&options.name)?;
         let repository = self.repository_for_history(history)?.clone();
-        self.require_grant(
-            &repository,
-            principal,
-            storage_contract::RepositoryAccess::Read,
-        )?;
-        self.require_grant(
-            &repository,
-            principal,
-            storage_contract::RepositoryAccess::Write,
-        )?;
+
         let source = self
             .state
             .commits
@@ -447,8 +431,8 @@ impl Engine {
             json!({"plan_id":id,"plan_digest":plan.digest}),
             |engine, state, pending| {
                 let repository = engine.repository_for_history(&history)?.clone();
-                engine.require_grant(&repository, principal, storage_contract::RepositoryAccess::Read)?;
-                engine.require_grant(&repository, principal, storage_contract::RepositoryAccess::Write)?;
+
+
                 if state.branches.values().any(|branch| {
                     branch.history_tree_id == history
                         && name_policy::lookup_key(&branch.name) == name_policy::lookup_key(&name)

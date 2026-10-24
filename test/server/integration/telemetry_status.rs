@@ -47,7 +47,7 @@ async fn request(
 }
 
 #[tokio::test]
-async fn real_status_samples_host_and_registered_disks_without_exposing_them_to_readers() {
+async fn real_status_samples_host_and_registered_disks_only_for_the_authenticated_account() {
     let root = tempfile::tempdir().unwrap();
     let system = root.path().join("system");
     let config = Config::development([
@@ -58,15 +58,7 @@ async fn real_status_samples_host_and_registered_disks_without_exposing_them_to_
     let backend = Arc::new(EngineBackend::new(
         Engine::initialize(&system, config).unwrap(),
     ));
-    let mut auth = AuthStore::initialize(&system, "admin", "monitor-test-password").unwrap();
-    auth.upsert_account(
-        "reader",
-        Some("monitor-reader-password"),
-        false,
-        Default::default(),
-        false,
-    )
-    .unwrap();
+    let auth = AuthStore::initialize(&system, "admin", "monitor-test-password").unwrap();
     let auth = backend.protect_auth(auth).unwrap();
     let app = storage_server::router(backend, auth, ServerConfig::loopback(&system)).unwrap();
     assert_eq!(
@@ -79,28 +71,15 @@ async fn real_status_samples_host_and_registered_disks_without_exposing_them_to_
             .0,
         StatusCode::UNAUTHORIZED
     );
-    let (_, reader) = request(
+    let (status, rejected) = request(
         &app,
         None,
         "/api/auth/login",
         Some(json!({"username":"reader","password":"monitor-reader-password"})),
     )
     .await;
-    let (status, denied) =
-        request(&app, reader["token"].as_str(), "/api/system/status", None).await;
-    assert_eq!(status, StatusCode::FORBIDDEN);
-    assert!(denied.get("cpu").is_none());
-    assert_eq!(
-        request(
-            &app,
-            reader["token"].as_str(),
-            "/api/system/history?range=1h",
-            None
-        )
-        .await
-        .0,
-        StatusCode::FORBIDDEN
-    );
+    assert_eq!(status, StatusCode::UNAUTHORIZED);
+    assert!(rejected.get("token").is_none());
     let (_, admin) = request(
         &app,
         None,

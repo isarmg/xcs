@@ -14,13 +14,13 @@ sequenceDiagram
     participant M as 三元数据成员
     participant I as SQLite 投影
     C->>A: 工作区提交 + operation_id
-    A->>E: 身份/授权检查与准备准入（持锁）
+    A->>E: 当前认证/业务检查与准备准入（持锁）
     E->>P: 冻结工作区、配置与发布基线
     Note over P: 锁外规划、摘要及元数据预算检查
     P->>D: 按路由写完整正文并校验
     P->>M: 写不可变快照与历史清单
     P->>E: 返回不可伪造的准备与校验凭据
-    Note over E: 重新持锁，复查授权、工作区及发布基线
+    Note over E: 重新持锁，复查主体、工作区及发布基线
     E->>M: Candidate + PREPARE（各成员）
     E->>M: ACCEPT（各成员）
     E->>M: Finalize + FINALIZE（各成员）
@@ -37,7 +37,7 @@ sequenceDiagram
 
 [plan_mutation_digest](../../src/engine/src/engine.rs) 将操作 ID 与请求摘要及主体绑定：相同请求可以查回原结果，复用 ID 提交不同输入会失败。新操作检查写入条件，复制状态，应用变更并登记拟发布结果与事件。规划中的 `PUBLISHED` / `TARGET_MET` 字段是候选结果，不是已落盘成功证明；只有完成发布闭包后才返回成功。
 
-[工作区准备](../../src/engine/src/engine/workspace_commit.rs) 在锁内捕获基线，锁外执行重活，发布前再次校验工作区所有者、权限、内容、代际与租约。详见[分离准备](detached-workspace-commits.md)。
+[工作区准备](../../src/engine/src/engine/workspace_commit.rs) 在锁内捕获基线，锁外执行重活，发布前再次校验工作区所有者、业务状态、内容、代际与租约。详见[分离准备](detached-workspace-commits.md)。
 
 ## 2. 准备正文与元数据
 

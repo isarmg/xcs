@@ -570,10 +570,10 @@ fn file_branches_register_then_write_and_switch_only_one_file_and_survive_reopen
     );
     assert_eq!(
         engine
-            .select_file_branch(&one.file_id, &branch_id, "other user", &new_id("op"))
+            .select_file_branch(&one.file_id, &branch_id, "", &new_id("op"))
             .unwrap_err()
             .code(),
-        "PERMISSION_DENIED"
+        "UNAUTHENTICATED"
     );
     drop(engine);
     let mut engine = Engine::open(&fixture.root).unwrap();
@@ -618,7 +618,7 @@ fn file_branches_register_then_write_and_switch_only_one_file_and_survive_reopen
         )
         .unwrap();
     engine
-        .export_history_package(&repo.history_tree_id, &package, "admin")
+        .export_history_package(&repo.history_tree_id, &package)
         .unwrap();
     let target = Fixture::new();
     let mut recovered = target.initialize();
@@ -911,13 +911,13 @@ fn directory_batch_conflict_and_new_file_reject_without_partial_changes() {
             .create_directory_branches(
                 &repo.repository_id,
                 "folder",
-                "unauthorized",
-                "other user",
+                "missing actor",
+                "",
                 &new_id("op")
             )
             .unwrap_err()
             .code(),
-        "PERMISSION_DENIED"
+        "UNAUTHENTICATED"
     );
     assert_eq!(canonical_json(engine.state()).unwrap(), before);
     let lost = engine.state().versions[&b.version_id].clone();
@@ -1147,39 +1147,100 @@ fn disjoint_workspaces_rebase_but_same_file_is_owned() {
     }
     assert_eq!(e.list_tree(&r.main_branch_id).unwrap().len(), 2);
 }
+
 #[test]
-fn revoke_before_commit_and_idempotency_conflicts() {
+fn durable_workspace_and_plan_preparations_require_an_audit_actor() {
+    let fixture = Fixture::new();
+    let mut engine = fixture.initialize();
+    let repo = repository(&mut engine, 1);
+    let head = engine.state.branches[&repo.main_branch_id]
+        .head_commit_id
+        .clone();
+    let state = canonical_json(engine.state()).unwrap();
+    let workspaces = engine.workspaces.len();
+    let plans = engine.state.plans.len();
+    assert_eq!(
+        engine
+            .create_workspace(&repo.main_branch_id, "")
+            .unwrap_err()
+            .code(),
+        "UNAUTHENTICATED"
+    );
+    assert_eq!(
+        engine
+            .create_historical_workspace(&repo.main_branch_id, &head, "")
+            .unwrap_err()
+            .code(),
+        "UNAUTHENTICATED"
+    );
+    assert_eq!(
+        engine
+            .create_purge_plan(&repo.history_tree_id, Vec::new(), "")
+            .unwrap_err()
+            .code(),
+        "UNAUTHENTICATED"
+    );
+    assert_eq!(engine.workspaces.len(), workspaces);
+    assert_eq!(engine.state.plans.len(), plans);
+    assert_eq!(canonical_json(engine.state()).unwrap(), state);
+}
+
+#[test]
+fn workspace_actor_binding_and_idempotency_conflicts() {
     let f = Fixture::new();
     let mut e = f.initialize();
     let r = repository(&mut e, 1);
-    let mut grants = r.grants.clone();
-    grants.read.insert("user".into());
-    grants.write.insert("user".into());
-    e.set_grants(&r.repository_id, grants, "admin", &new_id("op"))
-        .unwrap();
-    let w = e.create_workspace(&r.main_branch_id, "user").unwrap();
+    let w = e.create_workspace(&r.main_branch_id, "admin").unwrap();
     e.stage_bytes(&w.workspace_id, "a", b"private").unwrap();
-    e.set_grants(
-        &r.repository_id,
-        Grants::owner("admin"),
-        "admin",
-        &new_id("op"),
-    )
-    .unwrap();
+    let request = CommitRequest {
+        workspace_id: w.workspace_id.clone(),
+        operation_id: new_id("op"),
+        principal: "admin".into(),
+        expected_head: w.base_head.clone(),
+        fencing_token: w.fencing_token,
+        message: String::new(),
+        request_digest: None,
+    };
+    let state_before = canonical_json(e.state()).unwrap();
+    let workspace_before = canonical_json(&e.workspace(&w.workspace_id).unwrap()).unwrap();
+    // A correct fence does not permit changing the immutable operation actor.
+    let mut changed_actor = request.clone();
+    changed_actor.principal = "different-actor".into();
     assert_eq!(
-        e.commit_workspace(CommitRequest {
-            workspace_id: w.workspace_id,
-            operation_id: new_id("op"),
-            principal: "user".into(),
-            expected_head: w.base_head,
-            fencing_token: w.fencing_token,
-            message: String::new(),
-            request_digest: None
-        })
-        .unwrap_err()
-        .code(),
+        e.commit_workspace(changed_actor.clone())
+            .unwrap_err()
+            .code(),
         "PERMISSION_DENIED"
     );
+    assert_eq!(
+        e.prepare_workspace_commit(changed_actor, None)
+            .err()
+            .unwrap()
+            .code(),
+        "PERMISSION_DENIED"
+    );
+    // Conversely, the correct actor does not bypass a stale or forged fence.
+    let mut changed_fence = request.clone();
+    changed_fence.fencing_token = changed_fence.fencing_token.checked_add(1).unwrap();
+    assert_eq!(
+        e.commit_workspace(changed_fence.clone())
+            .unwrap_err()
+            .code(),
+        "FENCING_TOKEN_INVALID"
+    );
+    assert_eq!(
+        e.prepare_workspace_commit(changed_fence, None)
+            .err()
+            .unwrap()
+            .code(),
+        "FENCING_TOKEN_INVALID"
+    );
+    assert_eq!(canonical_json(e.state()).unwrap(), state_before);
+    assert_eq!(
+        canonical_json(&e.workspace(&w.workspace_id).unwrap()).unwrap(),
+        workspace_before
+    );
+    e.commit_workspace(request).unwrap();
     let op = new_id("op");
     let b = e
         .create_repository("second", "P01", 1, "admin", &op)
@@ -1633,18 +1694,55 @@ fn conditional_directory_policies_change_only_future_placements() {
         .code(),
         "GENERATION_MISMATCH"
     );
-    assert!(
+    let other = e
+        .create_repository("other", "P01", 3, "admin", &new_id("op"))
+        .unwrap();
+    let before_rejected_updates = canonical_json(e.state()).unwrap();
+    assert_eq!(
         e.update_protection_policy(crate::ProtectionPolicyUpdate {
             policy_id: &new_id("policy"),
             repository_id: &r.repository_id,
             path_prefix: "secret",
             target_copies: 1,
             expected_generation: 0,
-            principal: "intruder",
+            principal: "",
             operation_id: &new_id("op"),
         })
-        .is_err()
+        .unwrap_err()
+        .code(),
+        "UNAUTHENTICATED"
     );
+    // The sole administrator can manage both repositories, but an existing
+    // policy/rule identity cannot be rebound to a different repository.
+    assert_eq!(
+        e.update_protection_policy(crate::ProtectionPolicyUpdate {
+            policy_id: &policy,
+            repository_id: &other.repository_id,
+            path_prefix: "DOCS",
+            target_copies: 1,
+            expected_generation: 1,
+            principal: "admin",
+            operation_id: &new_id("op"),
+        })
+        .unwrap_err()
+        .code(),
+        "REQUEST_BINDING_MISMATCH"
+    );
+    assert_eq!(
+        e.update_placement_rule(crate::PlacementRuleUpdate {
+            rule_id: &rule,
+            repository_id: &other.repository_id,
+            path_prefix: "DOCS",
+            primary_slot_id: "P02",
+            expected_generation: 1,
+            principal: "admin",
+            operation_id: &new_id("op"),
+        })
+        .unwrap_err()
+        .code(),
+        "REQUEST_BINDING_MISMATCH"
+    );
+    assert_eq!(canonical_json(e.state()).unwrap(), before_rejected_updates);
     save(&mut e, &r.main_branch_id, "docs/a", b"new primary");
     let current = e
         .list_tree(&r.main_branch_id)
@@ -2000,28 +2098,28 @@ fn production_does_not_silently_accept_directory_simulation() {
 }
 
 #[test]
-fn legacy_branch_and_workspace_json_keep_their_canonical_bytes() {
-    let old_branch = json_codec::json!({
-        "branch_id":new_id("br"),"history_tree_id":new_id("history"),"name":"legacy",
+fn sparse_namespace_branch_and_workspace_have_canonical_bytes() {
+    let sparse_branch = json_codec::json!({
+        "branch_id":new_id("br"),"history_tree_id":new_id("history"),"name":"namespace",
         "head_commit_id":new_id("commit"),"fork_commit_id":new_id("commit"),
         "branch_kind":"full","generation":"1","state":"active"
     });
-    let decoded: Branch = json_codec::from_value(old_branch.clone()).unwrap();
+    let decoded: Branch = json_codec::from_value(sparse_branch.clone()).unwrap();
     assert!(decoded.pending_file_versions.is_empty());
     assert_eq!(
         canonical_json(&decoded).unwrap(),
-        canonical_json(&old_branch).unwrap()
+        canonical_json(&sparse_branch).unwrap()
     );
-    let old_workspace = json_codec::json!({
+    let sparse_workspace = json_codec::json!({
         "workspace_id":new_id("ws"),"purpose":"normal","branch_id":decoded.branch_id,
         "principal":"admin","base_head":decoded.head_commit_id,"fencing_token":"1",
         "files":{},"namespace_operations":[],"created_at":"1","state":"open"
     });
-    let decoded: Workspace = json_codec::from_value(old_workspace.clone()).unwrap();
+    let decoded: Workspace = json_codec::from_value(sparse_workspace.clone()).unwrap();
     assert!(decoded.selected_file_branches.is_empty());
     assert_eq!(
         canonical_json(&decoded).unwrap(),
-        canonical_json(&old_workspace).unwrap()
+        canonical_json(&sparse_workspace).unwrap()
     );
 }
 
@@ -3065,17 +3163,12 @@ fn detached_commit_fixture(engine: &mut Engine, repo: &Repository) -> (Workspace
 }
 
 #[test]
-fn detached_commit_retry_accepts_retained_write_permission_without_read_grant() {
+fn detached_commit_retry_preserves_actor_binding_after_restart() {
     let fixture = Fixture::new();
     let mut engine = fixture.initialize();
     let repo = repository(&mut engine, 1);
-    let mut grants = repo.grants.clone();
-    grants.write.insert("writer".into());
-    engine
-        .set_grants(&repo.repository_id, grants.clone(), "admin", &new_id("op"))
-        .unwrap();
     let workspace = engine
-        .create_workspace(&repo.main_branch_id, "writer")
+        .create_workspace(&repo.main_branch_id, "admin")
         .unwrap();
     engine
         .stage_bytes(&workspace.workspace_id, "file", b"saved")
@@ -3083,10 +3176,10 @@ fn detached_commit_retry_accepts_retained_write_permission_without_read_grant() 
     let request = CommitRequest {
         workspace_id: workspace.workspace_id,
         operation_id: new_id("op"),
-        principal: "writer".into(),
+        principal: "admin".into(),
         expected_head: workspace.base_head,
         fencing_token: workspace.fencing_token,
-        message: "write-only save".into(),
+        message: "single-account save".into(),
         request_digest: None,
     };
     let prepared = engine
@@ -3096,7 +3189,7 @@ fn detached_commit_retry_accepts_retained_write_permission_without_read_grant() 
         .unwrap();
     let original = engine.finish_workspace_commit(prepared).unwrap();
     let sequence = engine.state.sequence;
-    // The synchronous retry already accepts the same writer-owned request.
+    // The synchronous retry already accepts the same actor-bound request.
     assert_eq!(engine.commit_workspace(request.clone()).unwrap(), original);
     for reopen in [false, true] {
         if reopen {
@@ -3111,24 +3204,11 @@ fn detached_commit_retry_accepts_retained_write_permission_without_read_grant() 
         assert_eq!(engine.finish_workspace_commit(prepared).unwrap(), original);
         assert_eq!(engine.state.sequence, sequence);
     }
-    grants.write.remove("writer");
-    grants.read.insert("writer".into());
-    engine
-        .set_grants(&repo.repository_id, grants.clone(), "admin", &new_id("op"))
-        .unwrap();
-    let prepared = engine
-        .prepare_workspace_commit(request.clone(), None)
-        .unwrap()
-        .execute()
-        .unwrap();
-    assert_eq!(engine.finish_workspace_commit(prepared).unwrap(), original);
-    grants.read.remove("writer");
-    engine
-        .set_grants(&repo.repository_id, grants, "admin", &new_id("op"))
-        .unwrap();
+    let mut changed_actor = request;
+    changed_actor.principal = "different-actor".into();
     assert_eq!(
         engine
-            .prepare_workspace_commit(request, None)
+            .prepare_workspace_commit(changed_actor, None)
             .err()
             .unwrap()
             .code(),
@@ -3301,9 +3381,9 @@ fn detached_workspace_commit_consumes_real_fault_only_at_decision_boundary() {
 }
 
 #[test]
-fn detached_workspace_commit_checks_actual_source_grants_and_topology() {
+fn detached_workspace_commit_checks_actual_source_owner_and_topology() {
     use std::os::unix::fs::PermissionsExt;
-    for changed in ["source", "grant", "topology"] {
+    for changed in ["source", "owner", "topology"] {
         let fixture = Fixture::new();
         let mut engine = fixture.initialize();
         let repo = repository(&mut engine, 1);
@@ -3324,20 +3404,16 @@ fn detached_workspace_commit_checks_actual_source_grants_and_topology() {
             assert_eq!(plan.execute().err().unwrap().code(), "CHECKSUM_MISMATCH");
         } else {
             let prepared = plan.execute().unwrap();
-            if changed == "grant" {
-                let live = std::sync::Arc::make_mut(&mut engine.state)
-                    .repositories
-                    .get_mut(&repo.repository_id)
-                    .unwrap();
-                live.grants.manage.clear();
-                live.grants.write.clear();
+            if changed == "owner" {
+                let live = engine.workspaces.get_mut(&workspace.workspace_id).unwrap();
+                live.principal = "different-actor".into();
             } else {
                 std::sync::Arc::make_mut(&mut engine.state).topology_generation += 1;
             }
             let error = engine.finish_workspace_commit(prepared).unwrap_err();
             assert_eq!(
                 error.code(),
-                if changed == "grant" {
+                if changed == "owner" {
                     "PERMISSION_DENIED"
                 } else {
                     "COMMIT_PREPARATION_STALE"
@@ -3354,13 +3430,8 @@ fn detached_public_wire_commit_keeps_exact_digest_and_retry_binding() {
     let fixture = Fixture::new();
     let mut engine = fixture.initialize();
     let repo = repository(&mut engine, 1);
-    let mut grants = repo.grants.clone();
-    grants.write.insert("writer".into());
-    engine
-        .set_grants(&repo.repository_id, grants, "admin", &new_id("op"))
-        .unwrap();
     let workspace = engine
-        .create_workspace(&repo.main_branch_id, "writer")
+        .create_workspace(&repo.main_branch_id, "admin")
         .unwrap();
     engine
         .stage_bytes(&workspace.workspace_id, "wire-file", b"wire save")
@@ -3368,14 +3439,14 @@ fn detached_public_wire_commit_keeps_exact_digest_and_retry_binding() {
     let mut request = CommitRequest {
         workspace_id: workspace.workspace_id.clone(),
         operation_id: new_id("op"),
-        principal: "writer".into(),
+        principal: "admin".into(),
         expected_head: workspace.base_head.clone(),
         fencing_token: workspace.fencing_token,
         message: String::new(),
         request_digest: None,
     };
     let mut body = engine
-        .seal_workspace(&workspace.workspace_id, "writer")
+        .seal_workspace(&workspace.workspace_id, "admin")
         .unwrap();
     request.operation_id = body["operation_id"].as_str().unwrap().into();
     request.message.clear();
@@ -3582,7 +3653,7 @@ fn history_export_reads_exact_evidence_replicas_without_repair() {
         }
         let destination = fixture.root.join("export");
         engine
-            .export_history_package(&repo.history_tree_id, &destination, "admin")
+            .export_history_package(&repo.history_tree_id, &destination)
             .unwrap();
         offline_check_history_package(&destination).unwrap();
         assert_eq!(fs::read(&path).unwrap(), damaged);
@@ -3591,11 +3662,7 @@ fn history_export_reads_exact_evidence_replicas_without_repair() {
         }
         assert!(
             engine
-                .export_history_package(
-                    &repo.history_tree_id,
-                    &fixture.root.join("rejected"),
-                    "admin"
-                )
+                .export_history_package(&repo.history_tree_id, &fixture.root.join("rejected"))
                 .is_err()
         );
     }
@@ -3667,7 +3734,7 @@ fn history_export_rejects_conflicting_flat_shard_duplicates_without_repair() {
         }
         let destination = fixture.root.join("mixed-export");
         engine
-            .export_history_package(&repo.history_tree_id, &destination, "admin")
+            .export_history_package(&repo.history_tree_id, &destination)
             .unwrap();
         offline_check_history_package(&destination).unwrap();
         for disk in &members[..2] {
@@ -3682,8 +3749,7 @@ fn history_export_rejects_conflicting_flat_shard_duplicates_without_repair() {
             engine
                 .export_history_package(
                     &repo.history_tree_id,
-                    &fixture.root.join("rejected-mixed-export"),
-                    "admin"
+                    &fixture.root.join("rejected-mixed-export")
                 )
                 .is_err()
         );

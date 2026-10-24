@@ -379,25 +379,7 @@ impl Engine {
             json!({"scope":{"id":scope.id,"kind":scope.kind,"path":scope.path},"policy_id":exact.map(|policy|&policy.policy_id),"effective_policy_id":effective.map(|policy|&policy.policy_id),"generation":exact.map_or(0,|policy|policy.generation).to_string(),"effective_generation":effective.map_or(0,|policy|policy.generation).to_string(),"inherited":exact.is_none()&&effective.is_some(),"target_copies":copies,"backup_prefixes":effective.map(|policy|policy.backup_prefixes.clone()).unwrap_or_default(),"route_slot_ids":self.route(&primary,copies)?,"available_route_slot_ids":available_route,"backup_routes":routes,"backup_slot_ids":backup_slots,"max_copies":maximum,"file_count":scope.files.len().to_string(),"backup_paths":if scope.kind=="file"{self.state.file_backup_paths.get(&scope.id).cloned().unwrap_or_default()}else{BTreeMap::new()}}),
         )
     }
-    pub fn backup_configuration_for(
-        &self,
-        repository: &str,
-        path: &str,
-        principal: &str,
-    ) -> Result<Value> {
-        let repo = self
-            .state
-            .repositories
-            .get(repository)
-            .ok_or_else(|| Error::new("REPOSITORY_NOT_FOUND", "backup repository missing"))?;
-        self.require_grant(repo, principal, storage_contract::RepositoryAccess::Read)?;
-        let mut value = self.backup_configuration(repository, path)?;
-        value["can_manage"] = json!(
-            self.require_grant(repo, principal, storage_contract::RepositoryAccess::Manage)
-                .is_ok()
-        );
-        Ok(value)
-    }
+
     pub fn configure_backups(
         &mut self,
         request: BackupConfigurationRequest<'_>,
@@ -442,7 +424,7 @@ impl Engine {
             |engine, state, pending| {
                 let repo = state.repositories.get(repository).cloned()
                     .ok_or_else(|| Error::new("REPOSITORY_NOT_FOUND", "backup repository missing"))?;
-                engine.require_grant(&repo, principal, storage_contract::RepositoryAccess::Manage)?;
+
                 let mut scope = source_scope(state, repository, path)?;
                 if expected_scope_id.is_some_and(|expected| expected != scope.id) {
                     return Err(Error::new("SCOPE_CHANGED", "backup path now describes a different file or directory"));

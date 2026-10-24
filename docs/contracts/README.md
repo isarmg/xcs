@@ -8,11 +8,15 @@
 
 | 文件 | 当前覆盖 | 尚未证明 |
 | --- | --- | --- |
-| [core.schema.json](core.schema.json) | UINT64 精确上界、实体 ID、Branch / Commit 待写入映射、泛型 Entry 及文件分支投影、版本描述、内容提交请求、操作结果、完整上传状态、内容保存 PUBLICATION 字段、当前分页历史根/索引/引用/叶页形状 | 完整命名规则、父边和来源闭合、授权、实际 I/O、Tree/日志完整格式及所有管理操作 |
-| [openapi.json](openapi.json) | 保存、结果查询、版本/校验/内容/上传状态、文件管理（含零正文分支创建、冻结父版本与自有版本分开的继承投影、目录批量分支、共同分支交集和128字节单行备注）及管理员系统状态、真实功耗和监测历史 | 认证签发刷新、工作区创建/上传写接口、分页/事件及其余拟定管理接口 |
+| [core.schema.json](core.schema.json) | UINT64 精确上界、实体 ID、Branch / Commit 待写入映射、泛型 Entry 及文件分支投影、唯一管理员认证请求/响应、版本描述、内容提交请求、操作结果、完整上传状态、内容保存 PUBLICATION 字段、当前分页历史根/索引/引用/叶页形状 | 完整命名规则、父边和来源闭合、授权、实际 I/O、Tree/日志完整格式及所有管理操作 |
+| [openapi.json](openapi.json) | 登录/当前会话/注销/改密、保存、结果查询、版本/校验/内容/上传状态、文件管理（含零正文分支创建、冻结父版本与自有版本分开的继承投影、目录批量分支、共同分支交集和128字节单行备注）及管理员系统状态、真实功耗和监测历史 | bootstrap 与凭据恢复、工作区创建/上传写接口、分页/事件及其余拟定管理接口 |
 | [config-constraints.schema.json](config-constraints.schema.json) | 第 21 章关键常量、分支冻结引用/首写物化、资源上限和告警字段的受检投影 | 当前进程 JSON Config、完整部署配置、物理身份、拓扑和启动状态验证 |
-| [vectors.json](vectors.json) | 正反字段样例、分支映射键/值和文件作用域拒绝、旧 Branch / Commit 编码兼容、分页历史图固定映射/引用种类/深度/未知字段拒绝、规范字节与 BLAKE3、空文件和短文件分段清单 | 跨 Rust/Web/离线工具的一致实现及断电恢复 |
+| [vectors.json](vectors.json) | 正反字段样例、旧账户权限字段拒绝、分支映射键/值和文件作用域拒绝、Branch / Commit 当前稀疏编码、分页历史图固定映射/引用种类/深度/未知字段拒绝、规范字节与 BLAKE3、空文件和短文件分段清单 | 跨 Rust/Web/离线工具的一致实现及断电恢复 |
 | [contract-check](../tools/contract-check.md) | Rust 实现的 schema/OpenAPI 有效性、两者定义一致性、固定向量、配置投影、文档本地链接和 JSON/TOML 语法校验 | 模型检查、平台测试、网络端点行为和性能 |
+
+认证契约仅描述现有四个端点：`POST /api/auth/login` 返回 `token/csrf_token/principal/expires_at`，`GET /api/auth/me` 返回 `principal/csrf_token`，`POST /api/auth/logout` 返回 `logged_out`，`POST /api/auth/password` 以 `current_password/new_password` 换取 `changed/reauthentication_required`。响应不带角色、禁用或仓库准入字段；请求和响应 schema 均拒绝额外字段。Cookie 与 Bearer 两条认证路径共享当前唯一管理员，Cookie 变更请求仍需 Origin/CSRF。Schema 不替代密码验证、撤销持久性或真实 HTTP 安全测试。
+
+仓库与备份契约不保存 `grants`、`account_scope_repository_id` 或 `can_manage`。对象归属、只读别名、主分支绑定、工作区所有者、幂等主体和既有额度仍保留；移除用户 ACL 不代表解除业务限制。
 
 成员数不是固定三盘限制：配置投影支持任意非空固定成员集，决策与恢复多数均为 floor(N/2)+1；正常发布和确认仍要求全部已配置成员。单存储盘是最小配置，后续备份层可选。配置中的三个成员只是示例，不允许按当前可访问盘数自动缩减成员或门槛。
 
@@ -39,16 +43,16 @@ Rust 依赖源码已包含在仓库中，首次构建也使用唯一根锁文件
 
 ## 冻结前仍需完成
 
-1. 补齐全部拟定 API 的请求、响应、分页、错误及权限作用域，定义认证与会话生命周期。
+1. 补齐尚未覆盖的现有 API 请求、响应、分页和错误，以及 bootstrap、凭据恢复与会话生命周期的边界测试。
 2. 补齐 Commit/Tree 分页、日志帧 payload、成员回执、PUBLICATION 分页清单及各类恢复记录 schema；覆盖截断日志、中间损坏和未知必需特性。
 3. 固定 Unicode 16.0.0 表及校验值，交付可复用命名向量；完成 Rust、浏览器与离线工具交叉验证。
 4. 按[第 22 章](../22-acceptance.md#s22-10)执行发布证据模型、真实 I/O 与 SMB 样机，并使用[报告模板](../templates/validation-report-template.md)保存证据。
 
 字段与文本变更须同步更新固定向量和 OpenAPI；未经变更说明不得用重新生成期望值来掩盖兼容变化。外部规格依据为 [JSON Schema 2020-12](https://json-schema.org/draft/2020-12)、[OpenAPI 3.1.0](https://spec.openapis.org/oas/v3.1.0.html) 和 [RFC 8785](https://www.rfc-editor.org/rfc/rfc8785.html)，这些资料不为本系统业务协议提供正确性证明。
 
-仓库记录必须携带 `smb_binding_generation`，按规范 UINT64 十进制字符串编码；新仓库初值为 `"1"`。它独立于普通历史发布代数，每次显式重绑定或禁用推进，用来拒绝持有旧绑定的 SMB 会话。拆分禁用源仓库也推进其代数；新拆分仓库和导入仓库保持 SMB 禁用并从自己的初始代数开始。此字段为当前持久模型和 `HistoryRepository` schema 的必填项，不为缺失字段的旧记录补默认值。普通目录组成选择不推进此代数，也不改变已固定读取版本。
+仓库记录必须显式携带 `smb_enabled`，缺失不能默认启用；同时必须携带 `smb_binding_generation`，按规范 UINT64 十进制字符串编码；新仓库初值为 `"1"`。它独立于普通历史发布代数，每次显式重绑定或禁用推进，用来拒绝持有旧绑定的 SMB 会话。拆分禁用源仓库也推进其代数；新拆分仓库和导入仓库保持 SMB 禁用并从自己的初始代数开始。此字段为当前持久模型和 `HistoryRepository` schema 的必填项，不为缺失字段的旧记录补默认值。普通目录组成选择不推进此代数，也不改变已固定读取版本。
 
-分支创建只登记元数据与冻结来源引用，`pending_file_versions` 的键/值分别为 FileId/VersionId；Commit 逐快照保留此状态，当前分支首写不会改变旧快照。泛型 Entry 及文件管理的 version_id 都指可见真实版本；继承时为冻结父 ID，own_version_id 为 null，首次写入后才为自有 ID。新增校验同时拒绝 pending 来源逃逸文件作用域、快照来源与条目不符，以及可见父内容被误标为已拥有内容；旧 Branch / Commit 的空映射省略序列化并核对规范字节与摘要。
+分支创建只登记元数据与冻结来源引用，`pending_file_versions` 的键/值分别为 FileId/VersionId；Commit 逐快照保留此状态，当前分支首写不会改变旧快照。泛型 Entry 及文件管理的 version_id 都指可见真实版本；继承时为冻结父 ID，own_version_id 为 null，首次写入后才为自有 ID。新增校验同时拒绝 pending 来源逃逸文件作用域、快照来源与条目不符，以及可见父内容被误标为已拥有内容；Branch / Commit 的空映射采用当前稀疏编码省略序列化，并核对规范字节与摘要；这不接受其他旧格式字段。
 
 目录分支以 `DirectoryBranch`、`DirectoryTree` 和 `DirectoryReference` 区分命名身份、不可变组成及子目录精确引用；`DirectoryNamespaceBatch` 每项要求源分支、依据子树与稳定条目 ID，非删除操作还要求明确目标分支及依据子树。登记目录分支不提前创建文件分支或占位文件。路径、跨分支冲突与实际归属由核心统一校验，schema 合法不等于业务可发布。
 

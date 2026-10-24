@@ -237,7 +237,7 @@ fn metadata_only_package_and_purge_tombstone_combinations_are_preflighted() {
     private_dir(&parent).unwrap();
     let package = parent.join("tree");
     engine
-        .export_history_package(&repo.history_tree_id, &package, "alice")
+        .export_history_package(&repo.history_tree_id, &package)
         .unwrap();
     let package_size = fs_bytes(&package.join("publication.json")).len();
     let seal: PublicationSeal =

@@ -23,9 +23,9 @@
 
 ## 15.1 设计原则
 
-Web 和保留的受控 HTTP 客户端使用统一 HTTPS 业务契约；SMB 基础操作经 Samba 及服务端桥接映射到同一核心规则。Web 管理功能调用业务 API，日常文件内容读写交给独立 SMB；Web 不再提供上传、下载和预览，两条用户入口不串接。本机 zxs 不再提供远程客户端或普通文件传输命令。内容流、元数据和管理操作可以使用不同路由或连接，但不能各自实现一套提交或权限规则。
+Web 和保留的受控 HTTP 客户端使用统一 HTTPS 业务契约；SMB 基础操作经 Samba 及服务端桥接映射到同一核心规则。Web 管理功能调用业务 API，日常文件内容读写交给独立 SMB；Web 不再提供上传、下载和预览，两条用户入口不串接。本机 zxs 不再提供远程客户端或普通文件传输命令。内容流、元数据和管理操作可以使用不同路由或连接，但不能各自实现一套提交或业务约束。
 
-所有变更请求绑定账户、目标作用域和 operation_id。内容保存携带分支、文件版本及相应前置条件；配置变更携带对应代际。旧 `MergeLink` 只固定所选节点，不要求当前 HEAD 或文件内容；文件分支合并 `FileBranchMerge` 则固定每个参与head、结果和归属，并验证所选正文。业务文件名称通过结构化字段传输，内部对象路径不对外开放。
+所有存储变更请求绑定主体、目标作用域和 operation_id。内容保存携带分支、文件版本及相应前置条件；配置变更携带对应代际。旧 `MergeLink` 只固定所选节点，不要求当前 HEAD 或文件内容；文件分支合并 `FileBranchMerge` 则固定每个参与head、结果和归属，并验证所选正文。业务文件名称通过结构化字段传输，内部对象路径不对外开放。
 
 <a id="s15-02"></a>
 
@@ -33,6 +33,10 @@ Web 和保留的受控 HTTP 客户端使用统一 HTTPS 业务契约；SMB 基�
 
 | 接口 | 用途 |
 | --- | --- |
+| `POST /api/auth/login` | 唯一管理员登录；请求 username/password，返回 token/csrf_token/principal/expires_at |
+| `GET /api/auth/me` | 当前有效会话；返回 principal/csrf_token |
+| `POST /api/auth/logout` | 持久撤销当前会话；返回 logged_out |
+| `POST /api/auth/password` | 验证 current_password 并设置 new_password；返回 changed/reauthentication_required，撤销全部会话 |
 | `GET /api/file-manager/disks` | 可见磁盘目录入口及只读状态 |
 | `GET /api/file-manager/disks/{slot}/entries?path={path}` | 当前目录列表、后代文件数与稳定目录分支的冻结组成 |
 | `POST /api/file-manager/disks/{slot}/namespace` | 准备并提交当前目录的创建、重命名或删除 |
@@ -54,7 +58,7 @@ Web 和保留的受控 HTTP 客户端使用统一 HTTPS 业务契约；SMB 基�
 | `GET /api/system/status` | 管理员读取真实 CPU、内存、磁盘容量及 CPU/磁盘功耗；不可用值为 null，功耗另含原因代码 |
 | `GET /api/system/history?range={range}` | 管理员读取后台监测历史；1min/30min/1h/24h/1month（最近30天），最多361个真实聚合点，与文件操作历史分离 |
 | `GET /api/capabilities` | 协议、命名策略、上传范围、全量能力及入口限制 |
-| `GET /api/repositories` | 已授权仓库列表 |
+| `GET /api/repositories` | 当前系统仓库列表 |
 | `GET /api/repositories/{repo}/branches` | 分支及归档状态 |
 | `POST /api/repositories/{repo}/branches` | 兼容目录快照入口：从指定提交登记各文件引用，不复制来源正文 |
 | `POST /api/branches/{branch}/archive` | 显式归档 |
@@ -72,7 +76,7 @@ Web 和保留的受控 HTTP 客户端使用统一 HTTPS 业务契约；SMB 基�
 | `POST /api/workspaces/{workspace}/abort` | 仅在安全阶段中止 |
 | `GET /api/versions/{version}/content` | 受授权的固定版本内容与 Range；可传 repository_id/path 按具体逻辑别名生成下载名称 |
 | `GET /api/versions/{version}` | 返回获授权版本描述及可信校验清单摘要 |
-| `GET /api/versions/{version}/checksums` | 返回该版本完整二进制校验清单，按当前权限及内容状态核验 |
+| `GET /api/versions/{version}/checksums` | 返回该版本完整二进制校验清单，按当前认证及内容状态核验 |
 | `GET /api/files/{file}/history` | 文件和替换事件历史 |
 | `GET /api/commits/{commit}` | 提交及目录树信息 |
 | `POST /api/compare` | 比较版本或提交，不产生写入 |
@@ -85,7 +89,7 @@ Web 和保留的受控 HTTP 客户端使用统一 HTTPS 业务契约；SMB 基�
 | `GET /api/history-trees/{history}/graph` | 分别包含版本演进父边、合并标记线、PURGED 节点及拆分来源的历史图 |
 | `PUT /api/policies/{policy}` | 条件更新保护策略 |
 | `GET /api/events?after={cursor}` | 可续读事件流或分页事件 |
-| `GET /api/backup-topologies/{topology}` | 已发布层级、各盘位直接来源和物理绑定；按权限展示 |
+| `GET /api/backup-topologies/{topology}` | 已发布层级、各盘位直接来源和物理绑定；供已认证管理员查看 |
 | `POST /api/backup-topology-plans` | 用户指定一级/二级/后续来源映射，预检路由和数据迁移 |
 | `POST /api/storage-slots/{slot}/replacement-plans` | 用户为同一逻辑角色指定替换物理盘，保留来源映射 |
 | `PUT /api/primary-placement-rules/{rule}` | 条件设置仓库/目录的一级盘规则，只影响新版本；旧版另迁移 |
@@ -135,7 +139,7 @@ Web 和保留的受控 HTTP 客户端使用统一 HTTPS 业务契约；SMB 基�
 
 查询提取器拒绝的缺失字段、重复字段或非法参数值返回 400 `INVALID_REQUEST`；未知路由返回 404 `NOT_FOUND`，`/api` 与 `/api/` 命名空间不能落入同名静态文件。已知路由使用不支持的方法返回 405 `METHOD_NOT_ALLOWED` 并保留 `Allow`。这些错误不绕过原有认证与权限检查。
 
-有界 JSON 请求体超限返回 413 `PAYLOAD_TOO_LARGE`，包括未提供或不可信 `Content-Length` 的流式输入；登录、修改密码、账户更新和一般业务 JSON 的上限分别为 4 KiB、16 KiB、8 KiB 和 1 MiB。未超限但无法读完的请求体返回 400 `INVALID_REQUEST`。文件上传继续使用独立的流式长度及暂存准入规则，不套用 JSON 请求体上限。
+有界 JSON 请求体超限返回 413 `PAYLOAD_TOO_LARGE`，包括未提供或不可信 `Content-Length` 的流式输入；登录、修改密码和一般业务 JSON 的上限分别为 4 KiB、16 KiB 和 1 MiB。未超限但无法读完的请求体返回 400 `INVALID_REQUEST`。文件上传继续使用独立的流式长度及暂存准入规则，不套用 JSON 请求体上限。
 
 阻塞请求任务异常退出或取消属于 500 `INTERNAL_ERROR`，不能误报为客户端输入错误或将 panic、内部路径等细节发给客户端；原有受控业务错误及监测服务的 503 语义保持不变。`retryable` 表示错误类别允许重试，不承诺原操作未执行；变更请求仍须按相同 `operation_id` 查询或重试。内容响应头已发送后发生的校验或读取失败只能中断响应流，不能再改写 HTTP 状态或伪装成 JSON 错误封套；HEAD 也不发送错误响应体。
 
@@ -169,7 +173,7 @@ Web 和保留的受控 HTTP 客户端使用统一 HTTPS 业务契约；SMB 基�
 | `COMMIT_IN_DOUBT` | 无法判定提交传播结果 | 查询原操作，禁止自动清理 |
 | `METADATA_UNAVAILABLE` | 元数据保护或恢复条件不足 | 阻止危险写入 |
 | `RECOVERY_REQUIRED` | 可信成员、日志或配置证据不足 | 只开放可验证读取与恢复，不自动重置池 |
-| `POLICY_CHANGED` | 准备期间保护或权限代际改变 | 按新条件重新准备，不能修改已有候选 |
+| `POLICY_CHANGED` | 准备期间保护策略代际改变 | 按新条件重新准备，不能修改已有候选 |
 | `FORMAT_UNSUPPORTED` | 必需盘格式或协议特性未知 | 停止写入/自动重放，使用受支持读取器 |
 | `SAVE_MODE_UNSUPPORTED` | 请求不支持的保存或分支类型 | 明确拒绝；实际内容只接受 FULL，分支创建先记录与来源引用 |
 | `HISTORY_NODE_NOT_FOUND` | 所选连线端点不存在或不在请求历史域中 | 重新选择有效节点，不以分支当前 HEAD 偷换端点 |
@@ -190,7 +194,7 @@ Web 和保留的受控 HTTP 客户端使用统一 HTTPS 业务契约；SMB 基�
 | `CURSOR_EXPIRED` / `PAGE_SNAPSHOT_EXPIRED` | 事件窗口或分页快照失效 | 重新授权并取得一致快照，按返回的新游标继续 |
 | `CONFIG_CONFLICT` / `CONFIG_INVARIANT_VIOLATION` | 配置与权威状态或协议常量冲突 | 进入配置核查，不自动改盘上状态或降低保护 |
 
-业务 API 向 Web 返回结构化错误，Web 展示错误码、请求 ID、原因和待处理状态。SMB 入口单独返回对应协议状态，详细原因记录在服务器活动中心，按权限供管理入口查询。
+业务 API 向 Web 返回结构化错误，Web 展示错误码、请求 ID、原因和待处理状态。SMB 入口单独返回对应协议状态，详细原因记录在服务器活动中心，供已认证管理员查询。
 
 <a id="s15-05"></a>
 
@@ -198,7 +202,7 @@ Web 和保留的受控 HTTP 客户端使用统一 HTTPS 业务契约；SMB 基�
 
 客户端通过 `/api/capabilities` 读取 `name_policy`、`path_policy`、`unicode_data_version`、支持的操作、`max_upload_bytes` 和平台能力。项目采用单一当前协议与格式，不声明数字协议版本或可读旧格式列表；Unicode 版本用于标识固定的外部字符数据，不是项目协议版本。拓扑代际、备份路由和具体资源状态通过各自查询接口读取。
 
-遇到不能正确执行的规则或操作应拒绝相关写入并说明原因，不用其他规则静默近似。服务器不能因为客户端缺少某个按钮就省去权限检查。
+遇到不能正确执行的规则或操作应拒绝相关写入并说明原因，不用其他规则静默近似。服务器不能因为客户端缺少某个按钮就省去认证及业务约束检查。
 
 当前能力声明 `full_only:true`、`full_branches:false`、`branch_creation:"record-until-write"`、`branch_content:"inherit-parent-until-first-write"`，`directory_branch_creation:"inherit-directory-tree"`、`namespace_batch:true`，区分内容必须 FULL 与登记分支只保存冻结引用。历史另存、合并关系标记、清除、独立树拆分和用户备份拓扑按各自能力及已开放入口报告。SMB 暴露用户所选默认根目录分支的基础操作，管理 API 能力不能被解释为 SMB 也支持。画线请求固定节点，不要求固定当前 HEAD、解决冲突或提供文件内容。客户端请求不支持的保存方式或操作时明确拒绝，不能近似执行。
 
@@ -209,7 +213,7 @@ Web 和保留的受控 HTTP 客户端使用统一 HTTPS 业务契约；SMB 基�
 | `POST /api/file-manager/files/{file}/merge` | 每个公共文件分支 `expected_node_id`、结果 `chosen_node_id`、归属 `surviving_branch_id` 与 `confirmed:true`；只推进参与引用，被合并分支成为只读历史别名 |
 | `POST /api/file-manager/files/{file}/tags` | 每个显式 `source_node_id` 与所关联分支当前 `expected_node_id`，按 `add/remove` 增量创建继承标签的元数据子节点；最多16标签、每项128 UTF-8字节；历史源不推进分支head |
 | `PATCH /api/file-manager/files/{file}/nodes/{node}` | 路径、标签与合并节点的独立128字节备注；不修改正文备注或正文proof |
-| `GET/PUT /api/repositories/{repo}/backup-configuration` | GET返回自身与有效策略代数、scope身份和manage权限；PUT固定 `expected_scope_id`/`expected_generation`、含主盘总份数和每个备份slot的用户逻辑前缀，并回填可用历史版本 |
+| `GET/PUT /api/repositories/{repo}/backup-configuration` | GET返回自身与有效策略代数、scope身份及实际备份路线，不返回账户权限投影；PUT固定 `expected_scope_id`/`expected_generation`、含主盘总份数和每个备份slot的用户逻辑前缀，并回填可用历史版本 |
 
 节点标签和合并复用已有正文，`versions`仍只包含真实正文版本。统一 `nodes` 增加 `tags`/`merge` 类型与 `tags` 快照；独立 `merges` 保存全部输入来源，图边略去会形成环的关系。只读别名可通过历史节点下载和派生新分支，不能直接选择为可写分支。条件冲突返回409，标签限制/无效prefix返回400；不能因客户端先筛选了分支就省略服务端校验。
 
@@ -266,15 +270,15 @@ JSON 变更请求摘要为 `BLAKE3("zxs:request" + NUL + JCS(envelope))`。envel
 | 基于旧版本的范围修改 | 清单固定 base_version_id 及基线哈希；未上传范围只从获授权且受引用保护的该版本补齐，再验证最终完整文件 |
 | 封存与继续编辑 | 已封存清单不可变；后续写入进入新代际，旧操作继续引用旧清单 |
 
-范围使用无符号 64 位偏移与长度，检查相加溢出、越界及请求上限。接收前申请逐盘和账户暂存预算；额度不足返回明确错误并保留已接收数据。最终 ACCEPT 前仍重新核对权限和业务前置条件。
+范围使用无符号 64 位偏移与长度，检查相加溢出、越界及请求上限。接收前申请逐盘和账户暂存预算；额度不足返回明确错误并保留已接收数据。最终 ACCEPT 前仍重新核对主体与业务前置条件。
 
 <a id="s15-09"></a>
 
 ## 15.9 分页、事件和校验清单
 
-目录第一页返回固定 commit_id、作用域、排序和不透明 next_cursor；后续页固定相同快照，即使 HEAD 前进也不混入新目录。每页重新核对当前授权。游标绑定账户、作用域、查询参数、快照及有效期，由服务端防篡改；越权游标不泄露快照信息。过期返回 PAGE_SNAPSHOT_EXPIRED，不静默换到最新页。
+目录第一页返回固定 commit_id、作用域、排序和不透明 next_cursor；后续页固定相同快照，即使 HEAD 前进也不混入新目录。每页重新核对当前认证和目标状态。游标绑定账户、作用域、查询参数、快照及有效期，由服务端防篡改；非当前主体或作用域的游标不泄露快照信息。过期返回 PAGE_SNAPSHOT_EXPIRED，不静默换到最新页。
 
-事件流按已发布序号及同事务内 ordinal 排序，允许至少一次投递，客户端按二者去重。返回的 next_cursor 表示已检查到的位置，不因过滤无权限事件而停滞；不得暴露被过滤事件内容。重新授权、树迁移或事件窗口过期时要求重新列举，并返回一致快照对应的续读游标，防止重列举与订阅之间漏事件。事件通知只帮助失效，读请求仍执行当前权限和墓碑检查。
+事件流按已发布序号及同事务内 ordinal 排序，允许至少一次投递，客户端按二者去重。返回的 next_cursor 表示已检查到的位置，不因作用域过滤而停滞；不得混入其他作用域的事件内容。重新认证、树迁移或事件窗口过期时要求重新列举，并返回一致快照对应的续读游标，防止重列举与订阅之间漏事件。事件通知只帮助失效，读请求仍执行当前认证和墓碑检查。
 
 独立校验流程为：取得获授权版本描述 → 获取完整 checksums.bin → 验证清单哈希、头部、段数与长度 → 按段获取内容并核对段哈希。清单接口与内容接口执行相同的授权、PURGE_PENDING/PURGED 屏障，不由公开静态目录提供。HTTP Range 仅定义单范围基线；多范围支持须单独声明，未支持时返回明确错误。HEAD、304、206 也先授权；416 应返回当前表示长度。示例与测试需覆盖空文件、尾段、越界及条件失败。
 
@@ -307,8 +311,8 @@ HTTP 状态描述本次调用，operation 的终态描述原业务请求，二�
 `GET /api/workspaces/capacity` 要求当前有效会话，返回 `WorkspaceCapacity`：
 
 - `principal` 仅统计当前授权身份的保留记录和元数据预留量；`records` 与 `metadata_bytes` 各包含 `used`、`limit`、`remaining`，全部为规范 UInt64 十进制字符串。
-- `global` 只向管理员返回；普通用户的 `warning` 也只按本人预算计算，不泄漏全池压力。请求参数不能选择其他身份或提升权限。
-- `warning` 为 `ok`、`near_limit`（至少一个可见预算达到 80%）或 `exhausted`。`remaining` 下限为零。
+- `global` 与 `principal` 均必填且不得为 null，分别返回全池汇总和唯一管理员的主体预算。现有响应字段、每主体及全池上限均保留，不扩大容量；请求参数不能指定另一主体。
+- `warning` 为 `ok`、`near_limit`（全池或主体的任一预算达到 80%）或 `exhausted`。`remaining` 下限为零。
 - `automatic_retirement` 固定为 `false`。提交、终止及过期记录仍占用保留证据预算；本接口不删除证据、不修改预算，也不承诺下一次写入一定获准。后端不支持时返回 501。
 
 ### 引擎错误到 HTTP 的现行映射登记

@@ -432,12 +432,9 @@ impl Engine {
         Ok(())
     }
     pub fn create_workspace(&mut self, branch_id: &str, principal: &str) -> Result<Workspace> {
+        Self::require_actor(principal)?;
         self.require_write()?;
-        self.require_grant(
-            self.repository_for_branch(branch_id)?,
-            principal,
-            storage_contract::RepositoryAccess::Write,
-        )?;
+        self.repository_for_branch(branch_id)?;
         if self
             .workspaces
             .values()
@@ -519,11 +516,7 @@ impl Engine {
                 "workspace lease expired; pending bytes are preserved",
             ));
         }
-        self.require_grant(
-            self.repository_for_branch(&w.branch_id)?,
-            &w.principal,
-            storage_contract::RepositoryAccess::Write,
-        )?;
+        self.repository_for_branch(&w.branch_id)?;
         Ok(w)
     }
     pub fn stage_file(&mut self, workspace: &str, path: &str, source: &Path) -> Result<StagedFile> {
@@ -1079,15 +1072,17 @@ impl Engine {
                 "workspace lease expired",
             ));
         }
-        self.require_grant(
-            self.repository_for_branch(&w.branch_id)?,
-            &request.principal,
-            storage_contract::RepositoryAccess::Write,
-        )?;
-        if w.principal != request.principal || w.fencing_token != request.fencing_token {
+        self.repository_for_branch(&w.branch_id)?;
+        if w.principal != request.principal {
+            return Err(Error::new(
+                "PERMISSION_DENIED",
+                "workspace belongs to another principal",
+            ));
+        }
+        if w.fencing_token != request.fencing_token {
             return Err(Error::new(
                 "FENCING_TOKEN_INVALID",
-                "workspace owner or fencing token differs",
+                "workspace fencing token differs",
             ));
         }
         if request.expected_head != w.base_head {
@@ -1132,7 +1127,7 @@ impl Engine {
                 let base = state.commits.get(&w.base_head)
                     .ok_or_else(|| Error::new("STATE_INVALID", "workspace base missing"))?;
                 let repo = engine.repository_for_branch(&w.branch_id)?;
-                engine.require_grant(repo, &request.principal, storage_contract::RepositoryAccess::Write)?;
+
                 for file in w.files.values() {
                     validate_directory_selection(state, &w, &file.path)?;
                     let existing = find(&current.entries, &file.path);

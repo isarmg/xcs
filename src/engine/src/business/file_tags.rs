@@ -81,7 +81,7 @@ impl Engine {
                     let branch = state.branches.get(&target.branch_id)
                         .filter(|b| b.file_id.as_deref() == Some(file))
                         .ok_or_else(|| Error::new("FILE_BRANCH_NOT_FOUND", "tag target branch missing"))?;
-                    engine.require_grant(engine.repository_for_history(&branch.history_tree_id)?,principal,storage_contract::RepositoryAccess::Write)?;
+                    engine.repository_for_history(&branch.history_tree_id)?;
                     if branch.state != "active" || state.file_branch_aliases.contains_key(&target.branch_id) {
                         return Err(Error::new("BRANCH_NOT_ACTIVE", "merged aliases are read-only"));
                     }

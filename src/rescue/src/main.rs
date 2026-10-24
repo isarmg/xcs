@@ -139,7 +139,7 @@ fn run(args: Args) -> Result<()> {
                 destination,
             } => {
                 let engine = Engine::open_with_workspace_limits(&root, retained_workspace_limits)?;
-                print(engine.export_history_package(&history, &destination, &args.principal)?)
+                print(engine.export_history_package(&history, &destination)?)
             }
             PackageCommand::Restore {
                 package,

@@ -26,9 +26,7 @@ impl Backend for Probe {
         bootstrap: Option<&str>,
         identity: Option<&Identity>,
     ) -> Result<Value, ApiError> {
-        if let Some(identity) = identity {
-            identity.require_admin()?;
-        } else {
+        if identity.is_none() {
             self.service
                 .authorize_bootstrap(bootstrap.ok_or_else(ApiError::unauthorized)?)?;
         }

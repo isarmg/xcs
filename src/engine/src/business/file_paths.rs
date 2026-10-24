@@ -143,11 +143,7 @@ impl Engine {
                     .ok_or_else(|| {
                         Error::new("FILE_NODE_NOT_FOUND", "file metadata node missing")
                     })?;
-                engine.require_grant(
-                    engine.repository_for_history(&history)?,
-                    principal,
-                    storage_contract::RepositoryAccess::Write,
-                )?;
+                engine.repository_for_history(&history)?;
                 if note.is_empty() {
                     state.file_path_notes.remove(node);
                 } else {

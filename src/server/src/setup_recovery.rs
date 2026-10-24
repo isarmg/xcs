@@ -797,14 +797,15 @@ impl SetupRecovery {
         install(engine, &request.username, &request.password)
     }
 
+    // Internal management operations receive identities revalidated by
+    // ManagementBackend::setup_operation against current system authority.
     /// Isolated proof verification, not the healthy /api/admin/check endpoint.
     /// No client-provided export destination and no file payload transfer here.
-    pub fn offline_check(
+    pub(crate) fn offline_check(
         &self,
-        identity: &Identity,
+        _identity: &Identity,
         disk_id: &str,
     ) -> Result<storage_engine::CheckReport, ApiError> {
-        require_admin(identity)?;
         let _lock = self.lock()?;
         let paths = self.selected(&[disk_id.to_owned()])?;
         storage_engine::offline_check(&paths[0]).map_err(engine_error)
@@ -812,12 +813,11 @@ impl SetupRecovery {
 
     /// This never weakens ordinary write quorum. The core accepts only an
     /// already-decided unpublished operation with all original disks accessible.
-    pub fn recovery_preview(
+    pub(crate) fn recovery_preview(
         &self,
         identity: &Identity,
         request: RecoveryPreviewRequest,
     ) -> Result<storage_engine::RecoveryPlan, ApiError> {
-        require_admin(identity)?;
         let _lock = self.lock()?;
         let mut engine = Engine::open_for_recovery_with_workspace_limits(
             &self.data_root,
@@ -829,12 +829,11 @@ impl SetupRecovery {
             .map_err(engine_error)
     }
 
-    pub fn recovery_commit(
+    pub(crate) fn recovery_commit(
         &self,
         identity: &Identity,
         request: RecoveryCommitRequest,
     ) -> Result<storage_engine::OperationResult, ApiError> {
-        require_admin(identity)?;
         if !request.accept_permanent_loss {
             return Err(ApiError::invalid(
                 "explicit permanent-loss acknowledgement is required",
@@ -885,7 +884,7 @@ impl SetupRecovery {
         }
         if !request.accept_stale_credentials {
             return Err(ApiError::invalid(
-                "acknowledge that restored credentials and grants may be stale; restored sessions are always revoked",
+                "acknowledge that restored administrator credentials may be stale; restored sessions are always revoked",
             ));
         }
         self.restore_locked(request, |engine| {
@@ -897,16 +896,15 @@ impl SetupRecovery {
     }
 
     /// Normal restore uses a freshly authenticated system administrator.
-    pub fn restore_authenticated<F>(
+    pub(crate) fn restore_authenticated<F>(
         &self,
-        identity: &Identity,
+        _identity: &Identity,
         request: RestoreRequest,
         restore: F,
     ) -> Result<(), ApiError>
     where
         F: FnOnce(Engine) -> Result<(), ApiError>,
     {
-        require_admin(identity)?;
         let _lock = self.lock()?;
         self.restore_locked(request, restore)
     }
@@ -950,12 +948,6 @@ impl SetupRecovery {
     }
 }
 
-fn require_admin(identity: &Identity) -> Result<(), ApiError> {
-    if !identity.admin {
-        return Err(ApiError::forbidden());
-    }
-    Ok(())
-}
 fn checked_directory(path: &Path) -> Result<PathBuf, ApiError> {
     if !path.is_absolute() {
         return Err(ApiError::invalid("disk directory must be absolute"));

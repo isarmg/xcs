@@ -399,7 +399,10 @@ fn alternate_page_partitions_preserve_exact_bound_current_snapshots() {
 // Frozen output from a real three-disk engine pool, captured before the
 // canonical Value encoding fast path. Two saves of nested files (including a
 // Unicode filename) create seven commits, directory branches and four versions.
-// This independent byte oracle pins the current publication bytes and hashes.
+// The single-administrator contract deliberately removed the two repository
+// ACL fields. Its fixture was independently re-encoded and rehashed once; all
+// unrelated objects and the original graph topology remain unchanged. This
+// fixed byte oracle pins the current publication bytes and hashes.
 #[derive(Deserialize)]
 #[serialization(deny_unknown_fields)]
 struct CanonicalPublicationFixture {

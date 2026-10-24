@@ -40,7 +40,6 @@ pub(crate) enum PasswordChangeState {
 pub(crate) struct State {
     pub authenticated: bool,
     pub session_epoch: u64,
-    pub admin: bool,
     pub principal: String,
     pub session_transition: SessionTransition,
     pub session_failure: Option<Feedback>,
@@ -194,8 +193,7 @@ pub fn app() -> impl IntoView {
                         *s = State {
                             session_epoch,
                             authenticated: true,
-                            principal: text(&value, &["principal", "username"]),
-                            admin: value["admin"].as_bool().unwrap_or(false),
+                            principal: value.principal,
                             page: Page::Files,
                             busy,
                             ..Default::default()
@@ -227,7 +225,6 @@ pub(crate) fn navigate(state: RwSignal<State>, page: Page) {
     });
     match page {
         Page::Health => management::load(state),
-        Page::Admin => admin::load(state),
         Page::Status => monitor::load(state),
         Page::History => history::load(state),
         _ => {}
@@ -240,11 +237,11 @@ fn workspace(state: RwSignal<State>) -> impl IntoView {
             {[ (Page::Health,t("管理健康","Management health")), (Page::Files,t("文件","Files")), (Page::Details,t("详情","Details")), (Page::Status,t("状态","Status")), (Page::History,t("历史记录","History")) ].into_iter().map(move |(page,title)|view! {
                 <button class="zxs-button" aria-current=move ||(state.with(|s|s.page==page)).then_some("page") on:click=move |_|navigate(state,page)>{title}</button>
             }).collect_view()}
-            <Show when=move ||state.with(|s|s.admin)><button class="zxs-button" aria-current=move ||state.with(|s|(s.page==Page::Admin).then_some("page")) on:click=move |_|navigate(state,Page::Admin)>{t("系统管理","Administration")}</button></Show>
+            <Show when=move ||state.with(|s|s.session_active())><button class="zxs-button" aria-current=move ||state.with(|s|(s.page==Page::Admin).then_some("page")) on:click=move |_|navigate(state,Page::Admin)>{t("系统管理","Administration")}</button></Show>
         </HeaderNavigation>
         <HeaderActions><div class="zxs-header-tools zxs-flow">
             <Show when=move ||state.with(|s|matches!(s.page,Page::Files|Page::Details|Page::Status|Page::History))>
-                <button class="zxs-button zxs-header-refresh" type="button" aria-label=t("刷新","Refresh") title=t("刷新","Refresh") disabled=move ||state.with(|s|match s.page{Page::Files=>s.files.loading||s.files.loading_disks,Page::Details=>s.files.loading||s.files.history_loading||s.files.selected.is_none(),Page::Status=>s.monitor.loading||!s.admin,Page::History=>s.activity.loading,_=>true}) on:click=move |_|match state.with_untracked(|s|s.page){Page::Files|Page::Details=>if state.with_untracked(|s|s.files.slot.is_empty()){files::load_disks(state)}else{files::load_entries(state)},Page::Status=>monitor::load(state),Page::History=>history::load(state),_=>{}}><FileIcon name="refresh"/></button>
+                <button class="zxs-button zxs-header-refresh" type="button" aria-label=t("刷新","Refresh") title=t("刷新","Refresh") disabled=move ||state.with(|s|match s.page{Page::Files=>s.files.loading||s.files.loading_disks,Page::Details=>s.files.loading||s.files.history_loading||s.files.selected.is_none(),Page::Status=>s.monitor.loading||!s.session_active(),Page::History=>s.activity.loading,_=>true}) on:click=move |_|match state.with_untracked(|s|s.page){Page::Files|Page::Details=>if state.with_untracked(|s|s.files.slot.is_empty()){files::load_disks(state)}else{files::load_entries(state)},Page::Status=>monitor::load(state),Page::History=>history::load(state),_=>{}}><FileIcon name="refresh"/></button>
             </Show>
             <span class="zxs-session-identity">{move ||state.with(|s|s.principal.clone())}</span>
         </div></HeaderActions>
@@ -266,7 +263,6 @@ fn session_view(state: &State) -> SessionView {
             SessionPhase::Anonymous
         },
         username: state.principal.clone(),
-        admin: state.admin,
         message: state
             .session_failure
             .as_ref()
@@ -322,8 +318,7 @@ fn restore_session(state: RwSignal<State>) {
             Ok(value) => {
                 state.update(|s| {
                     s.authenticated = true;
-                    s.principal = text(&value, &["principal", "username"]);
-                    s.admin = value["admin"].as_bool().unwrap_or(false);
+                    s.principal = value.principal;
                 });
             }
             Err(error) => state.update(|s| {

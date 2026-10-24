@@ -78,7 +78,6 @@ actions! {
     Repository => "repository",
     Resolve => "resolve",
     SealWorkspace => "seal_workspace",
-    SetGrants => "set_grants",
     SmbBinding => "smb_binding",
     SmbLookup => "smb_lookup",
     SmbReadDirectory => "smb_read_directory",

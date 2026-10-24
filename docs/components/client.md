@@ -20,7 +20,7 @@ Linux 下载在联网前打开并保留目标父目录，在其中创建私有�
 
 完整上传先使用 256 KiB 缓冲计算摘要并回退文件位置，释放摘要缓冲后才构造按需读取的请求体。请求体容量按文件长度限制在 4–256 KiB，不创建后台预读队列，也不缓存整文件；大文件相比默认 4 KiB 容量减少数据分块数量，但不代表已测得网络吞吐提升。此路径属于保留的客户端库，不再由产品 CLI 暴露，也不是桌面或移动 App，也不改变服务器缓存。回归在 `test/client/unit/upload_stream_tests.rs`。
 
-会话序列化用于登录业务，`Debug` 只显示身份、权限和期限，不输出 bearer/CSRF。空成功响应包括 HEAD/204 返回 JSON null；非 JSON 的 HTTP 错误保留其状态。提交超时仍需查询原操作 ID，不能把传输错误解释为未提交。
+会话序列化用于登录业务，`Debug` 只显示主体和期限，不输出 bearer/CSRF。空成功响应包括 HEAD/204 返回 JSON null；非 JSON 的 HTTP 错误保留其状态。提交超时仍需查询原操作 ID，不能把传输错误解释为未提交。
 
 ```sh
 cargo test --locked --offline -p storage-client

@@ -1,8 +1,12 @@
 use super::*;
-use crate::{Backend, BackendAction, engine_backend::EngineBackend};
+use crate::{
+    Backend, BackendAction,
+    auth::{AuthStore, Identity},
+    engine_backend::{EngineBackend, install_test_administrator},
+};
 use data_serialization::{Serializer, ser::Error};
 use json_codec::json;
-use std::{collections::BTreeSet, sync::Mutex};
+use std::sync::{Arc, Mutex};
 use storage_contract::{Config, new_id};
 
 fn fixture() -> (
@@ -11,7 +15,7 @@ fn fixture() -> (
     storage_engine::Repository,
     Identity,
 ) {
-    let root = tempfile::tempdir().unwrap();
+    let root = crate::tests::private_tempdir();
     let config = Config::development([
         root.path().join("d1"),
         root.path().join("d2"),
@@ -21,13 +25,7 @@ fn fixture() -> (
     let repo = engine
         .create_repository("Projection", "P01", 3, "owner", &new_id("op"))
         .unwrap();
-    let identity = Identity {
-        admission_session: None,
-        smb_binding: None,
-        principal: "owner".into(),
-        admin: false,
-        repositories: BTreeSet::from([repo.repository_id.clone()]),
-    };
+    let identity = install_test_administrator(&mut engine, "owner");
     (root, engine, repo, identity)
 }
 
@@ -54,9 +52,21 @@ fn rendering_releases_engine_before_serializer_runs() {
     );
 }
 
+fn authenticated_backend(
+    engine: Engine,
+    root: &std::path::Path,
+) -> (Arc<EngineBackend>, AuthStore, String, Identity) {
+    let backend = Arc::new(EngineBackend::new(engine));
+    let auth = AuthStore::initialize(root, "owner", "integration-test-password").unwrap();
+    let mut auth = backend.protect_auth(auth).unwrap();
+    let login = auth.login("owner", "integration-test-password").unwrap();
+    let identity = auth.authenticate(&login.token).unwrap();
+    (backend, auth, login.token, identity)
+}
+
 #[test]
-fn tree_projection_is_frozen_and_preserves_authorization_and_wire_shape() {
-    let (_root, mut engine, repo, identity) = fixture();
+fn tree_projection_is_frozen_and_preserves_admission_and_wire_shape() {
+    let (root, mut engine, repo, _) = fixture();
     let input = json!({"branch_id": repo.main_branch_id});
     let expected = json!({
         "branch_id": repo.main_branch_id,
@@ -64,13 +74,7 @@ fn tree_projection_is_frozen_and_preserves_authorization_and_wire_shape() {
         "entries": engine.list_tree(&repo.main_branch_id).unwrap(),
         "pending_file_versions": {},
     });
-    let projection = Tree::capture(&engine, &identity, &input).unwrap();
-    let mut denied = identity.clone();
-    denied.repositories.clear();
-    assert_eq!(
-        Tree::capture(&engine, &denied, &input).err().unwrap().code,
-        "FORBIDDEN"
-    );
+    let projection = Tree::capture(&engine, &input).unwrap();
     let other = engine
         .create_repository("Other", "P01", 3, "owner", &new_id("op"))
         .unwrap();
@@ -78,7 +82,6 @@ fn tree_projection_is_frozen_and_preserves_authorization_and_wire_shape() {
     assert_eq!(
         Tree::capture(
             &engine,
-            &identity,
             &json!({
                 "branch_id": repo.main_branch_id, "query": {"commit_id": foreign}
             })
@@ -88,46 +91,46 @@ fn tree_projection_is_frozen_and_preserves_authorization_and_wire_shape() {
         .code,
         "NOT_FOUND"
     );
-    // The already admitted response owns its snapshot even after live changes.
     assert_eq!(encode(projection).unwrap(), expected);
-    let backend = EngineBackend::new(engine);
+    let (backend, mut auth, token, identity) = authenticated_backend(engine, root.path());
     assert_eq!(
         backend
             .call(BackendAction::Tree, &identity, input.clone())
             .unwrap(),
         expected
     );
+    let denied = Identity {
+        principal: "other".into(),
+        ..identity.clone()
+    };
     assert_eq!(
         backend
             .call(BackendAction::Tree, &denied, input.clone())
             .unwrap_err()
             .code,
-        "FORBIDDEN"
+        "UNAUTHORIZED"
     );
     let frozen = {
         let mut engine = backend.engine.lock().unwrap();
-        let frozen = Tree::capture(&engine, &identity, &input).unwrap();
-        engine
-            .set_grants(
-                &repo.repository_id,
-                storage_engine::Grants {
-                    manage: BTreeSet::from(["replacement-owner".into()]),
-                    ..Default::default()
-                },
-                &identity.principal,
-                &new_id("op"),
-            )
-            .unwrap();
+        let frozen = Tree::capture(&engine, &input).unwrap();
+        save_projection_file(&mut engine, &repo.main_branch_id, "new.txt", b"new content");
         frozen
     };
+    let current = backend
+        .call(BackendAction::Tree, &identity, input.clone())
+        .unwrap();
+    assert_ne!(current["commit_id"], expected["commit_id"]);
+    assert_eq!(current["entries"].as_array().unwrap().len(), 1);
+    auth.logout(&token).unwrap();
+    // An admitted projection keeps its owned snapshot across live data changes
+    // and revocation, but can never admit the session to a subsequent request.
     assert_eq!(encode(frozen).unwrap(), expected);
-    // Frozen response data never grants admission to a later request.
     assert_eq!(
         backend
             .call(BackendAction::Tree, &identity, input)
             .unwrap_err()
             .code,
-        "FORBIDDEN"
+        "UNAUTHORIZED"
     );
 }
 
@@ -310,7 +313,7 @@ fn save_projection_file(engine: &mut Engine, branch: &str, path: &str, body: &[u
 
 #[test]
 fn real_current_and_historical_tree_sources_match_previous_wire_output() {
-    let (_root, mut engine, repo, identity) = fixture();
+    let (_root, mut engine, repo, _) = fixture();
     save_projection_file(
         &mut engine,
         &repo.main_branch_id,
@@ -341,7 +344,6 @@ fn real_current_and_historical_tree_sources_match_previous_wire_output() {
             .collect();
         let projection = Tree::capture(
             &engine,
-            &identity,
             &json!({
                 "branch_id": repo.main_branch_id, "query": {"commit_id": commit_id}
             }),
@@ -377,7 +379,7 @@ fn real_current_and_historical_tree_sources_match_previous_wire_output() {
 
 #[test]
 fn pending_main_file_and_historical_branch_sources_match_previous_response() {
-    let (_root, mut engine, repo, identity) = fixture();
+    let (_root, mut engine, repo, _) = fixture();
     save_projection_file(
         &mut engine,
         &repo.main_branch_id,
@@ -416,7 +418,6 @@ fn pending_main_file_and_historical_branch_sources_match_previous_response() {
             .collect();
         let tree = Tree::capture(
             engine,
-            &identity,
             &json!({
                 "branch_id": branch, "query": {"commit_id": commit_id}
             }),
@@ -454,7 +455,7 @@ fn pending_main_file_and_historical_branch_sources_match_previous_response() {
 
 #[test]
 fn inherited_directory_context_keeps_first_match_and_historical_sources() {
-    let (_root, mut engine, repo, identity) = fixture();
+    let (_root, mut engine, repo, _) = fixture();
     save_projection_file(
         &mut engine,
         &repo.main_branch_id,
@@ -547,7 +548,6 @@ fn inherited_directory_context_keeps_first_match_and_historical_sources() {
         .collect();
     let projection = Tree::capture(
         &engine,
-        &identity,
         &json!({
             "branch_id": repo.main_branch_id, "query": {"commit_id": head}
         }),
@@ -690,8 +690,8 @@ fn smb_lookup_preserves_path_first_match_without_serializing_the_tree() {
 }
 
 #[test]
-fn smb_lookup_rechecks_authorization_and_returns_only_current_entry() {
-    let (_root, mut engine, repo, identity) = fixture();
+fn smb_lookup_rechecks_admission_and_returns_only_current_entry() {
+    let (root, mut engine, repo, _) = fixture();
     save_projection_file(&mut engine, &repo.main_branch_id, "Straße.txt", b"content");
     let expected = engine
         .list_tree(&repo.main_branch_id)
@@ -699,8 +699,8 @@ fn smb_lookup_rechecks_authorization_and_returns_only_current_entry() {
         .into_iter()
         .find(|entry| name_policy::path_key(&entry.path) == "strasse.txt");
     let input = json!({"branch_id":repo.main_branch_id,"path":"STRASSE.TXT"});
-    let frozen = SmbLookup::capture(&engine, &identity, &input).unwrap();
-    let backend = EngineBackend::new(engine);
+    let frozen = SmbLookup::capture(&engine, &input).unwrap();
+    let (backend, mut auth, token, identity) = authenticated_backend(engine, root.path());
     assert_eq!(
         backend
             .call(BackendAction::SmbLookup, &identity, input.clone())
@@ -717,29 +717,31 @@ fn smb_lookup_rechecks_authorization_and_returns_only_current_entry() {
             .unwrap(),
         json!(null)
     );
-    let mut denied = identity.clone();
-    denied.repositories.clear();
+    let denied = Identity {
+        principal: "other".into(),
+        ..identity.clone()
+    };
     assert_eq!(
         backend
             .call(BackendAction::SmbLookup, &denied, input.clone())
             .unwrap_err()
             .code,
-        "FORBIDDEN"
+        "UNAUTHORIZED"
     );
-    backend
-        .engine
-        .lock()
-        .unwrap()
-        .set_grants(
-            &repo.repository_id,
-            storage_engine::Grants {
-                manage: BTreeSet::from(["replacement-owner".into()]),
-                ..Default::default()
-            },
-            &identity.principal,
-            &new_id("op"),
-        )
+    {
+        let mut engine = backend.engine.lock().unwrap();
+        save_projection_file(
+            &mut engine,
+            &repo.main_branch_id,
+            "Straße.txt",
+            b"updated content",
+        );
+    }
+    let current = backend
+        .call(BackendAction::SmbLookup, &identity, input.clone())
         .unwrap();
+    assert_ne!(current["version_id"], expected.as_ref().unwrap().version_id);
+    auth.logout(&token).unwrap();
     assert_eq!(
         encode(frozen).unwrap(),
         json_codec::to_value(expected).unwrap()
@@ -749,7 +751,7 @@ fn smb_lookup_rechecks_authorization_and_returns_only_current_entry() {
             .call(BackendAction::SmbLookup, &identity, input)
             .unwrap_err()
             .code,
-        "FORBIDDEN"
+        "UNAUTHORIZED"
     );
 }
 

@@ -1769,7 +1769,7 @@
         }
       },
       "additionalProperties": false,
-      "description": "一批显式分支映射；实际发布再统一校验树依据、条目身份、路径归属、目标碰撞与权限。",
+      "description": "一批显式分支映射；实际发布再统一校验树依据、条目身份、路径归属、目标碰撞与业务可写状态。",
       "required": [
         "kind",
         "items"
@@ -2515,48 +2515,6 @@
         "unicode_version": {
           "type": "string"
         },
-        "grants": {
-          "type": "object",
-          "properties": {
-            "read": {
-              "type": "array",
-              "items": {
-                "type": "string"
-              },
-              "uniqueItems": true
-            },
-            "write": {
-              "type": "array",
-              "items": {
-                "type": "string"
-              },
-              "uniqueItems": true
-            },
-            "manage": {
-              "type": "array",
-              "items": {
-                "type": "string"
-              },
-              "uniqueItems": true
-            }
-          },
-          "required": [
-            "read",
-            "write",
-            "manage"
-          ],
-          "additionalProperties": false
-        },
-        "account_scope_repository_id": {
-          "anyOf": [
-            {
-              "$ref": "#/$defs/RepositoryId"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
         "smb_enabled": {
           "type": "boolean"
         },
@@ -2576,11 +2534,11 @@
         "target_copies",
         "name_policy",
         "unicode_version",
-        "grants",
-        "smb_binding_generation"
+        "smb_binding_generation",
+        "smb_enabled"
       ],
       "additionalProperties": false,
-      "description": "根中仓库对象的读取字段形状；命名策略、保护份数和授权语义由核心另行验证。"
+      "description": "根中仓库对象的读取字段形状；单一管理员系统不保存账户 ACL 或仓库准入列表，命名策略、保护份数、共享绑定与业务状态由核心另行验证。"
     },
     "HistoryIdentity": {
       "type": "object",
@@ -2818,6 +2776,7 @@
       "type": "object",
       "additionalProperties": false,
       "required": [
+        "global",
         "principal",
         "warning",
         "automatic_retirement"
@@ -2840,7 +2799,131 @@
         "automatic_retirement": {
           "const": false
         }
+      },
+      "description": "当前唯一管理员的全池与主体预算均必填；warning考虑两者全部预算，不改变计费或额度。"
+    },
+    "AdministratorPrincipal": {
+      "type": "string",
+      "minLength": 3,
+      "maxLength": 64,
+      "pattern": "^[a-z0-9][a-z0-9._-]*[a-z0-9]$",
+      "description": "首次初始化时自选并规范化保存的唯一管理员用户名；保留为审计、操作幂等和工作区所属主体，不是角色或仓库权限。",
+      "not": {
+        "pattern": "[^a-z0-9._-]"
       }
+    },
+    "AuthenticationToken": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_-]{43}$",
+      "description": "32 字节随机会话令牌或派生 CSRF 令牌的无填充 base64url 表示。",
+      "minLength": 43,
+      "maxLength": 43
+    },
+    "LoginRequest": {
+      "type": "object",
+      "properties": {
+        "username": {
+          "type": "string",
+          "description": "候选用户名按共享认证规则去首尾 ASCII 空格并转为 ASCII 小写；只可登录唯一管理员。"
+        },
+        "password": {
+          "type": "string",
+          "writeOnly": true
+        }
+      },
+      "required": [
+        "username",
+        "password"
+      ],
+      "additionalProperties": false
+    },
+    "LoginResponse": {
+      "type": "object",
+      "properties": {
+        "token": {
+          "$ref": "#/$defs/AuthenticationToken"
+        },
+        "csrf_token": {
+          "$ref": "#/$defs/AuthenticationToken"
+        },
+        "principal": {
+          "$ref": "#/$defs/AdministratorPrincipal"
+        },
+        "expires_at": {
+          "$ref": "#/$defs/UInt64"
+        }
+      },
+      "required": [
+        "token",
+        "csrf_token",
+        "principal",
+        "expires_at"
+      ],
+      "additionalProperties": false,
+      "description": "expires_at 为 Unix 秒的 UINT64 十进制字符串；同时设置 HttpOnly、SameSite=Strict 的 zxs_session cookie，生产 HTTPS 模式带 Secure。"
+    },
+    "CurrentSessionResponse": {
+      "type": "object",
+      "properties": {
+        "principal": {
+          "$ref": "#/$defs/AdministratorPrincipal"
+        },
+        "csrf_token": {
+          "$ref": "#/$defs/AuthenticationToken"
+        }
+      },
+      "required": [
+        "principal",
+        "csrf_token"
+      ],
+      "additionalProperties": false
+    },
+    "LogoutResponse": {
+      "type": "object",
+      "properties": {
+        "logged_out": {
+          "const": true
+        }
+      },
+      "required": [
+        "logged_out"
+      ],
+      "additionalProperties": false
+    },
+    "PasswordChangeRequest": {
+      "type": "object",
+      "properties": {
+        "current_password": {
+          "type": "string",
+          "writeOnly": true
+        },
+        "new_password": {
+          "type": "string",
+          "writeOnly": true,
+          "description": "按共享密码规则校验 12 至 1024 个 UTF-8 字节且不含 ASCII 控制字符；字符数不代替字节数。"
+        }
+      },
+      "required": [
+        "current_password",
+        "new_password"
+      ],
+      "additionalProperties": false
+    },
+    "PasswordChangeResponse": {
+      "type": "object",
+      "properties": {
+        "changed": {
+          "const": true
+        },
+        "reauthentication_required": {
+          "const": true
+        }
+      },
+      "required": [
+        "changed",
+        "reauthentication_required"
+      ],
+      "additionalProperties": false
     }
   }
 }

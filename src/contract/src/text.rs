@@ -1,5 +1,4 @@
-//! Shared validation for new user-authored metadata. Historical readers may
-//! retain explicit older limits without weakening current write admission.
+//! Shared validation for user-authored metadata at both write and read boundaries.
 use crate::{Error, Result};
 
 pub const MAX_NOTE_BYTES: usize = 128;
@@ -21,7 +20,7 @@ pub fn validate_tag(tag: &str) -> Result<()> {
 }
 
 /// Empty notes clear existing metadata. The limit counts UTF-8 bytes, and
-/// control characters (including line breaks) are never stored by new writes.
+/// control characters (including line breaks) are not part of the current format.
 pub fn validate_note(note: &str) -> Result<()> {
     if note.len() > MAX_NOTE_BYTES || note.chars().any(char::is_control) {
         return Err(Error::new(

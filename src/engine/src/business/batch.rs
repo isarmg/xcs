@@ -76,23 +76,17 @@ fn validate_identities(entries: &[Entry]) -> Result<()> {
     Ok(())
 }
 
-// Older snapshots may only have the per-file ownership cache. Neither form
-// may be synthesized when persisted ownership is absent.
+// Frozen compositions require exact path context, not a reconstructed owner.
 fn file_context(branch: &DirectoryBranch, entry: &Entry) -> Result<FileContext> {
-    if let Some(context) = branch.file_contexts.get(&entry.lookup_key) {
-        return Ok(context.clone());
-    }
-    let branch_id = branch
+    branch
         .file_branches
         .get(&entry.file_id)
-        .cloned()
         .ok_or_else(|| Error::new("STATE_INVALID", "source public file branch missing"))?;
-    Ok(FileContext {
-        node_id: None,
-        selection_generation: 0,
-        branch_id,
-        inherited_from: branch.inherited_files.get(&entry.file_id).cloned(),
-    })
+    branch
+        .file_contexts
+        .get(&entry.lookup_key)
+        .cloned()
+        .ok_or_else(|| Error::new("STATE_INVALID", "source path write context missing"))
 }
 
 fn save_inactive(
@@ -189,7 +183,7 @@ fn apply(
         .get(repository)
         .cloned()
         .ok_or_else(|| Error::new("REPOSITORY_NOT_FOUND", "repository missing"))?;
-    engine.require_grant(&repo, principal, storage_contract::RepositoryAccess::Write)?;
+
     if !["move", "copy", "delete", "rename"].contains(&request.kind.as_str())
         || request.items.is_empty()
         || request.items.len() > engine.config.max_entries

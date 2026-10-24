@@ -52,36 +52,8 @@ pub struct PreparedWorkspaceCommit {
 }
 
 impl Engine {
-    pub(crate) fn require_workspace_commit_access(
-        &self,
-        workspace: &Workspace,
-        principal: &str,
-        replay: bool,
-    ) -> Result<()> {
-        let repository = self.repository_for_branch(&workspace.branch_id)?;
-        // Returning the caller's existing save receipt must not require a new
-        // read grant when the original write grant is still present. This does
-        // not grant access to file contents or change general read semantics.
-        if replay
-            && self
-                .require_grant(
-                    repository,
-                    principal,
-                    storage_contract::RepositoryAccess::Read,
-                )
-                .is_ok()
-        {
-            return Ok(());
-        }
-        self.require_grant(
-            repository,
-            principal,
-            storage_contract::RepositoryAccess::Write,
-        )
-    }
-
-    /// Structural binding also used during restart, before live authorization
-    /// applies. Recovery completes accepted work even after permission changes.
+    /// Structural binding also used during restart. Account authentication is
+    /// the server boundary; recovery still completes an accepted publication.
     pub(crate) fn workspace_request_matches_operation(
         &self,
         workspace: &Workspace,
@@ -105,9 +77,9 @@ impl Engine {
             })
     }
 
-    /// One authority boundary for synchronous, wire and detached receipt replay.
-    /// A published operation remains historical fact, but possession of its ID
-    /// does not grant access after the caller's current permissions are revoked.
+    /// One immutable request boundary for synchronous, wire and detached replay.
+    /// The actor, workspace and digest remain bound to the original operation;
+    /// network adapters must authenticate before entering the engine.
     pub(crate) fn validate_workspace_commit_replay(
         &self,
         request: &CommitRequest,
@@ -120,7 +92,7 @@ impl Engine {
                 "workspace belongs to another principal",
             ));
         }
-        self.require_workspace_commit_access(&workspace, &request.principal, true)?;
+        self.repository_for_branch(&workspace.branch_id)?;
         let existing = self
             .state
             .operations
@@ -142,7 +114,7 @@ impl Engine {
         Ok(workspace)
     }
 
-    /// Capture authorization and metadata under the Engine mutex. No payload
+    /// Capture request ownership and metadata under the Engine mutex. No payload
     /// bytes are read here. execute() owns all expensive planning/copy/hash work.
     pub fn prepare_workspace_commit(
         &self,
@@ -157,7 +129,7 @@ impl Engine {
             ));
         }
         let replay = self.state.operations.contains_key(&request.operation_id);
-        self.require_workspace_commit_access(&workspace, &request.principal, replay)?;
+        self.repository_for_branch(&workspace.branch_id)?;
         if !replay {
             self.require_write()?;
             if workspace.fencing_token != request.fencing_token {
@@ -238,11 +210,7 @@ impl Engine {
             return self.operation(&prepared.request.operation_id);
         }
         self.require_write()?;
-        self.require_grant(
-            self.repository_for_branch(&workspace.branch_id)?,
-            &prepared.request.principal,
-            storage_contract::RepositoryAccess::Write,
-        )?;
+        self.repository_for_branch(&workspace.branch_id)?;
         if canonical_json(&workspace)? != prepared.frozen_workspace
             || self.snapshot != prepared.base_snapshot
             || self.next_slot != prepared.base_slot

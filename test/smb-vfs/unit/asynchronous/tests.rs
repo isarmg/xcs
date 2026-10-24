@@ -16,6 +16,7 @@ fn event_context() -> *mut sdk::tevent_context {
 #[link(name = "tevent-private-samba")]
 #[link(name = "talloc-private-samba")]
 #[link(name = "smbconf")]
+#[link(name = "samba-security-private-samba")]
 unsafe extern "C" {}
 
 // Registration is the only host stub. Event and allocation functions come
@@ -148,7 +149,7 @@ fn cancelling_request_before_worker_finishes_does_not_touch_released_host_state(
 fn sync_and_async_reads_bound_immutable_extents_but_allow_workspace_growth() {
     use super::super as vfs;
     use smb_protocol::protocol::{
-        FrameStream, OpenResult, PROTOCOL, Request, Response, WRITE_RESERVATION_CAPABILITY,
+        FrameStream, OpenResult, PROTOCOL, REQUIRED_CAPABILITIES, Request, Response,
     };
     use std::{
         fs::File,
@@ -172,7 +173,7 @@ fn sync_and_async_reads_bound_immutable_extents_but_allow_workspace_growth() {
         while let Ok((request, _)) = stream.receive::<Request>() {
             let result = match request {
                 Request::Hello { .. } => {
-                    json_codec::json!({"protocol": PROTOCOL, "capabilities": [WRITE_RESERVATION_CAPABILITY]})
+                    json_codec::json!({"protocol": PROTOCOL, "capabilities": REQUIRED_CAPABILITIES})
                 }
                 Request::AuthorizeRead { handle: 7 } => json_codec::json!({"authorized":true}),
                 _ => panic!("unexpected request"),
@@ -203,10 +204,13 @@ fn sync_and_async_reads_bound_immutable_extents_but_allow_workspace_growth() {
         io: Arc::new(Mutex::new(())),
     };
     let context = Box::new(vfs::Context {
+        samba_username: "alice".into(),
         client,
         files: [(0, opened)].into_iter().collect(),
     });
+    let mut authenticated = vfs::authentication::tests::AuthenticatedSession::new();
     let mut handle = sdk::vfs_handle_struct {
+        conn: &mut *authenticated.connection,
         data: Box::into_raw(context).cast(),
         ..Default::default()
     };

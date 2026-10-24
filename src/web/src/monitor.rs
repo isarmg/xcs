@@ -52,7 +52,7 @@ impl Default for Model {
 }
 
 pub(crate) fn load(state: RwSignal<State>) {
-    if state.with_untracked(|s| !s.session_active() || !s.admin) {
+    if state.with_untracked(|s| !s.session_active()) {
         return;
     }
     load_history(state);
@@ -80,7 +80,7 @@ pub(crate) fn load(state: RwSignal<State>) {
     });
 }
 fn load_capacity(state: RwSignal<State>) {
-    if state.with_untracked(|s| !s.session_active() || !s.admin || s.monitor.capacity_loading) {
+    if state.with_untracked(|s| !s.session_active() || s.monitor.capacity_loading) {
         return;
     }
     state.update(|s| s.monitor.capacity_loading = true);
@@ -145,6 +145,7 @@ fn capacity_warning(value: Option<&WorkspaceCapacity>) -> String {
     }
 }
 
+// None represents an unavailable whole response, never a role-hidden scope.
 fn capacity_summary(scope: Option<&WorkspaceCapacityScope>) -> String {
     let Some(scope) = scope else {
         return t("不可用", "Unavailable");
@@ -161,7 +162,7 @@ fn capacity_summary(scope: Option<&WorkspaceCapacityScope>) -> String {
 }
 
 fn load_history(state: RwSignal<State>) {
-    if state.with_untracked(|s| !s.session_active() || !s.admin || s.monitor.history_loading) {
+    if state.with_untracked(|s| !s.session_active() || s.monitor.history_loading) {
         return;
     }
     state.update(|s| s.monitor.history_loading = true);
@@ -196,7 +197,7 @@ fn history_matches(model: &Model, generation: u64, range: &str) -> bool {
 }
 fn select_range(state: RwSignal<State>, range: String) {
     if !RANGES.contains(&range.as_str())
-        || state.with_untracked(|s| s.monitor.range == range || !s.session_active() || !s.admin)
+        || state.with_untracked(|s| s.monitor.range == range || !s.session_active())
     {
         return;
     }
@@ -411,7 +412,7 @@ pub(crate) fn view(state: RwSignal<State>) -> impl IntoView {
     let available_metrics = Memo::new(move |_| state.with(|s| metrics(&s.monitor.snapshot)));
     view! {
         <section class="zxs-content-stack zxs-monitor-page zxs-stack">
-            <Show when=move ||state.with(|s|s.admin) fallback=||view!{<EmptyState message=t("系统状态仅向管理员开放。","System status is available to administrators.")/>}>
+            <Show when=move ||state.with(|s|s.session_active()) fallback=||view!{<EmptyState message=t("请登录后查看系统状态。","Sign in to view system status.")/>}>
                 <div class="zxs-monitor-toolbar zxs-flow zxs-surface-end"><p class="zxs-row">{t("每 5 秒刷新 CPU、内存和硬盘状态。","CPU, memory and disk status refresh every 5 seconds.")}</p><div class="zxs-monitor-range"><Select label=t("历史范围","History range") options=options value=range on_change=Callback::new(move |range|select_range(state,range))/></div></div>
                 {move ||state.with(|s|s.monitor.failure.clone()).map(|failure|view!{<ErrorState message=failure.message request_id=failure.request_id/>})}
                 {move ||state.with(|s|s.monitor.history_failure.clone()).map(|failure|view!{<ErrorState message=failure.message request_id=failure.request_id/>})}
@@ -420,7 +421,7 @@ pub(crate) fn view(state: RwSignal<State>) -> impl IntoView {
                     <h2>{t("持久工作区证据配额", "Retained workspace evidence capacity")}</h2>
                     {move || state.with(|s| s.monitor.capacity_failure.clone()).map(|failure| view!{<ErrorState message=failure.message request_id=failure.request_id/>})}
                     <p role="status">{move || state.with(|s| capacity_warning(s.monitor.capacity.as_ref()))}</p>
-                    <p>{move || state.with(|s| format!("{}：{}", t("全池", "Pool"), capacity_summary(s.monitor.capacity.as_ref().and_then(|capacity| capacity.global.as_ref()))))}</p>
+                    <p>{move || state.with(|s| format!("{}：{}", t("全池", "Pool"), capacity_summary(s.monitor.capacity.as_ref().map(|capacity| &capacity.global))))}</p>
                     <p>{move || state.with(|s| format!("{}：{}", t("当前账户", "Current account"), capacity_summary(s.monitor.capacity.as_ref().map(|capacity| &capacity.principal))))}</p>
                     <p>{t("这是累计生命周期额度，不是活动工作区数。成功提交、中止和过期均不会释放证据名额；当前无自动退休或既有池配额调整。元数据额度不是磁盘剩余空间。", "These are lifetime evidence quotas, not active workspace counts. Committed, aborted and expired records remain charged. Automatic retirement and existing-pool quota changes are not available. Metadata quota is not free disk space.")}</p>
                 </article>

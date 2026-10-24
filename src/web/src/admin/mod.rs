@@ -1,17 +1,16 @@
-//! Daily management, with system-account administration independent of data disks.
+//! Storage administration for the sole authenticated account.
 mod request;
 mod response;
 use crate::{
     api,
-    ui::{State, current_session, fail, list},
+    ui::{State, current_session, fail},
 };
 use json_codec::Value;
 use web_interface::i18n::t;
 use web_interface::{prelude::*, tasks::spawn_local};
 
-#[derive(Clone, Default)]
+#[derive(Clone)]
 pub(crate) struct Model {
-    accounts: Vec<Value>,
     fields: request::Fields,
     kind: String,
     busy: bool,
@@ -21,6 +20,20 @@ pub(crate) struct Model {
     acknowledged: bool,
     uncertain_operation: String,
 }
+impl Default for Model {
+    fn default() -> Self {
+        Self {
+            fields: request::Fields::new(),
+            kind: "inspect".into(),
+            busy: false,
+            result: String::new(),
+            error: String::new(),
+            plan: Value::Null,
+            acknowledged: false,
+            uncertain_operation: String::new(),
+        }
+    }
+}
 impl Model {
     pub(crate) fn reload_blocked(&self) -> bool {
         self.busy || !self.uncertain_operation.is_empty()
@@ -28,25 +41,11 @@ impl Model {
 }
 fn permitted(state: &State, storage: bool) -> bool {
     state.session_active()
-        && state.admin
         && !state.admin_console.busy
         && (!storage || state.management.storage.writable())
 }
 fn allowed(state: RwSignal<State>, storage: bool) -> bool {
     state.with_untracked(|s| permitted(s, storage))
-}
-pub(crate) fn load(state: RwSignal<State>) {
-    if !allowed(state, false) {
-        return;
-    }
-    execute(
-        state,
-        "GET",
-        "/api/admin/accounts".into(),
-        None,
-        false,
-        String::new(),
-    );
 }
 fn execute(
     state: RwSignal<State>,
@@ -56,7 +55,7 @@ fn execute(
     plan: bool,
     operation: String,
 ) {
-    if !allowed(state, false) {
+    if !allowed(state, method != "GET") {
         return;
     }
     let epoch = state.with_untracked(|s| s.session_epoch);
@@ -78,11 +77,6 @@ fn execute(
         match result {
             Ok(value) => {
                 state.update(|s| accept(&mut s.admin_console, method, &path, plan, value));
-                // The write response is only {updated:true}, not an account
-                // snapshot. Invalidate first, then read authoritative fields.
-                if account_write(method, &path) {
-                    load(state);
-                }
             }
             Err(error) => {
                 state.update(|s| reject(&mut s.admin_console, method, plan, &operation, &error));
@@ -104,18 +98,8 @@ fn reject(m: &mut Model, method: &str, plan: bool, operation: &str, error: &api:
     }
 }
 
-fn account_write(method: &str, path: &str) -> bool {
-    method == "POST" && path == "/api/admin/accounts"
-}
-
 /// Call only after validating the endpoint-specific contract.
 fn accept(m: &mut Model, method: &str, path: &str, plan: bool, value: Value) {
-    if path == "/api/admin/accounts" && method == "GET" {
-        m.accounts = list(&value, "accounts");
-    }
-    if account_write(method, path) {
-        m.accounts.clear();
-    }
     if plan {
         m.plan = value.clone();
         m.acknowledged = false;
@@ -125,8 +109,8 @@ fn accept(m: &mut Model, method: &str, path: &str, plan: bool, value: Value) {
         m.acknowledged = false;
     }
     m.result = json_codec::to_string_pretty(&value).unwrap_or_default();
-    // Account snapshots cannot prove completion of an earlier write, especially
-    // password changes. Only the original operation receipt can release a fence.
+    // An inspection cannot prove completion of an earlier write. Only its
+    // exact terminal operation receipt can release the uncertainty fence.
     if method != "GET"
         || (path == format!("/api/operations/{}", api::segment(&m.uncertain_operation))
             && response::terminal(&value, &m.uncertain_operation))
@@ -146,15 +130,13 @@ fn submit(state: RwSignal<State>) {
             !s.admin_console.uncertain_operation.is_empty(),
         )
     });
-    if !allowed(state, kind != "account") || uncertain {
+    if !allowed(state, true) || uncertain {
         return;
     }
     let operation = api::operation_id();
     match request::build(&kind, &fields, &operation) {
         Ok((method, path, body)) => {
-            // Never retain a password after initiating its one authorized request.
             state.update(|s| {
-                s.admin_console.fields.remove("password");
                 s.admin_console.plan = Value::Null;
                 s.admin_console.acknowledged = false;
             });
@@ -164,11 +146,7 @@ fn submit(state: RwSignal<State>) {
                 path,
                 Some(body),
                 matches!(kind.as_str(), "purge" | "split" | "save"),
-                if kind == "account" {
-                    String::new()
-                } else {
-                    operation
-                },
+                operation,
             );
         }
         Err(error) => state.update(|s| s.admin_console.error = error),
@@ -195,8 +173,8 @@ fn plan_action(state: RwSignal<State>, commit: bool) {
     }
 }
 fn select(state: RwSignal<State>, kind: &'static str) {
-    if state
-        .with_untracked(|s| s.admin_console.busy || !s.admin_console.uncertain_operation.is_empty())
+    if !allowed(state, false)
+        || state.with_untracked(|s| !s.admin_console.uncertain_operation.is_empty())
     {
         return;
     }
@@ -209,53 +187,9 @@ fn select(state: RwSignal<State>, kind: &'static str) {
         s.admin_console.result.clear();
     });
 }
-/// Resolve a clicked row against the latest authoritative snapshot. A queued
-/// click from a row removed by a successful write cannot restore old grants.
-fn account_fields(model: &Model, username: &str) -> Option<request::Fields> {
-    let account = model
-        .accounts
-        .iter()
-        .find(|account| account["username"] == username)?;
-    let mut fields = request::initial_fields("account");
-    for key in ["username", "admin", "disabled"] {
-        fields.insert(
-            key.into(),
-            account[key]
-                .as_str()
-                .map(str::to_owned)
-                .unwrap_or_else(|| account[key].to_string()),
-        );
-    }
-    fields.insert(
-        "repositories".into(),
-        list(account, "repositories")
-            .iter()
-            .filter_map(Value::as_str)
-            .collect::<Vec<_>>()
-            .join(", "),
-    );
-    Some(fields)
-}
-fn select_account(state: RwSignal<State>, username: &str) {
-    if !allowed(state, false)
-        || state.with_untracked(|s| !s.admin_console.uncertain_operation.is_empty())
-    {
-        return;
-    }
-    let Some(fields) = state.with_untracked(|s| account_fields(&s.admin_console, username)) else {
-        return;
-    };
-    select(state, "account");
-    state.update(|s| s.admin_console.fields = fields);
-}
 
-fn field(
-    state: RwSignal<State>,
-    key: &'static str,
-    label: &'static str,
-    password: bool,
-) -> impl IntoView {
-    view! {<label class="zxs-flow"><span>{label}</span><input class="zxs-input" type=if password{"password"}else{"text"} autocomplete=if password{"new-password"}else{"off"} disabled=move ||state.with(|s|s.admin_console.busy) prop:value=move ||state.with(|s|s.admin_console.fields.get(key).cloned().unwrap_or_default()) on:input=move |ev|state.update(|s|{s.admin_console.fields.insert(key.into(),event_target_value(&ev));s.admin_console.acknowledged=false;})/></label>}
+fn field(state: RwSignal<State>, key: &'static str, label: &'static str) -> impl IntoView {
+    view! {<label class="zxs-flow"><span>{label}</span><input class="zxs-input" type="text" autocomplete="off" disabled=move ||state.with(|s|s.admin_console.busy) prop:value=move ||state.with(|s|s.admin_console.fields.get(key).cloned().unwrap_or_default()) on:input=move |ev|state.update(|s|{s.admin_console.fields.insert(key.into(),event_target_value(&ev));s.admin_console.acknowledged=false;})/></label>}
 }
 fn toggle(state: RwSignal<State>, key: &'static str, label: &'static str) -> impl IntoView {
     view! {<label class="zxs-row"><input type="checkbox" disabled=move ||state.with(|s|s.admin_console.busy) prop:checked=move ||state.with(|s|s.admin_console.fields.get(key).is_some_and(|v|v=="true")) on:change=move |ev|state.update(|s|{s.admin_console.fields.insert(key.into(),event_target_checked(&ev).to_string());})/>{label}</label>}
@@ -286,19 +220,12 @@ fn query(
 pub(crate) fn view(state: RwSignal<State>) -> impl IntoView {
     view! {<section class="zxs-flow" aria-label="Administration">
     <h2>{t("日常管理","Daily administration")}</h2>
-    <p>{t("账户由系统盘管理。数据盘不可写时，存储操作禁用。文件内容请使用 SMB。","Accounts are managed on the system disk. Storage changes are disabled unless data storage is writable. Use SMB for file contents.")}</p>
-    <nav class="zxs-flow">{[("account","账户 Accounts"),("repository","仓库 Repository"),("grants","访问权限 ACL"),("smb","SMB 绑定 Binding"),("policy","副本策略 Policy"),("rule","主盘规则 Placement"),("branch","历史分支 Branch"),("link","合并连线 Link"),("purge","清理预览 Purge"),("split","拆分预览 Split"),("save","历史保存预览 Historical save"),("inspect","检查 / 查询 Inspect")].into_iter().map(move |(kind,label)|view!{<button class="zxs-button" disabled=move ||state.with(|s|s.admin_console.busy||!s.admin_console.uncertain_operation.is_empty()) on:click=move |_|select(state,kind)>{label}</button>}).collect_view()}</nav>
+    <p>{t("唯一账户管理全部存储。数据盘不可写时，存储操作禁用。账号设置可修改密码；文件内容请使用 SMB。","The sole account manages all storage. Storage changes require writable data storage. Change the password in account settings; use SMB for file contents.")}</p>
+    <nav class="zxs-flow">{[("repository","仓库 Repository"),("smb","SMB 绑定 Binding"),("policy","副本策略 Policy"),("rule","主盘规则 Placement"),("branch","历史分支 Branch"),("link","合并连线 Link"),("purge","清理预览 Purge"),("split","拆分预览 Split"),("save","历史保存预览 Historical save"),("inspect","检查 / 查询 Inspect")].into_iter().map(move |(kind,label)|view!{<button class="zxs-button" disabled=move ||state.with(|s|s.admin_console.busy||!s.admin_console.uncertain_operation.is_empty()) on:click=move |_|select(state,kind)>{label}</button>}).collect_view()}</nav>
     <p role="alert">{move ||state.with(|s|s.admin_console.error.clone())}</p>
-    <Show when=move ||state.with(|s|!s.admin_console.uncertain_operation.is_empty())><p role="alert">"结果未确认，禁止重复修改。账户列表不是终态回执；账户修改未知时，请先暂停其他账户修改，在服务器本地停止并重启服务以终止旧请求，核对账户后再开启新的管理会话。 Outcome unknown; do not repeat mutations. Account lists are not completion receipts. For unknown account changes, quiesce account writers and stop and restart the server locally to terminate old requests, verify the account, then open a new management session."</p><p>{move ||state.with(|s|s.admin_console.uncertain_operation.clone())}</p><button class="zxs-button" on:click=move |_|{let id=state.with_untracked(|s|s.admin_console.uncertain_operation.clone());if id=="unknown"{load(state)}else{execute(state,"GET",format!("/api/operations/{}",api::segment(&id)),None,false,String::new())}}>{move ||state.with(|s|if s.admin_console.uncertain_operation=="unknown" {"仅刷新账户快照 / Refresh snapshot only"} else {"查询原操作 / Check outcome"})}</button></Show>
-    <Show when=move ||state.with(|s|s.admin_console.kind=="account" || s.admin_console.kind.is_empty())>
-        <button class="zxs-button" disabled=move ||state.with(|s|s.admin_console.busy) on:click=move |_|load(state)>"刷新账户 Refresh accounts"</button>
-        {move ||state.with(|s|s.admin_console.accounts.clone()).into_iter().map(move |account|{let label=format!("{} · admin={} · disabled={} · repositories={}",account["username"].as_str().unwrap_or(""),account["admin"],account["disabled"],account["repositories"]);view!{<button class="zxs-button" disabled=move ||state.with(|s|s.admin_console.busy||!s.admin_console.uncertain_operation.is_empty()) on:click=move |_|select_account(state,account["username"].as_str().unwrap_or_default())>{label}</button>}}).collect_view()}
-        {field(state,"username","用户名 Username",false)}{field(state,"password","密码 Password (blank preserves existing)",true)}{field(state,"repositories","仓库授权 Repository IDs (comma separated)",false)}{toggle(state,"admin","管理员 Administrator")}{toggle(state,"disabled","禁用 Disabled")}
-        <p>"保存会撤销该账户已有会话；最后一个管理员不能被禁用。 Saving revokes existing sessions. The last administrator is protected."</p>
-    </Show>
+    <Show when=move ||state.with(|s|!s.admin_console.uncertain_operation.is_empty())><p role="alert">{t("结果未确认，禁止重复修改。请查询原操作结果，不要改用新操作 ID 重发；无法查询时请在服务器本地核实。","Outcome unknown; do not repeat mutations. Check the original operation instead of resending under a new ID. Verify locally on the server if its outcome cannot be queried.")}</p><p>{move ||state.with(|s|s.admin_console.uncertain_operation.clone())}</p><button class="zxs-button" disabled=move ||!allowed(state,false)||state.with(|s|s.admin_console.uncertain_operation=="unknown") on:click=move |_|{let id=state.with_untracked(|s|s.admin_console.uncertain_operation.clone());execute(state,"GET",format!("/api/operations/{}",api::segment(&id)),None,false,String::new())}>{t("查询原操作","Check original operation")}</button></Show>
     {move ||{let kind=state.with(|s|s.admin_console.kind.clone()); let fields:Vec<(&'static str,&'static str)>=match kind.as_str(){
         "repository"=>vec![("name","名称 Name"),("slot","主盘槽位 Primary slot"),("copies","份数（含主盘；1 份无冗余） Copies including primary; 1 has no redundancy")],
-        "grants"=>vec![("repository","仓库 ID"),("read","读取用户 Read principals"),("write","写入用户 Write principals"),("manage","管理用户 Manage principals")],
         "smb"=>vec![("repository","仓库 ID"),("branch","分支 ID"),("generation","Expected history generation")],
         "policy"=>vec![("id","策略 ID"),("repository","仓库 ID"),("prefix","路径前缀 Path prefix"),("copies","份数（含主盘；1 份无冗余） Copies including primary; 1 has no redundancy"),("generation","Expected generation (0 for new)")],
         "rule"=>vec![("id","规则 ID"),("repository","仓库 ID"),("prefix","路径前缀 Path prefix"),("slot","主盘槽位 Primary slot"),("generation","Expected generation (0 for new)")],
@@ -307,10 +234,10 @@ pub(crate) fn view(state: RwSignal<State>) -> impl IntoView {
         "purge"=>vec![("history","历史树 History ID"),("versions","版本 IDs (comma separated)")],
         "split"=>vec![("history","历史树 History ID"),("commit","切分提交 Cut commit ID")],
         "save"=>vec![("history","历史树 History ID"),("commit","来源提交 Source commit"),("name","名称 Name"),("workspace","Existing workspace ID (optional)"),("slot","Primary slot (optional)"),("copies","Copies (optional)")],
-        "inspect"=>vec![("repository","仓库 ID"),("id","操作 / 计划 / 策略 / 拓扑 ID")],_=>vec![]};fields.into_iter().map(move |(key,label)|field(state,key,label,false)).collect_view()}}
+        "inspect"=>vec![("repository","仓库 ID"),("id","操作 / 计划 / 策略 / 拓扑 ID")],_=>vec![]};fields.into_iter().map(move |(key,label)|field(state,key,label)).collect_view()}}
     <Show when=move ||state.with(|s|s.admin_console.kind=="smb")>{toggle(state,"enabled","启用 SMB Enabled")}</Show>
-    <Show when=move ||state.with(|s|s.admin_console.kind!="inspect")><button class="zxs-button" disabled=move ||!allowed(state,state.with(|s|s.admin_console.kind!="account"&&!s.admin_console.kind.is_empty()))||state.with(|s|!s.admin_console.uncertain_operation.is_empty()) on:click=move |_|{if state.with_untracked(|s|s.admin_console.kind.is_empty()){state.update(|s|s.admin_console.kind="account".into());}submit(state)}>"保存配置 / 创建预览 Save configuration / Create preview"</button></Show>
-    <Show when=move ||state.with(|s|s.admin_console.kind=="inspect")>{[("Repositories","/api/repositories","","",false),("Disks","/api/admin/disks","","",false),("Integrity check","/api/admin/check","","",false),("Repository / ACL","/api/repositories","repository","",false),("SMB binding","/api/repositories","repository","/smb-binding",false),("Operation","/api/operations","id","",false),("Plan","/api/plans","id","",true),("Branch tree","/api/branches","id","/tree",false),("Branch details","/api/branches","id","",false),("File history","/api/files","id","/history",false),("History graph","/api/history-trees","id","/graph",false),("Policy","/api/policies","id","",false),("Placement rule","/api/primary-placement-rules","id","",false),("Topology","/api/backup-topologies/default","","",false)].into_iter().map(move |(label,prefix,key,suffix,plan)|view!{<button class="zxs-button" disabled=move ||state.with(|s|s.admin_console.busy) on:click=move |_|query(state,prefix,key,suffix,plan)>{label}</button>}).collect_view()}</Show>
+    <Show when=move ||state.with(|s|s.admin_console.kind!="inspect")><button class="zxs-button" disabled=move ||!allowed(state,true)||state.with(|s|!s.admin_console.uncertain_operation.is_empty()) on:click=move |_|submit(state)>"保存配置 / 创建预览 Save configuration / Create preview"</button></Show>
+    <Show when=move ||state.with(|s|s.admin_console.kind=="inspect")>{[("Repositories","/api/repositories","","",false),("Disks","/api/admin/disks","","",false),("Integrity check","/api/admin/check","","",false),("Repository","/api/repositories","repository","",false),("SMB binding","/api/repositories","repository","/smb-binding",false),("Operation","/api/operations","id","",false),("Plan","/api/plans","id","",true),("Branch tree","/api/branches","id","/tree",false),("Branch details","/api/branches","id","",false),("File history","/api/files","id","/history",false),("History graph","/api/history-trees","id","/graph",false),("Policy","/api/policies","id","",false),("Placement rule","/api/primary-placement-rules","id","",false),("Topology","/api/backup-topologies/default","","",false)].into_iter().map(move |(label,prefix,key,suffix,plan)|view!{<button class="zxs-button" disabled=move ||state.with(|s|s.admin_console.busy) on:click=move |_|query(state,prefix,key,suffix,plan)>{label}</button>}).collect_view()}</Show>
     <pre>{move ||state.with(|s|s.admin_console.result.clone())}</pre>
     <Show when=move ||state.with(|s|s.admin_console.plan.is_object())><h3>"计划预览 Plan review"</h3><pre>{move ||state.with(|s|json_codec::to_string_pretty(&s.admin_console.plan).unwrap_or_default())}</pre><label><input type="checkbox" prop:checked=move ||state.with(|s|s.admin_console.acknowledged) disabled=move ||state.with(|s|s.admin_console.busy) on:change=move |ev|state.update(|s|s.admin_console.acknowledged=event_target_checked(&ev))/>{t("我已审阅此计划及永久删除等后果，确认执行所示摘要对应的计划。","I reviewed this plan and its consequences, including permanent deletion where applicable, and confirm this exact digest.")}</label><button class="zxs-button" disabled=move ||!allowed(state,true)||state.with(|s|!s.admin_console.acknowledged||!s.admin_console.uncertain_operation.is_empty()) on:click=move |_|plan_action(state,true)>"提交所示计划 Commit reviewed plan"</button><button class="zxs-button" disabled=move ||!allowed(state,true)||state.with(|s|!s.admin_console.uncertain_operation.is_empty()) on:click=move |_|plan_action(state,false)>"取消计划 Cancel plan"</button></Show>
     </section>}

@@ -94,8 +94,6 @@ fn malformed_lazy_root_requests_do_not_publish_any_state() {
             admission_session: None,
             smb_binding: None,
             principal: "owner".into(),
-            admin: true,
-            repositories: BTreeSet::new(),
         };
         let before = json_codec::to_value(engine.state()).unwrap();
         let bytes = disk_files(&disks);
@@ -127,8 +125,6 @@ fn destructive_path_only_requests_never_mutate_or_create_a_disk_root() {
         admission_session: None,
         smb_binding: None,
         principal: "owner".into(),
-        admin: true,
-        repositories: BTreeSet::new(),
     };
     for kind in ["delete", "delete_tree", "rename"] {
         let mut input = json!({"slot_id":"P01","kind":kind,"path":"missing","operation_id":storage_engine::new_id("op")});
@@ -208,8 +204,6 @@ fn valid_creation_and_upload_still_create_the_lazy_root() {
             admission_session: None,
             smb_binding: None,
             principal: "owner".into(),
-            admin: true,
-            repositories: BTreeSet::new(),
         };
         let input = match action {
             BackendAction::FileManagerNamespace => {
@@ -251,8 +245,6 @@ fn baseline_name_and_used_operation_are_rejected_before_root_initialization() {
         admission_session: None,
         smb_binding: None,
         principal: "owner".into(),
-        admin: true,
-        repositories: BTreeSet::new(),
     };
     for name in ["main", "MAIN"] {
         let before = disk_files(&disks);

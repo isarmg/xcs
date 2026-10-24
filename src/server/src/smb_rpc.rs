@@ -1,9 +1,12 @@
 //! Protected local Samba bridge. Every operation is authorized by Backend;
 //! mutable files remain unpublished until the normal core commit succeeds.
-use crate::{ApiError, Backend, Content, auth::Identity};
+use crate::{
+    ApiError, Backend, Content,
+    auth::{AuthStore, Identity},
+};
 use json_codec::{Value, json};
 use smb_protocol::protocol::{
-    FrameStream, OpenResult, PROTOCOL, Request, Response, WRITE_RESERVATION_CAPABILITY,
+    FrameStream, OpenResult, PROTOCOL, REQUIRED_CAPABILITIES, Request, Response,
 };
 use std::{
     collections::{BTreeMap, BTreeSet},
@@ -40,7 +43,8 @@ mod tests;
 
 struct Shared {
     backend: Arc<dyn Backend>,
-    identities: BTreeMap<String, Identity>,
+    username: String,
+    auth: Arc<Mutex<AuthStore>>,
     spool: PathBuf,
     budget: Arc<budget::Budget>,
     max_file_bytes: u64,

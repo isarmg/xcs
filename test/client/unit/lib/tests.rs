@@ -26,11 +26,40 @@ fn session_debug_never_prints_credentials() {
         token: "private-bearer".into(),
         csrf_token: "private-csrf".into(),
         principal: "alice".into(),
-        admin: false,
         expires_at: 10,
     };
     let debug = format!("{session:?}");
     assert!(!debug.contains(&session.token));
     assert!(!debug.contains(&session.csrf_token));
     assert!(debug.contains("alice"));
+}
+
+#[test]
+fn session_response_is_exact_and_contains_no_roles() {
+    let valid = json!({"token":"secret-token","csrf_token":"secret-csrf","principal":"owner","expires_at":"100"});
+    assert_eq!(Session::decode(valid.clone()).unwrap().principal, "owner");
+    for field in ["token", "csrf_token", "principal", "expires_at"] {
+        let mut missing = valid.clone();
+        missing.as_object_mut().unwrap().remove(field);
+        assert!(Session::decode(missing).is_err());
+        for value in [Value::Null, json!(""), json!(1)] {
+            let mut invalid = valid.clone();
+            invalid[field] = value;
+            assert!(Session::decode(invalid).is_err());
+        }
+    }
+    for (field, value) in [
+        ("admin", json!(true)),
+        ("repositories", json!([])),
+        ("disabled", json!(false)),
+    ] {
+        let mut invalid = valid.clone();
+        invalid[field] = value;
+        assert!(Session::decode(invalid).is_err());
+    }
+    for expiry in ["0", "01", "18446744073709551616"] {
+        let mut invalid = valid.clone();
+        invalid["expires_at"] = expiry.into();
+        assert!(Session::decode(invalid).is_err());
+    }
 }

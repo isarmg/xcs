@@ -15,7 +15,7 @@ impl Engine {
     ) -> Result<OperationResult> {
         self.mutate("smb.binding.update",principal,operation,json!({"repository_id":repository,"branch_id":branch_id,"enabled":enabled,"expected_generation":expected_generation.to_string()}),|engine,state,_|{
             let repo=state.repositories.get(repository).cloned().ok_or_else(||Error::new("REPOSITORY_NOT_FOUND","repository not found"))?;
-            engine.require_grant(&repo,principal,storage_contract::RepositoryAccess::Manage)?;
+
             let history=state.histories.get(&repo.history_tree_id).ok_or_else(||Error::new("STATE_INVALID","repository history missing"))?;
             if history.generation!=expected_generation { return Err(Error::new("GENERATION_MISMATCH","share binding history changed")); }
             let branch=state.branches.get(branch_id).ok_or_else(||Error::new("BRANCH_NOT_FOUND","share branch missing"))?;
@@ -55,7 +55,6 @@ impl Engine {
             .values()
             .find(|r| r.file_manager_root && r.primary_slot_id == primary)
         {
-            self.require_grant(repo, principal, storage_contract::RepositoryAccess::Write)?;
             return Ok(repo.clone());
         }
         self.create_repository_kind(
@@ -96,11 +95,11 @@ impl Engine {
                 let branch_id = new_id("br");
                 let commit_id = new_id("commit");
                 let repository = Repository {
-                    repository_id: repo_id.clone(), account_scope_repository_id: None,
+                    repository_id: repo_id.clone(),
                     smb_enabled: true, smb_binding_generation: 1, file_manager_root, name: name.into(), history_tree_id: history_id.clone(),
                     main_branch_id: branch_id.clone(), primary_slot_id: engine.disk(primary)?.slot_id.clone(),
                     target_copies: copies, name_policy: name_policy::NAME_POLICY.into(),
-                    unicode_version: name_policy::UNICODE_VERSION.into(), grants: Grants::owner(principal),
+                    unicode_version: name_policy::UNICODE_VERSION.into(),
                 };
                 state.histories.insert(history_id.clone(), HistoryTree {
                     history_tree_id: history_id.clone(), repository_id: repo_id.clone(),

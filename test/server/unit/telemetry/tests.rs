@@ -98,37 +98,19 @@ fn supported_ranges_bound_chart_points_and_reject_other_strings() {
 }
 
 #[test]
-fn monitoring_rechecks_current_administrator_instead_of_captured_role() {
+fn monitoring_rechecks_the_current_session_after_logout() {
     let root = crate::tests::private_tempdir();
     let mut auth =
         crate::auth::AuthStore::initialize(root.path(), "admin", "monitor-test-password").unwrap();
-    auth.upsert_account(
-        "monitor",
-        Some("monitor-test-password"),
-        true,
-        Default::default(),
-        false,
-    )
-    .unwrap();
-    let captured = auth.identity_for_principal("monitor").unwrap();
+    let token = auth.login("admin", "monitor-test-password").unwrap().token;
+    let captured = auth.authenticate(&token).unwrap();
     let auth = Mutex::new(auth);
-    assert!(require_current_administrator(&auth, &captured).is_ok());
-    for disabled in [false, true] {
-        auth.lock()
-            .unwrap()
-            .upsert_account("monitor", None, false, Default::default(), disabled)
-            .unwrap();
-        assert_eq!(
-            require_current_administrator(&auth, &captured)
-                .unwrap_err()
-                .code,
-            if disabled {
-                "UNAUTHORIZED"
-            } else {
-                "FORBIDDEN"
-            }
-        );
-    }
+    assert!(require_current_session(&auth, &captured).is_ok());
+    auth.lock().unwrap().logout(&token).unwrap();
+    assert_eq!(
+        require_current_session(&auth, &captured).unwrap_err().code,
+        "UNAUTHORIZED"
+    );
 }
 
 #[tokio::test]

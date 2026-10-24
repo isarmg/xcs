@@ -1,6 +1,6 @@
 use super::*;
 use json_codec::{Value, json};
-use std::{collections::BTreeSet, sync::atomic::Ordering};
+use std::sync::atomic::Ordering;
 use storage_engine::{Config, new_id};
 
 fn fixture() -> (tempfile::TempDir, AdmissionEngine) {
@@ -19,29 +19,25 @@ fn caller() -> Identity {
         admission_session: None,
         smb_binding: None,
         principal: "owner".into(),
-        admin: true,
-        repositories: BTreeSet::new(),
     }
 }
 
-fn account(name: &str, disabled: bool) -> Value {
-    json!({"username": name, "password_hash": "unused-admission-test-hash", "admin": false,
-           "repositories": ["repository-one"], "disabled": disabled, "generation": "1"})
-}
-
-fn snapshot(unrelated: usize) -> Value {
-    let mut accounts = json_codec::Map::new();
-    let mut sessions = json_codec::Map::new();
-    accounts.insert("owner".into(), account("owner", false));
-    for n in 0..unrelated {
-        let name = format!("unrelated-{n}");
-        accounts.insert(name.clone(), account(&name, false));
-        sessions.insert(
-            format!("hash-{n}"),
-            json!({"username": name, "generation": "1", "expires_at": "18446744073709551615"}),
-        );
+fn snapshot(session_count: usize) -> Value {
+    static SINGLETON: std::sync::OnceLock<Value> = std::sync::OnceLock::new();
+    let mut value = SINGLETON
+        .get_or_init(|| {
+            let root = crate::tests::private_tempdir();
+            crate::auth::AuthStore::initialize(root.path(), "owner", "integration-test-password")
+                .unwrap()
+                .snapshot()
+                .unwrap()
+        })
+        .clone();
+    for n in 0..session_count {
+        value["sessions"][format!("{n:064x}")] =
+            json!({"generation":"1","expires_at":"18446744073709551615"});
     }
-    json!({"accounts": accounts, "sessions": sessions})
+    value
 }
 
 fn publish(engine: &mut AdmissionEngine, value: Value) {
@@ -51,19 +47,14 @@ fn publish(engine: &mut AdmissionEngine, value: Value) {
 }
 
 #[test]
-fn repeated_reads_validate_once_for_small_and_large_unrelated_databases() {
+fn repeated_reads_validate_once_for_empty_and_full_session_indexes() {
     let (_root, mut engine) = fixture();
-    for size in [0, 100, 1000] {
+    for size in [0, 32, 64] {
         publish(&mut engine, snapshot(size));
         let before = engine.validations.load(Ordering::Relaxed);
         for _ in 0..100 {
             let identity = engine.identity(&caller()).unwrap();
             assert_eq!(identity.principal, "owner");
-            assert!(!identity.admin);
-            assert_eq!(
-                identity.repositories,
-                BTreeSet::from(["repository-one".into()])
-            );
         }
         assert_eq!(engine.validations.load(Ordering::Relaxed) - before, 1);
         // A real immutable engine operation must not accidentally clear it.
@@ -82,36 +73,39 @@ fn all_mutable_access_invalidates_before_a_borrow_can_change_or_replace_engine()
     assert!(engine.admission.get().is_none());
     engine.identity(&caller()).unwrap();
     let mut revoked = snapshot(0);
-    revoked["accounts"]["owner"]["disabled"] = json!(true);
+    revoked["administrator"]["username"] = json!("replacement");
     publish(&mut engine, revoked);
     assert!(engine.admission.get().is_none());
     assert_eq!(engine.identity(&caller()).unwrap_err().code, "UNAUTHORIZED");
 }
 
 #[test]
-fn missing_and_disabled_principals_fail_without_using_stale_caller_grants() {
+fn absent_and_replaced_principals_fail_without_trusting_the_caller() {
     let (_root, mut engine) = fixture();
     publish(&mut engine, snapshot(0));
     let mut absent = caller();
     absent.principal = "not-in-store".into();
     assert_eq!(engine.identity(&absent).unwrap_err().status, 401);
     let mut value = snapshot(0);
-    value["accounts"]["owner"]["disabled"] = json!(true);
+    value["administrator"]["username"] = json!("replacement");
     publish(&mut engine, value);
     assert_eq!(engine.identity(&caller()).unwrap_err().status, 401);
 }
 
 #[test]
-fn malformed_unrelated_accounts_sessions_and_top_level_fields_fail_closed() {
+fn malformed_singleton_sessions_and_top_level_fields_fail_closed() {
     let (_root, mut engine) = fixture();
     for location in [0, 1, 2, 3] {
         publish(&mut engine, snapshot(1));
         engine.identity(&caller()).unwrap();
         let mut invalid = snapshot(1);
         match location {
-            0 => invalid["accounts"]["unrelated-0"]["admin"] = json!("not-bool"),
-            1 => invalid["sessions"]["hash-0"]["unknown"] = json!(true),
-            2 => invalid["sessions"]["hash-0"]["expires_at"] = json!("18446744073709551616"),
+            0 => invalid["administrator"]["generation"] = json!("0"),
+            1 => invalid["sessions"][format!("{:064x}", 0)]["unknown"] = json!(true),
+            2 => {
+                invalid["sessions"][format!("{:064x}", 0)]["expires_at"] =
+                    json!("18446744073709551616")
+            }
             _ => invalid["unknown"] = json!(true),
         }
         publish(&mut engine, invalid);
@@ -140,7 +134,7 @@ fn rejected_publication_drops_projection_and_revalidates_unchanged_authority() {
             .is_err()
     );
     assert!(engine.admission.get().is_none());
-    assert!(!engine.identity(&caller()).unwrap().admin);
+    assert_eq!(engine.identity(&caller()).unwrap().principal, "owner");
     assert_eq!(engine.validations.load(Ordering::Relaxed), before + 1);
 }
 
@@ -150,7 +144,7 @@ fn interrupted_revocation_is_revalidated_from_recovered_authority() {
     publish(&mut engine, snapshot(0));
     engine.identity(&caller()).unwrap();
     let mut revoked = snapshot(0);
-    revoked["accounts"]["owner"]["disabled"] = json!(true);
+    revoked["administrator"]["username"] = json!("replacement");
     engine.inject_fault_once("after_publication_1");
     // Warm again after the test-only mutable fault injection.
     engine.identity(&caller()).unwrap();
@@ -167,11 +161,11 @@ fn interrupted_revocation_is_revalidated_from_recovered_authority() {
 }
 
 #[test]
-fn embedded_identity_is_preserved_until_an_authoritative_snapshot_is_published() {
+fn embedded_identity_is_rejected_until_an_authoritative_snapshot_is_published() {
     let (_root, mut engine) = fixture();
-    assert!(engine.identity(&caller()).unwrap().admin);
+    assert_eq!(engine.identity(&caller()).unwrap_err().code, "UNAUTHORIZED");
     publish(&mut engine, snapshot(0));
-    assert!(!engine.identity(&caller()).unwrap().admin);
+    assert_eq!(engine.identity(&caller()).unwrap().principal, "owner");
 }
 
 #[test]
@@ -188,7 +182,7 @@ fn failed_degraded_recovery_does_not_keep_or_forge_an_admission_projection() {
         "RECOVERY_PLAN_NOT_FOUND"
     );
     assert!(engine.admission.get().is_none());
-    assert!(!engine.identity(&caller()).unwrap().admin);
+    assert_eq!(engine.identity(&caller()).unwrap().principal, "owner");
     assert_eq!(engine.validations.load(Ordering::Relaxed), before + 1);
 }
 
@@ -199,7 +193,7 @@ fn replacing_engine_through_mutable_reference_cannot_reuse_an_old_projection() {
     engine.identity(&caller()).unwrap();
     let (recovered_root, mut recovered) = fixture();
     let mut revoked = snapshot(0);
-    revoked["accounts"]["owner"]["disabled"] = json!(true);
+    revoked["administrator"]["username"] = json!("replacement");
     publish(&mut recovered, revoked);
     drop(recovered);
     let replacement = Engine::open(&recovered_root.path().join("system")).unwrap();
@@ -238,9 +232,7 @@ fn backend_fixture() -> (
         })
         .unwrap();
     let entry = holder.list_tree(&repo.main_branch_id).unwrap().remove(0);
-    let mut state = snapshot(100);
-    state["accounts"]["owner"]["admin"] = json!(true);
-    publish(&mut holder, state);
+    publish(&mut holder, snapshot(64));
     // Tests live in the holder's private child module; no production raw-engine
     // accessor is added just to construct a backend fixture.
     (
@@ -295,8 +287,8 @@ fn backend_read_requests_reuse_validation_and_completed_revocation_denies_each_r
             .load(Ordering::Relaxed),
         1
     );
-    let mut revoked = snapshot(100);
-    revoked["accounts"]["owner"]["disabled"] = json!(true);
+    let mut revoked = snapshot(64);
+    revoked["administrator"]["username"] = json!("replacement");
     publish(&mut backend.engine.lock().unwrap(), revoked);
     for (action, input) in read_requests(&repo, &entry) {
         assert_eq!(
@@ -349,23 +341,16 @@ fn backend_missing_and_denied_reads_retain_projection_without_lazy_creation() {
         json_codec::to_value(backend.engine.lock().unwrap().state()).unwrap(),
         before
     );
-    // Stale caller still claims administrator, but the authoritative projection
-    // grants no scope on this repository.
-    publish(&mut backend.engine.lock().unwrap(), snapshot(0));
+    // A new sole administrator invalidates the old principal across all reads.
+    let mut replaced = snapshot(0);
+    replaced["administrator"]["username"] = json!("replacement");
+    publish(&mut backend.engine.lock().unwrap(), replaced);
     for _ in 0..3 {
         for (action, input) in read_requests(&repo, &entry) {
-            let result = backend.call(action, &caller(), input);
-            if matches!(action, Repositories | FileManagerHistory) {
-                let response = result.unwrap();
-                let key = if action == Repositories {
-                    "repositories"
-                } else {
-                    "events"
-                };
-                assert!(response[key].as_array().unwrap().is_empty());
-            } else {
-                assert!(result.is_err());
-            }
+            assert_eq!(
+                backend.call(action, &caller(), input).unwrap_err().code,
+                "UNAUTHORIZED"
+            );
         }
     }
     assert_eq!(
@@ -465,7 +450,7 @@ fn protected_snapshot_refresh_preserves_the_internal_smb_binding_constraint() {
         generation: 7,
     });
     let refreshed = engine.identity(&caller).unwrap();
-    assert!(!refreshed.admin);
+    assert_eq!(refreshed.principal, "owner");
     assert_eq!(refreshed.smb_binding, caller.smb_binding);
     let serialized = json_codec::to_value(&refreshed).unwrap();
     assert!(serialized.get("smb_binding").is_none());

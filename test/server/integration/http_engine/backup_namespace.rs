@@ -216,7 +216,7 @@ async fn user_backup_prefixes_keep_fixed_paths_and_slot_versions_after_primary_r
 }
 
 #[tokio::test]
-async fn backup_path_collisions_are_rejected_after_acl_filtering_without_overwriting_bodies() {
+async fn backup_path_collisions_are_rejected_for_every_session_without_overwriting_bodies() {
     let root = tempfile::tempdir().unwrap();
     let app = application(root.path());
     let admin = login(&app, "admin", "integration-test-password").await;
@@ -265,57 +265,49 @@ async fn backup_path_collisions_are_rejected_after_acl_filtering_without_overwri
         version_bytes(&app, &admin, private_version).await,
         b"private body must not leak"
     );
-    success(&app,&admin,"POST","/api/admin/accounts",Some(json!({"username":"backup-viewer","password":"backup-viewer-test-password","repositories":[repo]}))).await;
-    success(&app,&admin,"PUT",&format!("/api/repositories/{repo}/grants"),Some(json!({"grants":{"read":["backup-viewer"],"write":[],"manage":["admin"]},"operation_id":new_id("op")}))).await;
-    let reader = login(&app, "backup-viewer", "backup-viewer-test-password").await;
-    let authorized = listing(&app, &reader, "B01", "WorkBackup/nested").await;
-    read_only_listing(&authorized);
-    assert_eq!(authorized["entries"].as_array().unwrap().len(), 1);
-    assert_eq!(authorized["entries"][0]["version_id"], public_version);
-    assert_eq!(
-        version_bytes(&app, &reader, public_version).await,
-        b"publicly authorized body"
-    );
-    let cold = listing(&app, &reader, "C01", "").await;
+    // Every authenticated session belongs to the same administrator, so
+    // colliding repository projections remain explicit rather than hidden by ACLs.
+    let session = login(&app, "admin", "integration-test-password").await;
+    let (status, same_conflict) = send(
+        &app,
+        Some(&session),
+        "GET",
+        &listing_path("B01", "WorkBackup/nested"),
+        None,
+    )
+    .await;
+    assert_eq!(status, StatusCode::CONFLICT);
+    assert_eq!(same_conflict["error"]["code"], "BACKUP_PATH_CONFLICT");
+    let cold = listing(&app, &session, "C01", "").await;
+    read_only_listing(&cold);
     assert!(
         cold["entries"]
             .as_array()
             .unwrap()
             .iter()
-            .all(|entry| entry["name"] != "PrivateOnly")
+            .any(|entry| entry["name"] == "PrivateOnly")
     );
+    let other = listing(&app, &session, "C01", "PrivateOnly").await;
+    assert_eq!(other["entries"][0]["version_id"], private_version);
     assert_eq!(
-        send(
-            &app,
-            Some(&reader),
-            "GET",
-            &listing_path("C01", "PrivateOnly"),
-            None
-        )
-        .await
-        .0,
-        StatusCode::NOT_FOUND
+        version_bytes(&app, &session, private_version).await,
+        b"private body must not leak"
     );
-    assert_eq!(
-        send(&app, None, "GET", &listing_path("B01", ""), None)
-            .await
-            .0,
-        StatusCode::UNAUTHORIZED
-    );
-    let response = app
-        .clone()
-        .oneshot(
-            Request::builder()
-                .uri(format!("/api/versions/{private_version}/content"))
-                .header("authorization", format!("Bearer {reader}"))
-                .body(Body::empty())
-                .unwrap(),
-        )
-        .await
-        .unwrap();
-    assert_eq!(response.status(), StatusCode::FORBIDDEN);
+    let revoked = revoked_session(&app).await;
+    for token in [None, Some(revoked.as_str())] {
+        for path in [
+            listing_path("B01", ""),
+            listing_path("C01", "PrivateOnly"),
+            format!("/api/versions/{private_version}/content"),
+        ] {
+            assert_eq!(
+                send(&app, token, "GET", &path, None).await.0,
+                StatusCode::UNAUTHORIZED
+            );
+        }
+    }
     // A file/directory-prefix collision is equally explicit; different stable
-    // containers remain readable and the authorized-only projection is intact.
+    // containers remain independently readable after both collisions.
     configure(
         &app,
         &admin,
@@ -336,16 +328,19 @@ async fn backup_path_collisions_are_rejected_after_acl_filtering_without_overwri
     assert_eq!(status, StatusCode::CONFLICT);
     assert_eq!(conflict["error"]["code"], "BACKUP_PATH_CONFLICT");
     assert_eq!(
-        listing(&app, &reader, "B01", "WorkBackup/nested").await["entries"][0]["version_id"],
-        public_version
+        version_bytes(&app, &session, public_version).await,
+        b"publicly authorized body"
     );
-    capture_wire("backup-prefix-acl.json", &authorized);
+    assert_eq!(
+        version_bytes(&app, &session, private_version).await,
+        b"private body must not leak"
+    );
+    capture_wire("backup-prefix-administrator.json", &cold);
     capture_wire("backup-prefix-conflict.json", &conflict);
 }
 
 #[tokio::test]
-async fn readers_discover_historical_primary_routes_by_history_identity_and_all_required_backup_prefixes()
- {
+async fn administrator_discovers_historical_primary_routes_and_all_required_backup_prefixes() {
     let root = tempfile::tempdir().unwrap();
     let mut config = Config::development([
         root.path().join("d1"),
@@ -395,39 +390,55 @@ async fn readers_discover_historical_primary_routes_by_history_identity_and_all_
     assert_eq!(error["error"]["code"], "BACKUP_PREFIX_REQUIRED");
     success(&app,&admin,"PUT",&route,Some(json!({"path":"a.txt","target_copies":2,"backup_prefixes":{"B01":"first","B02":"second"},
         "expected_scope_id":before["scope"]["id"],"expected_generation":"0","operation_id":new_id("op")}))).await;
-    // This other history uses the same default P01, but its C01 route must not
-    // grant visibility to a reader admitted only to Mixed.
+    // Another history on the same primary contributes a distinct C01 route;
+    // the sole administrator sees both histories without per-account filtering.
     success(&app,&admin,"POST","/api/repositories",Some(json!({"name":"Hidden","primary_slot_id":"P01","target_copies":3,"operation_id":new_id("op")}))).await;
     manager_upload(&app, &admin, "Hidden/secret.txt", b"not admitted").await;
-    success(&app,&admin,"POST","/api/admin/accounts",Some(json!({"username":"route-reader","password":"route-reader-test-password","repositories":[id]}))).await;
-    success(&app,&admin,"PUT",&format!("/api/repositories/{id}/grants"),Some(json!({"grants":{"read":["route-reader"],"write":[],"manage":["admin"]},"operation_id":new_id("op")}))).await;
-    let reader = login(&app, "route-reader", "route-reader-test-password").await;
-    let disks = success(&app, &reader, "GET", "/api/file-manager/disks", None).await;
+
+    let session = login(&app, "admin", "integration-test-password").await;
+    let disks = success(&app, &session, "GET", "/api/file-manager/disks", None).await;
     let visible = disks["disks"]
         .as_array()
         .unwrap()
         .iter()
         .map(|disk| disk["slot_id"].as_str().unwrap())
         .collect::<std::collections::BTreeSet<_>>();
-    assert_eq!(visible, ["P01", "P02", "B01", "B02"].into_iter().collect());
-    let old = listing(&app, &reader, "B01", "first").await;
+    assert_eq!(
+        visible,
+        ["P01", "P02", "B01", "B02", "C01"].into_iter().collect()
+    );
+    let old = listing(&app, &session, "B01", "first").await;
     read_only_listing(&old);
     assert_eq!(old["entries"][0]["version_id"], first);
-    let new = listing(&app, &reader, "B02", "second").await;
+    let new = listing(&app, &session, "B02", "second").await;
     read_only_listing(&new);
     assert_eq!(new["entries"][0]["version_id"], second);
     assert_eq!(old["entries"][0]["repository_path"], "a.txt");
     assert_eq!(new["entries"][0]["repository_path"], "a.txt");
-    assert_eq!(version_bytes(&app, &reader, &first).await, b"first primary");
     assert_eq!(
-        version_bytes(&app, &reader, &second).await,
+        version_bytes(&app, &session, &first).await,
+        b"first primary"
+    );
+    assert_eq!(
+        version_bytes(&app, &session, &second).await,
         b"second primary"
     );
-    let actual = success(&app, &reader, "GET", &format!("{route}?path=a.txt"), None).await;
+    let actual = success(&app, &session, "GET", &format!("{route}?path=a.txt"), None).await;
     assert_eq!(
         actual["backup_paths"],
         json!({"B01":"first/a.txt","B02":"second/a.txt"})
     );
+    success(&app, &session, "POST", "/api/auth/logout", None).await;
+    for path in [
+        "/api/file-manager/disks".to_owned(),
+        listing_path("B01", "first"),
+        listing_path("B02", "second"),
+    ] {
+        assert_eq!(
+            send(&app, Some(&session), "GET", &path, None).await.0,
+            StatusCode::UNAUTHORIZED
+        );
+    }
     capture_wire("backup-mixed-routes.json", &actual);
     capture_wire("backup-route-disks.json", &disks);
 }

@@ -182,7 +182,7 @@ fn paged_package_missing_leaf_and_flat_proof_substitution_fail_closed() {
     save(&mut engine, &repo.main_branch_id, b"retained bytes");
     let package = temp.path().join("package");
     let report = engine
-        .export_history_package(&repo.history_tree_id, &package, "alice")
+        .export_history_package(&repo.history_tree_id, &package)
         .unwrap();
     let (manifest, proof, _) = load_package(&package).unwrap();
     assert_eq!(proof.manifest_hash, report.manifest_hash);
@@ -372,7 +372,7 @@ fn nested_directory_compositions_keep_frozen_paths_and_restore_after_rename() {
     );
     let package = temp.path().join("package");
     engine
-        .export_history_package(&repo.history_tree_id, &package, "alice")
+        .export_history_package(&repo.history_tree_id, &package)
         .unwrap();
     let mut restored = initialize(&temp.path().join("restored"));
     restored
@@ -534,7 +534,7 @@ fn moved_file_aliases_restore_independent_path_contexts_and_one_physical_owner()
     assert_eq!(manifest.file_locations[&original.file_id], "b/f.txt");
     let package = temporary.path().join("package");
     engine
-        .export_history_package(&repo.history_tree_id, &package, "alice")
+        .export_history_package(&repo.history_tree_id, &package)
         .unwrap();
     let restored_root = temporary.path().join("restored");
     let mut restored = initialize(&restored_root);
@@ -732,7 +732,7 @@ fn rename_nodes_preserve_body_proofs_and_mixed_lineage_through_purge_export_and_
     );
     let package = temporary.path().join("package");
     let report = engine
-        .export_history_package(&repo.history_tree_id, &package, "alice")
+        .export_history_package(&repo.history_tree_id, &package)
         .unwrap();
     assert_eq!(report.full_files, 1);
     assert_eq!(report.tombstones, 1);
@@ -804,7 +804,15 @@ fn composed_directory_records_validate_and_restore_frozen_shared_file_references
                     commit_id: original_commit.clone(),
                     entries: vec![original.clone()],
                     file_branches: BTreeMap::from([(original.file_id.clone(), shared.clone())]),
-                    file_contexts: BTreeMap::new(),
+                    file_contexts: BTreeMap::from([(
+                        original.lookup_key.clone(),
+                        FileContext {
+                            node_id: None,
+                            selection_generation: 0,
+                            branch_id: shared.clone(),
+                            inherited_from: None,
+                        },
+                    )]),
                     inherited_files: BTreeMap::new(),
                     directory_refs: BTreeMap::new(),
                     materialized: true,
@@ -859,6 +867,25 @@ fn composed_directory_records_validate_and_restore_frozen_shared_file_references
             "HISTORY_PACKAGE_INVALID"
         )
     };
+    for target in ["branch", "tree"] {
+        let mut invalid = manifest.clone();
+        if target == "branch" {
+            invalid
+                .directory_branches
+                .get_mut(&first)
+                .unwrap()
+                .file_contexts
+                .clear();
+        } else {
+            invalid
+                .directory_trees
+                .get_mut(&first_tree)
+                .unwrap()
+                .file_contexts
+                .clear();
+        }
+        bad(&invalid);
+    }
     let mut invalid = manifest.clone();
     invalid
         .directory_branches
@@ -1013,7 +1040,7 @@ fn composed_directory_records_validate_and_restore_frozen_shared_file_references
 
     let package = temp.path().join("package");
     let report = engine
-        .export_history_package(&repo.history_tree_id, &package, "alice")
+        .export_history_package(&repo.history_tree_id, &package)
         .unwrap();
     assert_eq!(report.versions, 2);
     assert_eq!(report.full_files, 2);
@@ -1117,7 +1144,7 @@ fn package_preserves_inherited_references_without_inventing_files_or_versions() 
     );
     let package = temp.path().join("package");
     let exported = engine
-        .export_history_package(&repo.history_tree_id, &package, "alice")
+        .export_history_package(&repo.history_tree_id, &package)
         .unwrap();
     assert_eq!(exported.full_files, 1);
     assert_eq!(exported.versions, 1);
@@ -1320,9 +1347,7 @@ fn split_package_restores_full_history_after_all_original_paths_are_removed() {
         .unwrap();
     let history = split.history_tree_id.unwrap();
     let package = temp.path().join("history-package");
-    let exported = engine
-        .export_history_package(&history, &package, "alice")
-        .unwrap();
+    let exported = engine.export_history_package(&history, &package).unwrap();
     assert_eq!(exported.full_files, 2);
     let manifest = fs::read_to_string(package.join("manifest.json")).unwrap();
     assert!(!manifest.contains("control_auth"));
@@ -1366,11 +1391,8 @@ fn split_package_restores_full_history_after_all_original_paths_are_removed() {
         vec![b"first full bytes".to_vec(), b"second full bytes".to_vec()]
     );
     let repo = &restored.state.repositories[&graph.history.repository_id];
-    assert!(repo.grants.manage.contains("alice"));
-    assert!(repo.grants.manage.contains("rescuer"));
     assert!(!repo.smb_enabled);
     assert_eq!(repo.smb_binding_generation, 1);
-    assert!(repo.account_scope_repository_id.is_none());
     assert!(result.sequence > exported.publication_sequence);
     let branch = graph.history.main_branch_id.unwrap();
     let next = save(&mut restored, &branch, b"third");
@@ -1503,7 +1525,7 @@ fn tombstoned_storage_identity_is_validated_before_restore_decision() {
         .unwrap();
     let package = temp.path().join("package");
     source
-        .export_history_package(&repo.history_tree_id, &package, "alice")
+        .export_history_package(&repo.history_tree_id, &package)
         .unwrap();
     let (baseline, proof, _) = load_package(&package).unwrap();
     assert!(!package_version(&package, &old).exists());
@@ -1592,7 +1614,7 @@ fn package_preserves_purge_and_rejects_missing_bytes_or_unpublished_manifest() {
         .unwrap();
     let package = temp.path().join("package");
     let report = engine
-        .export_history_package(&repo.history_tree_id, &package, "alice")
+        .export_history_package(&repo.history_tree_id, &package)
         .unwrap();
     assert_eq!(report.tombstones, 1);
     assert_eq!(report.full_files, 1);
@@ -1801,7 +1823,7 @@ fn metadata_merges_labels_and_backup_paths_export_restore_without_rewriting_full
     assert!(scope.validate().is_err());
     let package = temp.path().join("package");
     engine
-        .export_history_package(&repo.history_tree_id, &package, "alice")
+        .export_history_package(&repo.history_tree_id, &package)
         .unwrap();
     let mut restored = initialize(&temp.path().join("restored"));
     restored
@@ -1835,4 +1857,49 @@ fn metadata_merges_labels_and_backup_paths_export_restore_without_rewriting_full
     drop(restored);
     let restored = Engine::open(&temp.path().join("restored/state")).unwrap();
     assert_eq!(restored.file_branch_head(&left).unwrap(), merged);
+}
+
+#[test]
+fn history_notes_use_the_current_write_format_without_legacy_limits() {
+    let temporary = tempfile::tempdir().unwrap();
+    let mut engine = initialize(temporary.path());
+    let repo = engine
+        .create_repository("notes", "P01", 3, "alice", &new_id("op"))
+        .unwrap();
+    save(&mut engine, &repo.main_branch_id, b"note target");
+    let manifest = HistoryManifest::from_state(engine.state(), &repo.history_tree_id).unwrap();
+    let version = manifest.versions.values().next().unwrap();
+    for note in [String::new(), "x".repeat(128), "界".repeat(42)] {
+        let mut valid = manifest.clone();
+        valid
+            .file_notes
+            .insert(version.file_id.clone(), note.clone());
+        valid.version_notes.insert(version.version_id.clone(), note);
+        valid.validate().unwrap();
+    }
+    for note in [
+        "x".repeat(129),
+        "x".repeat(4096),
+        "界".repeat(43),
+        "line\nbreak".into(),
+        "zero\0byte".into(),
+    ] {
+        for scope in ["file", "version"] {
+            let mut invalid = manifest.clone();
+            if scope == "file" {
+                invalid
+                    .file_notes
+                    .insert(version.file_id.clone(), note.clone());
+            } else {
+                invalid
+                    .version_notes
+                    .insert(version.version_id.clone(), note.clone());
+            }
+            assert_eq!(
+                invalid.validate().unwrap_err().code(),
+                "HISTORY_PACKAGE_INVALID",
+                "{scope}"
+            );
+        }
+    }
 }

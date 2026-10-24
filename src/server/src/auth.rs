@@ -1,11 +1,11 @@
-//! Product account/session policy built on the local credential primitives.
+//! The single administrator and session policy built on local credential primitives.
 //! Credentials and token hashes are local protected control data, never public API data.
 use crate::ApiError;
 use authentication as primitives;
 use data_serialization::{Deserialize, Serialize};
 use platform_io::fs_safety::{AdvisoryLock, EntryName, PrivateDirectory, RelativePath};
 use std::{
-    collections::{BTreeMap, BTreeSet},
+    collections::BTreeMap,
     fs::{self, OpenOptions},
     io::Write,
     path::{Path, PathBuf},
@@ -17,54 +17,112 @@ use std::{
 };
 
 pub(crate) const SESSION_TTL_SECONDS: u64 = 12 * 60 * 60;
-const MAX_ACCOUNTS: usize = 1024;
-const MAX_SESSIONS: usize = 4096;
-// One account must not consume the entire shared admission budget.
-const MAX_SESSIONS_PER_ACCOUNT: usize = 64;
+const MAX_SESSIONS: usize = 64;
 /// Successful writes must remain admissible to the same bounded restart reader.
 const MAX_STORE_BYTES: usize = 4 * 1024 * 1024;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serialization(deny_unknown_fields)]
-pub struct Account {
-    pub username: String,
-    pub password_hash: String,
-    pub admin: bool,
-    pub repositories: BTreeSet<String>,
-    pub disabled: bool,
+struct Administrator {
+    username: String,
+    password_hash: String,
     #[serialization(with = "storage_contract::u64_string")]
-    pub generation: u64,
+    generation: u64,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serialization(deny_unknown_fields)]
 struct Session {
-    username: String,
     #[serialization(with = "storage_contract::u64_string")]
     generation: u64,
     #[serialization(with = "storage_contract::u64_string")]
     expires_at: u64,
 }
 
-#[derive(Default, Serialize, Deserialize)]
+/// A required singleton, never an account collection or a migration target.
+#[derive(Serialize, Deserialize)]
 #[serialization(deny_unknown_fields)]
 struct Database {
-    accounts: BTreeMap<String, Account>,
+    administrator: Administrator,
     sessions: BTreeMap<String, Session>,
 }
 
+impl Database {
+    fn from_snapshot(snapshot: &json_codec::Value) -> Result<Self, ApiError> {
+        // Serde also supports positional sequences for structs. Protected
+        // credentials admit only the documented named-object representation.
+        let object = snapshot
+            .as_object()
+            .ok_or_else(|| ApiError::invalid("credential state must be an object"))?;
+        if !object
+            .get("administrator")
+            .is_some_and(json_codec::Value::is_object)
+        {
+            return Err(ApiError::invalid(
+                "exactly one administrator object is required",
+            ));
+        }
+        let sessions = object
+            .get("sessions")
+            .and_then(json_codec::Value::as_object)
+            .ok_or_else(|| ApiError::invalid("session state must be an object"))?;
+        if sessions.values().any(|session| !session.is_object()) {
+            return Err(ApiError::invalid("session records must be objects"));
+        }
+        let database = Self::deserialize(snapshot).map_err(ApiError::invalid)?;
+        database.validate()?;
+        Ok(database)
+    }
+
+    /// Every authority reader uses the same policy, including engine snapshots.
+    fn validate(&self) -> Result<(), ApiError> {
+        if self.sessions.len() > MAX_SESSIONS {
+            return Err(ApiError::invalid("invalid credential store session count"));
+        }
+        let administrator = &self.administrator;
+        primitives::require_canonical_administrator_username(&administrator.username)
+            .map_err(ApiError::invalid)?;
+        primitives::require_current_password_hash(&administrator.password_hash)
+            .map_err(ApiError::invalid)?;
+        if administrator.generation == 0 {
+            return Err(ApiError::invalid(
+                "administrator generation must be positive",
+            ));
+        }
+        if self.sessions.keys().any(|key| {
+            key.len() != primitives::TOKEN_HASH_BYTES * 2
+                || !key
+                    .bytes()
+                    .all(|byte| byte.is_ascii_digit() || (b'a'..=b'f').contains(&byte))
+        }) {
+            return Err(ApiError::invalid("invalid session token hash"));
+        }
+        Ok(())
+    }
+
+    fn identity(&self, principal: &str) -> Result<Identity, ApiError> {
+        if self.administrator.username != principal {
+            return Err(ApiError::unauthorized());
+        }
+        Ok(Identity {
+            admission_session: None,
+            smb_binding: None,
+            principal: self.administrator.username.clone(),
+        })
+    }
+}
+
 #[derive(Clone, Debug, Serialize, Deserialize)]
+#[serialization(deny_unknown_fields)]
 pub struct Identity {
     /// Internal session hash, never part of the wire identity.
     #[serialization(skip)]
     pub admission_session: Option<String>,
-    /// Internal SMB entrance constraint. Account refresh must preserve it;
+    /// Internal SMB entrance constraint. Admission refresh must preserve it;
     /// the engine validates it while holding the same lock as the operation.
     #[serialization(skip)]
     pub smb_binding: Option<SmbBinding>,
     pub principal: String,
-    pub admin: bool,
-    pub repositories: BTreeSet<String>,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -74,55 +132,28 @@ pub struct SmbBinding {
     pub generation: u64,
 }
 
-/// Schema-validated snapshot projection. Sessions and private credential strings
-/// are parsed for validation, then discarded rather than retained for admission.
+/// Schema-validated admission projection. Password hashes are discarded;
+/// session hashes and generations remain necessary to enforce revocation.
 #[cfg(feature = "core")]
 pub(crate) struct AdmissionSnapshot {
-    identities: BTreeMap<String, Identity>,
+    principal: String,
+    generation: u64,
+    sessions: BTreeMap<String, Session>,
 }
 
 #[cfg(feature = "core")]
 impl AdmissionSnapshot {
     pub(crate) fn from_snapshot(snapshot: &json_codec::Value) -> Result<Self, String> {
-        let database = Database::deserialize(snapshot).map_err(|error| error.to_string())?;
-        let identities = database
-            .accounts
-            .into_iter()
-            .filter(|(_, account)| !account.disabled)
-            .map(|(name, account)| {
-                (
-                    name,
-                    Identity {
-                        admission_session: None,
-                        smb_binding: None,
-                        principal: account.username,
-                        admin: account.admin,
-                        repositories: account.repositories,
-                    },
-                )
-            })
-            .collect();
-        Ok(Self { identities })
+        let database = Database::from_snapshot(snapshot).map_err(|error| error.to_string())?;
+        Ok(Self {
+            principal: database.administrator.username,
+            generation: database.administrator.generation,
+            sessions: database.sessions,
+        })
     }
 
-    pub(crate) fn identity(&self, principal: &str) -> Result<Identity, ApiError> {
-        self.identities
-            .get(principal)
-            .cloned()
-            .ok_or_else(ApiError::unauthorized)
-    }
-}
-
-impl Identity {
-    pub fn can_access(&self, repository: &str) -> bool {
-        self.admin || self.repositories.contains(repository)
-    }
-    pub fn require_admin(&self) -> Result<(), ApiError> {
-        if self.admin {
-            Ok(())
-        } else {
-            Err(ApiError::forbidden())
-        }
+    pub(crate) fn revalidate_identity(&self, caller: &Identity) -> Result<Identity, ApiError> {
+        refresh_identity(&self.principal, self.generation, &self.sessions, caller)
     }
 }
 
@@ -131,7 +162,6 @@ pub struct LoginResult {
     pub token: String,
     pub csrf_token: String,
     pub principal: String,
-    pub admin: bool,
     #[serialization(with = "storage_contract::u64_string")]
     pub expires_at: u64,
 }
@@ -140,8 +170,8 @@ pub type BackupHook = Arc<dyn Fn(json_codec::Value) -> Result<(), ApiError> + Se
 
 pub struct AuthStore {
     path: PathBuf,
-    db: Database,
-    dummy_hash: String,
+    // An unavailable control plane has no credential authority, not a dummy account.
+    db: Option<Database>,
     _lock: Option<AdvisoryLock>,
     local_authority: bool,
     backup: Option<BackupHook>,
@@ -149,7 +179,7 @@ pub struct AuthStore {
 }
 
 /// Immutable password challenge. Expensive verification needs no store lock;
-/// successful proofs remain bound to the exact account generation and hash.
+/// successful proofs remain bound to the exact administrator generation and hash.
 pub(crate) struct LoginChallenge {
     username: String,
     password_hash: String,
@@ -173,6 +203,25 @@ impl LoginChallenge {
             generation,
         })
     }
+}
+
+/// Shared authority check for live stores and recovered engine snapshots.
+fn refresh_identity(
+    principal: &str,
+    generation: u64,
+    sessions: &BTreeMap<String, Session>,
+    caller: &Identity,
+) -> Result<Identity, ApiError> {
+    if caller.principal != principal {
+        return Err(ApiError::unauthorized());
+    }
+    if let Some(key) = &caller.admission_session {
+        sessions
+            .get(key)
+            .filter(|session| session.expires_at > now() && session.generation == generation)
+            .ok_or_else(ApiError::unauthorized)?;
+    }
+    Ok(caller.clone())
 }
 
 fn now() -> u64 {
@@ -224,59 +273,51 @@ impl AuthStore {
             Ok(())
         }
     }
+    fn database(&self) -> Result<&Database, ApiError> {
+        self.require_available()?;
+        self.db.as_ref().ok_or_else(Self::missing_authority)
+    }
+    fn database_mut(&mut self) -> Result<&mut Database, ApiError> {
+        self.require_available()?;
+        self.db.as_mut().ok_or_else(Self::missing_authority)
+    }
+    fn missing_authority() -> ApiError {
+        ApiError::new(
+            503,
+            "AUTH_RECOVERY_REQUIRED",
+            "administrator credentials are unavailable",
+        )
+    }
     pub fn snapshot(&self) -> Result<json_codec::Value, ApiError> {
-        json_codec::to_value(&self.db).map_err(ApiError::invalid)
+        // A blocked publication may still be inspected for recovery, but an
+        // uninitialized control plane cannot invent an administrator snapshot.
+        json_codec::to_value(self.db.as_ref().ok_or_else(Self::missing_authority)?)
+            .map_err(ApiError::invalid)
     }
     pub fn attach_backup(&mut self, backup: BackupHook) -> Result<(), ApiError> {
         backup(self.snapshot()?)?;
         self.backup = Some(backup);
         Ok(())
     }
+    /// Resolve the sole configured principal after a trusted protocol handshake.
+    /// This does not authenticate an HTTP request or an anonymous SMB peer.
+    pub fn sole_identity(&self) -> Result<Identity, ApiError> {
+        let database = self.database()?;
+        database.identity(&database.administrator.username)
+    }
     pub fn identity_for_principal(&self, username: &str) -> Result<Identity, ApiError> {
-        self.require_available()?;
-        Self::database_identity(&self.db, username)
+        self.database()?.identity(username)
     }
-    /// Revalidate queued HTTP sessions and obtain current privileges. Protocol
-    /// mappings carry no session and are revalidated by principal instead.
+    /// Revalidate queued HTTP sessions. Protocol mappings carry no session and
+    /// must still name the one configured administrator.
     pub fn revalidate_identity(&self, caller: &Identity) -> Result<Identity, ApiError> {
-        self.require_available()?;
-        let mut identity = if let Some(key) = &caller.admission_session {
-            let session = self
-                .db
-                .sessions
-                .get(key)
-                .filter(|session| {
-                    session.expires_at > now() && session.username == caller.principal
-                })
-                .ok_or_else(ApiError::unauthorized)?;
-            let account = self
-                .db
-                .accounts
-                .get(&caller.principal)
-                .filter(|account| !account.disabled && account.generation == session.generation)
-                .ok_or_else(ApiError::unauthorized)?;
-            let mut identity = Self::database_identity(&self.db, &account.username)?;
-            identity.admission_session = Some(key.clone());
-            identity
-        } else {
-            Self::database_identity(&self.db, &caller.principal)?
-        };
-        identity.smb_binding = caller.smb_binding.clone();
-        Ok(identity)
-    }
-    fn database_identity(database: &Database, username: &str) -> Result<Identity, ApiError> {
-        let account = database
-            .accounts
-            .get(username)
-            .filter(|account| !account.disabled)
-            .ok_or_else(ApiError::unauthorized)?;
-        Ok(Identity {
-            admission_session: None,
-            smb_binding: None,
-            principal: account.username.clone(),
-            admin: account.admin,
-            repositories: account.repositories.clone(),
-        })
+        let database = self.database()?;
+        refresh_identity(
+            &database.administrator.username,
+            database.administrator.generation,
+            &database.sessions,
+            caller,
+        )
     }
     fn acquire_lock(root: &Path) -> Result<AdvisoryLock, ApiError> {
         let directory = private_directory(root)?;
@@ -331,20 +372,17 @@ impl AuthStore {
         let username =
             primitives::normalize_administrator_username(username).map_err(ApiError::invalid)?;
         let hash = primitives::hash_password(password).map_err(ApiError::invalid)?;
-        let account = Account {
-            username: username.clone(),
-            password_hash: hash.clone(),
-            admin: true,
-            repositories: BTreeSet::new(),
-            disabled: false,
-            generation: 1,
+        let db = Database {
+            administrator: Administrator {
+                username,
+                password_hash: hash,
+                generation: 1,
+            },
+            sessions: BTreeMap::new(),
         };
-        let mut db = Database::default();
-        db.accounts.insert(username, account);
         let store = Self {
             path,
-            db,
-            dummy_hash: hash,
+            db: Some(db),
             _lock: Some(auth_lock),
             local_authority: management,
             backup: None,
@@ -370,7 +408,7 @@ impl AuthStore {
         Self::open_at(root, None, true)
     }
     #[cfg(feature = "core")]
-    pub(crate) fn migrate_management(
+    pub(crate) fn restore_management(
         root: &Path,
         snapshot: json_codec::Value,
     ) -> Result<Self, ApiError> {
@@ -419,9 +457,9 @@ impl AuthStore {
             Err(error) => return Err(ApiError::io(error)),
         };
         let restore = authoritative.is_some();
-        let db: Database = match authoritative {
-            Some(snapshot) => json_codec::from_value(snapshot).map_err(ApiError::invalid)?,
-            None => storage_contract::decode_strict(&local.ok_or_else(|| {
+        let snapshot = match authoritative {
+            Some(snapshot) => snapshot,
+            None => storage_contract::strict_json(&local.ok_or_else(|| {
                 ApiError::new(
                     503,
                     "AUTH_RECOVERY_REQUIRED",
@@ -430,35 +468,10 @@ impl AuthStore {
             })?)
             .map_err(ApiError::invalid)?,
         };
-        if db.accounts.is_empty()
-            || db.accounts.len() > MAX_ACCOUNTS
-            || db.sessions.len() > MAX_SESSIONS
-        {
-            return Err(ApiError::invalid("invalid credential store counts"));
-        }
-        if !db
-            .accounts
-            .values()
-            .any(|account| account.admin && !account.disabled)
-        {
-            return Err(ApiError::invalid(
-                "credential state has no enabled administrator",
-            ));
-        }
-        for (name, account) in &db.accounts {
-            primitives::require_canonical_administrator_username(name)
-                .map_err(ApiError::invalid)?;
-            if &account.username != name {
-                return Err(ApiError::invalid("credential account identity mismatch"));
-            }
-            primitives::require_current_password_hash(&account.password_hash)
-                .map_err(ApiError::invalid)?;
-        }
-        let dummy_hash = db.accounts.values().next().unwrap().password_hash.clone();
+        let db = Database::from_snapshot(&snapshot)?;
         let store = Self {
             path,
-            db,
-            dummy_hash,
+            db: Some(db),
             _lock: Some(auth_lock),
             local_authority: management,
             backup: None,
@@ -474,7 +487,9 @@ impl AuthStore {
         // Reject an oversized candidate before creating even a temporary file
         // or publishing its protected backup. This is deterministic admission,
         // not an uncertain I/O outcome that should block existing credentials.
-        let bytes = json_codec::to_vec(&self.db).map_err(ApiError::invalid)?;
+        let database = self.db.as_ref().ok_or_else(Self::missing_authority)?;
+        database.validate()?;
+        let bytes = json_codec::to_vec(database).map_err(ApiError::invalid)?;
         if bytes.len() > MAX_STORE_BYTES {
             return Err(ApiError::limit(
                 "credential store exceeds serialized byte limit",
@@ -545,14 +560,13 @@ impl AuthStore {
     }
 
     pub fn is_available(&self) -> bool {
-        !self.blocked.load(Ordering::SeqCst)
+        self.db.is_some() && !self.blocked.load(Ordering::SeqCst)
     }
     #[cfg(feature = "core")]
     pub(crate) fn unavailable(root: &Path) -> Self {
         Self {
             path: root.join("management-auth.json"),
-            db: Database::default(),
-            dummy_hash: String::new(),
+            db: None,
             _lock: None,
             local_authority: true,
             backup: None,
@@ -571,16 +585,14 @@ impl AuthStore {
     }
 
     pub(crate) fn login_challenge(&self, username: &str) -> Result<LoginChallenge, ApiError> {
-        self.require_available()?;
+        let administrator = &self.database()?.administrator;
         let username = primitives::normalize_administrator_username(username).unwrap_or_default();
-        let account = self.db.accounts.get(&username);
         Ok(LoginChallenge {
+            // Unknown names perform exactly the same password verification,
+            // but cannot receive a proof even if the supplied password matches.
+            generation: (username == administrator.username).then_some(administrator.generation),
             username,
-            password_hash: account
-                .map(|a| &a.password_hash)
-                .unwrap_or(&self.dummy_hash)
-                .clone(),
-            generation: account.filter(|a| !a.disabled).map(|a| a.generation),
+            password_hash: administrator.password_hash.clone(),
         })
     }
 
@@ -588,224 +600,130 @@ impl AuthStore {
         &mut self,
         verified: VerifiedLogin,
     ) -> Result<LoginResult, ApiError> {
-        // Password/role changes, disablement and uncertain publication may race
-        // verification. Recheck everything before creating or persisting a session.
-        self.require_available()?;
-        let account = self
-            .db
-            .accounts
-            .get(&verified.username)
-            .filter(|a| {
-                !a.disabled
-                    && a.generation == verified.generation
-                    && a.password_hash == verified.password_hash
-            })
-            .ok_or_else(ApiError::unauthorized)?;
+        // Password changes and uncertain publication may race verification.
+        // Recheck the exact credential proof before publishing any session.
+        let administrator = &self.database()?.administrator;
+        if administrator.username != verified.username
+            || administrator.generation != verified.generation
+            || administrator.password_hash != verified.password_hash
+        {
+            return Err(ApiError::unauthorized());
+        }
         let token = primitives::random_token().map_err(ApiError::invalid)?;
         let csrf_token = primitives::derive_csrf_token(&token).map_err(ApiError::invalid)?;
         let expires_at = now() + SESSION_TTL_SECONDS;
         let result = LoginResult {
             token: token.clone(),
             csrf_token,
-            principal: account.username.clone(),
-            admin: account.admin,
+            principal: administrator.username.clone(),
             expires_at,
         };
         let session = Session {
-            username: account.username.clone(),
-            generation: account.generation,
+            generation: administrator.generation,
             expires_at,
         };
-        let removed = self.prune_invalid_sessions();
-        if self.db.sessions.len() >= MAX_SESSIONS
-            || self
-                .db
-                .sessions
-                .values()
-                .filter(|session| session.username == verified.username)
-                .count()
-                >= MAX_SESSIONS_PER_ACCOUNT
-        {
-            self.db.sessions.extend(removed);
+        let removed = self.prune_invalid_sessions()?;
+        if self.database()?.sessions.len() >= MAX_SESSIONS {
+            self.database_mut()?.sessions.extend(removed);
             return Err(ApiError::limit("session limit reached"));
         }
         let key = primitives::token_hash_hex(&token);
-        self.db.sessions.insert(key.clone(), session);
+        self.database_mut()?.sessions.insert(key.clone(), session);
         if let Err(error) = self.persist(false) {
-            self.db.sessions.remove(&key);
-            self.db.sessions.extend(removed);
+            // Publication may have blocked admission. Restore memory without
+            // going through admission, so the exact pre-write state survives.
+            let database = self.db.as_mut().expect("initialized administrator");
+            database.sessions.remove(&key);
+            database.sessions.extend(removed);
             return Err(error);
         }
         Ok(result)
     }
 
-    /// Return removed records so a failed publication can restore the exact
-    /// pre-mutation state, including sessions that were already inadmissible.
-    fn prune_invalid_sessions(&mut self) -> BTreeMap<String, Session> {
+    /// Return removed records so a failed publication can restore exact state.
+    fn prune_invalid_sessions(&mut self) -> Result<BTreeMap<String, Session>, ApiError> {
         let current_time = now();
-        let accounts = &self.db.accounts;
+        let database = self.database_mut()?;
+        let generation = database.administrator.generation;
         let mut removed = BTreeMap::new();
-        self.db.sessions.retain(|key, session| {
-            let valid = session.expires_at > current_time
-                && accounts.get(&session.username).is_some_and(|account| {
-                    !account.disabled && account.generation == session.generation
-                });
+        database.sessions.retain(|key, session| {
+            let valid = session.expires_at > current_time && session.generation == generation;
             if !valid {
                 removed.insert(key.clone(), session.clone());
             }
             valid
         });
-        removed
+        Ok(removed)
     }
 
     pub fn authenticate(&self, token: &str) -> Result<Identity, ApiError> {
-        self.require_available()?;
+        let database = self.database()?;
         if !primitives::is_token_shape(token) {
             return Err(ApiError::unauthorized());
         }
-        let session = self
-            .db
+        let key = primitives::token_hash_hex(token);
+        database
             .sessions
-            .get(&primitives::token_hash_hex(token))
-            .filter(|session| session.expires_at > now())
+            .get(&key)
+            .filter(|session| {
+                session.expires_at > now()
+                    && session.generation == database.administrator.generation
+            })
             .ok_or_else(ApiError::unauthorized)?;
-        let account = self
-            .db
-            .accounts
-            .get(&session.username)
-            .filter(|a| !a.disabled && a.generation == session.generation)
-            .ok_or_else(ApiError::unauthorized)?;
-        Ok(Identity {
-            admission_session: Some(primitives::token_hash_hex(token)),
-            smb_binding: None,
-            principal: account.username.clone(),
-            admin: account.admin,
-            repositories: account.repositories.clone(),
-        })
+        let mut identity = database.identity(&database.administrator.username)?;
+        identity.admission_session = Some(key);
+        Ok(identity)
     }
 
     pub fn logout(&mut self, token: &str) -> Result<(), ApiError> {
-        self.require_available()?;
         let key = primitives::token_hash_hex(token);
-        let previous = self.db.sessions.remove(&key);
+        let previous = self.database_mut()?.sessions.remove(&key);
         if let Err(error) = self.persist(false) {
             if let Some(session) = previous {
-                self.db.sessions.insert(key, session);
+                self.db
+                    .as_mut()
+                    .expect("initialized administrator")
+                    .sessions
+                    .insert(key, session);
             }
             return Err(error);
         }
         Ok(())
     }
 
-    /// Rotate only the authenticated account's password and revoke its sessions.
+    /// Rotate the sole administrator's password and revoke every session.
     pub fn change_password(
         &mut self,
         token: &str,
         current_password: &str,
         new_password: &str,
     ) -> Result<(), ApiError> {
-        // Recheck the session under the same lock as the mutation. The caller
-        // cannot choose a username, role, repository scope or generation.
-        let identity = self.authenticate(token)?;
-        let account = self.db.accounts[&identity.principal].clone();
-        if !primitives::verify_password(current_password, &account.password_hash) {
+        // The caller cannot select an identity, role, scope or generation.
+        self.authenticate(token)?;
+        let previous = self.database()?.administrator.clone();
+        if !primitives::verify_password(current_password, &previous.password_hash) {
             return Err(ApiError::new(
                 403,
                 "CURRENT_PASSWORD_INVALID",
                 "current password is incorrect",
             ));
         }
-        self.upsert_account(
-            &account.username,
-            Some(new_password),
-            account.admin,
-            account.repositories,
-            account.disabled,
-        )
-    }
-
-    pub fn upsert_account(
-        &mut self,
-        username: &str,
-        password: Option<&str>,
-        admin: bool,
-        repositories: BTreeSet<String>,
-        disabled: bool,
-    ) -> Result<(), ApiError> {
-        // Callers may already have been admitted before a backup publication
-        // became uncertain. Do not let that queued mutation bypass fail-closed
-        // authentication state merely because it does not use a session token.
-        self.require_available()?;
-        let username =
-            primitives::normalize_administrator_username(username).map_err(ApiError::invalid)?;
-        let previous = self.db.accounts.get(&username).cloned();
-        if previous.is_none() && self.db.accounts.len() >= MAX_ACCOUNTS {
-            return Err(ApiError::limit("account limit reached"));
-        }
-        let password_hash = match password {
-            Some(password) => primitives::hash_password(password).map_err(ApiError::invalid)?,
-            None => previous
-                .as_ref()
-                .ok_or_else(|| ApiError::invalid("new account requires a password"))?
-                .password_hash
-                .clone(),
-        };
-        if previous
-            .as_ref()
-            .is_some_and(|account| account.admin && !account.disabled)
-            && (!admin || disabled)
-            && self
-                .db
-                .accounts
-                .values()
-                .filter(|a| a.admin && !a.disabled)
-                .count()
-                <= 1
-        {
-            return Err(ApiError::conflict(
-                "LAST_ADMIN_REQUIRED",
-                "cannot disable the last administrator",
-            ));
-        }
-        let account = Account {
-            username: username.clone(),
-            password_hash,
-            admin,
-            repositories,
-            disabled,
-            generation: previous
-                .as_ref()
-                .map(|account| {
-                    account
-                        .generation
-                        .checked_add(1)
-                        .ok_or_else(|| ApiError::limit("account generation has been exhausted"))
-                })
-                .transpose()?
-                .unwrap_or(1),
-        };
-        // Prune before insertion as well: an orphaned session must not become
-        // valid merely because a new account reuses its username/generation.
-        let mut removed = self.prune_invalid_sessions();
-        self.db.accounts.insert(username.clone(), account);
-        removed.extend(self.prune_invalid_sessions());
+        let generation = previous
+            .generation
+            .checked_add(1)
+            .ok_or_else(|| ApiError::limit("administrator generation has been exhausted"))?;
+        let password_hash = primitives::hash_password(new_password).map_err(ApiError::invalid)?;
+        let database = self.database_mut()?;
+        database.administrator.password_hash = password_hash;
+        database.administrator.generation = generation;
+        let sessions = std::mem::take(&mut database.sessions);
         if let Err(error) = self.persist(false) {
-            self.db.sessions.extend(removed);
-            match previous {
-                Some(account) => {
-                    self.db.accounts.insert(username, account);
-                }
-                None => {
-                    self.db.accounts.remove(&username);
-                }
-            }
+            let database = self.db.as_mut().expect("initialized administrator");
+            database.administrator = previous;
+            database.sessions = sessions;
             return Err(error);
         }
         Ok(())
-    }
-
-    pub fn list_accounts(&self) -> Vec<json_codec::Value> {
-        self.db.accounts.values().map(|account| json_codec::json!({"username":account.username,"admin":account.admin,"disabled":account.disabled,"repositories":account.repositories})).collect()
     }
 }
 

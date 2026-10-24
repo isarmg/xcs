@@ -1,12 +1,12 @@
 # 日常管理界面与 API
 
-Web 管理页使用 `src/web/src/admin/request.rs` 的 HTTP 请求构建器。存储变更需要有效管理员会话及 `management.storage.writable()`；服务端执行最终授权与存储准入。账户管理使用独立系统权威 AuthStore，不依赖数据存储可用。
+Web 管理页使用 `src/web/src/admin/request.rs` 的 HTTP 请求构建器。存储变更需要有效管理员会话及 `management.storage.writable()`；服务端执行当前唯一管理员认证与存储准入。登录、注销和改密使用独立系统权威 AuthStore，不依赖数据存储可用。
 
 ## 管理入口
 
 | 管理功能 | HTTP 端点 | Web 入口 |
 |---|---|---|
-| 账户 | GET/POST /api/admin/accounts | 账户：选择已有账户、创建/更新密码、管理员、禁用、仓库准入授权 |
+| 当前管理员 | POST /api/auth/login；GET /api/auth/me；POST /api/auth/logout、/api/auth/password | 登录、只读用户名、退出和改密；无账户 CRUD、角色或准入表单 |
 | 创建仓库 | POST /api/repositories | 仓库表单 |
 | 仓库列表 | GET /api/repositories | 查看仓库 |
 | 磁盘 | GET /api/admin/disks | 查看磁盘 / 现有文件管理器磁盘导航 |
@@ -27,12 +27,11 @@ Web 管理页使用 `src/web/src/admin/request.rs` 的 HTTP 请求构建器。�
 | 取消计划 | POST /api/plans/{id}/cancel | 独立的显式取消操作 |
 | 操作结果 | GET /api/operations/{id} | 查看操作；结果未知的变更保留原操作 ID |
 | 完整性检查 | GET /api/admin/check | 查看完整性检查 |
-| 仓库 ACL | PUT /api/repositories/{id}/grants | 独立的 read/write/manage ACL 表单；不与账户的仓库准入混淆 |
 
 
 ## 操作边界
 
-- 账户的仓库准入与仓库自身 read/write/manage ACL 分别设置，不互相替代。
+- 全部会话均属于唯一管理员；不存在仓库 ACL 或账户准入列表。系统管理仍保留存储策略、绑定、计划及恢复功能。
 - 策略、规则和绑定更新携带明确代数；冲突不得静默重试覆盖。
 - 清理、拆分和历史保存先生成不可变预览，审查摘要及影响后明确提交；取消是独立操作。未就绪或已完成计划不能提交。
 - 结果未知时保留原操作 ID，查询原操作，不改用新 ID 重发。
@@ -46,6 +45,6 @@ Web 管理页使用 `src/web/src/admin/request.rs` 的 HTTP 请求构建器。�
 
 ## 检查
 
-运行 `cargo test --locked --offline -p storage-server --test http_engine`。`test/server/integration/http_engine/daily_management.rs` 使用 Web 同一组请求构建器及真实 Router/持久化 Engine，覆盖账户/ACL、策略代数、SMB 绑定、分支、预览摘要、明确提交、取消及重试幂等。
+运行 `cargo test --locked --offline -p storage-server --test http_engine`。`test/server/integration/http_engine/daily_management.rs` 使用 Web 同一组请求构建器及真实 Router/持久化 Engine，覆盖唯一管理员认证、已移除账户/ACL路由的拒绝、策略代数、SMB 绑定、分支、预览摘要、明确提交、取消及重试幂等。
 
-`branch_namespace_batch_preserves_unselected_views_and_is_idempotent` 检查跨非默认分支批量操作与审计边界。独立 AuthStore 和数据存储不可用时的账户生命周期由管理运行时测试覆盖。HTTP 测试不能替代 WASM 编译、真实浏览器点击或视觉验收。
+`branch_namespace_batch_preserves_unselected_views_and_is_idempotent` 检查跨非默认分支批量操作与审计边界。独立 AuthStore 和数据存储不可用时的登录、注销、改密和恢复边界由管理运行时测试覆盖。HTTP 测试不能替代 WASM 编译、真实浏览器点击或视觉验收。

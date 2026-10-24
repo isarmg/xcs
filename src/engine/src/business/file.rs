@@ -405,7 +405,7 @@ pub(crate) fn create_file_branch_change(
             )
         })?;
     let repo = engine.repository_for_history(&source.history_tree_id)?;
-    engine.require_grant(repo, principal, storage_contract::RepositoryAccess::Write)?;
+
     let main = state
         .branches
         .get(&repo.main_branch_id)
@@ -517,11 +517,7 @@ impl Engine {
                         v.file_id == file_id && version_id.is_none_or(|id| v.version_id == id)
                     })
                     .ok_or_else(|| Error::new("FILE_NOT_FOUND", "file or version not found"))?;
-                engine.require_grant(
-                    engine.repository_for_history(&version.history_tree_id)?,
-                    principal,
-                    storage_contract::RepositoryAccess::Write,
-                )?;
+                engine.repository_for_history(&version.history_tree_id)?;
                 let notes = if version_id.is_some() {
                     &mut state.version_notes
                 } else {
@@ -550,7 +546,7 @@ impl Engine {
         }
         self.mutate("file.namespace",principal,operation,json!({"repository_id":repository,"change":change}),|engine,state,_|{
             let repo=engine.state.repositories.get(repository).ok_or_else(||Error::new("REPOSITORY_NOT_FOUND","directory namespace missing"))?;
-            engine.require_grant(repo,principal,storage_contract::RepositoryAccess::Write)?;
+
             let branch=state.branches.get(&repo.main_branch_id).cloned().ok_or_else(||Error::new("BRANCH_NOT_FOUND","directory branch missing"))?;
             if branch.state!="active"{return Err(Error::new("BRANCH_NOT_ACTIVE","directory is not writable"));}
             let previous=state.commits.get(&branch.head_commit_id).cloned().ok_or_else(||Error::new("STATE_INVALID","directory head missing"))?;
@@ -615,7 +611,7 @@ impl Engine {
             |engine, state, _| {
                 let repo = state.repositories.get(repository)
                     .ok_or_else(|| Error::new("REPOSITORY_NOT_FOUND", "repository missing"))?;
-                engine.require_grant(repo, principal, storage_contract::RepositoryAccess::Write)?;
+
                 engine.repository_for_history(&repo.history_tree_id)?;
                 let main = state.branches.get(&repo.main_branch_id)
                     .ok_or_else(|| Error::new("STATE_INVALID", "repository main branch missing"))?;
@@ -656,10 +652,7 @@ impl Engine {
                 let branch = state.branches.get(branch_id).cloned()
                     .filter(|b| b.file_id.as_deref() == Some(file_id) && b.state == "active")
                     .ok_or_else(|| Error::new("FILE_BRANCH_NOT_FOUND", "select an active branch of this file"))?;
-                engine.require_grant(
-                    engine.repository_for_history(&branch.history_tree_id)?, principal,
-                    storage_contract::RepositoryAccess::Write,
-                )?;
+                engine.repository_for_history(&branch.history_tree_id)?;
                 let selected = state.commits.get(&branch.head_commit_id)
                     .ok_or_else(|| Error::new("STATE_INVALID", "file branch head missing"))?
                     .entries.iter().find(|e| e.kind == "file" && e.file_id == file_id)

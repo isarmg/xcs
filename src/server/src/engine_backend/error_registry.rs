@@ -1,5 +1,5 @@
 //! Audited engine-to-HTTP boundary policy, not an enumeration of every
-//! internal error or a second error envelope. Unlisted codes retain the legacy
+//! internal error or a second error envelope. Unlisted codes use the default
 //! 400/pass-through policy; *_NOT_FOUND retains the existing 404 convention.
 
 pub(super) const ALIASES: &[(&str, &str)] = &[

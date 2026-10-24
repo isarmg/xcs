@@ -1,4 +1,8 @@
 //! Single-writer full-file storage, durable publication, and offline recovery.
+//!
+//! This is a trusted local domain API, not an authentication boundary. Servers
+//! authenticate the sole administrator before calling it. Operation principals
+//! bind audit authorship, workspace ownership and idempotency, never repository ACLs.
 #![forbid(unsafe_code)]
 mod business;
 mod container_storage;

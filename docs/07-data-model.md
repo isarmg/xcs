@@ -19,8 +19,8 @@
 
 | 实体 | 必需字段 | 约束 |
 | --- | --- | --- |
-| Repository | repository_id, name, name_policy, unicode_version | 账户容器不等于单一历史域 |
-| HistoryTree | history_tree_id, repository_id, root_commit_id, main_branch_id, generation, state, quota_id | 提交谱系、公共文件混合节点 DAG 与独立关系标记；独立 ACL、内容账本和恢复包；仅保留历史且无活动分支时 main_branch_id 可为空 |
+| Repository | repository_id, name, name_policy, unicode_version | 命名与配额容器不等于单一历史域；不保存用户 ACL |
+| HistoryTree | history_tree_id, repository_id, root_commit_id, main_branch_id, generation, state, quota_id | 提交谱系、公共文件混合节点 DAG 与独立关系标记；独立内容账本和恢复包；仅保留历史且无活动分支时 main_branch_id 可为空 |
 | Branch | branch_id, history_tree_id, head_commit_id, fork_commit_id, branch_kind, generation, state；可选 file_id、pending_file_versions | file 分支绑定单文件，full 为兼容目录快照；pending 映射记录未写文件及来源，创建不复制正文 |
 | Commit | commit_id, history_tree_id, kind, parent_commit_ids, tree_id, sequence, operation_id, provenance；可选 pending_file_versions | 快照固定当时待写文件及来源，不随Branch首写清空；根和 split_root 零父，其他版本提交一父；合并连线不改父列表 |
 | MergeLink | merge_link_id, history_tree_id, source_branch_id, source_commit_id, target_branch_id, target_commit_id, author, created_at, operation_id | 两端为选定的已有版本；无结果版本、目录快照或内容依赖 |
@@ -44,7 +44,7 @@
 
 普通后续提交可继续引用本分支已有未变版本。新分支元数据快照可以引用真实来源版本，但 `pending_file_versions` 明确标记这些文件尚无本分支正文，不可将引用解释为已拥有内容。首次实际写入才生成独立 FULL 版本，未写入时从冻结父 version_id 读取；实际写入后的独立 FULL 仅以来源 ID 记谱系，不再依赖父字节。
 
-Branch 与 Commit 的 `pending_file_versions` 都默认为空并在空时省略序列化，因此旧对象重新编码的规范字节和既有快照/历史清单哈希保持不变；已有 FULL 分支不转换为占位。持久 Commit 的文件条目仍引用真实来源版本，不写入空版本 ID；`Engine::list_tree` 和历史视图保留可见真实版本及大小，未写入文件为冻结父版本。文件管理 JSON 附 `materialized:false`、`inherited:true`、`own_version_id:null`、`content_state:"PENDING"` 及实际 `visible_content_state`；泛型 Entry 的字符串类型保持兼容。旧继承快照始终按自身映射读取冻结父内容，不能在当前 Branch 首写后显示新写版本。
+Branch 与 Commit 的 `pending_file_versions` 采用当前稀疏编码：缺省表示空，空时省略序列化，确定性编码与非空映射往返均须核验；这不是旧格式自动迁移。已物化 FULL 分支不转换为待写入状态。持久 Commit 的文件条目仍引用真实来源版本，不写入空版本 ID；`Engine::list_tree` 和历史视图保留可见真实版本及大小，未写入文件为冻结父版本。文件管理 JSON 附 `materialized:false`、`inherited:true`、`own_version_id:null`、`content_state:"PENDING"` 及实际 `visible_content_state`；泛型 Entry 的字符串类型保持兼容。旧继承快照始终按自身映射读取冻结父内容，不能在当前 Branch 首写后显示新写版本。
 
 工作区另保存可选的 `selected_file_branches`，固定创建时的文件选择；两个待写入分支可以共用同一个来源 ID，不能只靠基础版本相同便把旧工作区写入另一分支。
 

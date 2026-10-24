@@ -3,14 +3,214 @@
   "info": {
     "title": "ZXS 核心接口草案",
     "version": "0.1.0-draft",
-    "description": "覆盖核心内容保存契约及已实现的路径文件管理、文件容器、独立文件分支、目录文件分支批量事务；其他未列出的管理接口仍不代表全面冻结。"
+    "description": "覆盖唯一管理员登录、会话、注销与改密，以及核心内容保存和已实现的路径文件管理、独立文件分支、目录批量事务与系统监测；未列出的管理接口不代表全面冻结。"
   },
   "security": [
     {
       "bearerAuth": []
+    },
+    {
+      "sessionCookie": []
     }
   ],
   "paths": {
+    "/api/auth/login": {
+      "post": {
+        "operationId": "loginAdministrator",
+        "description": "验证唯一管理员用户名与密码并创建有界会话；不创建账户、不自动重置凭据。JSON 请求体上限 4096 字节。",
+        "responses": {
+          "200": {
+            "description": "成功。",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LoginResponse"
+                }
+              }
+            },
+            "headers": {
+              "Set-Cookie": {
+                "description": "登录设置 zxs_session；注销或改密成功将其 Max-Age 设置为 0。",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "结构化错误；认证、Origin/CSRF、限流、凭据恢复或持久化失败不视为成功。",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginRequest"
+              }
+            }
+          }
+        },
+        "security": []
+      }
+    },
+    "/api/auth/me": {
+      "get": {
+        "operationId": "getCurrentSession",
+        "description": "读取当前有效会话的唯一管理员主体及 CSRF 令牌，不返回角色、禁用状态或仓库准入列表。",
+        "responses": {
+          "200": {
+            "description": "成功。",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CurrentSessionResponse"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "结构化错误；认证、Origin/CSRF、限流、凭据恢复或持久化失败不视为成功。",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/auth/logout": {
+      "post": {
+        "operationId": "logoutAdministrator",
+        "description": "持久撤销当前会话并清除 cookie。失败或结果未知不能解释为已注销。",
+        "responses": {
+          "200": {
+            "description": "成功。",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LogoutResponse"
+                }
+              }
+            },
+            "headers": {
+              "Set-Cookie": {
+                "description": "登录设置 zxs_session；注销或改密成功将其 Max-Age 设置为 0。",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "结构化错误；认证、Origin/CSRF、限流、凭据恢复或持久化失败不视为成功。",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": false,
+            "description": "使用 zxs_session cookie 时必填；与当前会话派生值精确匹配。Bearer 认证不要求此头。",
+            "schema": {
+              "$ref": "#/components/schemas/AuthenticationToken"
+            }
+          },
+          {
+            "name": "Origin",
+            "in": "header",
+            "required": false,
+            "description": "cookie 变更请求必须携带并精确匹配部署 origin；Bearer 请求若携带也须匹配。",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      }
+    },
+    "/api/auth/password": {
+      "post": {
+        "operationId": "changeAdministratorPassword",
+        "description": "验证当前密码后修改唯一管理员密码并撤销全部会话，清除当前 cookie，必须重新登录。JSON 请求体上限 16 KiB。",
+        "responses": {
+          "200": {
+            "description": "成功。",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PasswordChangeResponse"
+                }
+              }
+            },
+            "headers": {
+              "Set-Cookie": {
+                "description": "登录设置 zxs_session；注销或改密成功将其 Max-Age 设置为 0。",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "结构化错误；认证、Origin/CSRF、限流、凭据恢复或持久化失败不视为成功。",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PasswordChangeRequest"
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": false,
+            "description": "使用 zxs_session cookie 时必填；与当前会话派生值精确匹配。Bearer 认证不要求此头。",
+            "schema": {
+              "$ref": "#/components/schemas/AuthenticationToken"
+            }
+          },
+          {
+            "name": "Origin",
+            "in": "header",
+            "required": false,
+            "description": "cookie 变更请求必须携带并精确匹配部署 origin；Bearer 请求若携带也须匹配。",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      }
+    },
     "/api/workspaces/{workspace}/commit": {
       "post": {
         "operationId": "commitWorkspace",
@@ -343,7 +543,7 @@
       },
       "head": {
         "operationId": "headContent",
-        "description": "返回完整表示元信息，不返回正文；当前权限及清除状态仍须检查。 下载Content-Disposition按容器当前名称生成UTF-8 filename*，不会把历史版本storage_name用作下载名。",
+        "description": "返回完整表示元信息，不返回正文；当前认证、域状态及清除状态仍须检查。 下载Content-Disposition按容器当前名称生成UTF-8 filename*，不会把历史版本storage_name用作下载名。",
         "parameters": [
           {
             "name": "version",
@@ -460,7 +660,7 @@
     "/api/file-manager/disks": {
       "get": {
         "operationId": "listFileManagerDisks",
-        "description": "按账号权限返回受控磁盘目录入口。writable表示存在可写命名空间；根创建权限仍独立检查。used_bytes为托管版本逻辑占用，真实文件系统容量由/api/system/status采样。",
+        "description": "向已认证的唯一管理员返回受控磁盘目录入口。writable表示存在可写命名空间；根创建仍受盘位与业务状态约束。used_bytes为托管版本逻辑占用，真实文件系统容量由/api/system/status采样。",
         "parameters": [],
         "responses": {
           "200": {
@@ -1138,7 +1338,7 @@
             }
           },
           "403": {
-            "description": "备份盘只读，或账号没有文件写权限。",
+            "description": "备份盘或当前文件引用只读。",
             "content": {
               "application/json": {
                 "schema": {
@@ -1479,7 +1679,7 @@
             }
           },
           "403": {
-            "description": "备份盘只读，或账号没有目录写权限。",
+            "description": "备份盘或当前目录引用只读。",
             "content": {
               "application/json": {
                 "schema": {
@@ -1619,7 +1819,7 @@
             }
           },
           "403": {
-            "description": "备份盘只读，或账号没有目录写权限。",
+            "description": "备份盘或当前目录引用只读。",
             "content": {
               "application/json": {
                 "schema": {
@@ -2297,7 +2497,7 @@
     "/api/file-manager/files/{file}/metadata": {
       "post": {
         "operationId": "updateFileContainerNote",
-        "description": "更新文件容器备注，要求本文件写权限。备注随备份、重启及历史包恢复保留，不修改版本正文。",
+        "description": "更新文件容器备注，要求当前文件引用可写。备注随备份、重启及历史包恢复保留，不修改版本正文。",
         "parameters": [
           {
             "name": "file",
@@ -2415,7 +2615,7 @@
     "/api/file-manager/versions/{version}/metadata": {
       "post": {
         "operationId": "updateFileVersionNote",
-        "description": "更新指定不可变版本的备注，要求所属文件写权限；备注属于控制元数据，不修改版本字节、存储内名或校验值。",
+        "description": "更新指定不可变版本的备注，要求所属文件引用可写；备注属于控制元数据，不修改版本字节、存储内名或校验值。",
         "parameters": [
           {
             "name": "version",
@@ -3232,7 +3432,7 @@
                   }
                 },
                 "additionalProperties": false,
-                "description": "一批显式分支映射；实际发布再统一校验树依据、条目身份、路径归属、目标碰撞与权限。",
+                "description": "一批显式分支映射；实际发布再统一校验树依据、条目身份、路径归属、目标碰撞与业务可写状态。",
                 "required": [
                   "kind",
                   "items",
@@ -3367,7 +3567,7 @@
             }
           },
           "403": {
-            "description": "任一分支写权限不足或备份盘只读。",
+            "description": "任一分支或备份盘为只读。",
             "content": {
               "application/json": {
                 "schema": {
@@ -3618,7 +3818,7 @@
       },
       "put": {
         "operationId": "selectDefaultDirectoryBranch",
-        "description": "以普通仓库写权限选择根目录分支作为Web/App/SMB共享默认视图。该分支保存的子树不因设置默认而改写；旧读句柄固定版本，受影响旧写会话冲突并保留暂存内容。",
+        "description": "由已认证的唯一管理员选择根目录分支作为 Web/SMB 共享默认视图，仍须满足业务状态与可写约束。该分支保存的子树不因设置默认而改写；旧读句柄固定版本，受影响旧写会话冲突并保留暂存内容。",
         "parameters": [
           {
             "name": "repo",
@@ -4628,9 +4828,6 @@
                     "effective_generation": {
                       "$ref": "#/components/schemas/UInt64"
                     },
-                    "can_manage": {
-                      "type": "boolean"
-                    },
                     "available_route_slot_ids": {
                       "type": "array",
                       "items": {
@@ -4640,7 +4837,7 @@
                     "max_copies": {
                       "type": "integer",
                       "minimum": 1,
-                      "description": "所有实际来源链长度的最小值，以保证所选份数可覆盖全部历史版本；available_route_slot_ids只保留默认来源链作兼容展示。"
+                      "description": "所有实际来源链长度的最小值，以保证所选份数可覆盖全部历史版本；available_route_slot_ids只描述默认来源链，不能替代完整backup_routes。"
                     },
                     "backup_routes": {
                       "type": "array",
@@ -4846,7 +5043,7 @@
     "/api/workspaces/capacity": {
       "get": {
         "operationId": "workspaceCapacity",
-        "description": "当前已认证用户的工作区保留证据预算；仅管理员可见 global 汇总。终态工作区仍占用容量，不提供自动回收。所有计数与字节数使用 UInt64 十进制字符串。",
+        "description": "当前唯一管理员的工作区保留证据预算；global与principal均必填，warning考虑两者全部预算。终态工作区仍占用容量，不提供自动回收，不改变每主体或全池额度。所有计数与字节数使用UInt64十进制字符串。",
         "responses": {
           "200": {
             "description": "当前容量快照，不保证后续写入准入。",
@@ -4874,6 +5071,12 @@
         "type": "http",
         "scheme": "bearer",
         "description": "已实现会话令牌鉴权。浏览器也可使用同源HttpOnly会话Cookie；Cookie写请求另外要求CSRF头。本文未描述的认证端点仍需单独核对服务实现。"
+      },
+      "sessionCookie": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "zxs_session",
+        "description": "浏览器会话；变更请求必须同时通过精确 Origin 与 X-CSRF-Token 检查。Bearer 请求不要求 CSRF，但提供的 Origin 仍须有效。"
       }
     },
     "schemas": {
@@ -6643,7 +6846,7 @@
           }
         },
         "additionalProperties": false,
-        "description": "一批显式分支映射；实际发布再统一校验树依据、条目身份、路径归属、目标碰撞与权限。",
+        "description": "一批显式分支映射；实际发布再统一校验树依据、条目身份、路径归属、目标碰撞与业务可写状态。",
         "required": [
           "kind",
           "items"
@@ -7389,48 +7592,6 @@
           "unicode_version": {
             "type": "string"
           },
-          "grants": {
-            "type": "object",
-            "properties": {
-              "read": {
-                "type": "array",
-                "items": {
-                  "type": "string"
-                },
-                "uniqueItems": true
-              },
-              "write": {
-                "type": "array",
-                "items": {
-                  "type": "string"
-                },
-                "uniqueItems": true
-              },
-              "manage": {
-                "type": "array",
-                "items": {
-                  "type": "string"
-                },
-                "uniqueItems": true
-              }
-            },
-            "required": [
-              "read",
-              "write",
-              "manage"
-            ],
-            "additionalProperties": false
-          },
-          "account_scope_repository_id": {
-            "anyOf": [
-              {
-                "$ref": "#/components/schemas/RepositoryId"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
           "smb_enabled": {
             "type": "boolean"
           },
@@ -7450,11 +7611,11 @@
           "target_copies",
           "name_policy",
           "unicode_version",
-          "grants",
-          "smb_binding_generation"
+          "smb_binding_generation",
+          "smb_enabled"
         ],
         "additionalProperties": false,
-        "description": "根中仓库对象的读取字段形状；命名策略、保护份数和授权语义由核心另行验证。"
+        "description": "根中仓库对象的读取字段形状；单一管理员系统不保存账户 ACL 或仓库准入列表，命名策略、保护份数、共享绑定与业务状态由核心另行验证。"
       },
       "HistoryIdentity": {
         "type": "object",
@@ -7692,6 +7853,7 @@
         "type": "object",
         "additionalProperties": false,
         "required": [
+          "global",
           "principal",
           "warning",
           "automatic_retirement"
@@ -7714,7 +7876,131 @@
           "automatic_retirement": {
             "const": false
           }
+        },
+        "description": "当前唯一管理员的全池与主体预算均必填；warning考虑两者全部预算，不改变计费或额度。"
+      },
+      "AdministratorPrincipal": {
+        "type": "string",
+        "minLength": 3,
+        "maxLength": 64,
+        "pattern": "^[a-z0-9][a-z0-9._-]*[a-z0-9]$",
+        "description": "首次初始化时自选并规范化保存的唯一管理员用户名；保留为审计、操作幂等和工作区所属主体，不是角色或仓库权限。",
+        "not": {
+          "pattern": "[^a-z0-9._-]"
         }
+      },
+      "AuthenticationToken": {
+        "type": "string",
+        "pattern": "^[A-Za-z0-9_-]{43}$",
+        "description": "32 字节随机会话令牌或派生 CSRF 令牌的无填充 base64url 表示。",
+        "minLength": 43,
+        "maxLength": 43
+      },
+      "LoginRequest": {
+        "type": "object",
+        "properties": {
+          "username": {
+            "type": "string",
+            "description": "候选用户名按共享认证规则去首尾 ASCII 空格并转为 ASCII 小写；只可登录唯一管理员。"
+          },
+          "password": {
+            "type": "string",
+            "writeOnly": true
+          }
+        },
+        "required": [
+          "username",
+          "password"
+        ],
+        "additionalProperties": false
+      },
+      "LoginResponse": {
+        "type": "object",
+        "properties": {
+          "token": {
+            "$ref": "#/components/schemas/AuthenticationToken"
+          },
+          "csrf_token": {
+            "$ref": "#/components/schemas/AuthenticationToken"
+          },
+          "principal": {
+            "$ref": "#/components/schemas/AdministratorPrincipal"
+          },
+          "expires_at": {
+            "$ref": "#/components/schemas/UInt64"
+          }
+        },
+        "required": [
+          "token",
+          "csrf_token",
+          "principal",
+          "expires_at"
+        ],
+        "additionalProperties": false,
+        "description": "expires_at 为 Unix 秒的 UINT64 十进制字符串；同时设置 HttpOnly、SameSite=Strict 的 zxs_session cookie，生产 HTTPS 模式带 Secure。"
+      },
+      "CurrentSessionResponse": {
+        "type": "object",
+        "properties": {
+          "principal": {
+            "$ref": "#/components/schemas/AdministratorPrincipal"
+          },
+          "csrf_token": {
+            "$ref": "#/components/schemas/AuthenticationToken"
+          }
+        },
+        "required": [
+          "principal",
+          "csrf_token"
+        ],
+        "additionalProperties": false
+      },
+      "LogoutResponse": {
+        "type": "object",
+        "properties": {
+          "logged_out": {
+            "const": true
+          }
+        },
+        "required": [
+          "logged_out"
+        ],
+        "additionalProperties": false
+      },
+      "PasswordChangeRequest": {
+        "type": "object",
+        "properties": {
+          "current_password": {
+            "type": "string",
+            "writeOnly": true
+          },
+          "new_password": {
+            "type": "string",
+            "writeOnly": true,
+            "description": "按共享密码规则校验 12 至 1024 个 UTF-8 字节且不含 ASCII 控制字符；字符数不代替字节数。"
+          }
+        },
+        "required": [
+          "current_password",
+          "new_password"
+        ],
+        "additionalProperties": false
+      },
+      "PasswordChangeResponse": {
+        "type": "object",
+        "properties": {
+          "changed": {
+            "const": true
+          },
+          "reauthentication_required": {
+            "const": true
+          }
+        },
+        "required": [
+          "changed",
+          "reauthentication_required"
+        ],
+        "additionalProperties": false
       }
     }
   }

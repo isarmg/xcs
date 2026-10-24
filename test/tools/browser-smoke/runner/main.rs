@@ -28,9 +28,9 @@ mod management;
 mod metadata;
 mod session_delivery;
 use metadata::{assert_metadata_only, metadata_edit, open_fixture_directory};
-mod account_outcome;
 mod file_viewports;
 mod session_logout;
+mod single_account;
 
 type Result<T> = std::result::Result<T, Box<dyn Error>>;
 const ELEMENT: &str = "element-6066-11e4-a52e-4f735466cecf";
@@ -311,7 +311,7 @@ fn exercise(
     assert_metadata_only(browser)?;
     println!("PASS administrator status page retains real telemetry controls");
     accessibility::run(browser)?;
-    account_outcome::run(browser, password)?;
+    single_account::run(browser, password)?;
     session_logout::run(browser, password)?;
     browser.click(&browser.button("Files", "文件")?)?;
     let stale_history = session_delivery::begin_paused_history(browser)?;
@@ -348,6 +348,15 @@ fn exercise(
             let url = event["message"]["params"]["request"]["url"]
                 .as_str()
                 .unwrap_or_default();
+            if url.starts_with(origin)
+                && (url.contains("/api/admin/accounts")
+                    || url
+                        .split('?')
+                        .next()
+                        .is_some_and(|path| path.ends_with("/grants")))
+            {
+                return Err(format!("Web requested a retired account/ACL route: {url}").into());
+            }
             if metadata::is_file_body_request(url, origin) {
                 return Err(
                     format!("metadata-only Web requested a file-content route: {url}").into(),

@@ -548,21 +548,16 @@ impl Engine {
         }
         Ok(())
     }
-    pub(crate) fn require_grant(
-        &self,
-        repo: &Repository,
-        principal: &str,
-        access: RepositoryAccess,
-    ) -> Result<()> {
-        if repo.grants.allows(principal, access) {
-            Ok(())
-        } else {
-            Err(Error::new(
-                "PERMISSION_DENIED",
-                "principal has no permission for this operation",
-            ))
+
+    /// An actor is immutable audit/idempotency input, not a role or credential.
+    /// Authentication is performed by the server before calling this trusted API.
+    pub(crate) fn require_actor(principal: &str) -> Result<()> {
+        if principal.is_empty() {
+            return Err(Error::new("UNAUTHENTICATED", "operation actor is required"));
         }
+        Ok(())
     }
+
     pub(crate) fn repository_for_history(&self, history: &str) -> Result<&Repository> {
         let h = self
             .state
@@ -639,9 +634,7 @@ impl Engine {
         F: FnOnce(&Self, &mut State, &mut Vec<Prepared>) -> Result<json_codec::Value>,
     {
         validate_id(operation_id, "op")?;
-        if principal.is_empty() {
-            return Err(Error::new("UNAUTHENTICATED", "principal is required"));
-        }
+        Self::require_actor(principal)?;
         let digest = digest_override.map(Ok).unwrap_or_else(|| {
             object_hash(
                 "request",

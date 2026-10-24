@@ -88,7 +88,7 @@ fn distributed_normalized_username_attempts_slow_without_hard_lockout() {
         );
     }
     assert_eq!(attempts.lock().unwrap()["user:admin"].count, 17);
-    // Pressure on admin never delays a different account on another source.
+    // An unrelated guessed username cannot amplify pressure on the administrator.
     assert_eq!(
         admit_login(&attempts, address(100), "reader").unwrap(),
         Duration::ZERO
@@ -96,7 +96,7 @@ fn distributed_normalized_username_attempts_slow_without_hard_lockout() {
 }
 
 #[test]
-fn source_limit_cannot_be_evaded_by_rotating_accounts_or_poison_other_accounts() {
+fn source_limit_cannot_be_evaded_by_rotating_username_guesses() {
     let attempts = Mutex::new(HashMap::new());
     for index in 0..MAX_ATTEMPTS {
         admit_login(&attempts, address(1), &format!("user{index}")).unwrap();
@@ -195,7 +195,7 @@ fn trusted_proxy_requires_exact_single_ip_and_transport_metadata() {
 }
 
 #[test]
-fn proxy_clients_have_separate_budgets_but_cannot_rotate_accounts_to_bypass_source_limit() {
+fn proxy_clients_have_separate_budgets_but_cannot_rotate_guesses_to_bypass_source_limit() {
     let attempts = Mutex::new(HashMap::new());
     let config = proxy_config();
     let first = client_ip(&request_from("127.0.0.1:1234", Some("192.0.2.1")), &config).unwrap();
@@ -259,7 +259,7 @@ fn invalid_usernames_never_allocate_retained_pending_or_counter_keys() {
 }
 
 #[test]
-fn pending_logins_are_per_canonical_account_bounded_and_release_on_drop() {
+fn pending_logins_are_per_canonical_username_bounded_and_release_on_drop() {
     let pending = Arc::new(Mutex::new(HashSet::new()));
     let first = PendingLogin::acquire(&pending, " Admin ").unwrap();
     assert!(PendingLogin::acquire(&pending, "ADMIN").is_err());
@@ -277,7 +277,7 @@ fn pending_logins_are_per_canonical_account_bounded_and_release_on_drop() {
 }
 
 #[tokio::test]
-async fn cancelled_waiter_releases_account_guard_without_delaying_other_account() {
+async fn cancelled_waiter_releases_username_guard_without_blocking_other_guesses() {
     let pending = Arc::new(Mutex::new(HashSet::new()));
     let waiting = pending.clone();
     let (ready, started) = tokio::sync::oneshot::channel();
@@ -627,4 +627,42 @@ fn bearer_scheme_is_case_insensitive_without_normalizing_credentials() {
         HeaderValue::from_static("bearer token"),
     );
     assert_eq!(request_token(&headers).unwrap_err().status, 401);
+}
+
+#[tokio::test]
+async fn session_identity_exposes_no_role_or_repository_grants() {
+    let token = authentication::random_token().unwrap();
+    let identity = Identity {
+        admission_session: None,
+        smb_binding: None,
+        principal: "owner".into(),
+    };
+    let Json(value) = me(
+        http_routing::Extension(identity),
+        http_routing::Extension(SessionToken(token.clone())),
+    )
+    .await
+    .unwrap();
+    assert_eq!(
+        value,
+        json!({"principal":"owner", "csrf_token":authentication::derive_csrf_token(&token).unwrap()})
+    );
+}
+
+#[test]
+fn password_change_request_cannot_create_rename_disable_or_scope_an_account() {
+    for (key, value) in [
+        ("username", json!("other")),
+        ("admin", json!(true)),
+        ("repositories", json!([])),
+        ("disabled", json!(false)),
+    ] {
+        let mut body =
+            json!({"current_password":"current-password", "new_password":"new-password-value"});
+        body[key] = value;
+        assert!(
+            storage_contract::decode_strict::<PasswordChange>(&json_codec::to_vec(&body).unwrap())
+                .is_err()
+        );
+    }
 }

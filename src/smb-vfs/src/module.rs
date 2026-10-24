@@ -44,6 +44,7 @@ mod sdk {
 }
 #[path = "asynchronous.rs"]
 mod asynchronous;
+mod authentication;
 mod descriptors;
 mod paths;
 use descriptors::{close_opened, snapshot};
@@ -57,6 +58,7 @@ struct Open {
     io: Arc<Mutex<()>>,
 }
 struct Context {
+    samba_username: String,
     client: Client,
     files: BTreeMap<usize, Open>,
 }
@@ -112,15 +114,30 @@ unsafe fn input_bytes<'a>(data: *const c_void, count: usize) -> std::io::Result<
 /// A non-null handle must be live. Its non-null data must be our Context box;
 /// the caller guarantees exclusive access and that the box outlives 'a.
 unsafe fn context<'a>(handle: *mut sdk::vfs_handle_struct) -> std::io::Result<&'a mut Context> {
-    // SAFETY: The caller supplies a live SDK handle when non-null; short-circuiting rejects null
-    // before dereference.
+    // SAFETY: The caller supplies the same live host handle required by both helpers.
+    let username = unsafe { authentication::account_name(handle) }?;
+    // SAFETY: Context is owned by this handle and exclusively accessed on the event loop.
+    let context = unsafe { context_for_cleanup(handle) }?;
+    if username != context.samba_username {
+        return Err(authentication::denied());
+    }
+    Ok(context)
+}
+
+/// # Safety
+/// Same ownership requirements as context. Only resource-release paths may
+/// bypass authentication; they must not publish a write after failed validation.
+unsafe fn context_for_cleanup<'a>(
+    handle: *mut sdk::vfs_handle_struct,
+) -> std::io::Result<&'a mut Context> {
+    // SAFETY: The caller guarantees a live host handle; short-circuiting rejects null.
     if handle.is_null() || unsafe { (*handle).data }.is_null() {
         return Err(bad());
     }
-    // SAFETY: connect installed a Context box in data. The caller guarantees exclusive event-loop
-    // access for this borrow; neither handle nor data is null.
+    // SAFETY: connect installed this exact Context box, exclusively borrowed here.
     Ok(unsafe { &mut *((*handle).data.cast::<Context>()) })
 }
+
 fn inode(id: &str) -> u64 {
     let bytes = blake3::hash(id.as_bytes());
     u64::from_le_bytes(bytes.as_bytes()[..8].try_into().unwrap()).max(1)
@@ -154,7 +171,7 @@ unsafe extern "C" fn free_context(data: *mut *mut c_void) {
 unsafe extern "C" fn connect(
     handle: *mut sdk::vfs_handle_struct,
     _service: *const libc::c_char,
-    user: *const libc::c_char,
+    _user: *const libc::c_char,
 ) -> i32 {
     guarded(|| {
         // SAFETY: A non-null handle is a live host object; short-circuit evaluation prevents
@@ -162,6 +179,8 @@ unsafe extern "C" fn connect(
         if handle.is_null() || unsafe { (*handle).conn }.is_null() {
             return Err(bad());
         }
+        // SAFETY: Read the actual Samba session, not the callback's Unix username.
+        let samba_username = unsafe { authentication::account_name(handle) }?;
         // SAFETY: The handle and connection were checked non-null and remain live on the owning
         // host thread.
         let parameters = unsafe { (*(*handle).conn).params };
@@ -191,10 +210,9 @@ unsafe extern "C" fn connect(
                 std::ptr::null(),
             ))
         }?;
-        // SAFETY: Samba supplies a NUL-terminated user string valid during connect; text rejects
-        // null and invalid UTF-8.
-        let client = Client::connect(&PathBuf::from(socket), unsafe { text(user) }?, repository)?;
+        let client = Client::connect(&PathBuf::from(socket), &samba_username, repository)?;
         let boxed = Box::new(Context {
+            samba_username,
             client,
             files: BTreeMap::new(),
         });
@@ -563,9 +581,21 @@ unsafe extern "C" fn close(
     guarded(|| {
         // SAFETY: The owning host callback supplies a live handle; Context access stays on this
         // event-loop thread and does not escape the callback.
-        let context = unsafe { context(handle) }?;
+        let authorized = unsafe { context(handle) }.is_ok();
+        // SAFETY: Release must remain possible after reauthentication/revocation.
+        // This bypass only removes ownership; a failed check forces Detach below.
+        let context = unsafe { context_for_cleanup(handle) }?;
         let opened = context.files.remove(&(fsp as usize)).ok_or_else(bad)?;
-        close_opened(opened, |request| context.client.call(request).map(|_| ()))
+        let remote = opened.info.handle;
+        close_opened(opened, |request| {
+            if authorized {
+                context.client.call(request).map(|_| ())
+            } else {
+                // Detach retains bytes/recovery evidence without publishing them.
+                let _ = context.client.call(Request::Detach { handle: remote });
+                Err(authentication::denied())
+            }
+        })
     })
 }
 
@@ -955,7 +985,7 @@ impl Directory {
     }
 }
 unsafe extern "C" fn readdir(
-    _handle: *mut sdk::vfs_handle_struct,
+    handle: *mut sdk::vfs_handle_struct,
     _fsp: *mut sdk::files_struct,
     directory: *mut sdk::DIR,
 ) -> *mut sdk::dirent {
@@ -964,6 +994,9 @@ unsafe extern "C" fn readdir(
             if directory.is_null() {
                 return Err(bad());
             }
+            // SAFETY: Recheck the live Samba identity even when returning a cached
+            // page; reauthentication must not reuse the old RPC identity.
+            unsafe { context(handle) }?;
             // SAFETY: This is the live Directory box returned by fdopendir;
             // the host serializes callbacks, and closedir consumes it once.
             let directory = unsafe { &mut *directory.cast::<Directory>() };

@@ -22,7 +22,7 @@ impl Engine {
                     .filter(|branch| branch.file_id.as_deref()==Some(file_id)&&branch.state!="migrated")
                     .ok_or_else(||Error::new("FILE_BRANCH_NOT_FOUND","file branch missing"))?;
                 let repository=engine.repository_for_history(&current.history_tree_id)?;
-                engine.require_grant(repository,principal,storage_contract::RepositoryAccess::Write)?;
+
                 if current.state!="active" || state.file_branch_aliases.contains_key(branch_id) {
                     return Err(Error::new("BRANCH_NOT_ACTIVE","merged file aliases are read-only"));
                 }

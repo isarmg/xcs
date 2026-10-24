@@ -93,7 +93,10 @@ fn beginning_logout_invalidates_pending_login_without_losing_revocation_credenti
 }
 
 fn session_response() -> Value {
-    json!({"token":"new-token","csrf_token":"new-csrf","principal":"reader","admin":false})
+    json!({"token":"new-token","csrf_token":"new-csrf","principal":"owner","expires_at":"9999999999"})
+}
+fn restored_response() -> Value {
+    json!({"csrf_token":"new-csrf","principal":"owner"})
 }
 
 #[test]
@@ -103,24 +106,52 @@ fn malformed_authentication_success_cannot_install_or_restore_a_session() {
         csrf: Some("existing-csrf".into()),
         generation: 10,
     };
-    let mut invalid = vec![Value::Null, json!({}), json!({"token":"new-token"})];
-    for field in ["principal", "csrf_token", "admin"] {
-        for replacement in [Value::Null, json!(""), json!(42)] {
-            let mut response = session_response();
-            response[field] = replacement;
+    for login in [false, true] {
+        let valid = if login {
+            session_response()
+        } else {
+            restored_response()
+        };
+        let mut invalid = vec![Value::Null, json!({}), json!({"token":"new-token"})];
+        for field in if login {
+            vec!["principal", "csrf_token", "token", "expires_at"]
+        } else {
+            vec!["principal", "csrf_token"]
+        } {
+            let mut missing = valid.clone();
+            missing.as_object_mut().unwrap().remove(field);
+            invalid.push(missing);
+            for replacement in [Value::Null, json!(""), json!(42)] {
+                let mut response = valid.clone();
+                response[field] = replacement;
+                invalid.push(response);
+            }
+        }
+        for (field, value) in [
+            ("admin", json!(true)),
+            ("repositories", json!([])),
+            ("disabled", json!(false)),
+            ("username", json!("owner")),
+        ] {
+            let mut response = valid.clone();
+            response[field] = value;
             invalid.push(response);
         }
-    }
-    for value in invalid {
-        for login in [false, true] {
+        if login {
+            for expiry in ["0", "01", "18446744073709551616"] {
+                let mut response = valid.clone();
+                response["expires_at"] = expiry.into();
+                invalid.push(response);
+            }
+        }
+        for value in invalid {
             CREDENTIALS.with(|saved| *saved.borrow_mut() = original.clone());
             let result = if login {
-                accept_login(original.generation, value.clone())
+                accept_login(original.generation, value)
             } else {
-                accept_restore(original.generation, value.clone())
+                accept_restore(original.generation, value)
             };
-            let error =
-                result.expect_err("incomplete identities must not open the authenticated UI");
+            let error = result.expect_err("incomplete or retired identities must not open the UI");
             assert_eq!(error.code, "INVALID_SESSION");
             assert_eq!(error.status, 200);
             CREDENTIALS.with(|saved| {
@@ -131,23 +162,19 @@ fn malformed_authentication_success_cannot_install_or_restore_a_session() {
             });
         }
     }
-    for token in [Value::Null, json!(""), json!(42)] {
-        let mut value = session_response();
-        value["token"] = token;
-        assert_eq!(
-            accept_login(original.generation, value).unwrap_err().code,
-            "INVALID_SESSION"
-        );
-    }
     clear_session();
 }
 
 #[test]
 fn validated_session_restoration_requires_the_original_credential_generation() {
     CREDENTIALS.with(|saved| *saved.borrow_mut() = Credentials::default());
-    let mut response = session_response();
-    response.as_object_mut().unwrap().remove("token");
-    assert!(accept_restore(0, response.clone()).is_ok());
+    let response = restored_response();
+    assert_eq!(
+        accept_restore(0, response.clone()).unwrap(),
+        Authenticated {
+            principal: "owner".into()
+        }
+    );
     CREDENTIALS.with(|saved| {
         let saved = saved.borrow();
         assert!(
@@ -156,7 +183,12 @@ fn validated_session_restoration_requires_the_original_credential_generation() {
         );
         assert_eq!(saved.csrf.as_deref(), Some("new-csrf"));
     });
-    assert!(accept_login(0, session_response()).is_ok());
+    assert_eq!(
+        accept_login(0, session_response()).unwrap(),
+        Authenticated {
+            principal: "owner".into()
+        }
+    );
     assert_eq!(
         accept_restore(0, response).unwrap_err().code,
         "SESSION_CHANGED"

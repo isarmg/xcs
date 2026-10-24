@@ -1,7 +1,6 @@
 //! Authorized content read plans and their unlocked I/O execution.
 use super::{
-    EngineBackend, RepositoryAccess, authorize_access, current_protected_identity, error,
-    repo_for_history, workspace_authorize,
+    EngineBackend, current_protected_identity, error, repo_for_history, workspace_authorize,
 };
 use crate::{ApiError, Content, auth::Identity};
 
@@ -15,17 +14,13 @@ impl EngineBackend {
             .engine
             .lock()
             .map_err(|_| ApiError::new(500, "INTERNAL_ERROR", "storage engine requires restart"))?;
-        let current = current_protected_identity(&engine, identity)?;
+        current_protected_identity(&engine, identity)?;
         let record = engine
             .state()
             .versions
             .get(version)
             .ok_or_else(|| ApiError::new(404, "NOT_FOUND", "version not found"))?;
-        authorize_access(
-            &current,
-            repo_for_history(&engine, &record.history_tree_id)?,
-            RepositoryAccess::Read,
-        )?;
+        repo_for_history(&engine, &record.history_tree_id)?;
         let plan = engine.prepare_content(version).map_err(error)?;
         let repo = repo_for_history(&engine, &record.history_tree_id)?;
         let entries = engine
@@ -100,17 +95,13 @@ impl EngineBackend {
             .engine
             .lock()
             .map_err(|_| ApiError::new(500, "INTERNAL_ERROR", "storage engine requires restart"))?;
-        let current = current_protected_identity(&engine, identity)?;
+        current_protected_identity(&engine, identity)?;
         let record = engine
             .state()
             .versions
             .get(version)
             .ok_or_else(|| ApiError::new(404, "NOT_FOUND", "version not found"))?;
-        authorize_access(
-            &current,
-            repo_for_history(&engine, &record.history_tree_id)?,
-            RepositoryAccess::Read,
-        )?;
+        repo_for_history(&engine, &record.history_tree_id)?;
         let plan = engine.prepare_content(version).map_err(error)?;
         drop(engine);
         plan.checksums().map_err(error)

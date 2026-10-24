@@ -12,13 +12,8 @@ fn saved() -> (tempfile::TempDir, Engine, String, CommitRequest) {
     let repo = engine
         .create_repository("files", "P01", 1, "admin", &new_id("op"))
         .unwrap();
-    let mut grants = repo.grants.clone();
-    grants.write.insert("writer".into());
-    engine
-        .set_grants(&repo.repository_id, grants, "admin", &new_id("op"))
-        .unwrap();
     let workspace = engine
-        .create_workspace(&repo.main_branch_id, "writer")
+        .create_workspace(&repo.main_branch_id, "admin")
         .unwrap();
     engine
         .stage_bytes(&workspace.workspace_id, "file", b"retained history")
@@ -26,7 +21,7 @@ fn saved() -> (tempfile::TempDir, Engine, String, CommitRequest) {
     let request = CommitRequest {
         workspace_id: workspace.workspace_id,
         operation_id: new_id("op"),
-        principal: "writer".into(),
+        principal: "admin".into(),
         expected_head: workspace.base_head,
         fencing_token: workspace.fencing_token,
         message: "original save".into(),
@@ -37,13 +32,9 @@ fn saved() -> (tempfile::TempDir, Engine, String, CommitRequest) {
 }
 
 #[test]
-fn native_commit_replay_rechecks_current_permission() {
-    let (_temp, mut engine, repository, request) = saved();
-    let mut grants = engine.state().repositories[&repository].grants.clone();
-    grants.write.remove("writer");
-    engine
-        .set_grants(&repository, grants, "admin", &new_id("op"))
-        .unwrap();
+fn native_commit_replay_rejects_a_different_operation_actor() {
+    let (_temp, mut engine, _repository, mut request) = saved();
+    request.principal = "different-actor".into();
     assert_eq!(
         engine.commit_workspace(request).unwrap_err().code(),
         "PERMISSION_DENIED"
@@ -133,7 +124,7 @@ fn unrelated_saved_request_cannot_close_an_unsubmitted_workspace() {
     let branch = engine.state().repositories[&repository]
         .main_branch_id
         .clone();
-    let pending = engine.create_workspace(&branch, "writer").unwrap();
+    let pending = engine.create_workspace(&branch, "admin").unwrap();
     engine
         .stage_bytes(&pending.workspace_id, "pending", b"not committed")
         .unwrap();
@@ -157,7 +148,7 @@ fn forged_saved_request_identity_cannot_close_unsubmitted_bytes() {
     let branch = engine.state().repositories[&repository]
         .main_branch_id
         .clone();
-    let pending = engine.create_workspace(&branch, "writer").unwrap();
+    let pending = engine.create_workspace(&branch, "admin").unwrap();
     engine
         .stage_bytes(&pending.workspace_id, "pending", b"not committed")
         .unwrap();
@@ -190,12 +181,12 @@ fn wire_commit_reconciles_after_publication_and_system_disk_loss() {
         let branch = engine.state().repositories[&repository]
             .main_branch_id
             .clone();
-        let workspace = engine.create_workspace(&branch, "writer").unwrap();
+        let workspace = engine.create_workspace(&branch, "admin").unwrap();
         engine
             .stage_bytes(&workspace.workspace_id, "wire", b"wire bytes")
             .unwrap();
         let mut body = engine
-            .seal_workspace(&workspace.workspace_id, "writer")
+            .seal_workspace(&workspace.workspace_id, "admin")
             .unwrap();
         body["request_digest"] = json_codec::json!(
             storage_engine::commit_request_digest(&workspace.workspace_id, &body).unwrap()
@@ -203,7 +194,7 @@ fn wire_commit_reconciles_after_publication_and_system_disk_loss() {
         let request = CommitRequest {
             workspace_id: workspace.workspace_id.clone(),
             operation_id: body["operation_id"].as_str().unwrap().into(),
-            principal: "writer".into(),
+            principal: "admin".into(),
             expected_head: workspace.base_head,
             fencing_token: workspace.fencing_token,
             message: String::new(),
@@ -277,12 +268,12 @@ fn saved_wire() -> (tempfile::TempDir, Engine, CommitRequest, json_codec::Value)
     let branch = engine.state().repositories[&repository]
         .main_branch_id
         .clone();
-    let workspace = engine.create_workspace(&branch, "writer").unwrap();
+    let workspace = engine.create_workspace(&branch, "admin").unwrap();
     engine
         .stage_bytes(&workspace.workspace_id, "wire", b"wire bytes")
         .unwrap();
     let mut body = engine
-        .seal_workspace(&workspace.workspace_id, "writer")
+        .seal_workspace(&workspace.workspace_id, "admin")
         .unwrap();
     body["request_digest"] = json_codec::json!(
         storage_engine::commit_request_digest(&workspace.workspace_id, &body).unwrap()
@@ -290,7 +281,7 @@ fn saved_wire() -> (tempfile::TempDir, Engine, CommitRequest, json_codec::Value)
     let request = CommitRequest {
         workspace_id: workspace.workspace_id,
         operation_id: body["operation_id"].as_str().unwrap().into(),
-        principal: "writer".into(),
+        principal: "admin".into(),
         expected_head: workspace.base_head,
         fencing_token: workspace.fencing_token,
         message: String::new(),
@@ -391,7 +382,7 @@ fn workspace_mirrors_recover_single_corrupt_copy_without_rewriting_evidence() {
         let branch = engine.state().repositories[&repository]
             .main_branch_id
             .clone();
-        let pending = engine.create_workspace(&branch, "writer").unwrap();
+        let pending = engine.create_workspace(&branch, "admin").unwrap();
         engine
             .stage_bytes(&pending.workspace_id, "pending", b"still pending")
             .unwrap();
@@ -580,7 +571,7 @@ fn workspace_mirrors_do_not_resolve_unpublished_state_transition_by_fence() {
     let branch = engine.state().repositories[&repository]
         .main_branch_id
         .clone();
-    let workspace = engine.create_workspace(&branch, "writer").unwrap();
+    let workspace = engine.create_workspace(&branch, "admin").unwrap();
     request.workspace_id = workspace.workspace_id.clone();
     let paths = request_paths(&engine, &request).map(|p| p.with_file_name("workspace.json"));
     let mut changed = workspace;
@@ -697,7 +688,7 @@ fn partial_workspace_completion_uses_original_published_file_contexts() {
             let branch = engine.state().repositories[&repository]
                 .main_branch_id
                 .clone();
-            let workspace = engine.create_workspace(&branch, "writer").unwrap();
+            let workspace = engine.create_workspace(&branch, "admin").unwrap();
             engine
                 .stage_bytes(
                     &workspace.workspace_id,
@@ -706,13 +697,13 @@ fn partial_workspace_completion_uses_original_published_file_contexts() {
                 )
                 .unwrap();
             engine
-                .seal_workspace(&workspace.workspace_id, "writer")
+                .seal_workspace(&workspace.workspace_id, "admin")
                 .unwrap();
             let before = engine.workspace(&workspace.workspace_id).unwrap();
             let request = CommitRequest {
                 workspace_id: workspace.workspace_id.clone(),
                 operation_id: new_id("op"),
-                principal: "writer".into(),
+                principal: "admin".into(),
                 expected_head: workspace.base_head,
                 fencing_token: workspace.fencing_token,
                 message: "first file".into(),
@@ -786,7 +777,7 @@ fn partial_workspace_completion_uses_original_published_file_contexts() {
 fn closing_a_published_workspace_does_not_reopen_its_old_fence_on_restart() {
     let (_temp, mut engine, _, request) = saved();
     engine
-        .abort_workspace(&request.workspace_id, "writer")
+        .abort_workspace(&request.workspace_id, "admin")
         .unwrap();
     let closed = engine.workspace(&request.workspace_id).unwrap();
     let root = engine.root().to_owned();

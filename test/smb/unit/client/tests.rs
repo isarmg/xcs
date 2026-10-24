@@ -1,16 +1,18 @@
 use super::*;
 
 #[test]
-fn module_client_negotiates_durable_write_reservations_before_open() {
+fn module_client_requires_authenticated_account_and_durable_reservations() {
     for response in [
-        json_codec::json!({"protocol":PROTOCOL,"capabilities":[WRITE_RESERVATION_CAPABILITY]}),
+        json_codec::json!({"protocol":PROTOCOL,"capabilities":REQUIRED_CAPABILITIES}),
+        json_codec::json!({"protocol":PROTOCOL,"capabilities":[crate::protocol::WRITE_RESERVATION_CAPABILITY]}),
+        json_codec::json!({"protocol":PROTOCOL,"capabilities":[crate::protocol::AUTHENTICATED_ACCOUNT_CAPABILITY]}),
         json_codec::json!({"protocol":PROTOCOL}),
         json_codec::json!({"protocol":PROTOCOL,"capabilities":[]}),
         json_codec::json!({"protocol":PROTOCOL,"capabilities":["unrelated"]}),
-        json_codec::json!({"protocol":"unsupported","capabilities":[WRITE_RESERVATION_CAPABILITY]}),
+        json_codec::json!({"protocol":"unsupported","capabilities":REQUIRED_CAPABILITIES}),
     ] {
         let accepted = response["protocol"] == PROTOCOL
-            && response["capabilities"] == json_codec::json!([WRITE_RESERVATION_CAPABILITY]);
+            && response["capabilities"] == json_codec::json!(REQUIRED_CAPABILITIES);
         let (one, two) = UnixStream::pair().unwrap();
         let server = std::thread::spawn(move || {
             let mut stream = FrameStream::new(two).unwrap();
@@ -26,7 +28,7 @@ fn module_client_negotiates_durable_write_reservations_before_open() {
                 panic!("client must negotiate before issuing handle requests");
             };
             assert_eq!(protocol, PROTOCOL);
-            assert_eq!(capabilities, vec![WRITE_RESERVATION_CAPABILITY]);
+            assert_eq!(capabilities, REQUIRED_CAPABILITIES);
             assert_eq!(username, "alice");
             assert_eq!(repository_id, "repository");
             stream

@@ -36,6 +36,10 @@ fn changing_history_range_rejects_an_earlier_response_even_after_switching_back(
 
 fn valid_capacity_response() -> Value {
     json_codec::json!({
+        "global": {
+            "records":{"used":"8","limit":"10","remaining":"2"},
+            "metadata_bytes":{"used":"2048","limit":"4096","remaining":"2048"}
+        },
         "principal": {
             "records":{"used":"4","limit":"5","remaining":"1"},
             "metadata_bytes":{"used":"1024","limit":"2048","remaining":"1024"}
@@ -66,11 +70,14 @@ fn capacity_summary_keeps_missing_values_unavailable() {
     let populated = capacity_summary(Some(&value.principal));
     assert!(!empty.contains("0 / 0"));
     assert!(populated.contains("4 / 5"));
+    assert!(capacity_summary(Some(&value.global)).contains("8 / 10"));
 }
 
 #[test]
 fn malformed_capacity_responses_clear_previous_data_instead_of_showing_zero() {
-    let mut cases = vec![Value::Null];
+    let mut missing_global = valid_capacity_response();
+    missing_global.as_object_mut().unwrap().remove("global");
+    let mut cases = vec![Value::Null, missing_global];
     for (field, replacement) in [
         ("warning", Value::from("unexpected")),
         ("automatic_retirement", Value::from(true)),

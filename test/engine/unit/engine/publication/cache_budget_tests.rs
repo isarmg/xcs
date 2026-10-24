@@ -34,7 +34,11 @@ fn cache_encoder_rejects_before_accept_and_reopens_cleanly() {
     let mut next = engine.state().clone();
     next.sequence = engine.next_slot;
     let file = next.versions.values().next().unwrap().file_id.clone();
-    next.file_notes.insert(file, "new note".repeat(100));
+    // Valid metadata must reach the deliberately tiny cache budget; an invalid
+    // oversized note would fail history validation before exercising the encoder.
+    let note = "n".repeat(storage_contract::MAX_NOTE_BYTES);
+    storage_contract::validate_note(&note).unwrap();
+    next.file_notes.insert(file, note);
     let mut result = next.operations.values().next().unwrap().clone();
     result.operation_id = new_id("op");
     result.sequence = next.sequence;

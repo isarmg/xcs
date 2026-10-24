@@ -28,22 +28,21 @@ fn persisted_repository_schema_requires_an_exact_smb_binding_revision() {
         changed["smb_binding_generation"] = invalid;
         assert!(!schema.is_valid(&changed));
     }
-    let mut missing = repository;
-    missing
-        .as_object_mut()
-        .unwrap()
-        .remove("smb_binding_generation");
-    assert!(!schema.is_valid(&missing));
+    for required in ["smb_binding_generation", "smb_enabled"] {
+        let mut missing = repository.clone();
+        missing.as_object_mut().unwrap().remove(required);
+        assert!(!schema.is_valid(&missing), "missing {required}");
+    }
 }
 
 #[test]
-fn old_branch_and_commit_canonical_bytes_survive_pending_field_defaults() {
+fn sparse_branch_and_commit_canonical_bytes_omit_empty_pending_maps() {
     let root = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../docs/contracts");
     let vectors = read(&root.join("vectors.json")).unwrap();
     let value = array(&vectors["positive"])
         .unwrap()
         .iter()
-        .find(|case| case["name"] == "legacy-branch-without-pending-map")
+        .find(|case| case["name"] == "sparse-branch-without-pending-map")
         .unwrap()["value"]
         .clone();
     let before = storage_contract::canonical_json(&value).unwrap();
@@ -68,7 +67,7 @@ fn old_branch_and_commit_canonical_bytes_survive_pending_field_defaults() {
     let value = array(&vectors["positive"])
         .unwrap()
         .iter()
-        .find(|case| case["name"] == "legacy-commit-without-pending-map")
+        .find(|case| case["name"] == "sparse-commit-without-pending-map")
         .unwrap()["value"]
         .clone();
     let before = storage_contract::canonical_json(&value).unwrap();
@@ -507,7 +506,7 @@ fn file_merge_tags_and_scope_backups_require_explicit_reviewed_baselines() {
         ),
         (
             "/api/file-manager/disks/{slot}/entries",
-            "backup-prefix-acl.json",
+            "backup-prefix-administrator.json",
         ),
         ("/api/file-manager/disks", "backup-route-disks.json"),
     ] {
@@ -666,4 +665,134 @@ fn configuration_projection_failure_names_document_and_schema() {
     assert!(error.contains("docs/21-configuration.md"));
     assert!(error.contains("docs/contracts/config-constraints.schema.json"));
     assert!(error.contains("1 was expected"));
+}
+
+#[test]
+fn single_administrator_authentication_contract_matches_existing_http_endpoints() {
+    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../..");
+    let api = read(&root.join("docs/contracts/openapi.json")).unwrap();
+    let fixtures = root.join("test/tools/contract-check/fixtures/authentication");
+    for (route, method, request, response) in [
+        (
+            "/api/auth/login",
+            "post",
+            Some("LoginRequest"),
+            "LoginResponse",
+        ),
+        ("/api/auth/me", "get", None, "CurrentSessionResponse"),
+        ("/api/auth/logout", "post", None, "LogoutResponse"),
+        (
+            "/api/auth/password",
+            "post",
+            Some("PasswordChangeRequest"),
+            "PasswordChangeResponse",
+        ),
+    ] {
+        let operation = &api["paths"][route][method];
+        for (name, location) in request
+            .map(|name| {
+                (
+                    name,
+                    &operation["requestBody"]["content"]["application/json"]["schema"],
+                )
+            })
+            .into_iter()
+            .chain(std::iter::once((
+                response,
+                &operation["responses"]["200"]["content"]["application/json"]["schema"],
+            )))
+        {
+            assert_eq!(location["$ref"], format!("#/components/schemas/{name}"));
+            let mut schema = api.clone();
+            schema["allOf"] = json!([location]);
+            let validator = validator(&schema).unwrap();
+            let body = read(&fixtures.join(format!("{name}.json"))).unwrap();
+            assert!(validator.is_valid(&body), "{name}");
+            for field in ["admin", "role", "disabled", "repositories", "accounts"] {
+                let mut obsolete = body.clone();
+                obsolete[field] = json!(null);
+                assert!(!validator.is_valid(&obsolete), "{name} accepts {field}");
+            }
+            for required in body.as_object().unwrap().keys() {
+                let mut missing = body.clone();
+                missing.as_object_mut().unwrap().remove(required);
+                assert!(!validator.is_valid(&missing), "{name} omits {required}");
+            }
+        }
+        if route == "/api/auth/login" {
+            assert_eq!(operation["security"], json!([]));
+        } else {
+            assert_eq!(
+                operation.get("security").unwrap_or(&api["security"]),
+                &json!([{"bearerAuth": []}, {"sessionCookie": []}])
+            );
+        }
+    }
+    let mut login_schema = api.clone();
+    login_schema["$ref"] = "#/components/schemas/LoginResponse".into();
+    let login_schema = validator(&login_schema).unwrap();
+    let login = read(&fixtures.join("LoginResponse.json")).unwrap();
+    for invalid_expiry in [
+        json!(1792861200),
+        json!("01"),
+        json!("18446744073709551616"),
+    ] {
+        let mut invalid = login.clone();
+        invalid["expires_at"] = invalid_expiry;
+        assert!(!login_schema.is_valid(&invalid));
+    }
+    for route in api["paths"].as_object().unwrap().keys() {
+        assert!(!route.starts_with("/api/admin/accounts"));
+        assert!(!route.ends_with("/grants"));
+    }
+    let backup = &api["paths"]["/api/repositories/{repo}/backup-configuration"]["get"]["responses"]
+        ["200"]["content"]["application/json"]["schema"];
+    assert!(backup["properties"].get("can_manage").is_none());
+}
+
+#[test]
+fn single_administrator_repository_schema_rejects_removed_access_fields() {
+    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../docs/contracts");
+    let mut core = read(&root.join("core.schema.json")).unwrap();
+    core["$ref"] = "#/$defs/HistoryRepository".into();
+    let schema = validator(&core).unwrap();
+    let vectors = read(&root.join("vectors.json")).unwrap();
+    let repository = array(&vectors["positive"])
+        .unwrap()
+        .iter()
+        .find_map(|case| case["value"].get("repository"))
+        .unwrap();
+    assert!(schema.is_valid(repository));
+    for (field, value) in [
+        ("grants", json!({"read": [], "write": [], "manage": []})),
+        ("account_scope_repository_id", json!(null)),
+    ] {
+        let mut obsolete = repository.clone();
+        obsolete[field] = value;
+        assert!(!schema.is_valid(&obsolete));
+    }
+}
+
+#[test]
+fn single_administrator_capacity_always_includes_global_and_principal_budgets() {
+    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../docs/contracts");
+    let mut core = read(&root.join("core.schema.json")).unwrap();
+    core["$ref"] = "#/$defs/WorkspaceCapacity".into();
+    let schema = validator(&core).unwrap();
+    let vectors = read(&root.join("vectors.json")).unwrap();
+    let value = array(&vectors["positive"])
+        .unwrap()
+        .iter()
+        .find(|case| case["schema"] == "WorkspaceCapacity")
+        .unwrap()["value"]
+        .clone();
+    assert!(schema.is_valid(&value));
+    for field in ["global", "principal"] {
+        let mut missing = value.clone();
+        missing.as_object_mut().unwrap().remove(field);
+        assert!(!schema.is_valid(&missing), "missing {field}");
+        let mut null = value.clone();
+        null[field] = Value::Null;
+        assert!(!schema.is_valid(&null), "null {field}");
+    }
 }

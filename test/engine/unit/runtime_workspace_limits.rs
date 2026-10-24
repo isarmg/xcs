@@ -111,20 +111,15 @@ fn absent_runtime_override_uses_current_config_and_preserves_default_limits() {
     engine
         .config
         .max_retained_workspace_metadata_bytes_per_principal = 8000;
-    let report = engine.workspace_capacity("admin", true);
-    assert_eq!(report.global.as_ref().unwrap().records.limit, 7);
+    let report = engine.workspace_capacity("admin");
+    assert_eq!(report.global.records.limit, 7);
     assert_eq!(report.principal.records.limit, 5);
-    assert_eq!(report.global.unwrap().metadata_bytes.limit, 9000);
+    assert_eq!(report.global.metadata_bytes.limit, 9000);
     assert_eq!(report.principal.metadata_bytes.limit, 8000);
     drop(engine);
     let engine = Engine::open_with_workspace_limits(&f.root, None).unwrap();
     assert_eq!(
-        engine
-            .workspace_capacity("admin", true)
-            .global
-            .unwrap()
-            .records
-            .limit,
+        engine.workspace_capacity("admin").global.records.limit,
         4096
     );
 }
@@ -136,11 +131,6 @@ fn runtime_record_limits_preserve_terminal_evidence_anchors_and_restore_retry() 
     f.config.max_retained_workspaces_per_principal = 1;
     let mut engine = f.initialize();
     let repo = repository(&mut engine, 1);
-    let mut grants = repo.grants.clone();
-    grants.write.insert("writer".into());
-    engine
-        .set_grants(&repo.repository_id, grants, "admin", &new_id("op"))
-        .unwrap();
     let first = save(&mut engine, &repo.main_branch_id, "saved", b"saved payload");
     assert_eq!(
         engine
@@ -202,9 +192,9 @@ fn runtime_record_limits_preserve_terminal_evidence_anchors_and_restore_retry() 
         .create_workspace(&repo.main_branch_id, "writer")
         .unwrap_err();
     assert!(error.to_string().contains("global record count"));
-    let report = engine.workspace_capacity("admin", true);
-    assert_eq!(report.global.as_ref().unwrap().records.used, 3);
-    assert_eq!(report.global.as_ref().unwrap().records.limit, 3);
+    let report = engine.workspace_capacity("admin");
+    assert_eq!(report.global.records.used, 3);
+    assert_eq!(report.global.records.limit, 3);
     assert_eq!(report.principal.records.used, 2);
     assert!(!report.automatic_retirement);
     engine.assert_workspace_budget_consistent();
@@ -224,7 +214,7 @@ fn runtime_record_limits_preserve_terminal_evidence_anchors_and_restore_retry() 
         );
     }
     let engine = Engine::open_for_recovery_with_workspace_limits(&f.root, Some(raised)).unwrap();
-    assert_eq!(engine.workspace_capacity("admin", true), report);
+    assert_eq!(engine.workspace_capacity("admin"), report);
     assert_eq!(engine.operation(&first.operation_id).unwrap(), first);
     drop(engine);
     let before = files(f.temp.path());
@@ -267,7 +257,7 @@ fn runtime_record_limits_preserve_terminal_evidence_anchors_and_restore_retry() 
     }
     let engine =
         Engine::restore_from_disks_with_workspace_limits(&restored, &disks, Some(raised)).unwrap();
-    assert_eq!(engine.workspace_capacity("admin", true), report);
+    assert_eq!(engine.workspace_capacity("admin"), report);
     assert_eq!(
         engine.workspace(&aborted.workspace_id).unwrap().state,
         "aborted"
@@ -288,7 +278,7 @@ fn runtime_record_limits_preserve_terminal_evidence_anchors_and_restore_retry() 
     engine.assert_workspace_budget_consistent();
     drop(engine);
     let engine = Engine::open_with_workspace_limits(&restored, Some(raised)).unwrap();
-    assert_eq!(engine.workspace_capacity("admin", true), report);
+    assert_eq!(engine.workspace_capacity("admin"), report);
 }
 
 #[test]
@@ -343,8 +333,8 @@ fn raised_runtime_metadata_limits_still_enforce_each_finite_dimension() {
         engine
             .abort_workspace(&workspace.workspace_id, "admin")
             .unwrap();
-        let report = engine.workspace_capacity("admin", true);
-        assert!(report.global.as_ref().unwrap().metadata_bytes.used <= 2048);
+        let report = engine.workspace_capacity("admin");
+        assert!(report.global.metadata_bytes.used <= 2048);
         engine.assert_workspace_budget_consistent();
         drop(engine);
         let before = files(f.temp.path());
@@ -354,7 +344,7 @@ fn raised_runtime_metadata_limits_still_enforce_each_finite_dimension() {
         );
         assert_eq!(files(f.temp.path()), before);
         let engine = Engine::open_with_workspace_limits(&f.root, Some(raised)).unwrap();
-        assert_eq!(engine.workspace_capacity("admin", true), report);
+        assert_eq!(engine.workspace_capacity("admin"), report);
         assert_eq!(
             engine.workspace(&workspace.workspace_id).unwrap().state,
             "aborted"
@@ -387,6 +377,6 @@ fn raised_runtime_metadata_limits_still_enforce_each_finite_dimension() {
         let engine =
             Engine::restore_from_disks_with_workspace_limits(&restored, &disks, Some(raised))
                 .unwrap();
-        assert_eq!(engine.workspace_capacity("admin", true), report);
+        assert_eq!(engine.workspace_capacity("admin"), report);
     }
 }

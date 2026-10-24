@@ -1,7 +1,7 @@
-//! HTTP authentication admission and account endpoints.
+//! HTTP authentication admission and the administrator session endpoints.
 //!
 //! Credential algorithms come directly from `authentication`;
-//! persistent account/session state remains in `auth::AuthStore`.
+//! persistent administrator/session state remains in `auth::AuthStore`.
 use crate::{ApiError, AppState, ServerConfig, auth::Identity, lock};
 use data_serialization::Deserialize;
 use http_routing::{
@@ -413,7 +413,7 @@ pub(crate) async fn me(
 ) -> Result<Json<Value>, ApiError> {
     let csrf_token = authentication::derive_csrf_token(&token.0).map_err(ApiError::invalid)?;
     Ok(Json(
-        json!({"principal":identity.principal,"admin":identity.admin,"repositories":identity.repositories,"csrf_token":csrf_token}),
+        json!({"principal":identity.principal,"csrf_token":csrf_token}),
     ))
 }
 pub(crate) async fn logout(
@@ -480,64 +480,6 @@ pub(crate) async fn change_password(
     );
     Ok(response)
 }
-pub(crate) async fn accounts(
-    State(state): State<AppState>,
-    http_routing::Extension(identity): http_routing::Extension<Identity>,
-) -> Result<Json<Value>, ApiError> {
-    identity.require_admin()?;
-    let auth = state.auth.clone();
-    let accounts = auth_job(state.authorization_slots, move || {
-        let auth = lock(&auth)?;
-        auth.revalidate_identity(&identity)?.require_admin()?;
-        Ok(auth.list_accounts())
-    })
-    .await?;
-    Ok(Json(json!({"accounts": accounts})))
-}
-#[derive(Deserialize)]
-#[serialization(deny_unknown_fields)]
-struct AccountUpdate {
-    username: String,
-    password: Option<String>,
-    #[serialization(default)]
-    admin: bool,
-    #[serialization(default)]
-    repositories: std::collections::BTreeSet<String>,
-    #[serialization(default)]
-    disabled: bool,
-}
-pub(crate) async fn account_upsert(
-    State(state): State<AppState>,
-    http_routing::Extension(identity): http_routing::Extension<Identity>,
-    request: Request,
-) -> Result<Json<Value>, ApiError> {
-    identity.require_admin()?;
-    let body: AccountUpdate =
-        storage_contract::decode_strict(&crate::http_boundary::read_body(request, 8192).await?)
-            .map_err(ApiError::invalid)?;
-    let auth = state.auth.clone();
-    let permit = state
-        .password_slots
-        .clone()
-        .try_acquire_owned()
-        .map_err(|_| ApiError::limit("password verification is busy"))?;
-    tokio::task::spawn_blocking(move || {
-        let _permit = permit;
-        let mut auth = lock(&auth)?;
-        auth.revalidate_identity(&identity)?.require_admin()?;
-        auth.upsert_account(
-            &body.username,
-            body.password.as_deref(),
-            body.admin,
-            body.repositories,
-            body.disabled,
-        )
-    })
-    .await
-    .map_err(ApiError::join)??;
-    Ok(Json(json!({"updated":true})))
-}
-
 #[cfg(test)]
 #[path = "../../../test/server/unit/http_auth/tests.rs"]
 mod tests;

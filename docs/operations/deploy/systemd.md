@@ -15,15 +15,15 @@
 
 ## 可选 Samba 本机桥接
 
-必须先完成 [Samba 模块构建和实际加载验收](../../components/smb.md)。可在单元 override 中重置 `ExecStart=`，保留现有盘位、初始化方案及其他启动参数，再加入实际受信任进程 UID 和显式的非管理员账户映射。例如以下单盘配置：
+必须先完成 [Samba 模块构建和实际加载验收](../../components/smb.md)。可在单元 override 中重置 `ExecStart=`，保留现有盘位、初始化方案及其他启动参数，再加入实际受信任进程 UID 和一个显式 Samba 认证账户。例如以下单盘配置：
 
 ```ini
 [Service]
 ExecStart=
-ExecStart=/opt/zxs/bin/zxs --root /var/lib/zxs/state --management-root /var/lib/zxs/management --listen 127.0.0.1:7400 --external-origin https://zxs.example.com --web-dir /opt/zxs/web --setup-disk P01=/srv/zxs/disks/P01 --smb-socket /run/zxs/smb.sock --smb-peer-uid 0 --smb-user SambaAlice=alice
+ExecStart=/opt/zxs/bin/zxs --root /var/lib/zxs/state --management-root /var/lib/zxs/management --listen 127.0.0.1:7400 --external-origin https://zxs.example.com --web-dir /opt/zxs/web --setup-disk P01=/srv/zxs/disks/P01 --smb-socket /run/zxs/smb.sock --smb-peer-uid 0 --smb-user zxs-owner
 ```
 
-示例的 `0` 只适用于确认桥接在 Samba 可信 root 进程身份下连接的部署。该连接时机必须在目标 Samba 验证，不能放宽 socket 权限来适应未认证的进程。`/run/zxs` 及 socket 分别维持 `0700`、`0600`，映射用户仍需当前账户准入和仓库授权。共享仓库拆分、恢复后必须显式重新绑定，不能自动接入迁移后的历史域。
+示例的 `0` 只适用于确认桥接在 Samba 可信 root 进程身份下连接的部署。该连接时机必须在目标 Samba 验证，不能放宽 socket 权限来适应未认证的进程。`/run/zxs` 及 socket 分别维持 `0700`、`0600`，`zxs-owner` 通过 Samba 独立凭据认证后绑定到唯一 ZXS 管理员；不接受 `Samba=ZXS` 映射、重复账户配置、匿名、guest 或 force-user 会话。Samba 配置须同时限制 `valid users` 并关闭所有 guest 路径，见[共享样例](../../../deploy/samba/smb.conf.example)。共享仓库拆分、恢复后必须显式重新绑定，不能自动接入迁移后的历史域。
 
 服务使用 `SIGINT` 触发守护进程的正常退出路径。停止时释放 socket 和文件句柄；未成功保存的完整工作文件及恢复记录保留。模板使用 `TimeoutStopSec=infinity`，正常停服会等待已经接纳的持久化操作及原生恢复线程结束，不会在固定 60 秒后自动强杀。若内核 I/O 持续卡住，管理员可明确决定强制终止；这属于崩溃处理，而不是正常排空，下次启动必须完成恢复。崩溃遗留的 socket 不自动删除，管理员确认路径身份和无存活服务后再清理。不要配置无条件删除 socket 或清空暂存目录的启动脚本。
 

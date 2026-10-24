@@ -1,104 +1,205 @@
 use super::*;
+
 #[test]
-fn self_password_rotation_preserves_scope_revokes_sessions_and_survives_reopen() {
-    let dir = crate::tests::private_tempdir();
-    let mut store = AuthStore::initialize(dir.path(), "admin", "a-long-test-password").unwrap();
-    let repositories = BTreeSet::from(["repo-private".to_owned()]);
+fn the_initialized_username_is_the_only_identity_and_cannot_be_reinitialized() {
+    let root = crate::tests::private_tempdir();
+    let mut store =
+        AuthStore::initialize(root.path(), " Owner.Ops ", "a-long-test-password").unwrap();
+    let login = store.login("OWNER.OPS", "a-long-test-password").unwrap();
+    assert_eq!(login.principal, "owner.ops");
+    let identity = store.authenticate(&login.token).unwrap();
+    assert_eq!(
+        json_codec::to_value(&identity).unwrap(),
+        json_codec::json!({"principal":"owner.ops"})
+    );
+    let public_login = json_codec::to_value(&login).unwrap();
+    assert!(public_login.get("admin").is_none());
+    assert!(public_login.get("repositories").is_none());
+    for name in ["admin", "reader", "anonymous", "guest"] {
+        assert!(store.login(name, "a-long-test-password").is_err());
+        assert!(store.identity_for_principal(name).is_err());
+    }
+    let snapshot = store.snapshot().unwrap();
+    assert!(snapshot.get("accounts").is_none());
+    assert_eq!(snapshot["administrator"]["username"], "owner.ops");
+    assert_eq!(snapshot["administrator"].as_object().unwrap().len(), 3);
+    drop(store);
+    let before = fs::read(root.path().join("auth.json")).unwrap();
+    assert_eq!(
+        AuthStore::initialize(root.path(), "another", "another-test-password")
+            .err()
+            .unwrap()
+            .code,
+        "AUTH_ALREADY_INITIALIZED"
+    );
+    assert_eq!(fs::read(root.path().join("auth.json")).unwrap(), before);
+}
+
+#[test]
+fn password_rotation_preserves_the_single_identity_revokes_every_session_and_survives_reopen() {
+    let root = crate::tests::private_tempdir();
+    let mut store =
+        AuthStore::initialize(root.path(), "owner", "administrator-old-password").unwrap();
+    let first = store.login("owner", "administrator-old-password").unwrap();
+    let second = store.login("owner", "administrator-old-password").unwrap();
+    let queued = store.authenticate(&second.token).unwrap();
     store
-        .upsert_account(
-            "reader",
-            Some("reader-old-password"),
-            false,
-            repositories.clone(),
-            false,
+        .change_password(
+            &first.token,
+            "administrator-old-password",
+            "administrator-new-password",
         )
-        .unwrap();
-    let first = store.login("reader", "reader-old-password").unwrap();
-    let second = store.login("reader", "reader-old-password").unwrap();
-    store
-        .change_password(&first.token, "reader-old-password", "reader-new-password")
         .unwrap();
     for token in [&first.token, &second.token] {
         assert_eq!(store.authenticate(token).unwrap_err().code, "UNAUTHORIZED");
     }
-    assert!(store.login("reader", "reader-old-password").is_err());
+    assert!(store.revalidate_identity(&queued).is_err());
+    assert!(store.login("owner", "administrator-old-password").is_err());
+    assert!(store.database().unwrap().sessions.is_empty());
     drop(store);
-    let mut store = AuthStore::open(dir.path()).unwrap();
-    let session = store.login("reader", "reader-new-password").unwrap();
-    let identity = store.authenticate(&session.token).unwrap();
-    assert_eq!(identity.principal, "reader");
-    assert!(!identity.admin);
-    assert_eq!(identity.repositories, repositories);
-    assert!(store.login("admin", "a-long-test-password").is_ok());
+    let mut store = AuthStore::open(root.path()).unwrap();
+    let login = store.login("owner", "administrator-new-password").unwrap();
+    assert_eq!(store.authenticate(&login.token).unwrap().principal, "owner");
+    assert!(store.login("admin", "administrator-new-password").is_err());
 }
 
 #[test]
 fn rejected_password_rotation_keeps_credentials_and_session_intact() {
-    let dir = crate::tests::private_tempdir();
-    let mut store = AuthStore::initialize(dir.path(), "admin", "a-long-test-password").unwrap();
-    let session = store.login("admin", "a-long-test-password").unwrap();
+    let root = crate::tests::private_tempdir();
+    let mut store = AuthStore::initialize(root.path(), "admin", "a-long-test-password").unwrap();
+    let login = store.login("admin", "a-long-test-password").unwrap();
     let before = store.snapshot().unwrap();
     assert_eq!(
         store
-            .change_password(&session.token, "incorrect-password", "a-new-test-password")
+            .change_password(&login.token, "incorrect-password", "a-new-test-password")
             .unwrap_err()
             .code,
         "CURRENT_PASSWORD_INVALID"
     );
     assert!(
         store
-            .change_password(&session.token, "a-long-test-password", "short")
+            .change_password(&login.token, "a-long-test-password", "short")
             .is_err()
     );
     assert_eq!(store.snapshot().unwrap(), before);
-    assert!(store.authenticate(&session.token).is_ok());
+    assert!(store.authenticate(&login.token).is_ok());
     drop(store);
-    let mut store = AuthStore::open(dir.path()).unwrap();
+    let mut store = AuthStore::open(root.path()).unwrap();
     assert!(store.login("admin", "a-long-test-password").is_ok());
 }
 
 #[test]
-fn persisted_sessions_are_revoked_by_account_generation() {
-    let dir = crate::tests::private_tempdir();
-    let mut store = AuthStore::initialize(dir.path(), "admin", "a-long-test-password").unwrap();
-    let login = store.login("admin", "a-long-test-password").unwrap();
-    drop(store);
-    let mut store = AuthStore::open(dir.path()).unwrap();
-    assert!(store.authenticate(&login.token).is_ok());
-    store
-        .upsert_account("admin", None, true, BTreeSet::new(), false)
-        .unwrap();
-    assert_eq!(
-        store.authenticate(&login.token).unwrap_err().code,
-        "UNAUTHORIZED"
-    );
-}
-#[test]
-fn cannot_disable_last_administrator() {
-    let dir = crate::tests::private_tempdir();
-    let mut store = AuthStore::initialize(dir.path(), "admin", "a-long-test-password").unwrap();
-    assert!(
-        store
-            .upsert_account("admin", None, false, BTreeSet::new(), false)
-            .is_err()
-    );
-}
-#[test]
 fn missing_local_credentials_restore_only_from_authoritative_snapshot() {
     let root = crate::tests::private_tempdir();
     let mut store = AuthStore::initialize(root.path(), "admin", "a-long-test-password").unwrap();
-    let session = store.login("admin", "a-long-test-password").unwrap();
+    let login = store.login("admin", "a-long-test-password").unwrap();
     let snapshot = store.snapshot().unwrap();
     drop(store);
     fs::remove_file(root.path().join("auth.json")).unwrap();
     assert!(AuthStore::open(root.path()).is_err());
+    assert!(!root.path().join("auth.json").exists());
     let restored = AuthStore::open_with_snapshot(root.path(), Some(snapshot)).unwrap();
-    assert!(restored.authenticate(&session.token).is_ok());
+    assert!(restored.authenticate(&login.token).is_ok());
 }
+
 #[test]
-fn uncertain_backup_blocks_authentication_until_recovery() {
+fn legacy_and_malformed_authorities_are_rejected_without_replacing_credentials() {
+    let root = crate::tests::private_tempdir();
+    let store = AuthStore::initialize(root.path(), "owner", "a-long-test-password").unwrap();
+    let snapshot = store.snapshot().unwrap();
+    drop(store);
+    let path = root.path().join("auth.json");
+    let previous = fs::read(&path).unwrap();
+    let mut legacy = snapshot["administrator"].clone();
+    legacy["admin"] = json_codec::json!(true);
+    legacy["repositories"] = json_codec::json!([]);
+    legacy["disabled"] = json_codec::json!(false);
+    let mut cases = vec![
+        json_codec::json!({"accounts":{"owner":legacy.clone()},"sessions":{}}),
+        json_codec::json!({"accounts":{"owner":legacy.clone(),"reader":legacy},"sessions":{}}),
+        json_codec::json!({"administrator":null,"sessions":{}}),
+        json_codec::json!({"administrator":[snapshot["administrator"].clone()],"sessions":{}}),
+        json_codec::json!({"sessions":{}}),
+        json_codec::json!([snapshot["administrator"].clone(), {}]),
+        json_codec::json!({"administrator":["owner",snapshot["administrator"]["password_hash"].clone(),"1"],"sessions":{}}),
+    ];
+    for (key, value) in [
+        ("username", json_codec::json!("Owner")),
+        ("password_hash", json_codec::json!("not-a-password-hash")),
+        ("generation", json_codec::json!("0")),
+        ("admin", json_codec::json!(false)),
+        ("repositories", json_codec::json!(["repo-private"])),
+        ("disabled", json_codec::json!(true)),
+    ] {
+        let mut invalid = snapshot.clone();
+        invalid["administrator"][key] = value;
+        cases.push(invalid);
+    }
+    let mut extra = snapshot.clone();
+    extra["accounts"] = json_codec::json!({});
+    cases.push(extra);
+    let mut invalid_session = snapshot.clone();
+    invalid_session["sessions"] =
+        json_codec::json!({"invalid-token-hash":{"generation":"1","expires_at":"1"}});
+    cases.push(invalid_session);
+    let mut legacy_session = snapshot.clone();
+    legacy_session["sessions"]["0".repeat(64)] =
+        json_codec::json!({"username":"reader","generation":"1","expires_at":"1"});
+    cases.push(legacy_session);
+    let mut positional_session = snapshot.clone();
+    positional_session["sessions"]["0".repeat(64)] = json_codec::json!(["1", "1"]);
+    cases.push(positional_session);
+    let mut too_many_sessions = snapshot.clone();
+    for index in 0..=MAX_SESSIONS {
+        too_many_sessions["sessions"][format!("{index:064x}")] =
+            json_codec::json!({"generation":"1","expires_at":"1"});
+    }
+    cases.push(too_many_sessions);
+    for invalid in cases {
+        #[cfg(feature = "core")]
+        assert!(AdmissionSnapshot::from_snapshot(&invalid).is_err());
+        assert!(AuthStore::open_with_snapshot(root.path(), Some(invalid.clone())).is_err());
+        assert_eq!(fs::read(&path).unwrap(), previous);
+        fs::write(&path, json_codec::to_vec(&invalid).unwrap()).unwrap();
+        let rejected = fs::read(&path).unwrap();
+        assert!(AuthStore::open(root.path()).is_err());
+        assert_eq!(fs::read(&path).unwrap(), rejected);
+        fs::write(&path, &previous).unwrap();
+    }
+    assert!(AuthStore::open(root.path()).is_ok());
+}
+
+#[cfg(feature = "core")]
+#[test]
+fn admission_snapshot_projects_only_the_configured_administrator() {
+    let root = crate::tests::private_tempdir();
+    let store = AuthStore::initialize(root.path(), "owner", "a-long-test-password").unwrap();
+    let admission = AdmissionSnapshot::from_snapshot(&store.snapshot().unwrap()).unwrap();
+    assert_eq!(
+        admission
+            .revalidate_identity(&store.sole_identity().unwrap())
+            .unwrap()
+            .principal,
+        "owner"
+    );
+    for name in ["admin", "reader", "anonymous", "guest", "Owner"] {
+        assert!(
+            admission
+                .revalidate_identity(&Identity {
+                    principal: name.into(),
+                    admission_session: None,
+                    smb_binding: None
+                })
+                .is_err()
+        );
+    }
+}
+
+#[test]
+fn uncertain_backup_blocks_authentication_and_queued_password_changes_until_recovery() {
     let root = crate::tests::private_tempdir();
     let mut store = AuthStore::initialize(root.path(), "admin", "a-long-test-password").unwrap();
+    let login = store.login("admin", "a-long-test-password").unwrap();
     let calls = Arc::new(std::sync::atomic::AtomicUsize::new(0));
     let count = calls.clone();
     store
@@ -122,13 +223,7 @@ fn uncertain_backup_blocks_authentication_until_recovery() {
     let before = store.snapshot().unwrap();
     assert_eq!(
         store
-            .upsert_account(
-                "queued",
-                Some("queued-test-password"),
-                false,
-                BTreeSet::new(),
-                false
-            )
+            .change_password(&login.token, "a-long-test-password", "a-new-test-password")
             .unwrap_err()
             .code,
         "RECOVERY_REQUIRED"
@@ -137,110 +232,68 @@ fn uncertain_backup_blocks_authentication_until_recovery() {
 }
 
 #[test]
-fn detached_login_verification_cannot_cross_account_changes_or_recovery() {
+fn detached_login_verification_cannot_cross_password_changes_or_recovery() {
     let root = crate::tests::private_tempdir();
-    let mut store = AuthStore::initialize(root.path(), "admin", "a-long-test-password").unwrap();
-    store
-        .upsert_account(
-            "reader",
-            Some("reader-old-password"),
-            false,
-            BTreeSet::new(),
-            false,
-        )
-        .unwrap();
-    // Verify first, then mutate as a second request could while hashing runs.
+    let mut store =
+        AuthStore::initialize(root.path(), "owner", "administrator-old-password").unwrap();
+    let login = store.login("owner", "administrator-old-password").unwrap();
     let proof = store
-        .login_challenge("reader")
+        .login_challenge("owner")
         .unwrap()
-        .verify("reader-old-password")
+        .verify("administrator-old-password")
         .unwrap();
     store
-        .upsert_account(
-            "reader",
-            Some("reader-new-password"),
-            false,
-            BTreeSet::new(),
-            false,
+        .change_password(
+            &login.token,
+            "administrator-old-password",
+            "administrator-new-password",
         )
         .unwrap();
     assert_eq!(store.finish_login(proof).err().unwrap().status, 401);
     let proof = store
-        .login_challenge("reader")
+        .login_challenge("owner")
         .unwrap()
-        .verify("reader-new-password")
-        .unwrap();
-    store
-        .upsert_account("reader", None, true, BTreeSet::new(), false)
-        .unwrap();
-    assert_eq!(store.finish_login(proof).err().unwrap().status, 401);
-    let proof = store
-        .login_challenge("reader")
-        .unwrap()
-        .verify("reader-new-password")
-        .unwrap();
-    store
-        .upsert_account("reader", None, true, BTreeSet::new(), true)
-        .unwrap();
-    assert_eq!(store.finish_login(proof).err().unwrap().status, 401);
-    let proof = store
-        .login_challenge("admin")
-        .unwrap()
-        .verify("a-long-test-password")
+        .verify("administrator-new-password")
         .unwrap();
     store.blocked.store(true, Ordering::SeqCst);
     assert_eq!(
         store.finish_login(proof).err().unwrap().code,
         "RECOVERY_REQUIRED"
     );
-    assert!(store.db.sessions.is_empty());
+    assert!(store.db.as_ref().unwrap().sessions.is_empty());
 }
 
 #[test]
-fn detached_login_challenge_keeps_unknown_disabled_and_wrong_password_rejected() {
+fn detached_login_challenge_rejects_unknown_names_and_wrong_passwords() {
     let root = crate::tests::private_tempdir();
-    let mut store = AuthStore::initialize(root.path(), "admin", "a-long-test-password").unwrap();
+    let mut store = AuthStore::initialize(root.path(), "owner", "a-long-test-password").unwrap();
+    for username in ["unknown", "admin", "guest", "", "bad name"] {
+        assert!(
+            store
+                .login_challenge(username)
+                .unwrap()
+                .verify("a-long-test-password")
+                .is_err()
+        );
+    }
     assert!(
         store
-            .login_challenge("unknown")
-            .unwrap()
-            .verify("a-long-test-password")
-            .is_err()
-    );
-    assert!(
-        store
-            .login_challenge("admin")
+            .login_challenge("owner")
             .unwrap()
             .verify("wrong-password")
             .is_err()
     );
-    store
-        .upsert_account(
-            "disabled",
-            Some("a-long-test-password"),
-            false,
-            BTreeSet::new(),
-            true,
-        )
-        .unwrap();
-    assert!(
-        store
-            .login_challenge("disabled")
-            .unwrap()
-            .verify("a-long-test-password")
-            .is_err()
-    );
     let proof = store
-        .login_challenge("admin")
+        .login_challenge(" Owner ")
         .unwrap()
         .verify("a-long-test-password")
         .unwrap();
-    let session = store.finish_login(proof).unwrap();
-    assert!(store.authenticate(&session.token).unwrap().admin);
+    let login = store.finish_login(proof).unwrap();
+    assert_eq!(store.authenticate(&login.token).unwrap().principal, "owner");
 }
 
 #[test]
-fn account_refresh_preserves_internal_smb_binding_without_serializing_it() {
+fn identity_refresh_preserves_internal_smb_binding_without_serializing_it() {
     let root = crate::tests::private_tempdir();
     let store = AuthStore::initialize(root.path(), "admin", "a-long-test-password").unwrap();
     let mut caller = store.identity_for_principal("admin").unwrap();
@@ -251,12 +304,29 @@ fn account_refresh_preserves_internal_smb_binding_without_serializing_it() {
     });
     let current = store.revalidate_identity(&caller).unwrap();
     assert_eq!(current.smb_binding, caller.smb_binding);
-    assert!(
-        json_codec::to_value(&current)
-            .unwrap()
-            .get("smb_binding")
-            .is_none()
+    assert_eq!(
+        json_codec::to_value(&current).unwrap(),
+        json_codec::json!({"principal":"admin"})
     );
+    caller.principal = "reader".into();
+    assert!(store.revalidate_identity(&caller).is_err());
+}
+
+#[test]
+fn logout_revokes_only_the_selected_session_and_queued_identity() {
+    let root = crate::tests::private_tempdir();
+    let mut store = AuthStore::initialize(root.path(), "owner", "a-long-test-password").unwrap();
+    let first = store.login("owner", "a-long-test-password").unwrap();
+    let second = store.login("owner", "a-long-test-password").unwrap();
+    let queued = store.authenticate(&first.token).unwrap();
+    store.logout(&first.token).unwrap();
+    assert!(store.authenticate(&first.token).is_err());
+    assert!(store.revalidate_identity(&queued).is_err());
+    assert!(store.authenticate(&second.token).is_ok());
+    drop(store);
+    let store = AuthStore::open(root.path()).unwrap();
+    assert!(store.authenticate(&first.token).is_err());
+    assert!(store.authenticate(&second.token).is_ok());
 }
 
 #[cfg(unix)]
@@ -378,4 +448,49 @@ fn credential_reopen_rejects_replaceable_ancestry_without_changing_it() {
         fs::metadata(parent.path()).unwrap().permissions().mode() & 0o777,
         0o777
     );
+}
+
+#[cfg(feature = "core")]
+#[test]
+fn unavailable_control_plane_never_invents_a_default_administrator() {
+    let root = crate::tests::private_tempdir();
+    let mut store = AuthStore::unavailable(root.path());
+    assert!(!store.is_available());
+    assert!(store.snapshot().is_err());
+    assert!(store.sole_identity().is_err());
+    assert!(store.identity_for_principal("admin").is_err());
+    assert!(store.login("admin", "a-long-test-password").is_err());
+    assert!(!root.path().join("management-auth.json").exists());
+}
+
+#[cfg(feature = "core")]
+#[test]
+fn snapshot_admission_preserves_binding_and_rechecks_session_revocation() {
+    let root = crate::tests::private_tempdir();
+    let mut store = AuthStore::initialize(root.path(), "owner", "a-long-test-password").unwrap();
+    let login = store.login("owner", "a-long-test-password").unwrap();
+    let mut caller = store.authenticate(&login.token).unwrap();
+    caller.smb_binding = Some(SmbBinding {
+        repository_id: "repository-one".into(),
+        branch_id: "branch-one".into(),
+        generation: 2,
+    });
+    let admission = AdmissionSnapshot::from_snapshot(&store.snapshot().unwrap()).unwrap();
+    let refreshed = admission.revalidate_identity(&caller).unwrap();
+    assert_eq!(refreshed.smb_binding, caller.smb_binding);
+    assert_eq!(refreshed.admission_session, caller.admission_session);
+    store.logout(&login.token).unwrap();
+    let admission = AdmissionSnapshot::from_snapshot(&store.snapshot().unwrap()).unwrap();
+    assert!(admission.revalidate_identity(&caller).is_err());
+    let login = store.login("owner", "a-long-test-password").unwrap();
+    let caller = store.authenticate(&login.token).unwrap();
+    store
+        .change_password(
+            &login.token,
+            "a-long-test-password",
+            "rotated-test-password",
+        )
+        .unwrap();
+    let admission = AdmissionSnapshot::from_snapshot(&store.snapshot().unwrap()).unwrap();
+    assert!(admission.revalidate_identity(&caller).is_err());
 }

@@ -189,9 +189,6 @@ async fn protected_mutation(
         .get::<Identity>()
         .cloned()
         .ok_or_else(ApiError::unauthorized)?;
-    if !identity.admin {
-        return Err(ApiError::forbidden());
-    }
     crate::http_auth::recovery_admission(&state, &request)?;
     // The ordinary authorize middleware has checked the session and CSRF.
     let input = body(request).await?;

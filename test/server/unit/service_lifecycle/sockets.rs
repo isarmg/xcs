@@ -2,14 +2,11 @@ use super::*;
 use crate::{ApiError, Backend, BackendAction, Content, auth::Identity};
 use http_routing::{Router, routing::get};
 use json_codec::{Value, json};
-use smb_protocol::protocol::{
-    FrameStream, PROTOCOL, Request, Response, WRITE_RESERVATION_CAPABILITY,
-};
+use smb_protocol::protocol::{FrameStream, PROTOCOL, REQUIRED_CAPABILITIES, Request, Response};
 use std::{
-    collections::{BTreeMap, BTreeSet},
     io::Read,
     os::unix::{fs::PermissionsExt, net::UnixStream},
-    sync::Arc,
+    sync::{Arc, Mutex},
 };
 use tokio::{
     io::{AsyncReadExt, AsyncWriteExt},
@@ -49,16 +46,14 @@ async fn shutdown_closes_idle_smb_and_http_listener_while_http_request_is_stalle
     std::fs::set_permissions(root.path(), std::fs::Permissions::from_mode(0o700)).unwrap();
     let socket = root.path().join("smb.sock");
     let bridge_socket = socket.clone();
-    let identities = BTreeMap::from([(
-        "alice".to_owned(),
-        Identity {
-            admission_session: None,
-            smb_binding: None,
-            principal: "alice".into(),
-            admin: false,
-            repositories: BTreeSet::from(["test-repository".into()]),
-        },
-    )]);
+    let auth = Arc::new(Mutex::new(
+        crate::auth::AuthStore::initialize(
+            &root.path().join("auth"),
+            "alice",
+            "long-test-password",
+        )
+        .unwrap(),
+    ));
     let (stop, shutdown) = oneshot::channel();
     let stalled = Arc::new(Semaphore::new(0));
     let release = Arc::new(Semaphore::new(0));
@@ -92,7 +87,8 @@ async fn shutdown_closes_idle_smb_and_http_listener_while_http_request_is_stalle
             crate::smb_rpc::serve(
                 &bridge_socket,
                 smb_protocol::protocol::effective_uid(),
-                identities,
+                "alice".into(),
+                auth,
                 Arc::new(BackendProbe),
                 crate::SpoolLimits::default(),
                 4096,
@@ -129,7 +125,10 @@ async fn shutdown_closes_idle_smb_and_http_listener_while_http_request_is_stalle
             wire.send(
                 &Request::Hello {
                     protocol: PROTOCOL.into(),
-                    capabilities: vec![WRITE_RESERVATION_CAPABILITY.into()],
+                    capabilities: REQUIRED_CAPABILITIES
+                        .iter()
+                        .map(|value| (*value).into())
+                        .collect(),
                     username: "alice".into(),
                     repository_id: "test-repository".into(),
                 },

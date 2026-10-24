@@ -378,7 +378,13 @@ pub(crate) async fn setup_request(
     decode(fetch_authorized(method, path, body, Some((key, csrf))).await?).await
 }
 
-pub async fn login(username: &str, password: &str) -> Result<Value, Error> {
+/// Public session identity. Authentication secrets never enter the UI model.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub(crate) struct Authenticated {
+    pub principal: String,
+}
+
+pub(crate) async fn login(username: &str, password: &str) -> Result<Authenticated, Error> {
     let generation = CREDENTIALS.with(|saved| saved.borrow().generation);
     let result = request(
         "POST",
@@ -389,16 +395,32 @@ pub async fn login(username: &str, password: &str) -> Result<Value, Error> {
     accept_login(generation, result)
 }
 
-fn validate_session(value: &Value) -> Result<(), Error> {
-    if ["principal", "csrf_token"]
-        .into_iter()
-        .all(|field| value[field].as_str().is_some_and(|value| !value.is_empty()))
-        && value["admin"].is_boolean()
-    {
-        Ok(())
+fn validate_session(value: &Value, login: bool) -> Result<Authenticated, Error> {
+    let fields: &[&str] = if login {
+        &["principal", "csrf_token", "token", "expires_at"]
     } else {
-        Err(invalid_session())
+        &["principal", "csrf_token"]
+    };
+    let Some(object) = value.as_object() else {
+        return Err(invalid_session());
+    };
+    if object.len() != fields.len()
+        || !fields
+            .iter()
+            .all(|field| value[*field].as_str().is_some_and(|text| !text.is_empty()))
+        || (login
+            && value["expires_at"].as_str().is_none_or(|expires| {
+                !storage_contract::parse_u64_decimal(expires).is_ok_and(|expires| expires > 0)
+            }))
+    {
+        return Err(invalid_session());
     }
+    Ok(Authenticated {
+        principal: value["principal"]
+            .as_str()
+            .ok_or_else(invalid_session)?
+            .to_owned(),
+    })
 }
 
 fn invalid_session() -> Error {
@@ -412,8 +434,8 @@ fn invalid_session() -> Error {
     .with_status(200)
 }
 
-fn accept_login(generation: u64, result: Value) -> Result<Value, Error> {
-    validate_session(&result)?;
+fn accept_login(generation: u64, result: Value) -> Result<Authenticated, Error> {
+    let authenticated = validate_session(&result, true)?;
     let token = result["token"]
         .as_str()
         .filter(|token| !token.is_empty())
@@ -429,17 +451,17 @@ fn accept_login(generation: u64, result: Value) -> Result<Value, Error> {
     if !accepted {
         return Err(session_changed());
     }
-    Ok(result)
+    Ok(authenticated)
 }
 
-pub async fn restore() -> Result<Value, Error> {
+pub(crate) async fn restore() -> Result<Authenticated, Error> {
     let generation = CREDENTIALS.with(|saved| saved.borrow().generation);
     let value = request("GET", "/api/auth/me", None).await?;
     accept_restore(generation, value)
 }
 
-fn accept_restore(generation: u64, value: Value) -> Result<Value, Error> {
-    validate_session(&value)?;
+fn accept_restore(generation: u64, value: Value) -> Result<Authenticated, Error> {
+    let authenticated = validate_session(&value, false)?;
     let accepted = CREDENTIALS.with(|saved| {
         let mut saved = saved.borrow_mut();
         if saved.generation != generation {
@@ -449,7 +471,7 @@ fn accept_restore(generation: u64, value: Value) -> Result<Value, Error> {
         true
     });
     if accepted {
-        Ok(value)
+        Ok(authenticated)
     } else {
         Err(session_changed())
     }

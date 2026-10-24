@@ -27,61 +27,49 @@ async fn web_daily_forms_execute_real_management_operations() {
     let id = repo["repository_id"].as_str().unwrap();
     let branch = repo["main_branch_id"].as_str().unwrap();
     let history = repo["history_tree_id"].as_str().unwrap();
-    apply(
-        &app,
-        &admin,
-        "account",
-        &fields(&[
-            ("username", "web-user"),
-            ("password", "web-user-long-password"),
-            ("repositories", id),
-        ]),
-    )
-    .await;
-    let user = login(&app, "web-user", "web-user-long-password").await;
-    apply(
-        &app,
-        &admin,
-        "grants",
-        &fields(&[
-            ("repository", id),
-            ("read", "admin, web-user"),
-            ("write", "admin"),
-            ("manage", "admin"),
-        ]),
-    )
-    .await;
+    // Removed multi-account forms must fail at request construction rather
+    // than retaining an account-management or repository-grant compatibility path.
+    for (kind, values) in [
+        (
+            "account",
+            fields(&[
+                ("username", "second-account"),
+                ("password", "second-account-password"),
+                ("repositories", id),
+                ("admin", "true"),
+            ]),
+        ),
+        (
+            "grants",
+            fields(&[
+                ("repository", id),
+                ("read", "second-account"),
+                ("write", "second-account"),
+                ("manage", "second-account"),
+            ]),
+        ),
+    ] {
+        assert_eq!(
+            request::build(kind, &values, &new_id("op")).unwrap_err(),
+            "Unknown management action"
+        );
+    }
+    let session = login(&app, "admin", "integration-test-password").await;
+    let repository_path = format!("/api/repositories/{id}");
     assert_eq!(
-        success(&app, &user, "GET", &format!("/api/repositories/{id}"), None).await["repository_id"],
+        success(&app, &session, "GET", &repository_path, None).await["repository_id"],
         id
     );
-    let (method, path, body) = request::build(
-        "account",
-        &fields(&[
-            ("username", "forbidden"),
-            ("password", "forbidden-password"),
-        ]),
-        "op_test",
-    )
-    .unwrap();
+    success(&app, &session, "POST", "/api/auth/logout", None).await;
+    for path in [repository_path.as_str(), "/api/auth/me"] {
+        assert_eq!(
+            send(&app, Some(&session), "GET", path, None).await.0,
+            StatusCode::UNAUTHORIZED
+        );
+    }
     assert_eq!(
-        send(&app, Some(&user), method, &path, Some(body)).await.0,
-        StatusCode::FORBIDDEN
-    );
-    apply(
-        &app,
-        &admin,
-        "account",
-        &fields(&[
-            ("username", "web-user"),
-            ("repositories", id),
-            ("disabled", "true"),
-        ]),
-    )
-    .await;
-    assert_eq!(
-        send(&app, Some(&user), "GET", "/api/auth/me", None).await.0,
-        StatusCode::UNAUTHORIZED
+        success(&app, &admin, "GET", &repository_path, None).await["repository_id"],
+        id
     );
     for kind in ["policy", "rule"] {
         let rule = new_id(kind);

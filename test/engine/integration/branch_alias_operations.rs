@@ -631,12 +631,12 @@ fn public_file_branch_rename_is_bounded_authorized_metadata_without_content_node
         .rename_file_branch(
             &original.file_id,
             &branch.branch_id,
-            "Unauthorized",
-            "reader",
+            "Missing actor",
+            "",
             &new_id("op"),
         )
         .unwrap_err();
-    assert_eq!(denied.code(), "PERMISSION_DENIED");
+    assert_eq!(denied.code(), "UNAUTHENTICATED");
     let foreign = p
         .engine
         .rename_file_branch(

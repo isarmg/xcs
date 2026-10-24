@@ -267,9 +267,9 @@ pub(crate) async fn status(
     Extension(identity): Extension<Identity>,
 ) -> Result<Json<Value>, ApiError> {
     telemetry_job(state.telemetry.request_slots.clone(), move || {
-        require_current_administrator(&state.auth, &identity)?;
+        require_current_session(&state.auth, &identity)?;
         state.telemetry.current().and_then(|status| {
-            require_current_administrator(&state.auth, &identity)?;
+            require_current_session(&state.auth, &identity)?;
             json_codec::to_value(status)
                 .map(Json)
                 .map_err(|_| unavailable("host sampling is unavailable"))
@@ -307,23 +307,21 @@ pub(crate) async fn history(
     ApiQuery(query): ApiQuery<HistoryQuery>,
 ) -> Result<Json<Value>, ApiError> {
     telemetry_job(state.telemetry.request_slots.clone(), move || {
-        require_current_administrator(&state.auth, &identity)?;
+        require_current_session(&state.auth, &identity)?;
         let (seconds, interval) = range_parameters(&query.range)?;
         let to = date_time::OffsetDateTime::now_utc().unix_timestamp();
         let from = to - seconds;
         let samples = state.telemetry.history.lock().map_err(|_| unavailable("history sampling is unavailable"))?.samples(from, to, interval);
-        require_current_administrator(&state.auth, &identity)?;
+        require_current_session(&state.auth, &identity)?;
         Ok(Json(json!({"range": query.range, "interval_seconds": interval, "from": timestamp(from)?, "to": timestamp(to)?, "samples": samples})))
     }).await
 }
 
-fn require_current_administrator(
+fn require_current_session(
     auth: &Mutex<crate::auth::AuthStore>,
     identity: &Identity,
 ) -> Result<(), ApiError> {
-    crate::lock(auth)?
-        .revalidate_identity(identity)?
-        .require_admin()
+    crate::lock(auth)?.revalidate_identity(identity).map(|_| ())
 }
 
 #[cfg(test)]

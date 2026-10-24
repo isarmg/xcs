@@ -33,8 +33,7 @@ impl Drop for ConnectionGuard {
     }
 }
 
-/// Account for the mapped principal, not the Samba username or repository:
-/// aliases and multiple shares must not bypass the authenticated session cap.
+/// Multiple shares must not bypass the sole account's authenticated session cap.
 struct SessionPermit {
     shared: Arc<Shared>,
     principal: String,
@@ -91,19 +90,18 @@ pub(super) fn run_connection(mut stream: FrameStream, shared: Arc<Shared>) -> io
         if protocol != PROTOCOL {
             return Err(ApiError::invalid("unsupported SMB bridge protocol"));
         }
-        if !capabilities
+        if !REQUIRED_CAPABILITIES
             .iter()
-            .any(|capability| capability == WRITE_RESERVATION_CAPABILITY)
+            .all(|required| capabilities.iter().any(|value| value == required))
         {
             return Err(ApiError::invalid(
-                "SMB bridge requires durable write reservations",
+                "SMB bridge requires authenticated single-account sessions and durable write reservations",
             ));
         }
-        let mut identity = shared
-            .identities
-            .get(&username)
-            .cloned()
-            .ok_or_else(ApiError::forbidden)?;
+        if username != shared.username {
+            return Err(ApiError::forbidden());
+        }
+        let mut identity = crate::lock(&shared.auth)?.sole_identity()?;
         let permit = SessionPermit::acquire(&shared, &identity.principal)?;
         let repo = shared.backend.call(
             crate::BackendAction::Repository,
@@ -154,7 +152,7 @@ pub(super) fn run_connection(mut stream: FrameStream, shared: Arc<Shared>) -> io
     stream.send(
         &Response::Ok {
             result: json!({
-                "protocol":PROTOCOL,"capabilities":[WRITE_RESERVATION_CAPABILITY],
+                "protocol":PROTOCOL,"capabilities":REQUIRED_CAPABILITIES,
                 "principal":session.identity.principal,"main_branch_id":session.branch
             }),
         },
@@ -301,17 +299,13 @@ async fn startup_io<T: Send + 'static>(
 pub async fn serve(
     socket: &Path,
     allowed_uid: u32,
-    identities: BTreeMap<String, Identity>,
+    username: String,
+    auth: Arc<Mutex<AuthStore>>,
     backend: Arc<dyn Backend>,
     limits: crate::SpoolLimits,
     max_file_bytes: u64,
 ) -> io::Result<()> {
-    if identities.is_empty() || identities.values().any(|identity| identity.admin) {
-        return Err(io::Error::new(
-            io::ErrorKind::InvalidInput,
-            "SMB requires explicit non-administrator user mappings",
-        ));
-    }
+    smb_protocol::protocol::validate_username(&username)?;
     let socket = socket.to_owned();
     let PreparedSocket {
         listener,
@@ -328,7 +322,8 @@ pub async fn serve(
         max_file_bytes,
         sessions_per_account: Mutex::new(BTreeMap::new()),
         backend,
-        identities,
+        username,
+        auth,
         spool,
         file_writers: Mutex::new(BTreeSet::new()),
         namespace_operations: Mutex::new(BTreeSet::new()),

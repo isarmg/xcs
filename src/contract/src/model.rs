@@ -130,42 +130,6 @@ impl Config {
     }
 }
 
-#[derive(Clone, Debug, Default, Serialize, Deserialize, PartialEq, Eq)]
-#[serialization(deny_unknown_fields)]
-pub struct Grants {
-    pub read: BTreeSet<String>,
-    pub write: BTreeSet<String>,
-    pub manage: BTreeSet<String>,
-}
-/// Repository ACL capability. Read and write are independent; manage grants both.
-/// Account admission and administrator identity are evaluated by the transport.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum RepositoryAccess {
-    Read,
-    Write,
-    Manage,
-}
-
-impl Grants {
-    pub fn allows(&self, principal: &str, access: RepositoryAccess) -> bool {
-        self.manage.contains(principal)
-            || match access {
-                RepositoryAccess::Read => self.read.contains(principal),
-                RepositoryAccess::Write => self.write.contains(principal),
-                RepositoryAccess::Manage => false,
-            }
-    }
-
-    pub fn owner(principal: &str) -> Self {
-        let set = BTreeSet::from([principal.to_string()]);
-        Self {
-            read: set.clone(),
-            write: set.clone(),
-            manage: set,
-        }
-    }
-}
-
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
 #[serialization(deny_unknown_fields)]
 pub struct Repository {
@@ -177,11 +141,6 @@ pub struct Repository {
     pub target_copies: u32,
     pub name_policy: String,
     pub unicode_version: String,
-    pub grants: Grants,
-    /// Account admission scope inherited when a history is split; grants remain local.
-    #[serialization(default)]
-    pub account_scope_repository_id: Option<String>,
-    #[serialization(default = "enabled")]
     pub smb_enabled: bool,
     /// Persistent SMB binding revision, independent of ordinary history writes.
     /// Every explicit rebind/disable invalidates sessions holding an older value.
@@ -196,9 +155,6 @@ fn is_zero(value: &u64) -> bool {
 }
 fn is_false(value: &bool) -> bool {
     !*value
-}
-fn enabled() -> bool {
-    true
 }
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
 #[serialization(deny_unknown_fields)]
@@ -528,6 +484,7 @@ pub struct Workspace {
     #[serialization(default = "normal_workspace_purpose")]
     pub purpose: String,
     pub branch_id: String,
+    /// Immutable operation actor, bound to staged data and replay, not an ACL.
     pub principal: String,
     pub base_head: String,
     #[serialization(with = "crate::u64_string")]
@@ -739,6 +696,7 @@ pub struct State {
     pub placement_rules: BTreeMap<String, PlacementRule>,
     #[serialization(default)]
     pub protection_policies: BTreeMap<String, ProtectionPolicy>,
+    /// Audit and idempotency owners of published operations, not user accounts.
     #[serialization(default)]
     pub operation_principals: BTreeMap<String, String>,
     /// Private authentication control state; never expose State as a public API DTO.
@@ -793,8 +751,8 @@ pub struct CheckReport {
 }
 
 #[cfg(test)]
-#[path = "../../../test/contract/unit/model/repository_access_tests.rs"]
-mod repository_access_tests;
+#[path = "../../../test/contract/unit/model/repository_tests.rs"]
+mod repository_tests;
 
 #[cfg(test)]
 #[path = "../../../test/contract/unit/model/operation_status_tests.rs"]

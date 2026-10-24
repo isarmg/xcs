@@ -1,10 +1,9 @@
 use super::*;
 use crate::management::Storage;
 #[test]
-fn account_administration_survives_data_failure_but_storage_writes_fail_closed() {
+fn inspection_survives_data_failure_but_storage_writes_require_an_active_session() {
     let mut state = State {
         authenticated: true,
-        admin: true,
         ..Default::default()
     };
     for storage in [
@@ -26,7 +25,7 @@ fn account_administration_survives_data_failure_but_storage_writes_fail_closed()
     state.session_transition = crate::ui::SessionTransition::LoggingOut;
     assert!(!permitted(&state, false));
     state.session_transition = crate::ui::SessionTransition::Idle;
-    state.admin = false;
+    state.authenticated = false;
     assert!(!permitted(&state, false));
 }
 
@@ -87,96 +86,67 @@ fn invalid_success_and_early_not_found_preserve_review_and_uncertainty() {
 }
 
 #[test]
-fn account_snapshots_never_settle_an_interrupted_mutation() {
-    let mut model = Model::default();
-    reject(
-        &mut model,
-        "POST",
-        false,
-        "",
-        &api::Error {
-            code: "TRANSPORT".into(),
-            message: "response lost".into(),
-            status: 0,
-            retryable: false,
-            request_id: None,
-        },
-    );
-    assert_eq!(model.uncertain_operation, "unknown");
-    // Both an older snapshot and one showing the requested value are insufficient:
-    // neither identifies the original request or proves its password outcome.
-    for disabled in [false, true, false] {
-        let value = json_codec::json!({"accounts":[{"username":"reader", "admin":false, "disabled":disabled, "repositories":[]}]});
-        let value = response::Contract::new("GET", "/api/admin/accounts", None, "", "admin")
-            .validate(value)
-            .unwrap();
-        accept(&mut model, "GET", "/api/admin/accounts", false, value);
-        assert_eq!(model.accounts[0]["disabled"], disabled);
-        assert_eq!(model.uncertain_operation, "unknown");
+fn inspection_snapshots_never_settle_an_interrupted_storage_mutation() {
+    let mut model = Model {
+        uncertain_operation: "original".into(),
+        ..Default::default()
+    };
+    for value in [
+        json_codec::json!([]),
+        json_codec::json!([{"repository_id":"repo"}]),
+    ] {
+        accept(&mut model, "GET", "/api/repositories", false, value);
+        assert_eq!(model.uncertain_operation, "original");
         assert!(model.reload_blocked());
     }
 }
 
 #[test]
-fn saving_an_account_invalidates_old_rows_before_refresh_and_never_regrants_from_them() {
-    let mut model = Model::default();
-    let old = json_codec::json!({"accounts":[{"username":"reader","admin":true,"disabled":false,"repositories":["private"]}]});
-    accept(&mut model, "GET", "/api/admin/accounts", false, old);
-    assert_eq!(account_fields(&model, "reader").unwrap()["admin"], "true");
-    accept(
-        &mut model,
-        "POST",
-        "/api/admin/accounts",
-        false,
-        json_codec::json!({"updated":true}),
-    );
-    assert!(account_write("POST", "/api/admin/accounts"));
-    assert!(model.accounts.is_empty());
-    assert!(
-        account_fields(&model, "reader").is_none(),
-        "a queued old row click cannot repopulate revoked grants"
-    );
-    // Failed follow-up reads do not restore the invalidated row.
-    reject(
-        &mut model,
-        "GET",
-        false,
-        "",
-        &api::Error {
-            status: 503,
-            code: "UNAVAILABLE".into(),
-            message: "refresh failed".into(),
-            retryable: true,
-            request_id: None,
-        },
-    );
-    assert!(account_fields(&model, "reader").is_none());
-    let refreshed = json_codec::json!({"accounts":[{"username":"reader","admin":false,"disabled":true,"repositories":[]}]});
-    accept(&mut model, "GET", "/api/admin/accounts", false, refreshed);
-    let mut fields = account_fields(&model, "reader").unwrap();
-    fields.insert("password".into(), "new password".into());
-    let (_, _, body) = request::build("account", &fields, "").unwrap();
-    assert_eq!(body["admin"], false);
-    assert_eq!(body["disabled"], true);
-    assert_eq!(body["repositories"], json_codec::json!([]));
-}
-
-#[test]
-fn account_row_handlers_do_not_bypass_busy_uncertain_or_session_guards() {
+fn management_selection_does_not_bypass_session_busy_or_uncertainty_guards() {
     Owner::new().with(|| {
-        let state = RwSignal::new(State { authenticated:true, admin:true, ..Default::default() });
-        state.update(|s| {
-            s.admin_console.accounts = vec![json_codec::json!({"username":"reader","admin":true,"disabled":false,"repositories":[]})];
-            s.admin_console.fields.insert("username".into(), "unchanged".into());
+        let state = RwSignal::new(State {
+            authenticated: true,
+            ..Default::default()
         });
-        for guard in ["busy", "unknown", "logout"] {
+        for guard in [
+            "anonymous",
+            "restoring",
+            "logout",
+            "unconfirmed",
+            "busy",
+            "unknown",
+        ] {
             state.update(|s| {
+                s.authenticated = guard != "anonymous";
                 s.admin_console.busy = guard == "busy";
-                s.admin_console.uncertain_operation = if guard == "unknown" {"unknown".into()} else {String::new()};
-                s.session_transition = if guard == "logout" { crate::ui::SessionTransition::LoggingOut } else { crate::ui::SessionTransition::Idle };
+                s.admin_console.uncertain_operation = if guard == "unknown" {
+                    "original".into()
+                } else {
+                    String::new()
+                };
+                s.session_transition = match guard {
+                    "restoring" => crate::ui::SessionTransition::Restoring,
+                    "logout" => crate::ui::SessionTransition::LoggingOut,
+                    "unconfirmed" => crate::ui::SessionTransition::LogoutUnconfirmed,
+                    _ => crate::ui::SessionTransition::Idle,
+                };
             });
-            select_account(state, "reader");
-            assert_eq!(state.with_untracked(|s| s.admin_console.fields["username"].clone()), "unchanged");
+            select(state, "repository");
+            assert_eq!(
+                state.with_untracked(|s| s.admin_console.kind.clone()),
+                "inspect"
+            );
         }
+        state.update(|s| {
+            *s = State {
+                authenticated: true,
+                ..Default::default()
+            };
+        });
+        select(state, "repository");
+        assert_eq!(
+            state.with_untracked(|s| s.admin_console.kind.clone()),
+            "repository"
+        );
     });
 }

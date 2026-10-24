@@ -77,28 +77,26 @@ fn directory_cursor_freezes_its_commit_and_restart_captures_a_new_snapshot() {
     worker.join().unwrap().unwrap();
 }
 #[test]
-fn directory_pages_recheck_current_account_permissions_and_handle_ownership() {
+fn directory_pages_recheck_current_binding_and_handle_ownership() {
     let (_temp, shared, _backend, _branch) = fixture();
     let (mut client, worker, hello) = wire(shared.clone());
     assert!(matches!(hello, Response::Ok { .. }));
     let handle = root(&mut client);
     assert_eq!(page(&mut client, handle, false).entries.len(), 1);
-    let mut administrator = shared.identities["alice"].clone();
-    administrator.admin = true;
-    let repository = administrator.repositories.iter().next().unwrap().clone();
-    shared
+    let branch = shared
         .backend
         .call(
-            crate::BackendAction::SetGrants,
-            &administrator,
-            json!({
-                "repository_id":repository,"operation_id":new_id("op"),
-                "grants":{"read":[],"write":[],"manage":["replacement-manager"]},
-            }),
+            crate::BackendAction::Repository,
+            &identity(&shared),
+            json!({"repository_id":repository(&shared)}),
         )
-        .unwrap();
+        .unwrap()["main_branch_id"]
+        .as_str()
+        .unwrap()
+        .to_owned();
+    binding_tests::rebind(&shared, &branch, false);
     assert!(
-        matches!(exchange(&mut client,Request::ReadDirectory {handle,restart:false}).0,Response::Error {code,..} if code=="FORBIDDEN")
+        matches!(exchange(&mut client,Request::ReadDirectory {handle,restart:false}).0,Response::Error {code,..} if code=="SMB_REBIND_REQUIRED")
     );
     assert!(
         matches!(exchange(&mut client,Request::ReadDirectory {handle:handle+100,restart:false}).0,Response::Error {code,..} if code=="NOT_FOUND")

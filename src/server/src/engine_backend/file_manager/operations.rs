@@ -118,11 +118,7 @@ pub(super) fn call(
                 ],
             )?;
             let repo = field(input, "repository_id")?;
-            authorize_access(
-                identity,
-                repository(engine, repo)?,
-                RepositoryAccess::Manage,
-            )?;
+            repository(engine, repo)?;
             let copies = input
                 .get("target_copies")
                 .and_then(Value::as_u64)

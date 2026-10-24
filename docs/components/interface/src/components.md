@@ -16,7 +16,7 @@
 
 应用通过 `Signal` 传入会话、请求中和错误状态，通过 `Callback` 执行登录、退出、恢复会话、页面切换及修改密码。组件仅提交输入值；真正请求、鉴权、凭据存储、成功结果确认和会话失效由 `src/web/src` 负责。应用传入的会话使用相等性 `Memo`，避免文件进度变化重新挂载壳和未提交表单。
 
-`AppShell` 提供浏览器登录与账户外壳，所有请求都使用当前页面的同源服务。普通用户与管理员共用壳和账户表单；是否允许业务操作由应用与服务端权限共同决定。对应样式使用项目内 `src/web/public/styles`，所有自有组件、类、事件和 DOM 标记统一使用 zxs 命名。
+`AppShell` 提供浏览器登录与账户外壳，所有请求都使用当前页面的同源服务。唯一管理员使用同一登录与账户表单，不存在角色切换或其他账户；是否允许业务操作仍由有效会话、存储状态和服务端业务约束共同决定。对应样式使用项目内 `src/web/public/styles`，所有自有组件、类、事件和 DOM 标记统一使用 zxs 命名。
 
 `Select` 接受 `label: String`、`options: Signal<Vec<SelectOption>>`、`value: Signal<String>` 和 `on_change: Callback<String>`；`disabled: Signal<bool>` 和 `placeholder: String` 可选。选项由 `SelectOption::new(value, label)` 创建，`disabled` 字段控制是否可选，空字符串也是有效值。菜单使用浏览器顶层 popover，避免在带轮廓的文件面板中被裁切；Rust 管理方向键、Home/End、输入跳转、Enter/空格确认、Escape/Tab 和外点关闭。焦点保持在 combobox，`aria-activedescendant` 指向当前选项。公共样式文件不再单独存在而没有实际控件。
 

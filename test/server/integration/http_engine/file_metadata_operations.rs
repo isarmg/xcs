@@ -164,21 +164,21 @@ async fn tags_and_file_merges_publish_reviewed_node_graphs_without_new_bodies() 
         .0,
         StatusCode::CONFLICT
     );
-    success(&app,&token,"POST","/api/admin/accounts",Some(json!({"username":"node-reader","password":"node-reader-test-password","repositories":[repo]}))).await;
-    success(&app,&token,"PUT",&format!("/api/repositories/{repo}/grants"),Some(json!({"grants":{"read":["node-reader"],"write":[],"manage":["admin"]},"operation_id":new_id("op")}))).await;
-    let reader = login(&app, "node-reader", "node-reader-test-password").await;
-    assert_eq!(history(&app, &reader, file).await["node_id"], node);
+
+    let session = login(&app, "admin", "integration-test-password").await;
+    assert_eq!(history(&app, &session, file).await["node_id"], node);
+    success(&app, &session, "POST", "/api/auth/logout", None).await;
     assert_eq!(
         send(
             &app,
-            Some(&reader),
+            Some(&session),
             "POST",
             &tag_route,
             Some(json!({"targets":[],"add":[],"remove":[],"operation_id":new_id("op")}))
         )
         .await
         .0,
-        StatusCode::FORBIDDEN
+        StatusCode::UNAUTHORIZED
     );
     let audit = success(&app, &token, "GET", "/api/file-manager/history", None).await;
     for action in ["file.branches.merge", "file.tags.update"] {
@@ -197,7 +197,7 @@ async fn tags_and_file_merges_publish_reviewed_node_graphs_without_new_bodies() 
 }
 
 #[tokio::test]
-async fn scoped_backup_configuration_checks_scope_identity_generation_and_manage_grants() {
+async fn scoped_backup_configuration_checks_scope_identity_generation_and_authentication() {
     let root = tempfile::tempdir().unwrap();
     let app = application(root.path());
     let token = login(&app, "admin", "integration-test-password").await;
@@ -215,7 +215,7 @@ async fn scoped_backup_configuration_checks_scope_identity_generation_and_manage
     let repo = listing["context"]["repository_id"].as_str().unwrap();
     let route = format!("/api/repositories/{repo}/backup-configuration");
     let before = success(&app, &token, "GET", &format!("{route}?path=docs"), None).await;
-    assert_eq!(before["can_manage"], true);
+    assert!(before.get("can_manage").is_none());
     assert_eq!(before["generation"], "0");
     let request = json!({"path":"docs","target_copies":3,"backup_prefixes":{"B01":"工作备份","C01":"archive/docs"},"expected_generation":"0","expected_scope_id":before["scope"]["id"],"operation_id":new_id("op")});
     let configured = success(&app, &token, "PUT", &route, Some(request.clone())).await;
@@ -279,18 +279,18 @@ async fn scoped_backup_configuration_checks_scope_identity_generation_and_manage
     )
     .await;
     assert_eq!(new_file["backup_paths"]["B01"], "工作备份/new.txt");
-    success(&app,&token,"POST","/api/admin/accounts",Some(json!({"username":"backup-reader","password":"backup-reader-test-password","repositories":[repo]}))).await;
-    success(&app,&token,"PUT",&format!("/api/repositories/{repo}/grants"),Some(json!({"grants":{"read":["backup-reader"],"write":[],"manage":["admin"]},"operation_id":new_id("op")}))).await;
-    let reader = login(&app, "backup-reader", "backup-reader-test-password").await;
+
+    let session = login(&app, "admin", "integration-test-password").await;
     assert_eq!(
-        success(&app, &reader, "GET", &format!("{route}?path=docs"), None).await["can_manage"],
-        false
+        success(&app, &session, "GET", &format!("{route}?path=docs"), None).await,
+        success(&app, &token, "GET", &format!("{route}?path=docs"), None).await
     );
+    success(&app, &session, "POST", "/api/auth/logout", None).await;
     assert_eq!(
-        send(&app, Some(&reader), "PUT", &route, Some(request))
+        send(&app, Some(&session), "PUT", &route, Some(request))
             .await
             .0,
-        StatusCode::FORBIDDEN
+        StatusCode::UNAUTHORIZED
     );
     capture_wire("scoped-backup-configuration.json", &inherited);
     drop(app);

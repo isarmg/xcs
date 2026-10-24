@@ -234,7 +234,6 @@ fn business_reads_do_not_start_outside_a_settled_session() {
             let state = RwSignal::new(State {
                 authenticated,
                 session_transition,
-                admin: true,
                 ..Default::default()
             });
             state.update(|s| {

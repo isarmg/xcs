@@ -68,12 +68,9 @@ impl Engine {
         versions: Vec<String>,
         principal: &str,
     ) -> Result<Plan> {
+        Self::require_actor(principal)?;
         self.require_write()?;
-        self.require_grant(
-            self.repository_for_history(history)?,
-            principal,
-            storage_contract::RepositoryAccess::Manage,
-        )?;
+        self.repository_for_history(history)?;
         let mut ids = versions;
         ids.sort();
         ids.dedup();
@@ -88,12 +85,9 @@ impl Engine {
         )
     }
     pub fn create_split_plan(&mut self, history: &str, cut: &str, principal: &str) -> Result<Plan> {
+        Self::require_actor(principal)?;
         self.require_write()?;
-        self.require_grant(
-            self.repository_for_history(history)?,
-            principal,
-            storage_contract::RepositoryAccess::Manage,
-        )?;
+        self.repository_for_history(history)?;
         self.check_directory_split(history)?;
         if self
             .state
@@ -276,11 +270,7 @@ impl Engine {
             .as_str()
             .ok_or_else(|| Error::new("PLAN_INVALID", "history missing"))?
             .to_string();
-        self.require_grant(
-            self.repository_for_history(&history)?,
-            principal,
-            storage_contract::RepositoryAccess::Manage,
-        )?;
+        self.repository_for_history(&history)?;
         let result = match plan.kind.as_str() {
             "purge" => {
                 let ids = plan.input["version_ids"]
@@ -763,8 +753,6 @@ impl Engine {
                 new_repo.repository_id = repository_id.clone();
                 new_repo.history_tree_id = history_id.clone();
                 new_repo.main_branch_id = new_main.clone();
-                new_repo.account_scope_repository_id = Some(original_repo.account_scope_repository_id
-                    .clone().unwrap_or_else(|| original_repo.repository_id.clone()));
                 new_repo.smb_enabled = false;
                 new_repo.smb_binding_generation = 1;
                 new_repo.file_manager_root = false;

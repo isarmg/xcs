@@ -13,6 +13,30 @@ pub const PROTOCOL: &str = "smb-protocol-rpc";
 /// Writable descriptors are safe to admit only when both peers require a
 /// durable PrepareWrite reservation before every descriptor mutation.
 pub const WRITE_RESERVATION_CAPABILITY: &str = "durable-write-reservations";
+/// Upgrade gate, not an authentication proof. Only a trusted local Samba peer
+/// may attest this behavior after checking its actual authenticated session.
+pub const AUTHENTICATED_ACCOUNT_CAPABILITY: &str = "authenticated-single-account";
+pub const REQUIRED_CAPABILITIES: [&str; 2] = [
+    WRITE_RESERVATION_CAPABILITY,
+    AUTHENTICATED_ACCOUNT_CAPABILITY,
+];
+
+/// A single exact Samba account name, never an alias-to-principal mapping.
+pub fn validate_username(username: &str) -> io::Result<()> {
+    if username.is_empty()
+        || username.len() > 256
+        || username.trim() != username
+        || username.chars().any(char::is_control)
+        || username.contains('=')
+    {
+        return Err(io::Error::new(
+            io::ErrorKind::InvalidInput,
+            "SMB requires one exact authenticated Samba account name, not a mapping",
+        ));
+    }
+    Ok(())
+}
+
 pub const MAX_FRAME_BYTES: usize = 8 * 1024 * 1024;
 /// Directory replies stay well below the frame ceiling, even with long names.
 pub const MAX_DIRECTORY_PAGE_BYTES: usize = 256 * 1024;

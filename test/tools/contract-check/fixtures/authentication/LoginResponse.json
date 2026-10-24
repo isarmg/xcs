@@ -1,0 +1,6 @@
+{
+  "token": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+  "csrf_token": "BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB",
+  "principal": "my-admin",
+  "expires_at": "1792861200"
+}

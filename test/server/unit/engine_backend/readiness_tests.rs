@@ -19,8 +19,6 @@ fn readiness_uses_fixed_membership_and_reports_single_disk_no_metadata_redundanc
             admission_session: None,
             smb_binding: None,
             principal: String::new(),
-            admin: false,
-            repositories: Default::default(),
         };
         let ready = backend
             .call(BackendAction::Ready, &anonymous, json!({}))

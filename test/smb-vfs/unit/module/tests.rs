@@ -168,7 +168,7 @@ fn absolute_names_are_confined_to_the_exact_share_root() {
 
 #[test]
 fn readdir_keeps_one_page_and_rewind_requests_a_fresh_snapshot() {
-    use smb_protocol::protocol::{FrameStream, PROTOCOL, Response, WRITE_RESERVATION_CAPABILITY};
+    use smb_protocol::protocol::{FrameStream, PROTOCOL, REQUIRED_CAPABILITIES, Response};
     use std::{
         ffi::CStr,
         os::unix::net::UnixListener,
@@ -189,7 +189,7 @@ fn readdir_keeps_one_page_and_rewind_requests_a_fresh_snapshot() {
             stream.receive::<Request>().unwrap().0,
             Request::Hello { .. }
         ));
-        stream.send(&Response::Ok { result: json_codec::json!({"protocol": PROTOCOL, "capabilities": [WRITE_RESERVATION_CAPABILITY]}) }, None).unwrap();
+        stream.send(&Response::Ok { result: json_codec::json!({"protocol": PROTOCOL, "capabilities": REQUIRED_CAPABILITIES}) }, None).unwrap();
         for (restart, names, more) in [
             (false, vec!["one", "two"], true),
             (false, vec!["three"], false),
@@ -218,6 +218,14 @@ fn readdir_keeps_one_page_and_rewind_requests_a_fresh_snapshot() {
         }
     });
     let client = Client::connect(&socket, "alice", "repository").unwrap();
+    let context = Box::new(Context {
+        samba_username: "alice".into(),
+        client: client.clone(),
+        files: BTreeMap::new(),
+    });
+    let mut authenticated = authentication::tests::AuthenticatedSession::new();
+    let mut host = authenticated.handle();
+    host.data = Box::into_raw(context).cast();
     let directory = Box::into_raw(Box::new(Directory {
         client,
         handle: 7,
@@ -226,30 +234,122 @@ fn readdir_keeps_one_page_and_rewind_requests_a_fresh_snapshot() {
         more: true,
         restart: false,
     }));
-    // SAFETY: These callbacks ignore the null host arguments and receive the
-    // live, uniquely owned Directory box; each returned name is read before
-    // the next callback can replace its backing page. closedir consumes it.
+    // SAFETY: The host handle and nested authenticated SDK objects stay live.
+    // fsp is unused here; Directory is uniquely owned, and each returned name
+    // is read before its page can change. closedir consumes the Directory.
     unsafe {
         for (name, page_size) in [("one", 2), ("two", 2), ("three", 1)] {
-            let entry = readdir(std::ptr::null_mut(), std::ptr::null_mut(), directory.cast());
+            let entry = readdir(&mut host, std::ptr::null_mut(), directory.cast());
             assert!(!entry.is_null());
             assert_eq!(
                 CStr::from_ptr((*entry).d_name.as_ptr()).to_str().unwrap(),
                 name
             );
             assert_eq!((*directory).entries.len(), page_size);
+            if name == "one" {
+                // Cached "two" must not escape after guest/forced reauthentication.
+                authenticated.connection.force_user = true;
+                assert!(readdir(&mut host, std::ptr::null_mut(), directory.cast()).is_null());
+                assert_eq!(*libc::__errno_location(), libc::EACCES);
+                authenticated.connection.force_user = false;
+                authenticated.info.account_name = c"different-account".as_ptr().cast_mut();
+                assert!(readdir(&mut host, std::ptr::null_mut(), directory.cast()).is_null());
+                assert_eq!(*libc::__errno_location(), libc::EACCES);
+                authenticated.info.account_name = c"alice".as_ptr().cast_mut();
+            }
         }
-        assert!(readdir(std::ptr::null_mut(), std::ptr::null_mut(), directory.cast()).is_null());
+        assert!(readdir(&mut host, std::ptr::null_mut(), directory.cast()).is_null());
         rewind(std::ptr::null_mut(), directory.cast());
         assert!((*directory).entries.is_empty());
-        let entry = readdir(std::ptr::null_mut(), std::ptr::null_mut(), directory.cast());
+        let entry = readdir(&mut host, std::ptr::null_mut(), directory.cast());
         assert!(!entry.is_null());
         assert_eq!(
             CStr::from_ptr((*entry).d_name.as_ptr()).to_str().unwrap(),
             "fresh"
         );
         assert_eq!(closedir(std::ptr::null_mut(), directory.cast()), 0);
+        free_context(&mut host.data);
     }
+    worker.join().unwrap();
+    std::fs::remove_file(socket).unwrap();
+}
+
+#[test]
+fn revoked_close_detaches_without_publishing_and_releases_descriptor() {
+    use smb_protocol::protocol::{FrameStream, PROTOCOL, REQUIRED_CAPABILITIES, Response};
+    use std::{
+        io::Read,
+        os::unix::net::{UnixListener, UnixStream},
+    };
+    let socket = std::env::temp_dir().join(format!(
+        "zxs-vfs-revoked-close-{}-{}.sock",
+        std::process::id(),
+        std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .unwrap()
+            .as_nanos(),
+    ));
+    let listener = UnixListener::bind(&socket).unwrap();
+    let worker = std::thread::spawn(move || {
+        let mut wire = FrameStream::new(listener.accept().unwrap().0).unwrap();
+        assert!(matches!(
+            wire.receive::<Request>().unwrap().0,
+            Request::Hello { .. }
+        ));
+        wire.send(&Response::Ok { result: json_codec::json!({"protocol": PROTOCOL, "capabilities": REQUIRED_CAPABILITIES}) }, None).unwrap();
+        assert!(matches!(
+            wire.receive::<Request>().unwrap().0,
+            Request::Detach { handle: 7 }
+        ));
+        wire.send(
+            &Response::Ok {
+                result: json_codec::json!({"detached": true}),
+            },
+            None,
+        )
+        .unwrap();
+        assert_eq!(
+            wire.receive::<Request>().unwrap_err().kind(),
+            std::io::ErrorKind::UnexpectedEof
+        );
+    });
+    let client = Client::connect(&socket, "alice", "repository").unwrap();
+    let (descriptor, mut peer) = UnixStream::pair().unwrap();
+    peer.set_read_timeout(Some(std::time::Duration::from_secs(2)))
+        .unwrap();
+    let opened = Open {
+        info: Arc::new(OpenResult {
+            entry_id: "entry".into(),
+            kind: "file".into(),
+            path: "file".into(),
+            handle: 7,
+            size: 0,
+            max_file_bytes: 1,
+            version_id: None,
+            workspace_id: None,
+        }),
+        fd: descriptor.into_raw_fd(),
+        writable: true,
+        io: Arc::new(Mutex::new(())),
+    };
+    let context = Box::new(Context {
+        samba_username: "alice".into(),
+        client,
+        files: [(0, opened)].into_iter().collect(),
+    });
+    let mut authenticated = authentication::tests::AuthenticatedSession::new();
+    let mut host = authenticated.handle();
+    host.data = Box::into_raw(context).cast();
+    authenticated.connection.force_user = true;
+    // SAFETY: Real SDK structs and nested data remain live here; close uses fsp
+    // only as an opaque lookup key, and free_context consumes the unique box.
+    unsafe {
+        assert_eq!(close(&mut host, std::ptr::null_mut()), -1);
+        assert_eq!(*libc::__errno_location(), libc::EACCES);
+        assert!(context_for_cleanup(&mut host).unwrap().files.is_empty());
+        free_context(&mut host.data);
+    }
+    assert_eq!(peer.read(&mut [0u8; 1]).unwrap(), 0);
     worker.join().unwrap();
     std::fs::remove_file(socket).unwrap();
 }

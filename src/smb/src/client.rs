@@ -1,5 +1,5 @@
 use crate::protocol::{
-    FrameStream, OpenResult, PROTOCOL, Request, Response, WRITE_RESERVATION_CAPABILITY,
+    FrameStream, OpenResult, PROTOCOL, REQUIRED_CAPABILITIES, Request, Response,
 };
 use json_codec::Value;
 use std::{
@@ -132,13 +132,17 @@ pub fn close_descriptor(
 
 impl Client {
     pub fn connect(socket: &Path, username: &str, repository_id: &str) -> io::Result<Self> {
+        crate::protocol::validate_username(username)?;
         Self::connect_stream(UnixStream::connect(socket)?, username, repository_id)
     }
     fn connect_stream(stream: UnixStream, username: &str, repository_id: &str) -> io::Result<Self> {
         let client = Self(Arc::new(Mutex::new(Some(FrameStream::new(stream)?))));
         let (result, _) = client.call(Request::Hello {
             protocol: PROTOCOL.into(),
-            capabilities: vec![WRITE_RESERVATION_CAPABILITY.into()],
+            capabilities: REQUIRED_CAPABILITIES
+                .iter()
+                .map(|value| (*value).into())
+                .collect(),
             username: username.into(),
             repository_id: repository_id.into(),
         })?;
@@ -147,14 +151,16 @@ impl Client {
                 .get("capabilities")
                 .and_then(Value::as_array)
                 .is_some_and(|capabilities| {
-                    capabilities
-                        .iter()
-                        .any(|capability| capability.as_str() == Some(WRITE_RESERVATION_CAPABILITY))
+                    REQUIRED_CAPABILITIES.iter().all(|required| {
+                        capabilities
+                            .iter()
+                            .any(|capability| capability.as_str() == Some(required))
+                    })
                 })
         {
             return Err(io::Error::new(
                 io::ErrorKind::InvalidData,
-                "SMB bridge did not negotiate durable write reservations",
+                "SMB bridge did not negotiate authenticated single-account sessions and durable write reservations",
             ));
         }
         Ok(client)

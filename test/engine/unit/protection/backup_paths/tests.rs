@@ -144,11 +144,11 @@ fn backup_paths_backfill_all_versions_and_survive_primary_moves_and_new_writes()
     let mut engine = Engine::open(&temp.path().join("state")).unwrap();
     assert_eq!(engine.state.file_backup_policies[&first.file_id], policy_id);
     let read = engine
-        .backup_configuration_for(&repo.repository_id, "moved/deep/renamed.txt", "admin")
+        .backup_configuration(&repo.repository_id, "moved/deep/renamed.txt")
         .unwrap();
     assert_eq!(read["inherited"], true);
     assert_eq!(read["generation"], "0");
-    assert_eq!(read["can_manage"], true);
+    assert!(read.get("can_manage").is_none());
     engine
         .configure_backups(crate::BackupConfigurationRequest {
             repository_id: &repo.repository_id,
@@ -404,7 +404,7 @@ fn arbitrary_fixed_route_copy_count_and_independent_prefixes_are_supported() {
 }
 
 #[test]
-fn empty_extensions_preserve_legacy_canonical_state_and_policy_bytes() {
+fn empty_extensions_use_sparse_current_state_and_policy_encoding() {
     let state = json_codec::to_value(State::default()).unwrap();
     for field in [
         "file_metadata_nodes",
@@ -420,11 +420,11 @@ fn empty_extensions_preserve_legacy_canonical_state_and_policy_bytes() {
         canonical_json(&recovered).unwrap(),
         canonical_json(&state).unwrap()
     );
-    let legacy = json!({"policy_id":new_id("policy"),"repository_id":new_id("repo"),"path_prefix":"docs","target_copies":2,"generation":"1"});
-    let policy: ProtectionPolicy = json_codec::from_value(legacy.clone()).unwrap();
+    let minimal = json!({"policy_id":new_id("policy"),"repository_id":new_id("repo"),"path_prefix":"docs","target_copies":2,"generation":"1"});
+    let policy: ProtectionPolicy = json_codec::from_value(minimal.clone()).unwrap();
     assert_eq!(
         canonical_json(&policy).unwrap(),
-        canonical_json(&legacy).unwrap()
+        canonical_json(&minimal).unwrap()
     );
 }
 

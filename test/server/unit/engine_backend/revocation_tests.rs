@@ -2,7 +2,6 @@
 use super::*;
 use crate::{AuthorizedBackend, BackendAction, auth::AuthStore};
 use std::{
-    collections::BTreeSet,
     path::PathBuf,
     sync::{Arc, Barrier},
 };
@@ -84,6 +83,7 @@ struct Fixture {
     backend: Arc<EngineBackend>,
     auth: Arc<Mutex<AuthStore>>,
     identity: Identity,
+    token: String,
     repo: Repository,
     version: String,
     workspace: Workspace,
@@ -91,7 +91,7 @@ struct Fixture {
     source: PathBuf,
 }
 impl Fixture {
-    fn new(admin: bool, protected: bool) -> Self {
+    fn new(protected: bool) -> Self {
         let root = crate::tests::private_tempdir();
         let config = Config::development([
             root.path().join("primary"),
@@ -131,31 +131,24 @@ impl Fixture {
         let source = root.path().join("source");
         std::fs::write(&source, b"new upload").unwrap();
         let backend = Arc::new(EngineBackend::new(engine));
-        let mut auth =
-            AuthStore::initialize(root.path(), "admin", "integration-test-password").unwrap();
-        auth.upsert_account(
-            "owner",
-            Some("integration-test-password"),
-            admin,
-            if admin {
-                BTreeSet::new()
-            } else {
-                BTreeSet::from([repo.repository_id.clone()])
-            },
-            false,
-        )
-        .unwrap();
-        let identity = auth.identity_for_principal("owner").unwrap();
-        let auth = if protected {
+        let auth =
+            AuthStore::initialize(root.path(), "owner", "integration-test-password").unwrap();
+        let mut auth = if protected {
             backend.protect_auth(auth).unwrap()
         } else {
             auth
         };
+        let token = auth
+            .login("owner", "integration-test-password")
+            .unwrap()
+            .token;
+        let identity = auth.authenticate(&token).unwrap();
         Self {
             _root: root,
             backend,
             auth: Arc::new(Mutex::new(auth)),
             identity,
+            token,
             repo,
             version,
             workspace,
@@ -202,11 +195,11 @@ impl Request {
         match self {
             Self::Metadata => backend
                 .call(
-                    BackendAction::SetGrants,
+                    BackendAction::UpdatePlacementRule,
                     identity,
                     json!({
-                        "repository_id":fixture.repo.repository_id,"grants":fixture.repo.grants,
-                        "operation_id":new_id("op")
+                        "repository_id":fixture.repo.repository_id,"rule_id":new_id("rule"),"path_prefix":"",
+                        "primary_slot_id":"P01","expected_generation":"0","operation_id":new_id("op")
                     }),
                 )
                 .map(|_| ()),
@@ -290,21 +283,17 @@ impl Request {
 
 #[derive(Clone, Copy, Debug)]
 enum Revocation {
-    Disable,
-    Demote,
-    RemoveScope,
+    Logout,
+    PasswordChange,
 }
 
 #[test]
 fn completed_account_revocation_precedes_all_engine_admissions() {
-    for revocation in [
-        Revocation::Disable,
-        Revocation::Demote,
-        Revocation::RemoveScope,
-    ] {
-        let fixture = Arc::new(Fixture::new(matches!(revocation, Revocation::Demote), true));
-        let mut requests = vec![
+    for revocation in [Revocation::Logout, Revocation::PasswordChange] {
+        let fixture = Arc::new(Fixture::new(true));
+        let requests = vec![
             Request::Metadata,
+            Request::Administrator,
             Request::Tree,
             Request::Version,
             Request::Namespace,
@@ -315,9 +304,6 @@ fn completed_account_revocation_precedes_all_engine_admissions() {
             Request::Upload,
             Request::UploadGeneration,
         ];
-        if matches!(revocation, Revocation::Demote) {
-            requests.push(Request::Administrator);
-        }
         let captured = Arc::new(Barrier::new(requests.len() + 1));
         let released = Arc::new(Barrier::new(requests.len() + 1));
         let backend = Arc::new(AuthorizedBackend {
@@ -340,13 +326,14 @@ fn completed_account_revocation_precedes_all_engine_admissions() {
             })
             .collect::<Vec<_>>();
         captured.wait();
-        let revoked = fixture.auth.lock().unwrap().upsert_account(
-            "owner",
-            None,
-            false,
-            BTreeSet::new(),
-            matches!(revocation, Revocation::Disable),
-        );
+        let revoked = match revocation {
+            Revocation::Logout => fixture.auth.lock().unwrap().logout(&fixture.token),
+            Revocation::PasswordChange => fixture.auth.lock().unwrap().change_password(
+                &fixture.token,
+                "integration-test-password",
+                "new-integration-test-password",
+            ),
+        };
         let before = fixture.snapshot();
         released.wait();
         revoked.unwrap();
@@ -355,15 +342,7 @@ fn completed_account_revocation_precedes_all_engine_admissions() {
                 .join()
                 .unwrap()
                 .expect_err("revoked request must be rejected");
-            assert_eq!(
-                error.code,
-                if matches!(revocation, Revocation::Disable) {
-                    "UNAUTHORIZED"
-                } else {
-                    "FORBIDDEN"
-                },
-                "{revocation:?}: {request:?}"
-            );
+            assert_eq!(error.code, "UNAUTHORIZED", "{revocation:?}: {request:?}");
         }
         assert!(
             fixture.snapshot() == before,
@@ -373,26 +352,18 @@ fn completed_account_revocation_precedes_all_engine_admissions() {
 }
 
 #[test]
-fn current_account_scope_controls_queries_without_disabling_public_probes() {
-    let fixture = Fixture::new(true, true);
-    fixture
-        .auth
-        .lock()
-        .unwrap()
-        .upsert_account(
-            "owner",
-            None,
-            false,
-            BTreeSet::from([fixture.repo.repository_id.clone()]),
-            false,
-        )
-        .unwrap();
-    // Demotion does not remove the account's independently granted repository access.
-    let listed = fixture
-        .backend
-        .call(BackendAction::Repositories, &fixture.identity, json!({}))
-        .unwrap();
-    assert_eq!(listed["repositories"].as_array().unwrap().len(), 1);
+fn revoked_session_cannot_turn_public_probes_into_data_admission() {
+    let fixture = Fixture::new(true);
+    assert_eq!(
+        fixture
+            .backend
+            .call(BackendAction::Repositories, &fixture.identity, json!({}))
+            .unwrap()["repositories"]
+            .as_array()
+            .unwrap()
+            .len(),
+        1
+    );
     assert!(
         Request::Metadata
             .execute(&fixture, fixture.backend.as_ref())
@@ -403,58 +374,42 @@ fn current_account_scope_controls_queries_without_disabling_public_probes() {
             .execute(&fixture, fixture.backend.as_ref())
             .is_ok()
     );
-    assert_eq!(
-        Request::Administrator
-            .execute(&fixture, fixture.backend.as_ref())
-            .unwrap_err()
-            .code,
-        "FORBIDDEN"
-    );
-    fixture
-        .auth
-        .lock()
-        .unwrap()
-        .upsert_account("owner", None, false, BTreeSet::new(), false)
-        .unwrap();
-    let listed = fixture
-        .backend
-        .call(BackendAction::Repositories, &fixture.identity, json!({}))
-        .unwrap();
-    assert!(listed["repositories"].as_array().unwrap().is_empty());
-    let events = fixture
-        .backend
-        .call(BackendAction::Events, &fixture.identity, json!({}))
-        .unwrap();
-    assert!(events["events"].as_array().unwrap().is_empty());
-    fixture
-        .auth
-        .lock()
-        .unwrap()
-        .upsert_account("owner", None, false, BTreeSet::new(), true)
-        .unwrap();
-    assert_eq!(
-        fixture
-            .backend
-            .call(BackendAction::Repositories, &fixture.identity, json!({}))
-            .unwrap_err()
-            .code,
-        "UNAUTHORIZED"
-    );
+    fixture.auth.lock().unwrap().logout(&fixture.token).unwrap();
+    for action in [
+        BackendAction::Repositories,
+        BackendAction::Events,
+        BackendAction::MonitorDisks,
+    ] {
+        assert_eq!(
+            fixture
+                .backend
+                .call(action, &fixture.identity, json!({}))
+                .unwrap_err()
+                .code,
+            "UNAUTHORIZED"
+        );
+    }
     let anonymous = Identity {
         admission_session: None,
         smb_binding: None,
         principal: String::new(),
-        admin: false,
-        repositories: BTreeSet::new(),
     };
     for action in [BackendAction::Capabilities, BackendAction::Ready] {
         assert!(fixture.backend.call(action, &anonymous, json!({})).is_ok());
     }
+    assert_eq!(
+        fixture
+            .backend
+            .call(BackendAction::Repositories, &anonymous, json!({}))
+            .unwrap_err()
+            .code,
+        "UNAUTHORIZED"
+    );
 }
 
 #[test]
-fn embedded_backend_without_protected_accounts_uses_explicit_caller_identity() {
-    let fixture = Fixture::new(false, false);
+fn embedded_backend_without_protected_credentials_fails_closed() {
+    let fixture = Fixture::new(false);
     assert!(
         fixture
             .backend
@@ -464,48 +419,34 @@ fn embedded_backend_without_protected_accounts_uses_explicit_caller_identity() {
             .auth_state()
             .is_none()
     );
-    // An unrelated, unattached auth store is not this embedded engine's authority.
-    fixture
-        .auth
-        .lock()
-        .unwrap()
-        .upsert_account("owner", None, false, BTreeSet::new(), true)
-        .unwrap();
-    assert!(
-        Request::Metadata
-            .execute(&fixture, fixture.backend.as_ref())
-            .is_ok()
-    );
-    assert!(
-        Request::Content
-            .execute(&fixture, fixture.backend.as_ref())
-            .is_ok()
-    );
-    let unadmitted = Identity {
-        admission_session: None,
-        smb_binding: None,
-        repositories: BTreeSet::new(),
-        ..fixture.identity.clone()
-    };
-    assert_eq!(
-        fixture
-            .backend
-            .call(
-                BackendAction::Repository,
-                &unadmitted,
-                json!({
-                    "repository_id":fixture.repo.repository_id
-                })
-            )
-            .unwrap_err()
-            .code,
-        "FORBIDDEN"
-    );
+    let before = fixture.snapshot();
+    for request in [
+        Request::Metadata,
+        Request::Administrator,
+        Request::Tree,
+        Request::Version,
+        Request::Namespace,
+        Request::Content,
+        Request::RangeContent,
+        Request::WorkspaceContent,
+        Request::Checksums,
+        Request::Upload,
+        Request::UploadGeneration,
+    ] {
+        assert_eq!(
+            request
+                .execute(&fixture, fixture.backend.as_ref())
+                .unwrap_err()
+                .code,
+            "UNAUTHORIZED"
+        );
+    }
+    assert_eq!(fixture.snapshot(), before);
 }
 
 #[test]
 fn private_disk_sampling_cannot_grant_public_monitoring_access() {
-    let fixture = Fixture::new(true, true);
+    let fixture = Fixture::new(true);
     let before = fixture.snapshot();
     let observed = fixture
         .backend
@@ -518,8 +459,6 @@ fn private_disk_sampling_cannot_grant_public_monitoring_access() {
         admission_session: None,
         smb_binding: None,
         principal: "zxs-system-telemetry".into(),
-        admin: true,
-        repositories: BTreeSet::new(),
     };
     assert_eq!(
         fixture
@@ -529,40 +468,29 @@ fn private_disk_sampling_cannot_grant_public_monitoring_access() {
             .code,
         "UNAUTHORIZED"
     );
-    for disabled in [false, true] {
+    fixture.auth.lock().unwrap().logout(&fixture.token).unwrap();
+    assert_eq!(
         fixture
-            .auth
-            .lock()
-            .unwrap()
-            .upsert_account("owner", None, false, BTreeSet::new(), disabled)
-            .unwrap();
-        assert_eq!(
-            fixture
-                .backend
-                .call(BackendAction::MonitorDisks, &fixture.identity, json!({}))
-                .unwrap_err()
-                .code,
-            if disabled {
-                "UNAUTHORIZED"
-            } else {
-                "FORBIDDEN"
-            }
-        );
-        let before = fixture.snapshot();
-        assert!(
-            fixture
-                .backend
-                .observe_disks(&crate::InternalDiskObservation(()))
-                .is_ok()
-        );
-        assert!(fixture.snapshot() == before);
-    }
+            .backend
+            .call(BackendAction::MonitorDisks, &fixture.identity, json!({}))
+            .unwrap_err()
+            .code,
+        "UNAUTHORIZED"
+    );
+    let before = fixture.snapshot();
+    assert!(
+        fixture
+            .backend
+            .observe_disks(&crate::InternalDiskObservation(()))
+            .is_ok()
+    );
+    assert_eq!(fixture.snapshot(), before);
 }
 
 #[test]
 fn both_upload_adapters_bind_the_copied_snapshot_before_acceptance() {
     for explicit_generation in [false, true] {
-        let fixture = Fixture::new(false, false);
+        let fixture = Fixture::new(true);
         let before = fixture.snapshot();
         let item = new_id("entry");
         let source =

@@ -1,7 +1,6 @@
 use super::*;
 use crate::{Backend, engine_backend::EngineBackend};
 use json_codec::json;
-use std::collections::BTreeSet;
 use storage_contract::{Config, new_id};
 
 fn fixture() -> (
@@ -20,13 +19,7 @@ fn fixture() -> (
     let repo = engine
         .create_repository("Application", "P01", 3, "owner", &new_id("op"))
         .unwrap();
-    let identity = Identity {
-        admission_session: None,
-        smb_binding: None,
-        principal: "owner".into(),
-        admin: false,
-        repositories: BTreeSet::from([repo.repository_id.clone()]),
-    };
+    let identity = crate::engine_backend::install_test_administrator(&mut engine, "owner");
     (root, engine, repo, identity)
 }
 
@@ -149,15 +142,13 @@ fn protection_commands_preserve_core_replay_and_transport_contract() {
             admission_session: None,
             smb_binding: None,
             principal: "stranger".into(),
-            admin: false,
-            repositories: owner.repositories.clone(),
         };
         assert_eq!(
             backend
                 .call(action, &stranger, input.clone())
                 .unwrap_err()
                 .status,
-            403
+            401
         );
         let mut malformed = input.clone();
         malformed["expected_generation"] = json!(1);
@@ -166,27 +157,16 @@ fn protection_commands_preserve_core_replay_and_transport_contract() {
                 .call(action, &stranger, malformed.clone())
                 .unwrap_err()
                 .status,
-            403
+            401
         );
         assert_eq!(
             backend.call(action, &owner, malformed).unwrap_err().status,
             400
         );
-        // Transport-independent callers also need both account admission and Manage.
-        let mut engine = backend.engine.lock().unwrap();
-        let denied = if is_policy {
-            Application::new(&mut engine, &stranger)
-                .update_protection_policy(json_codec::from_value(input).unwrap())
-        } else {
-            Application::new(&mut engine, &stranger)
-                .update_placement_rule(json_codec::from_value(input).unwrap())
-        };
-        assert_eq!(denied.unwrap_err().status, 403);
         assert_eq!(
-            engine.state().operations[&operation].request_digest,
+            backend.engine.lock().unwrap().state().operations[&operation].request_digest,
             original.request_digest
         );
-        drop(engine);
         let mut update = if is_policy {
             json!({"policy_id":id,"repository_id":repo.repository_id,"path_prefix":"",
                     "target_copies":3,"expected_generation":"1","operation_id":new_id("op")})
@@ -195,18 +175,15 @@ fn protection_commands_preserve_core_replay_and_transport_contract() {
                     "primary_slot_id":"P01","expected_generation":"1","operation_id":new_id("op")})
         };
         let unadmitted_owner = Identity {
-            admission_session: None,
-            smb_binding: None,
-            principal: owner.principal.clone(),
-            admin: false,
-            repositories: BTreeSet::new(),
+            admission_session: Some("unknown-session".into()),
+            ..owner.clone()
         };
         assert_eq!(
             backend
                 .call(action, &unadmitted_owner, update.clone())
                 .unwrap_err()
                 .status,
-            403
+            401
         );
         let applied = backend.call(action, &owner, update.clone()).unwrap();
         let record = if is_policy { "policy" } else { "rule" };
@@ -259,7 +236,7 @@ fn public_commit_roundtrip_preserves_canonical_envelope_and_executes() {
 }
 
 #[test]
-fn workspace_ownership_and_account_admission_apply_to_typed_and_wire_paths() {
+fn workspace_ownership_and_session_admission_apply_to_typed_and_wire_paths() {
     let (_root, mut engine, repo, owner) = fixture();
     let workspace = engine
         .create_workspace(&repo.main_branch_id, &owner.principal)
@@ -268,7 +245,6 @@ fn workspace_ownership_and_account_admission_apply_to_typed_and_wire_paths() {
         admission_session: None,
         smb_binding: None,
         principal: "intruder".into(),
-        ..owner.clone()
     };
     let result = Application::new(&mut engine, &intruder).stage_namespace(StageNamespace {
         workspace_id: workspace.workspace_id.clone(),
@@ -280,20 +256,17 @@ fn workspace_ownership_and_account_admission_apply_to_typed_and_wire_paths() {
     });
     assert_eq!(result.unwrap_err().code, "FORBIDDEN");
     let unadmitted_owner = Identity {
-        admission_session: None,
-        smb_binding: None,
-        repositories: BTreeSet::new(),
+        admission_session: Some("unknown-session".into()),
         ..owner.clone()
     };
-    let result =
-        Application::new(&mut engine, &unadmitted_owner).commit_workspace(CommitWorkspace {
-            workspace_id: workspace.workspace_id.clone(),
-            operation_id: new_id("op"),
-            expected_head: workspace.base_head.clone(),
-            fencing_token: workspace.fencing_token,
-            message: String::new(),
-            request_digest: None,
-        });
+    let result = Application::new(&mut engine, &intruder).commit_workspace(CommitWorkspace {
+        workspace_id: workspace.workspace_id.clone(),
+        operation_id: new_id("op"),
+        expected_head: workspace.base_head.clone(),
+        fencing_token: workspace.fencing_token,
+        message: String::new(),
+        request_digest: None,
+    });
     assert_eq!(result.unwrap_err().code, "FORBIDDEN");
     let backend = EngineBackend::new(engine);
     for identity in [&intruder, &unadmitted_owner] {
@@ -303,7 +276,7 @@ fn workspace_ownership_and_account_admission_apply_to_typed_and_wire_paths() {
             json!({"workspace_id":workspace.workspace_id,
                 "kind":"mkdir", "path":"WireDenied"}),
         );
-        assert_eq!(result.unwrap_err().code, "FORBIDDEN");
+        assert_eq!(result.unwrap_err().code, "UNAUTHORIZED");
     }
     let engine = backend.engine.lock().unwrap();
     assert!(
@@ -349,7 +322,7 @@ fn public_commit_decode_rejects_unknown_missing_and_numeric_decimal_fields() {
 }
 
 #[test]
-fn typed_branch_requires_manage_and_rejects_cross_repository_source() {
+fn typed_branch_rejects_cross_repository_source() {
     let (_root, mut engine, repo, owner) = fixture();
     let other = engine
         .create_repository("Other", "P01", 3, &owner.principal, &new_id("op"))
@@ -366,8 +339,8 @@ fn typed_branch_requires_manage_and_rejects_cross_repository_source() {
     assert_eq!(result.unwrap_err().code, "HISTORY_NODE_NOT_FOUND");
 }
 #[test]
-fn upload_finalization_rechecks_completed_account_revocation() {
-    for disabled in [false, true] {
+fn upload_finalization_rechecks_completed_session_revocation() {
+    for password_change in [false, true] {
         let (root, mut engine, repo, owner) = fixture();
         let workspace = engine
             .create_workspace(&repo.main_branch_id, &owner.principal)
@@ -376,18 +349,15 @@ fn upload_finalization_rechecks_completed_account_revocation() {
         std::fs::write(&source, b"prepared bytes").unwrap();
         let item = new_id("entry");
         let backend = std::sync::Arc::new(EngineBackend::new(engine));
-        let mut auth =
-            crate::auth::AuthStore::initialize(root.path(), "admin", "integration-test-password")
+        let auth =
+            crate::auth::AuthStore::initialize(root.path(), "owner", "integration-test-password")
                 .unwrap();
-        auth.upsert_account(
-            "owner",
-            Some("integration-test-password"),
-            false,
-            owner.repositories.clone(),
-            false,
-        )
-        .unwrap();
         let mut auth = backend.protect_auth(auth).unwrap();
+        let token = auth
+            .login("owner", "integration-test-password")
+            .unwrap()
+            .token;
+        let owner = auth.authenticate(&token).unwrap();
         let plan = {
             let engine = backend.engine.lock().unwrap();
             engine
@@ -395,18 +365,16 @@ fn upload_finalization_rechecks_completed_account_revocation() {
                 .unwrap()
         };
         // This update completes while byte preparation holds no engine lock.
-        auth.upsert_account(
-            "owner",
-            None,
-            false,
-            if disabled {
-                owner.repositories.clone()
-            } else {
-                BTreeSet::new()
-            },
-            disabled,
-        )
-        .unwrap();
+        if password_change {
+            auth.change_password(
+                &token,
+                "integration-test-password",
+                "new-integration-test-password",
+            )
+            .unwrap();
+        } else {
+            auth.logout(&token).unwrap();
+        }
         let prepared = plan.execute().unwrap();
         let mut engine = backend.engine.lock().unwrap();
         let result = crate::engine_backend::finish_authorized_upload(
@@ -415,14 +383,7 @@ fn upload_finalization_rechecks_completed_account_revocation() {
             &workspace.workspace_id,
             prepared,
         );
-        assert_eq!(
-            result.unwrap_err().code,
-            if disabled {
-                "UNAUTHORIZED"
-            } else {
-                "FORBIDDEN"
-            }
-        );
+        assert_eq!(result.unwrap_err().code, "UNAUTHORIZED");
         assert!(
             engine
                 .workspace(&workspace.workspace_id)
@@ -461,37 +422,32 @@ fn commit_preparation_releases_engine_and_rechecks_completed_revocation() {
                         "expected_head":workspace.base_head,"fencing_token":workspace.fencing_token.to_string(),"message":"commit"})
             };
             let backend = Arc::new(EngineBackend::new(engine));
-            let mut auth = crate::auth::AuthStore::initialize(
+            let auth = crate::auth::AuthStore::initialize(
                 root.path(),
-                "admin",
+                "owner",
                 "integration-test-password",
             )
             .unwrap();
-            auth.upsert_account(
-                "owner",
-                Some("integration-test-password"),
-                false,
-                owner.repositories.clone(),
-                false,
-            )
-            .unwrap();
             let mut auth = backend.protect_auth(auth).unwrap();
+            let token = auth
+                .login("owner", "integration-test-password")
+                .unwrap()
+                .token;
+            let owner = auth.authenticate(&token).unwrap();
             // A request can retain an Identity captured before revocation.
             // Reject it before preparing bytes, even though concurrent auth
             // writes would also be fenced once preparation has started.
-            if let Some(disabled) = revoke {
-                auth.upsert_account(
-                    "owner",
-                    None,
-                    false,
-                    if disabled {
-                        owner.repositories.clone()
-                    } else {
-                        BTreeSet::new()
-                    },
-                    disabled,
-                )
-                .unwrap();
+            if let Some(password_change) = revoke {
+                if password_change {
+                    auth.change_password(
+                        &token,
+                        "integration-test-password",
+                        "new-integration-test-password",
+                    )
+                    .unwrap();
+                } else {
+                    auth.logout(&token).unwrap();
+                }
                 let result = backend.call(
                     if public {
                         crate::BackendAction::CommitWorkspace
@@ -501,14 +457,7 @@ fn commit_preparation_releases_engine_and_rechecks_completed_revocation() {
                     &owner,
                     input,
                 );
-                assert_eq!(
-                    result.unwrap_err().code,
-                    if disabled {
-                        "UNAUTHORIZED"
-                    } else {
-                        "FORBIDDEN"
-                    }
-                );
+                assert_eq!(result.unwrap_err().code, "UNAUTHORIZED");
                 let engine = backend.engine.lock().unwrap();
                 assert!(!engine.state().operations.contains_key(&operation));
                 assert!(engine.list_tree(&repo.main_branch_id).unwrap().is_empty());
@@ -558,12 +507,16 @@ fn commit_preparation_releases_engine_and_rechecks_completed_revocation() {
             reader.join().unwrap();
             let before_busy = auth.snapshot().unwrap();
             let busy = auth
-                .upsert_account("owner", None, false, owner.repositories.clone(), false)
+                .change_password(
+                    &token,
+                    "integration-test-password",
+                    "new-integration-test-password",
+                )
                 .unwrap_err();
             assert_eq!(busy.code, "COMMIT_PREPARATION_BUSY");
             assert!(busy.retryable);
             assert_eq!(auth.snapshot().unwrap(), before_busy);
-            assert!(auth.identity_for_principal("admin").is_ok());
+            assert!(auth.authenticate(&token).is_ok());
             release_tx.send(()).unwrap();
             let result = writer.join().unwrap();
             let engine = backend.engine.lock().unwrap();

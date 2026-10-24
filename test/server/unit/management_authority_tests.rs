@@ -242,3 +242,101 @@ fn explicitly_authorized_restore_installs_credentials_but_not_old_sessions() {
         assert!(auth.lock().unwrap().authenticate(&f.old_session).is_err());
     }
 }
+
+#[test]
+fn protected_management_rejects_missing_forged_and_revoked_sessions_before_storage() {
+    let f = Fixture::new();
+    drop(AuthStore::initialize_management(&f.management, "admin", PASSWORD).unwrap());
+    let (backend, auth) = f.open();
+    let authority_before = fs::read(f.data.join("management-authority.json")).unwrap();
+    let credentials_before = auth.lock().unwrap().snapshot().unwrap();
+    let (token, current) = {
+        let mut auth = auth.lock().unwrap();
+        let token = auth.login("admin", PASSWORD).unwrap().token;
+        let current = auth.authenticate(&token).unwrap();
+        (token, current)
+    };
+    auth.lock().unwrap().logout(&token).unwrap();
+    let no_session = Identity {
+        admission_session: None,
+        ..current.clone()
+    };
+    let forged = Identity {
+        admission_session: Some("not-a-session".into()),
+        ..current.clone()
+    };
+    for identity in [current, no_session, forged] {
+        for action in [
+            "offline_check",
+            "recovery_preview",
+            "recovery_commit",
+            "restore_system",
+        ] {
+            assert_eq!(
+                backend
+                    .setup_operation(action, json!({}), None, Some(&identity))
+                    .unwrap_err()
+                    .code,
+                "UNAUTHORIZED"
+            );
+        }
+        assert_eq!(
+            backend.retry_storage(&identity).unwrap_err().code,
+            "UNAUTHORIZED"
+        );
+    }
+    assert!(!f.data.join("config.json").exists());
+    assert_eq!(
+        fs::read(f.data.join("management-authority.json")).unwrap(),
+        authority_before
+    );
+    assert_eq!(auth.lock().unwrap().snapshot().unwrap(), credentials_before);
+    assert!(auth.lock().unwrap().authenticate(&token).is_err());
+}
+
+#[test]
+fn authenticated_restore_rechecks_revocation_before_authority_publication() {
+    const CURRENT_PASSWORD: &str = "current-management-password";
+    let f = Fixture::new();
+    drop(AuthStore::initialize_management(&f.management, "admin", CURRENT_PASSWORD).unwrap());
+    let (backend, auth) = f.open();
+    let authority_before = fs::read(f.data.join("management-authority.json")).unwrap();
+    let credentials_before = auth.lock().unwrap().snapshot().unwrap();
+    let (token, identity) = {
+        let mut auth = auth.lock().unwrap();
+        let token = auth.login("admin", CURRENT_PASSWORD).unwrap().token;
+        let identity = auth.authenticate(&token).unwrap();
+        (token, identity)
+    };
+    let revoked = auth.clone();
+    let revoked_token = token.clone();
+    crate::setup_recovery::after_next_restore(move || {
+        revoked.lock().unwrap().logout(&revoked_token).unwrap()
+    });
+    assert_eq!(
+        backend
+            .setup_operation(
+                "restore_system",
+                json!({"disk_ids":["one"],"accept_stale_credentials":false}),
+                None,
+                Some(&identity)
+            )
+            .unwrap_err()
+            .code,
+        "UNAUTHORIZED"
+    );
+    assert!(f.data.join("config.json").exists());
+    assert_eq!(
+        fs::read(f.data.join("management-authority.json")).unwrap(),
+        authority_before
+    );
+    assert_eq!(auth.lock().unwrap().snapshot().unwrap(), credentials_before);
+    assert!(auth.lock().unwrap().authenticate(&token).is_err());
+    assert!(auth.lock().unwrap().login("admin", PASSWORD).is_err());
+    assert!(
+        auth.lock()
+            .unwrap()
+            .login("admin", CURRENT_PASSWORD)
+            .is_ok()
+    );
+}

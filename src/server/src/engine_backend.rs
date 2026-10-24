@@ -2,7 +2,7 @@
 use crate::{ApiError, Backend, Content, auth::Identity};
 use json_codec::{Value, json};
 use std::{path::Path, sync::Mutex};
-use storage_engine::{Engine, Grants, NamespaceOperation, Repository};
+use storage_engine::{Engine, NamespaceOperation, Repository};
 mod admission;
 use admission::AdmissionEngine;
 pub mod application;
@@ -103,6 +103,24 @@ impl EngineBackend {
         self.protect_auth(crate::auth::AuthStore::open_with_snapshot(root, snapshot)?)
     }
 }
+/// Unit fixtures install real singleton credentials rather than bypassing admission.
+#[cfg(test)]
+fn install_test_administrator(engine: &mut Engine, username: &str) -> Identity {
+    let root = crate::tests::private_tempdir();
+    let auth =
+        crate::auth::AuthStore::initialize(root.path(), username, "integration-test-password")
+            .unwrap();
+    let identity = auth.sole_identity().unwrap();
+    engine
+        .persist_auth_state(
+            auth.snapshot().unwrap(),
+            "system_auth",
+            &storage_engine::new_id("op"),
+        )
+        .unwrap();
+    identity
+}
+
 fn repository<'a>(engine: &'a Engine, id: &str) -> Result<&'a Repository, ApiError> {
     engine
         .state()
@@ -138,49 +156,20 @@ fn repo_for_branch<'a>(engine: &'a Engine, id: &str) -> Result<&'a Repository, A
     }
     repo_for_history(engine, &branch.history_tree_id)
 }
-pub use storage_contract::RepositoryAccess;
-
-pub fn authorize_access(
-    identity: &Identity,
-    repo: &Repository,
-    access: RepositoryAccess,
-) -> Result<(), ApiError> {
-    if identity.admin {
-        return Ok(());
-    }
-    let admitted = identity.can_access(&repo.repository_id)
-        || repo
-            .account_scope_repository_id
-            .as_deref()
-            .is_some_and(|source| identity.can_access(source));
-    if !admitted {
-        return Err(ApiError::forbidden());
-    }
-    let allowed = repo.grants.allows(&identity.principal, access);
-    if allowed {
-        Ok(())
-    } else {
-        Err(ApiError::forbidden())
-    }
-}
 fn workspace_authorize(
     engine: &Engine,
     identity: &Identity,
     id: &str,
 ) -> Result<storage_engine::Workspace, ApiError> {
     let workspace = engine.workspace(id).map_err(error)?;
-    if workspace.principal != identity.principal && !identity.admin {
+    if workspace.principal != identity.principal {
         return Err(ApiError::forbidden());
     }
-    authorize_access(
-        identity,
-        repo_for_branch(engine, &workspace.branch_id)?,
-        RepositoryAccess::Write,
-    )?;
+    repo_for_branch(engine, &workspace.branch_id)?;
     Ok(workspace)
 }
 
-/// Refresh account admission while holding the engine lock, before capturing a
+/// Refresh administrator admission while holding the engine lock, before capturing a
 /// read plan or publishing a mutation, and again after unlocked preparation.
 /// Managed admission linearizes here: engine -> short primary-auth read.
 /// Managed auth publication never holds its mutex across engine work. An
@@ -242,10 +231,10 @@ impl Backend for EngineBackend {
         match action {
             crate::BackendAction::WorkspaceCapacity => {
                 keys(&input, &[])?;
-                encode(engine.workspace_capacity(&identity.principal, identity.admin))
+                encode(engine.workspace_capacity(&identity.principal))
             }
             crate::BackendAction::FileManagerDisks => {
-                let access = file_manager::disk_access(&engine, identity);
+                let access = file_manager::disk_access(&engine);
                 let observation = engine.prepare_disk_observation();
                 drop(engine);
                 let disks = observation.status().map_err(error)?.into_iter().filter_map(|disk| {
@@ -259,7 +248,7 @@ impl Backend for EngineBackend {
             | crate::BackendAction::FileManagerEntries
             | crate::BackendAction::FileManagerFileHistory
             | crate::BackendAction::FileManagerHistory => {
-                file_manager::read(&engine, identity, action, input)
+                file_manager::read(&engine, action, input)
             }
             crate::BackendAction::FileManagerBranch
             | crate::BackendAction::FileManagerConfigureBackups
@@ -278,7 +267,6 @@ impl Backend for EngineBackend {
                 file_manager::call(&mut engine, identity, action, input)
             }
             crate::BackendAction::MonitorDisks => {
-                identity.require_admin()?;
                 let observation = engine.prepare_disk_observation();
                 drop(engine);
                 disk_monitor::observe(observation)
@@ -322,41 +310,33 @@ impl Backend for EngineBackend {
                 )
             }
             crate::BackendAction::Repositories => {
-                let values = engine
-                    .state()
-                    .repositories
-                    .values()
-                    .filter(|repo| authorize_access(identity, repo, RepositoryAccess::Read).is_ok())
-                    .collect::<Vec<_>>();
+                let values = engine.state().repositories.values().collect::<Vec<_>>();
                 Ok(json!({"repositories":values}))
             }
             crate::BackendAction::Repository => {
                 let repo = repository(&engine, field(&input, "repository_id")?)?;
-                authorize_access(identity, repo, RepositoryAccess::Read)?;
                 encode(repo)
             }
             crate::BackendAction::Branches => {
                 let repo = repository(&engine, field(&input, "repository_id")?)?;
-                authorize_access(identity, repo, RepositoryAccess::Read)?;
                 Ok(
                     json!({"branches":engine.state().branches.values().filter(|branch|branch.history_tree_id==repo.history_tree_id).map(|branch| branch_wire(&engine, branch)).collect::<Result<Vec<_>, _>>()?}),
                 )
             }
             crate::BackendAction::Tree => {
-                let projection = read_projection::Tree::capture(&engine, identity, &input)?;
+                let projection = read_projection::Tree::capture(&engine, &input)?;
                 read_projection::render_unlocked(engine, projection)
             }
             crate::BackendAction::SmbLookup => {
-                let projection = read_projection::SmbLookup::capture(&engine, identity, &input)?;
+                let projection = read_projection::SmbLookup::capture(&engine, &input)?;
                 read_projection::render_unlocked(engine, projection)
             }
             crate::BackendAction::SmbReadDirectory => {
-                let projection = read_projection::SmbDirectory::capture(&engine, identity, &input)?;
+                let projection = read_projection::SmbDirectory::capture(&engine, &input)?;
                 read_projection::render_unlocked(engine, projection)
             }
             crate::BackendAction::SmbBinding => {
                 let repo = repository(&engine, field(&input, "repository_id")?)?;
-                authorize_access(identity, repo, RepositoryAccess::Manage)?;
                 let history = engine
                     .state()
                     .histories
@@ -370,7 +350,6 @@ impl Backend for EngineBackend {
             }
             crate::BackendAction::DefaultBranch => {
                 let repo = repository(&engine, field(&input, "repository_id")?)?;
-                authorize_access(identity, repo, RepositoryAccess::Write)?;
                 let selected = engine.state().directory_selections.get(&repo.repository_id);
                 let name = selected
                     .and_then(|id| engine.state().directory_branches.get(id))
@@ -386,7 +365,6 @@ impl Backend for EngineBackend {
             }
             crate::BackendAction::DirectoryBranchScopes => file_manager::directory_branch_scopes(
                 &engine,
-                identity,
                 field(&input, "repository_id")?,
                 input
                     .get("query")
@@ -396,11 +374,7 @@ impl Backend for EngineBackend {
             crate::BackendAction::InitializeDirectoryScope => {
                 keys(&input, &["repository_id", "path", "operation_id"])?;
                 let repo = field(&input, "repository_id")?;
-                authorize_access(
-                    identity,
-                    repository(&engine, repo)?,
-                    RepositoryAccess::Write,
-                )?;
+                repository(&engine, repo)?;
                 // The empty path explicitly identifies the repository root.
                 let path = input
                     .get("path")
@@ -420,11 +394,7 @@ impl Backend for EngineBackend {
                     &["repository_id", "directory_branch_id", "operation_id"],
                 )?;
                 let repo = field(&input, "repository_id")?;
-                authorize_access(
-                    identity,
-                    repository(&engine, repo)?,
-                    RepositoryAccess::Write,
-                )?;
+                repository(&engine, repo)?;
                 let result = engine
                     .select_default_directory_branch(
                         repo,
@@ -446,11 +416,7 @@ impl Backend for EngineBackend {
                     ],
                 )?;
                 let repo = field(&input, "repository_id")?;
-                authorize_access(
-                    identity,
-                    repository(&engine, repo)?,
-                    RepositoryAccess::Write,
-                )?;
+                repository(&engine, repo)?;
                 let result = engine
                     .rename_directory_branch(
                         repo,
@@ -463,7 +429,6 @@ impl Backend for EngineBackend {
                 operation_wire(result)
             }
             crate::BackendAction::UpdateSmbBinding => {
-                identity.require_admin()?;
                 keys(
                     &input,
                     &[
@@ -475,11 +440,7 @@ impl Backend for EngineBackend {
                     ],
                 )?;
                 let repo = field(&input, "repository_id")?;
-                authorize_access(
-                    identity,
-                    repository(&engine, repo)?,
-                    RepositoryAccess::Manage,
-                )?;
+                repository(&engine, repo)?;
                 let enabled = input
                     .get("enabled")
                     .and_then(Value::as_bool)
@@ -501,40 +462,10 @@ impl Backend for EngineBackend {
                     .map_err(error)?;
                 operation_wire(result)
             }
-            crate::BackendAction::SetGrants => {
-                keys(&input, &["repository_id", "grants", "operation_id"])?;
-                let repository_id = field(&input, "repository_id")?;
-                authorize_access(
-                    identity,
-                    repository(&engine, repository_id)?,
-                    RepositoryAccess::Manage,
-                )?;
-                let grants: Grants = json_codec::from_value(
-                    input
-                        .get("grants")
-                        .cloned()
-                        .ok_or_else(|| ApiError::invalid("grants required"))?,
-                )
-                .map_err(ApiError::invalid)?;
-                encode(
-                    engine
-                        .set_grants(
-                            repository_id,
-                            grants,
-                            &identity.principal,
-                            operation(&input)?,
-                        )
-                        .map_err(error)?,
-                )
-            }
             crate::BackendAction::Resolve => {
                 keys(&input, &["branch_id", "path", "commit_id"])?;
                 let branch_id = field(&input, "branch_id")?;
-                authorize_access(
-                    identity,
-                    repo_for_branch(&engine, branch_id)?,
-                    RepositoryAccess::Read,
-                )?;
+                repo_for_branch(&engine, branch_id)?;
                 let branch = engine.state().branches.get(branch_id).unwrap();
                 let path = field(&input, "path")?;
                 name_policy::validate_path(path).map_err(ApiError::invalid)?;
@@ -574,22 +505,13 @@ impl Backend for EngineBackend {
             )?),
             crate::BackendAction::Plan => {
                 let plan = engine.plan(field(&input, "plan_id")?).map_err(error)?;
-                if plan.principal != identity.principal && !identity.admin {
+                if plan.principal != identity.principal {
                     return Err(ApiError::forbidden());
                 }
-                authorize_access(
-                    identity,
-                    repo_for_history(&engine, field(&plan.input, "history_tree_id")?)?,
-                    if plan.kind != "historical_save" {
-                        RepositoryAccess::Manage
-                    } else {
-                        RepositoryAccess::Write
-                    },
-                )?;
+                repo_for_history(&engine, field(&plan.input, "history_tree_id")?)?;
                 encode(plan)
             }
             crate::BackendAction::CreateRepository => {
-                identity.require_admin()?;
                 keys(
                     &input,
                     &["name", "primary_slot_id", "target_copies", "operation_id"],
@@ -614,11 +536,7 @@ impl Backend for EngineBackend {
             crate::BackendAction::WriteSession => {
                 keys(&input, &["branch_id"])?;
                 let branch = field(&input, "branch_id")?;
-                authorize_access(
-                    identity,
-                    repo_for_branch(&engine, branch)?,
-                    RepositoryAccess::Write,
-                )?;
+                repo_for_branch(&engine, branch)?;
                 let workspace = engine
                     .create_workspace(branch, &identity.principal)
                     .map_err(error)?;
@@ -634,29 +552,17 @@ impl Backend for EngineBackend {
                     let commit = engine.state().commits.get(id).ok_or_else(|| {
                         ApiError::new(404, "NOT_FOUND", "comparison commit not found")
                     })?;
-                    authorize_access(
-                        identity,
-                        repo_for_history(&engine, &commit.history_tree_id)?,
-                        RepositoryAccess::Read,
-                    )?;
+                    repo_for_history(&engine, &commit.history_tree_id)?;
                 }
                 engine.compare_commits(left, right).map_err(error)
             }
             crate::BackendAction::PlanCancel => {
                 keys(&input, &["plan_id", "operation_id"])?;
                 let plan = engine.plan(field(&input, "plan_id")?).map_err(error)?;
-                if plan.principal != identity.principal && !identity.admin {
+                if plan.principal != identity.principal {
                     return Err(ApiError::forbidden());
                 }
-                authorize_access(
-                    identity,
-                    repo_for_history(&engine, field(&plan.input, "history_tree_id")?)?,
-                    if plan.kind != "historical_save" {
-                        RepositoryAccess::Manage
-                    } else {
-                        RepositoryAccess::Write
-                    },
-                )?;
+                repo_for_history(&engine, field(&plan.input, "history_tree_id")?)?;
                 encode(
                     engine
                         .cancel_plan(
@@ -670,11 +576,7 @@ impl Backend for EngineBackend {
             crate::BackendAction::CreateWorkspace => {
                 keys(&input, &["branch_id", "source_commit_id"])?;
                 let branch = field(&input, "branch_id")?;
-                authorize_access(
-                    identity,
-                    repo_for_branch(&engine, branch)?,
-                    RepositoryAccess::Write,
-                )?;
+                repo_for_branch(&engine, branch)?;
                 let workspace =
                     if let Some(source) = wire::optional_identity(&input, "source_commit_id")? {
                         engine
@@ -689,11 +591,7 @@ impl Backend for EngineBackend {
             }
             crate::BackendAction::Branch => {
                 let id = field(&input, "branch_id")?;
-                authorize_access(
-                    identity,
-                    repo_for_branch(&engine, id)?,
-                    RepositoryAccess::Read,
-                )?;
+                repo_for_branch(&engine, id)?;
                 branch_wire(
                     &engine,
                     engine
@@ -716,11 +614,7 @@ impl Backend for EngineBackend {
                     ],
                 )?;
                 let history = field(&input, "history_tree_id")?;
-                authorize_access(
-                    identity,
-                    repo_for_history(&engine, history)?,
-                    RepositoryAccess::Write,
-                )?;
+                repo_for_history(&engine, history)?;
                 let mut options = input.clone();
                 options.as_object_mut().unwrap().remove("history_tree_id");
                 let options: storage_engine::HistoricalSaveOptions =
@@ -859,7 +753,7 @@ impl Backend for EngineBackend {
                         ],
                     )?;
                 }
-                // Keep strict string presence checks at the compatibility wire edge.
+                // Keep strict string presence checks at the canonical wire boundary.
                 for key in [
                     "workspace_id",
                     "operation_id",
@@ -952,11 +846,7 @@ impl Backend for EngineBackend {
                 let versions = engine.file_history(file).map_err(error)?;
                 let visible = versions
                     .into_iter()
-                    .filter(|version| {
-                        repo_for_history(&engine, &version.history_tree_id).is_ok_and(|repo| {
-                            authorize_access(identity, repo, RepositoryAccess::Read).is_ok()
-                        })
-                    })
+                    .filter(|version| repo_for_history(&engine, &version.history_tree_id).is_ok())
                     .collect::<Vec<_>>();
                 if visible.is_empty() {
                     return Err(ApiError::new(404, "NOT_FOUND", "file history not found"));
@@ -965,11 +855,7 @@ impl Backend for EngineBackend {
             }
             crate::BackendAction::Graph => {
                 let history = field(&input, "history_tree_id")?;
-                authorize_access(
-                    identity,
-                    repo_for_history(&engine, history)?,
-                    RepositoryAccess::Read,
-                )?;
+                repo_for_history(&engine, history)?;
                 encode(engine.graph(history).map_err(error)?)
             }
             crate::BackendAction::Commit => {
@@ -978,11 +864,7 @@ impl Backend for EngineBackend {
                     .commits
                     .get(field(&input, "commit_id")?)
                     .ok_or_else(|| ApiError::new(404, "NOT_FOUND", "commit not found"))?;
-                authorize_access(
-                    identity,
-                    repo_for_history(&engine, &commit.history_tree_id)?,
-                    RepositoryAccess::Read,
-                )?;
+                repo_for_history(&engine, &commit.history_tree_id)?;
                 encode(commit)
             }
             crate::BackendAction::Version | crate::BackendAction::Placement => {
@@ -992,11 +874,7 @@ impl Backend for EngineBackend {
                     .versions
                     .get(id)
                     .ok_or_else(|| ApiError::new(404, "NOT_FOUND", "version not found"))?;
-                authorize_access(
-                    identity,
-                    repo_for_history(&engine, &version.history_tree_id)?,
-                    RepositoryAccess::Read,
-                )?;
+                repo_for_history(&engine, &version.history_tree_id)?;
                 if action == crate::BackendAction::Version {
                     let mut value = encode(version)?;
                     value["content_state"] = engine
@@ -1019,8 +897,7 @@ impl Backend for EngineBackend {
                 let operation_id = field(&input, "operation_id")?;
                 // Reject foreign owners before loading even the pending result
                 // pages. Unknown/pending operations never trigger payload I/O.
-                if !identity.admin
-                    && let Some(owner) = engine.operation_owner(operation_id)
+                if let Some(owner) = engine.operation_owner(operation_id)
                     && owner != identity.principal
                 {
                     return Err(ApiError::forbidden());
@@ -1045,11 +922,7 @@ impl Backend for EngineBackend {
             crate::BackendAction::PurgePlan => {
                 keys(&input, &["history_tree_id", "version_ids"])?;
                 let history = field(&input, "history_tree_id")?;
-                authorize_access(
-                    identity,
-                    repo_for_history(&engine, history)?,
-                    RepositoryAccess::Manage,
-                )?;
+                repo_for_history(&engine, history)?;
                 let versions: Vec<String> = json_codec::from_value(
                     input
                         .get("version_ids")
@@ -1066,11 +939,7 @@ impl Backend for EngineBackend {
             crate::BackendAction::SplitPlan => {
                 keys(&input, &["history_tree_id", "cut_commit_id"])?;
                 let history = field(&input, "history_tree_id")?;
-                authorize_access(
-                    identity,
-                    repo_for_history(&engine, history)?,
-                    RepositoryAccess::Manage,
-                )?;
+                repo_for_history(&engine, history)?;
                 encode(
                     engine
                         .create_split_plan(
@@ -1096,11 +965,7 @@ impl Backend for EngineBackend {
                     .ok_or_else(|| {
                         ApiError::new(404, "NOT_FOUND", "protection policy not found")
                     })?;
-                authorize_access(
-                    identity,
-                    repository(&engine, &policy.repository_id)?,
-                    RepositoryAccess::Read,
-                )?;
+                repository(&engine, &policy.repository_id)?;
                 encode(policy)
             }
             crate::BackendAction::PlacementRule => {
@@ -1109,11 +974,7 @@ impl Backend for EngineBackend {
                     .placement_rules
                     .get(field(&input, "rule_id")?)
                     .ok_or_else(|| ApiError::new(404, "NOT_FOUND", "placement rule not found"))?;
-                authorize_access(
-                    identity,
-                    repository(&engine, &rule.repository_id)?,
-                    RepositoryAccess::Read,
-                )?;
+                repository(&engine, &rule.repository_id)?;
                 encode(rule)
             }
             crate::BackendAction::UpdatePolicy => {
@@ -1129,13 +990,9 @@ impl Backend for EngineBackend {
                     ],
                 )?;
                 let repo = field(&input, "repository_id")?;
-                authorize_access(
-                    identity,
-                    repository(&engine, repo)?,
-                    RepositoryAccess::Manage,
-                )?;
+                repository(&engine, repo)?;
                 // Retain the transport's key/admission error ordering while the
-                // application also enforces ACLs for non-HTTP callers.
+                // application also preserves domain safety checks.
                 let command = json_codec::from_value(input).map_err(ApiError::invalid)?;
                 let result =
                     Application::new(&mut engine, identity).update_protection_policy(command)?;
@@ -1154,34 +1011,23 @@ impl Backend for EngineBackend {
                     ],
                 )?;
                 let repo = field(&input, "repository_id")?;
-                authorize_access(
-                    identity,
-                    repository(&engine, repo)?,
-                    RepositoryAccess::Manage,
-                )?;
+                repository(&engine, repo)?;
                 // Retain the transport's key/admission error ordering while the
-                // application also enforces ACLs for non-HTTP callers.
+                // application also preserves domain safety checks.
                 let command = json_codec::from_value(input).map_err(ApiError::invalid)?;
                 let result =
                     Application::new(&mut engine, identity).update_placement_rule(command)?;
                 operation_wire(result)
             }
-            crate::BackendAction::Check => {
-                identity.require_admin()?;
-                encode(engine.check().map_err(error)?)
-            }
+            crate::BackendAction::Check => encode(engine.check().map_err(error)?),
             crate::BackendAction::Disks => {
-                identity.require_admin()?;
                 let observation = engine.prepare_disk_observation();
                 drop(engine);
                 encode(json!({"disks":observation.status().map_err(error)?}))
             }
-            crate::BackendAction::Topology => {
-                identity.require_admin()?;
-                Ok(
-                    json!({"topology_id":"default","generation":engine.state().topology_generation.to_string(),"slots":engine.config().disks.iter().map(|disk|json!({"slot_id":disk.slot_id,"disk_id":disk.disk_id,"level":disk.level,"upstream_slot_id":disk.upstream_slot_id,"metadata_member":disk.metadata_member,"binding_generation":disk.binding_generation.to_string()})).collect::<Vec<_>>()}),
-                )
-            }
+            crate::BackendAction::Topology => Ok(
+                json!({"topology_id":"default","generation":engine.state().topology_generation.to_string(),"slots":engine.config().disks.iter().map(|disk|json!({"slot_id":disk.slot_id,"disk_id":disk.disk_id,"level":disk.level,"upstream_slot_id":disk.upstream_slot_id,"metadata_member":disk.metadata_member,"binding_generation":disk.binding_generation.to_string()})).collect::<Vec<_>>()}),
+            ),
             crate::BackendAction::Events => {
                 let after = storage_contract::parse_u64_decimal(
                     input
@@ -1202,33 +1048,18 @@ impl Backend for EngineBackend {
                 let mut inspected = after;
                 for event in events_after(&engine.state().events, after) {
                     inspected = event.sequence;
-                    if identity.admin
-                        || engine
-                            .state()
-                            .operations
-                            .get(&event.operation_id)
-                            .and_then(|op| op.history_tree_id.as_ref())
-                            .and_then(|history| repo_for_history(&engine, history).ok())
-                            .is_some_and(|repo| {
-                                authorize_access(identity, repo, RepositoryAccess::Read).is_ok()
-                            })
-                    {
-                        events.push(event);
-                    }
+                    events.push(event);
                     if events.len() >= 1000 {
                         break;
                     }
                 }
                 Ok(json!({"events":events,"next_cursor":inspected.to_string()}))
             }
-            crate::BackendAction::RegisterDisk => {
-                identity.require_admin()?;
-                Err(ApiError::new(
-                    409,
-                    "OFFLINE_CONFIGURATION_REQUIRED",
-                    "disk registration requires an explicit offline configuration and topology migration",
-                ))
-            }
+            crate::BackendAction::RegisterDisk => Err(ApiError::new(
+                409,
+                "OFFLINE_CONFIGURATION_REQUIRED",
+                "disk registration requires an explicit offline configuration and topology migration",
+            )),
         }
     }
     fn upload(
@@ -1305,7 +1136,7 @@ impl Backend for EngineBackend {
             .engine
             .lock()
             .map_err(|_| ApiError::new(500, "INTERNAL_ERROR", "storage engine requires restart"))?;
-        // Admission and current ACLs may have changed while bytes were copied.
+        // The session or SMB binding may have changed while bytes were copied.
         finish_authorized_upload(&mut engine, identity, workspace, prepared)
     }
     fn content(&self, identity: &Identity, version: &str) -> Result<Content, ApiError> {

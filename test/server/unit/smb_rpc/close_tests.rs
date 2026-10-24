@@ -92,7 +92,7 @@ fn connect(shared: Arc<Shared>) -> (Client, JoinHandle<()>) {
         .backend
         .call(
             crate::BackendAction::Repositories,
-            &shared.identities["alice"],
+            &identity(&shared),
             json!({}),
         )
         .unwrap()["repositories"][0]["repository_id"]
@@ -328,7 +328,7 @@ fn lost_close_reply_retains_original_published_operation_without_resubmitting() 
     let result = backend
         .call(
             crate::BackendAction::Operation,
-            &shared.identities["alice"],
+            &identity(&shared),
             json!({"operation_id": operation}),
         )
         .unwrap();

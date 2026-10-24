@@ -1,29 +1,19 @@
-//! Seed session records directly: capacity regressions must not hash thousands
-//! of passwords or depend on timing races.
+//! Seed sessions directly so capacity tests do not hash dozens of passwords.
 use super::*;
 
-fn proof(store: &AuthStore, username: &str) -> VerifiedLogin {
-    let account = &store.db.accounts[username];
+fn proof(store: &AuthStore) -> VerifiedLogin {
+    let administrator = &store.database().unwrap().administrator;
     VerifiedLogin {
-        username: username.into(),
-        password_hash: account.password_hash.clone(),
-        generation: account.generation,
+        username: administrator.username.clone(),
+        password_hash: administrator.password_hash.clone(),
+        generation: administrator.generation,
     }
 }
 
-fn add_account(store: &mut AuthStore, username: &str, disabled: bool) {
-    let mut account = store.db.accounts["admin"].clone();
-    account.username = username.into();
-    account.admin = false;
-    account.disabled = disabled;
-    store.db.accounts.insert(username.into(), account);
-}
-
-fn seed(store: &mut AuthStore, index: usize, username: &str, generation: u64, expires_at: u64) {
-    store.db.sessions.insert(
+fn seed(store: &mut AuthStore, index: usize, generation: u64, expires_at: u64) {
+    store.database_mut().unwrap().sessions.insert(
         format!("{index:064x}"),
         Session {
-            username: username.into(),
             generation,
             expires_at,
         },
@@ -31,71 +21,67 @@ fn seed(store: &mut AuthStore, index: usize, username: &str, generation: u64, ex
 }
 
 fn seed_invalid(store: &mut AuthStore, count: usize) {
-    add_account(store, "disabled", true);
     for index in 0..count {
-        let (username, generation, expires_at) = match index % 4 {
-            0 => ("admin", 1, 0),
-            1 => ("admin", 0, u64::MAX),
-            2 => ("disabled", 1, u64::MAX),
-            _ => ("missing", 1, u64::MAX),
+        let (generation, expires_at) = if index % 2 == 0 {
+            (1, 0)
+        } else {
+            (0, u64::MAX)
         };
-        seed(store, index, username, generation, expires_at);
+        seed(store, index, generation, expires_at);
     }
 }
 
 #[test]
-fn invalid_sessions_do_not_exhaust_global_capacity_after_restart() {
+fn expired_and_revoked_sessions_do_not_exhaust_capacity_after_restart() {
     let root = crate::tests::private_tempdir();
-    let mut store = AuthStore::initialize(root.path(), "admin", "capacity-test-password").unwrap();
+    let mut store = AuthStore::initialize(root.path(), "owner", "capacity-test-password").unwrap();
     seed_invalid(&mut store, MAX_SESSIONS);
     store.persist(false).unwrap();
     drop(store);
     let mut store = AuthStore::open(root.path()).unwrap();
-    let login = store.finish_login(proof(&store, "admin")).unwrap();
-    assert_eq!(store.db.sessions.len(), 1);
+    let login = store.finish_login(proof(&store)).unwrap();
+    assert_eq!(store.database().unwrap().sessions.len(), 1);
     drop(store);
     let store = AuthStore::open(root.path()).unwrap();
-    assert_eq!(store.db.sessions.len(), 1);
+    assert_eq!(store.database().unwrap().sessions.len(), 1);
     assert!(store.authenticate(&login.token).is_ok());
 }
 
 #[test]
-fn one_account_cannot_consume_other_accounts_session_capacity() {
+fn the_single_session_limit_is_enforced_without_mutating_state() {
     let root = crate::tests::private_tempdir();
-    let mut store = AuthStore::initialize(root.path(), "admin", "capacity-test-password").unwrap();
-    add_account(&mut store, "reader", false);
-    for index in 0..MAX_SESSIONS_PER_ACCOUNT {
-        seed(&mut store, index, "reader", 1, u64::MAX);
+    let mut store = AuthStore::initialize(root.path(), "owner", "capacity-test-password").unwrap();
+    let active = store.finish_login(proof(&store)).unwrap();
+    for index in 0..MAX_SESSIONS - 1 {
+        seed(&mut store, index, 1, u64::MAX);
     }
     store.persist(false).unwrap();
     let before = store.snapshot().unwrap();
-    assert_eq!(
-        store
-            .finish_login(proof(&store, "reader"))
-            .err()
-            .unwrap()
-            .status,
-        429
-    );
+    assert_eq!(store.finish_login(proof(&store)).err().unwrap().status, 429);
     assert_eq!(store.snapshot().unwrap(), before);
-    assert!(store.finish_login(proof(&store, "admin")).is_ok());
     store
-        .upsert_account("reader", None, false, BTreeSet::new(), false)
+        .change_password(
+            &active.token,
+            "capacity-test-password",
+            "rotated-capacity-password",
+        )
         .unwrap();
-    assert_eq!(store.db.sessions.len(), 1);
-    assert!(store.finish_login(proof(&store, "reader")).is_ok());
+    assert!(store.database().unwrap().sessions.is_empty());
+    assert!(store.authenticate(&active.token).is_err());
+    let login = store.finish_login(proof(&store)).unwrap();
     drop(store);
     let store = AuthStore::open(root.path()).unwrap();
-    assert_eq!(store.db.sessions.len(), 2);
+    assert_eq!(store.database().unwrap().sessions.len(), 1);
+    assert!(store.authenticate(&login.token).is_ok());
 }
 
 #[test]
-fn failed_login_and_account_publication_restore_pruned_sessions_exactly() {
-    for update_account in [false, true] {
+fn failed_login_password_rotation_and_logout_restore_exact_sessions() {
+    for mutation in ["login", "password", "logout"] {
         let root = crate::tests::private_tempdir();
         let mut store =
-            AuthStore::initialize(root.path(), "admin", "capacity-test-password").unwrap();
-        let active = store.finish_login(proof(&store, "admin")).unwrap();
+            AuthStore::initialize(root.path(), "owner", "capacity-test-password").unwrap();
+        let active = store.finish_login(proof(&store)).unwrap();
         seed_invalid(&mut store, 4);
         store.persist(false).unwrap();
         let before = store.snapshot().unwrap();
@@ -106,12 +92,17 @@ fn failed_login_and_account_publication_restore_pruned_sessions_exactly() {
                 "injected persistence failure",
             ))
         }));
-        let error = if update_account {
-            store
-                .upsert_account("admin", None, true, BTreeSet::new(), false)
-                .unwrap_err()
-        } else {
-            store.finish_login(proof(&store, "admin")).err().unwrap()
+        let error = match mutation {
+            "login" => store.finish_login(proof(&store)).err().unwrap(),
+            "password" => store
+                .change_password(
+                    &active.token,
+                    "capacity-test-password",
+                    "rotated-capacity-password",
+                )
+                .unwrap_err(),
+            "logout" => store.logout(&active.token).unwrap_err(),
+            _ => unreachable!(),
         };
         assert_eq!(error.code, "COMMIT_PREPARATION_BUSY");
         assert_eq!(store.snapshot().unwrap(), before);
@@ -125,68 +116,53 @@ fn failed_login_and_account_publication_restore_pruned_sessions_exactly() {
 }
 
 #[test]
-fn account_updates_prune_all_invalid_records_but_keep_unrelated_sessions() {
+fn successful_password_rotation_clears_active_expired_and_revoked_sessions() {
     let root = crate::tests::private_tempdir();
-    let mut store = AuthStore::initialize(root.path(), "admin", "capacity-test-password").unwrap();
-    add_account(&mut store, "reader", false);
-    seed_invalid(&mut store, 4);
-    let admin = store.finish_login(proof(&store, "admin")).unwrap();
-    let reader = store.finish_login(proof(&store, "reader")).unwrap();
+    let mut store = AuthStore::initialize(root.path(), "owner", "capacity-test-password").unwrap();
+    let first = store.finish_login(proof(&store)).unwrap();
+    let second = store.finish_login(proof(&store)).unwrap();
     seed_invalid(&mut store, 4);
     store
-        .upsert_account("reader", None, false, BTreeSet::new(), true)
+        .change_password(
+            &first.token,
+            "capacity-test-password",
+            "rotated-capacity-password",
+        )
         .unwrap();
-    assert_eq!(store.db.sessions.len(), 1);
-    assert!(store.authenticate(&admin.token).is_ok());
-    assert!(store.authenticate(&reader.token).is_err());
+    assert!(store.database().unwrap().sessions.is_empty());
+    assert!(store.authenticate(&first.token).is_err());
+    assert!(store.authenticate(&second.token).is_err());
     drop(store);
-    let store = AuthStore::open(root.path()).unwrap();
-    assert_eq!(store.db.sessions.len(), 1);
-    assert!(store.authenticate(&admin.token).is_ok());
+    assert!(
+        AuthStore::open(root.path())
+            .unwrap()
+            .database()
+            .unwrap()
+            .sessions
+            .is_empty()
+    );
 }
 
 #[test]
-fn valid_sessions_still_obey_global_capacity() {
+fn exhausted_generation_rejects_password_change_without_revivifying_sessions() {
     let root = crate::tests::private_tempdir();
-    let mut store = AuthStore::initialize(root.path(), "admin", "capacity-test-password").unwrap();
-    for index in 0..MAX_SESSIONS {
-        let username = format!("reader-{}", index / MAX_SESSIONS_PER_ACCOUNT);
-        if index % MAX_SESSIONS_PER_ACCOUNT == 0 {
-            add_account(&mut store, &username, false);
-        }
-        seed(&mut store, index, &username, 1, u64::MAX);
-    }
-    store.persist(false).unwrap();
+    let mut store = AuthStore::initialize(root.path(), "owner", "capacity-test-password").unwrap();
+    store.database_mut().unwrap().administrator.generation = u64::MAX;
+    let login = store.finish_login(proof(&store)).unwrap();
     let before = store.snapshot().unwrap();
+    let disk = fs::read(root.path().join("auth.json")).unwrap();
     assert_eq!(
         store
-            .finish_login(proof(&store, "admin"))
-            .err()
-            .unwrap()
+            .change_password(
+                &login.token,
+                "capacity-test-password",
+                "rotated-capacity-password"
+            )
+            .unwrap_err()
             .status,
         429
     );
     assert_eq!(store.snapshot().unwrap(), before);
-    drop(store);
-    let store = AuthStore::open(root.path()).unwrap();
-    assert_eq!(store.snapshot().unwrap(), before);
-}
-
-#[test]
-fn creating_an_account_does_not_revive_orphaned_sessions() {
-    let root = crate::tests::private_tempdir();
-    let mut store = AuthStore::initialize(root.path(), "admin", "capacity-test-password").unwrap();
-    seed(&mut store, 0, "new-reader", 1, u64::MAX);
-    store
-        .upsert_account(
-            "new-reader",
-            Some("capacity-test-password"),
-            false,
-            BTreeSet::new(),
-            false,
-        )
-        .unwrap();
-    assert!(store.db.sessions.is_empty());
-    drop(store);
-    assert!(AuthStore::open(root.path()).unwrap().db.sessions.is_empty());
+    assert_eq!(fs::read(root.path().join("auth.json")).unwrap(), disk);
+    assert!(store.authenticate(&login.token).is_ok());
 }

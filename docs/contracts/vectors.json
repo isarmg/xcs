@@ -415,7 +415,7 @@
       }
     },
     {
-      "name": "legacy-branch-without-pending-map",
+      "name": "sparse-branch-without-pending-map",
       "schema": "Branch",
       "layer": "schema",
       "value": {
@@ -495,7 +495,7 @@
       }
     },
     {
-      "name": "legacy-commit-without-pending-map",
+      "name": "sparse-commit-without-pending-map",
       "schema": "Commit",
       "layer": "schema",
       "value": {
@@ -595,18 +595,6 @@
           "target_copies": 3,
           "name_policy": "PortableName",
           "unicode_version": "16.0.0",
-          "grants": {
-            "read": [
-              "alice"
-            ],
-            "write": [
-              "alice"
-            ],
-            "manage": [
-              "alice"
-            ]
-          },
-          "account_scope_repository_id": null,
           "smb_enabled": true,
           "smb_binding_generation": "1"
         },
@@ -1070,7 +1058,7 @@
       }
     },
     {
-      "name": "workspace-capacity-private",
+      "name": "workspace-capacity-single-administrator",
       "schema": "WorkspaceCapacity",
       "layer": "schema",
       "value": {
@@ -1087,7 +1075,68 @@
           }
         },
         "warning": "ok",
-        "automatic_retirement": false
+        "automatic_retirement": false,
+        "global": {
+          "records": {
+            "used": "0",
+            "limit": "18446744073709551615",
+            "remaining": "18446744073709551615"
+          },
+          "metadata_bytes": {
+            "used": "0",
+            "limit": "18446744073709551615",
+            "remaining": "18446744073709551615"
+          }
+        }
+      }
+    },
+    {
+      "name": "single-administrator-LoginRequest",
+      "schema": "LoginRequest",
+      "value": {
+        "username": "my-admin",
+        "password": "contract-fixture-password"
+      }
+    },
+    {
+      "name": "single-administrator-LoginResponse",
+      "schema": "LoginResponse",
+      "value": {
+        "token": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+        "csrf_token": "BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB",
+        "principal": "my-admin",
+        "expires_at": "1792861200"
+      }
+    },
+    {
+      "name": "single-administrator-CurrentSessionResponse",
+      "schema": "CurrentSessionResponse",
+      "value": {
+        "principal": "my-admin",
+        "csrf_token": "BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB"
+      }
+    },
+    {
+      "name": "single-administrator-LogoutResponse",
+      "schema": "LogoutResponse",
+      "value": {
+        "logged_out": true
+      }
+    },
+    {
+      "name": "single-administrator-PasswordChangeRequest",
+      "schema": "PasswordChangeRequest",
+      "value": {
+        "current_password": "contract-fixture-password",
+        "new_password": "new-contract-fixture-password"
+      }
+    },
+    {
+      "name": "single-administrator-PasswordChangeResponse",
+      "schema": "PasswordChangeResponse",
+      "value": {
+        "changed": true,
+        "reauthentication_required": true
       }
     }
   ],
@@ -2017,18 +2066,6 @@
           "target_copies": 3,
           "name_policy": "PortableName",
           "unicode_version": "16.0.0",
-          "grants": {
-            "read": [
-              "alice"
-            ],
-            "write": [
-              "alice"
-            ],
-            "manage": [
-              "alice"
-            ]
-          },
-          "account_scope_repository_id": null,
           "smb_enabled": true,
           "smb_binding_generation": "1"
         },
@@ -2175,18 +2212,6 @@
           "target_copies": 3,
           "name_policy": "PortableName",
           "unicode_version": "16.0.0",
-          "grants": {
-            "read": [
-              "alice"
-            ],
-            "write": [
-              "alice"
-            ],
-            "manage": [
-              "alice"
-            ]
-          },
-          "account_scope_repository_id": null,
           "smb_enabled": true,
           "smb_binding_generation": "1"
         },
@@ -2341,18 +2366,6 @@
           "target_copies": 3,
           "name_policy": "PortableName",
           "unicode_version": "16.0.0",
-          "grants": {
-            "read": [
-              "alice"
-            ],
-            "write": [
-              "alice"
-            ],
-            "manage": [
-              "alice"
-            ]
-          },
-          "account_scope_repository_id": null,
           "smb_enabled": true,
           "smb_binding_generation": "1"
         },
@@ -2504,18 +2517,6 @@
           "target_copies": 3,
           "name_policy": "PortableName",
           "unicode_version": "16.0.0",
-          "grants": {
-            "read": [
-              "alice"
-            ],
-            "write": [
-              "alice"
-            ],
-            "manage": [
-              "alice"
-            ]
-          },
-          "account_scope_repository_id": null,
           "smb_enabled": true,
           "smb_binding_generation": "1"
         },
@@ -2666,18 +2667,6 @@
           "target_copies": 3,
           "name_policy": "PortableName",
           "unicode_version": "16.0.0",
-          "grants": {
-            "read": [
-              "alice"
-            ],
-            "write": [
-              "alice"
-            ],
-            "manage": [
-              "alice"
-            ]
-          },
-          "account_scope_repository_id": null,
           "smb_enabled": true,
           "smb_binding_generation": "1"
         },
@@ -2829,18 +2818,6 @@
           "target_copies": 3,
           "name_policy": "PortableName",
           "unicode_version": "16.0.0",
-          "grants": {
-            "read": [
-              "alice"
-            ],
-            "write": [
-              "alice"
-            ],
-            "manage": [
-              "alice"
-            ]
-          },
-          "account_scope_repository_id": null,
           "smb_enabled": true,
           "smb_binding_generation": "1"
         },
@@ -3657,7 +3634,19 @@
           }
         },
         "warning": "ok",
-        "automatic_retirement": false
+        "automatic_retirement": false,
+        "global": {
+          "records": {
+            "used": "0",
+            "limit": "18446744073709551615",
+            "remaining": "18446744073709551615"
+          },
+          "metadata_bytes": {
+            "used": "0",
+            "limit": "18446744073709551615",
+            "remaining": "18446744073709551615"
+          }
+        }
       }
     },
     {
@@ -3678,7 +3667,19 @@
           }
         },
         "warning": "ok",
-        "automatic_retirement": false
+        "automatic_retirement": false,
+        "global": {
+          "records": {
+            "used": "0",
+            "limit": "18446744073709551615",
+            "remaining": "18446744073709551615"
+          },
+          "metadata_bytes": {
+            "used": "0",
+            "limit": "18446744073709551615",
+            "remaining": "18446744073709551615"
+          }
+        }
       }
     },
     {
@@ -3700,7 +3701,19 @@
           "owner": "other"
         },
         "warning": "ok",
-        "automatic_retirement": false
+        "automatic_retirement": false,
+        "global": {
+          "records": {
+            "used": "0",
+            "limit": "18446744073709551615",
+            "remaining": "18446744073709551615"
+          },
+          "metadata_bytes": {
+            "used": "0",
+            "limit": "18446744073709551615",
+            "remaining": "18446744073709551615"
+          }
+        }
       }
     },
     {
@@ -3721,7 +3734,19 @@
           }
         },
         "warning": "unknown",
-        "automatic_retirement": false
+        "automatic_retirement": false,
+        "global": {
+          "records": {
+            "used": "0",
+            "limit": "18446744073709551615",
+            "remaining": "18446744073709551615"
+          },
+          "metadata_bytes": {
+            "used": "0",
+            "limit": "18446744073709551615",
+            "remaining": "18446744073709551615"
+          }
+        }
       }
     },
     {
@@ -3764,7 +3789,138 @@
           }
         },
         "warning": "ok",
-        "automatic_retirement": true
+        "automatic_retirement": true,
+        "global": {
+          "records": {
+            "used": "0",
+            "limit": "18446744073709551615",
+            "remaining": "18446744073709551615"
+          },
+          "metadata_bytes": {
+            "used": "0",
+            "limit": "18446744073709551615",
+            "remaining": "18446744073709551615"
+          }
+        }
+      }
+    },
+    {
+      "name": "reject-legacy-LoginResponse-admin",
+      "schema": "LoginResponse",
+      "layer": "schema",
+      "value": {
+        "token": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+        "csrf_token": "BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB",
+        "principal": "my-admin",
+        "expires_at": "1792861200",
+        "admin": true
+      }
+    },
+    {
+      "name": "reject-legacy-CurrentSessionResponse-repositories",
+      "schema": "CurrentSessionResponse",
+      "layer": "schema",
+      "value": {
+        "principal": "my-admin",
+        "csrf_token": "BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB",
+        "repositories": []
+      }
+    },
+    {
+      "name": "reject-legacy-CurrentSessionResponse-disabled",
+      "schema": "CurrentSessionResponse",
+      "layer": "schema",
+      "value": {
+        "principal": "my-admin",
+        "csrf_token": "BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB",
+        "disabled": false
+      }
+    },
+    {
+      "name": "reject-legacy-PasswordChangeRequest-username",
+      "schema": "PasswordChangeRequest",
+      "layer": "schema",
+      "value": {
+        "current_password": "contract-fixture-password",
+        "new_password": "new-contract-fixture-password",
+        "username": "other-admin"
+      }
+    },
+    {
+      "name": "reject-legacy-repository-grants",
+      "schema": "HistoryRepository",
+      "layer": "schema",
+      "value": {
+        "repository_id": "repo_11111111111111111111111111111111",
+        "name": "分页历史",
+        "history_tree_id": "history_11111111111111111111111111111111",
+        "main_branch_id": "br_11111111111111111111111111111111",
+        "primary_slot_id": "P01",
+        "target_copies": 3,
+        "name_policy": "PortableName",
+        "unicode_version": "16.0.0",
+        "smb_enabled": true,
+        "smb_binding_generation": "1",
+        "grants": {
+          "read": [],
+          "write": [],
+          "manage": []
+        }
+      }
+    },
+    {
+      "name": "reject-legacy-repository-account_scope_repository_id",
+      "schema": "HistoryRepository",
+      "layer": "schema",
+      "value": {
+        "repository_id": "repo_11111111111111111111111111111111",
+        "name": "分页历史",
+        "history_tree_id": "history_11111111111111111111111111111111",
+        "main_branch_id": "br_11111111111111111111111111111111",
+        "primary_slot_id": "P01",
+        "target_copies": 3,
+        "name_policy": "PortableName",
+        "unicode_version": "16.0.0",
+        "smb_enabled": true,
+        "smb_binding_generation": "1",
+        "account_scope_repository_id": null
+      }
+    },
+    {
+      "name": "repository-requires-explicit-smb-enabled",
+      "schema": "HistoryRepository",
+      "layer": "schema",
+      "value": {
+        "repository_id": "repo_11111111111111111111111111111111",
+        "name": "分页历史",
+        "history_tree_id": "history_11111111111111111111111111111111",
+        "main_branch_id": "br_11111111111111111111111111111111",
+        "primary_slot_id": "P01",
+        "target_copies": 3,
+        "name_policy": "PortableName",
+        "unicode_version": "16.0.0",
+        "smb_binding_generation": "1"
+      }
+    },
+    {
+      "name": "workspace-capacity-requires-global",
+      "schema": "WorkspaceCapacity",
+      "layer": "schema",
+      "value": {
+        "principal": {
+          "records": {
+            "used": "0",
+            "limit": "18446744073709551615",
+            "remaining": "18446744073709551615"
+          },
+          "metadata_bytes": {
+            "used": "0",
+            "limit": "18446744073709551615",
+            "remaining": "18446744073709551615"
+          }
+        },
+        "warning": "ok",
+        "automatic_retirement": false
       }
     }
   ],

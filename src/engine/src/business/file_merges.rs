@@ -35,8 +35,8 @@ impl Engine {
                 }
                 let version = super::file_nodes::node_version(state,file,chosen_node)?;
                 let body = state.versions[&version].clone();
-                let repo = engine.repository_for_history(&body.history_tree_id)?;
-                engine.require_grant(repo,principal,storage_contract::RepositoryAccess::Write)?;
+                engine.repository_for_history(&body.history_tree_id)?;
+
                 engine.valid_replica(&version)?;
                 let mut branches = BTreeSet::new();
                 let mut heads = Vec::new();

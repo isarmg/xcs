@@ -143,17 +143,11 @@ fn file_entry(
     entry
 }
 
-pub(super) fn entries(
-    engine: &Engine,
-    identity: &Identity,
-    slot: &str,
-    path: &str,
-) -> Result<Value, ApiError> {
+pub(super) fn entries(engine: &Engine, slot: &str, path: &str) -> Result<Value, ApiError> {
     let repositories = engine
         .state()
         .repositories
         .values()
-        .filter(|repo| authorize_access(identity, repo, RepositoryAccess::Read).is_ok())
         .map(|repo| (repo.history_tree_id.as_str(), repo))
         .collect::<BTreeMap<_, _>>();
     // Keep one file container, including retained files absent from the live

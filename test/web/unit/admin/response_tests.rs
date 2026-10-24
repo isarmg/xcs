@@ -10,26 +10,8 @@ fn wire_operation() -> Value {
     json!({"operation_id":"original","operation_kind":"policy.update","commit_state":"PUBLISHED","request_digest":"digest","current_health":{"state":"UNKNOWN","checked_at":"2026-10-22T00:00:00Z"},"result":{},"state":"completed","publication_sequence":"4","protection_at_publish":"NOT_APPLICABLE","error":null})
 }
 #[test]
-fn account_success_is_not_an_operation_receipt() {
-    let c = contract("/api/admin/accounts", Value::Null);
-    assert!(c.validate(json!({"updated":true})).is_ok());
-    for value in [
-        Value::Null,
-        json!({}),
-        json!({"updated":false}),
-        json!({"updated":"true"}),
-        raw_operation(),
-    ] {
-        assert!(c.validate(value).unwrap_err().mutation_outcome_unknown());
-    }
-}
-#[test]
 fn operation_contracts_reject_missing_wrong_and_nonterminal_receipts() {
-    for path in [
-        "/api/plans/p/commit",
-        "/api/plans/p/cancel",
-        "/api/repositories/r/grants",
-    ] {
+    for path in ["/api/plans/p/commit", "/api/plans/p/cancel"] {
         let c = contract(path, Value::Null);
         assert!(c.validate(raw_operation()).is_ok());
         for value in [Value::Null, json!({}), wire_operation()] {
@@ -70,12 +52,18 @@ fn inspection_must_match_original_operation_and_terminal_state() {
 }
 #[test]
 fn domain_and_preview_contracts_accept_real_shapes_not_generic_receipts() {
-    let repository = json!({"repository_id":"r", "name":"Repo", "history_tree_id":"h", "main_branch_id":"b", "primary_slot_id":"P01", "target_copies":1,"name_policy":"portable", "unicode_version":"17", "grants":{"read":[],"write":[],"manage":[]},"smb_binding_generation":"1"});
+    let repository = json!({"repository_id":"r", "name":"Repo", "history_tree_id":"h", "main_branch_id":"b", "primary_slot_id":"P01", "target_copies":1,"name_policy":"portable", "unicode_version":"17","smb_enabled":true,"smb_binding_generation":"1"});
     let c = contract(
         "/api/repositories",
         json!({"name":"Repo","primary_slot_id":"P01","target_copies":1}),
     );
     assert!(c.validate(repository.clone()).is_ok());
+    let mut missing_binding_state = repository.clone();
+    missing_binding_state
+        .as_object_mut()
+        .unwrap()
+        .remove("smb_enabled");
+    assert!(c.validate(missing_binding_state).is_err());
     let mut wrong = repository;
     wrong["name"] = "Other".into();
     assert!(c.validate(wrong).is_err());
@@ -139,6 +127,15 @@ fn branch_creation_accepts_wire_projection_without_relaxing_domain_validation() 
             let mut malformed = valid.clone();
             malformed[key] = bad;
             assert!(c.validate(malformed).is_err());
+        }
+    }
+}
+
+#[test]
+fn retired_account_and_acl_writes_have_no_success_contract() {
+    for path in ["/api/admin/accounts", "/api/repositories/r/grants"] {
+        for value in [json!({"updated":true}), raw_operation(), wire_operation()] {
+            assert!(contract(path, Value::Null).validate(value).is_err());
         }
     }
 }

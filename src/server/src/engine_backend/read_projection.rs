@@ -3,8 +3,8 @@
 //! This is not a cache or a reusable authorization grant, and carries no State,
 //! private authentication data, content read plan, or publication capability.
 use super::wire::PendingSources;
-use super::{RepositoryAccess, authorize_access, encode, error, field, repo_for_branch};
-use crate::{ApiError, auth::Identity};
+use super::{encode, error, field, repo_for_branch};
+use crate::ApiError;
 use data_serialization::Serialize;
 use json_codec::Value;
 use std::{collections::BTreeMap, sync::MutexGuard};
@@ -19,17 +19,9 @@ pub(super) struct Tree {
 }
 
 impl Tree {
-    pub(super) fn capture(
-        engine: &Engine,
-        identity: &Identity,
-        input: &Value,
-    ) -> Result<Self, ApiError> {
+    pub(super) fn capture(engine: &Engine, input: &Value) -> Result<Self, ApiError> {
         let branch = field(input, "branch_id")?;
-        authorize_access(
-            identity,
-            repo_for_branch(engine, branch)?,
-            RepositoryAccess::Read,
-        )?;
+        repo_for_branch(engine, branch)?;
         let branch_info = engine.state().branches.get(branch).unwrap();
         let commit = input
             .get("query")
@@ -61,17 +53,9 @@ impl Tree {
 pub(super) struct SmbLookup(Option<storage_contract::Entry>);
 
 impl SmbLookup {
-    pub(super) fn capture(
-        engine: &Engine,
-        identity: &Identity,
-        input: &Value,
-    ) -> Result<Self, ApiError> {
+    pub(super) fn capture(engine: &Engine, input: &Value) -> Result<Self, ApiError> {
         let branch = field(input, "branch_id")?;
-        authorize_access(
-            identity,
-            repo_for_branch(engine, branch)?,
-            RepositoryAccess::Read,
-        )?;
+        repo_for_branch(engine, branch)?;
         let branch_info = &engine.state().branches[branch];
         engine
             .state()
@@ -103,17 +87,9 @@ pub(super) struct SmbDirectory {
     more: bool,
 }
 impl SmbDirectory {
-    pub(super) fn capture(
-        engine: &Engine,
-        identity: &Identity,
-        input: &Value,
-    ) -> Result<Self, ApiError> {
+    pub(super) fn capture(engine: &Engine, input: &Value) -> Result<Self, ApiError> {
         let branch = field(input, "branch_id")?;
-        authorize_access(
-            identity,
-            repo_for_branch(engine, branch)?,
-            RepositoryAccess::Read,
-        )?;
+        repo_for_branch(engine, branch)?;
         let branch_info = engine.state().branches.get(branch).unwrap();
         let commit = input
             .get("commit_id")

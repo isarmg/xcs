@@ -248,10 +248,6 @@ async fn management_status_remains_live_during_authentication_contention() {
         }
     });
     held.acquire().await.unwrap().forget();
-    let bridge = tokio::spawn(bridge_identities(
-        auth.clone(),
-        BTreeMap::from([("share-user".into(), "admin".into())]),
-    ));
     let status = tokio::spawn(request(app.clone(), "/api/management/status"));
     let health = tokio::spawn(request(app.clone(), "/healthz"));
     tokio::time::sleep(Duration::from_millis(20)).await;
@@ -262,7 +258,6 @@ async fn management_status_remains_live_during_authentication_contention() {
     ));
     assert!(status.is_finished());
     assert!(health.is_finished());
-    assert!(!bridge.is_finished());
     assert_eq!(health.await.unwrap().status(), StatusCode::OK);
     let response = status.await.unwrap();
     assert_eq!(response.status(), StatusCode::OK);
@@ -273,8 +268,6 @@ async fn management_status_remains_live_during_authentication_contention() {
     assert_eq!(value["authentication"], "busy");
     release.send(()).unwrap();
     holder.join().unwrap();
-    let identities = bridge.await.unwrap().unwrap().unwrap();
-    assert_eq!(identities["share-user"].principal, "admin");
     let response = request(app, "/api/management/status").await;
     let bytes = http_routing::body::to_bytes(response.into_body(), 8192)
         .await

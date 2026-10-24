@@ -29,20 +29,33 @@ pub enum Error {
     Response(String),
 }
 #[derive(Clone, Serialize, Deserialize)]
+#[serialization(deny_unknown_fields)]
 pub struct Session {
     pub token: String,
     pub csrf_token: String,
     pub principal: String,
-    pub admin: bool,
     #[serialization(with = "storage_contract::u64_string")]
     pub expires_at: u64,
+}
+impl Session {
+    fn decode(value: Value) -> Result<Self, Error> {
+        let session: Self =
+            json_codec::from_value(value).map_err(|error| Error::Response(error.to_string()))?;
+        if session.token.is_empty()
+            || session.csrf_token.is_empty()
+            || session.principal.is_empty()
+            || session.expires_at == 0
+        {
+            return Err(Error::Response("incomplete authentication response".into()));
+        }
+        Ok(session)
+    }
 }
 impl std::fmt::Debug for Session {
     fn fmt(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         formatter
             .debug_struct("Session")
             .field("principal", &self.principal)
-            .field("admin", &self.admin)
             .field("expires_at", &self.expires_at)
             .finish_non_exhaustive()
     }
@@ -131,8 +144,7 @@ impl Client {
                 Some(&json!({"username":username,"password":password})),
             )
             .await?;
-        let session: Session =
-            json_codec::from_value(value).map_err(|error| Error::Response(error.to_string()))?;
+        let session = Session::decode(value)?;
         self.token = Some(session.token.clone());
         Ok(session)
     }

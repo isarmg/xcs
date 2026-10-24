@@ -171,16 +171,8 @@ async fn blocked_replication_never_blocks_login_and_queued_sessions_revalidate()
         )
         .unwrap(),
     );
-    let mut auth =
+    let auth =
         AuthStore::initialize_management(&management, "admin", "a-long-test-password").unwrap();
-    auth.upsert_account(
-        "reader",
-        Some("a-reader-test-password"),
-        false,
-        Default::default(),
-        false,
-    )
-    .unwrap();
     drop(auth);
     let (backend, auth) = open_service(&data, &management).unwrap();
     let app = router(backend.clone(), auth, ServerConfig::loopback(&management)).unwrap();
@@ -198,7 +190,7 @@ async fn blocked_replication_never_blocks_login_and_queued_sessions_revalidate()
     let session = shared
         .lock()
         .unwrap()
-        .login("reader", "a-reader-test-password")
+        .login("admin", "a-long-test-password")
         .unwrap();
     let stale = shared.lock().unwrap().authenticate(&session.token).unwrap();
     let engine = backend.inner.state.lock().unwrap().backend.clone().unwrap();
@@ -215,11 +207,7 @@ async fn blocked_replication_never_blocks_login_and_queued_sessions_revalidate()
     let queued = std::thread::spawn(move || {
         engine.call(crate::BackendAction::Repositories, &stale, json!({}))
     });
-    shared
-        .lock()
-        .unwrap()
-        .upsert_account("reader", None, false, Default::default(), true)
-        .unwrap();
+    shared.lock().unwrap().logout(&session.token).unwrap();
     // This is a deadlock guard, not a latency benchmark. The engine remains
     // locked until the result is captured, even on slower test runners.
     let login = tokio::time::timeout(
@@ -378,7 +366,7 @@ async fn exercise_web_setup(ids: &[&str], remove_data_disk: bool) {
             request(&app, "/api/admin/accounts", Some(token), None)
                 .await
                 .0,
-            StatusCode::OK
+            StatusCode::NOT_FOUND
         );
         assert_eq!(
             request(&app, "/api/system/storage", Some(token), None)
@@ -397,7 +385,7 @@ async fn exercise_web_setup(ids: &[&str], remove_data_disk: bool) {
 }
 
 #[tokio::test]
-async fn account_http_lifecycle_remains_authoritative_without_storage() {
+async fn singleton_http_lifecycle_remains_authoritative_without_storage() {
     let root = tempfile::tempdir().unwrap();
     let data = root.path().join("pool");
     let management = root.path().join("management");
@@ -425,69 +413,52 @@ async fn account_http_lifecycle_remains_authoritative_without_storage() {
     )
     .await;
     let token = login["token"].as_str().unwrap();
-    assert_eq!(request(&app,"/api/admin/accounts",Some(token),Some(json!({"username":"reader","password":"a-reader-test-password","repositories":["repo-one"]}))).await.0,StatusCode::OK);
-    let (_, reader) = request(
-        &app,
-        "/api/auth/login",
+    for body in [
         None,
-        Some(json!({"username":"reader","password":"a-reader-test-password"})),
-    )
-    .await;
-    let old = reader["token"].as_str().unwrap();
-    let (status, list) = request(&app, "/api/admin/accounts", Some(token), None).await;
-    assert_eq!(status, StatusCode::OK);
-    assert_eq!(list["accounts"].as_array().unwrap().len(), 2);
+        Some(json!({"username":"other","password":"a-reader-test-password"})),
+    ] {
+        assert_eq!(
+            request(&app, "/api/admin/accounts", Some(token), body)
+                .await
+                .0,
+            StatusCode::NOT_FOUND
+        );
+    }
     assert_eq!(
         request(
             &app,
-            "/api/admin/accounts",
-            Some(token),
-            Some(json!({"username":"reader","repositories":["repo-two"]}))
+            "/api/auth/login",
+            None,
+            Some(json!({"username":"other","password":"a-reader-test-password"}))
+        )
+        .await
+        .0,
+        StatusCode::UNAUTHORIZED
+    );
+    assert_eq!(
+        request(&app, "/api/auth/me", Some(token), None).await.1["principal"],
+        "admin"
+    );
+    assert_eq!(request(&app, "/api/auth/password", Some(token), Some(json!({"current_password":"a-long-test-password","new_password":"a-new-test-password"}))).await.0, StatusCode::OK);
+    assert_eq!(
+        request(&app, "/api/auth/me", Some(token), None).await.0,
+        StatusCode::UNAUTHORIZED
+    );
+    assert_eq!(
+        request(
+            &app,
+            "/api/auth/login",
+            None,
+            Some(json!({"username":"admin","password":"a-new-test-password"}))
         )
         .await
         .0,
         StatusCode::OK
     );
-    assert_eq!(
-        request(&app, "/api/auth/me", Some(old), None).await.0,
-        StatusCode::UNAUTHORIZED
-    );
-    let (_, reader) = request(
-        &app,
-        "/api/auth/login",
-        None,
-        Some(json!({"username":"reader","password":"a-reader-test-password"})),
-    )
-    .await;
-    let renewed = reader["token"].as_str().unwrap();
-    assert_eq!(
-        request(
-            &app,
-            "/api/admin/accounts",
-            Some(token),
-            Some(json!({"username":"reader","disabled":true}))
-        )
-        .await
-        .0,
-        StatusCode::OK
-    );
-    assert_eq!(
-        request(&app, "/api/auth/me", Some(renewed), None).await.0,
-        StatusCode::UNAUTHORIZED
-    );
-    let (status, error) = request(
-        &app,
-        "/api/admin/accounts",
-        Some(token),
-        Some(json!({"username":"admin","disabled":true})),
-    )
-    .await;
-    assert_eq!(status, StatusCode::CONFLICT);
-    assert_eq!(error["error"]["code"], "LAST_ADMIN_REQUIRED");
 }
 
 #[test]
-fn managed_admission_never_falls_back_to_stale_disaster_recovery_grants() {
+fn managed_admission_never_falls_back_to_stale_disaster_recovery_identity() {
     use std::sync::{Arc, Mutex};
     let root = tempfile::tempdir().unwrap();
     let data = root.path().join("pool");
@@ -502,28 +473,10 @@ fn managed_admission_never_falls_back_to_stale_disaster_recovery_grants() {
     )
     .unwrap();
     let backend = Arc::new(crate::engine_backend::EngineBackend::new(engine));
-    let mut legacy = AuthStore::initialize(&data, "admin", "a-long-test-password").unwrap();
-    legacy
-        .upsert_account(
-            "reader",
-            Some("a-reader-test-password"),
-            true,
-            Default::default(),
-            false,
-        )
-        .unwrap();
+    let legacy = AuthStore::initialize(&data, "former-owner", "a-long-test-password").unwrap();
     drop(backend.protect_auth(legacy).unwrap());
-    let mut primary =
+    let primary =
         AuthStore::initialize_management(&management, "admin", "a-long-test-password").unwrap();
-    primary
-        .upsert_account(
-            "reader",
-            Some("a-reader-test-password"),
-            false,
-            Default::default(),
-            true,
-        )
-        .unwrap();
     let primary = Arc::new(Mutex::new(primary));
     backend
         .set_management_auth(Arc::downgrade(&primary))
@@ -531,9 +484,7 @@ fn managed_admission_never_falls_back_to_stale_disaster_recovery_grants() {
     let caller = crate::auth::Identity {
         admission_session: None,
         smb_binding: None,
-        principal: "reader".into(),
-        admin: true,
-        repositories: Default::default(),
+        principal: "former-owner".into(),
     };
     assert_eq!(
         backend
@@ -949,7 +900,7 @@ fn invalid_runtime_workspace_limits_do_not_create_management_state() {
 }
 
 #[tokio::test]
-async fn background_reopen_uses_local_workspace_limits_and_preserves_capacity_privacy() {
+async fn background_reopen_uses_local_workspace_limits_and_authenticated_capacity() {
     let root = tempfile::tempdir().unwrap();
     let data = root.path().join("pool");
     let management = root.path().join("management");
@@ -1023,28 +974,39 @@ async fn background_reopen_uses_local_workspace_limits_and_preserves_capacity_pr
         .0,
         StatusCode::OK
     );
-    assert_eq!(request(&app, "/api/admin/accounts", Some(token), Some(json!({"username":"reader","password":"reader-test-password","admin":false,"repositories":[],"disabled":false}))).await.0, StatusCode::OK);
-    let (_, login) = request(
-        &app,
-        "/api/auth/login",
-        None,
-        Some(json!({"username":"reader","password":"reader-test-password"})),
-    )
-    .await;
-    let token = login["token"].as_str().unwrap();
-    let (status, own) = request(
-        &app,
-        "/api/workspaces/capacity?admin=true&principal=admin&max_retained_workspaces=999",
-        Some(token),
-        None,
-    )
-    .await;
+    // The sole authenticated administrator sees both global and own counters.
+    // Query parameters cannot select another principal or override local limits.
+    let (status, current) = request(&app, "/api/workspaces/capacity", Some(token), None).await;
     assert_eq!(status, StatusCode::OK);
-    assert!(own.get("global").is_none());
-    assert_eq!(own["principal"]["records"]["used"], "0");
-    assert_eq!(own["principal"]["records"]["limit"], "2");
-    assert_eq!(own["warning"], "ok");
-    assert!(json_codec::from_value::<storage_contract::WorkspaceCapacity>(own).is_ok());
+    let query = "/api/workspaces/capacity?admin=false&principal=forged&max_retained_workspaces=999";
+    let (status, queried) = request(&app, query, Some(token), None).await;
+    assert_eq!(status, StatusCode::OK);
+    assert_eq!(queried, current);
+    assert_eq!(queried["global"]["records"]["used"], "2");
+    assert_eq!(queried["global"]["records"]["limit"], "3");
+    assert_eq!(queried["principal"]["records"]["used"], "2");
+    assert_eq!(queried["principal"]["records"]["limit"], "2");
+    assert!(json_codec::from_value::<storage_contract::WorkspaceCapacity>(queried).is_ok());
+    assert_eq!(
+        request(&app, query, None, None).await.0,
+        StatusCode::UNAUTHORIZED
+    );
+    assert_eq!(
+        request(&app, query, Some("forged-session"), None).await.0,
+        StatusCode::UNAUTHORIZED
+    );
+    let forged = crate::auth::Identity {
+        principal: "forged".into(),
+        admission_session: None,
+        smb_binding: None,
+    };
+    assert_eq!(
+        backend
+            .call(crate::BackendAction::WorkspaceCapacity, &forged, json!({}))
+            .unwrap_err()
+            .code,
+        "UNAUTHORIZED"
+    );
     assert_eq!(std::fs::read(data.join("config.json")).unwrap(), persisted);
     backend.drain_management().unwrap();
 }

@@ -42,11 +42,7 @@ impl Engine {
         if !["open", "sealed"].contains(&w.state.as_str()) {
             return Err(Error::new("WORKSPACE_CLOSED", "workspace cannot be sealed"));
         }
-        self.require_grant(
-            self.repository_for_branch(&w.branch_id)?,
-            principal,
-            storage_contract::RepositoryAccess::Write,
-        )?;
+        self.repository_for_branch(&w.branch_id)?;
         let repository = self.repository_for_branch(&w.branch_id)?.clone();
         // Once sealed, no uploader or namespace request can mutate this generation.
         w.state = "sealed".into();

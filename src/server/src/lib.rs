@@ -25,7 +25,7 @@ mod backend_action;
 pub use backend_action::BackendAction;
 
 use auth::{AuthStore, Identity};
-use http_auth::{account_upsert, accounts, authorize, change_password, login, logout, me};
+use http_auth::{authorize, change_password, login, logout, me};
 use http_boundary::{ApiPath, ApiQuery};
 use http_routing::{
     Json, Router,
@@ -251,7 +251,7 @@ pub trait Backend: Send + Sync {
     }
 }
 
-/// Re-check current account status even for trusted local protocol adapters.
+/// Re-check current administrator credentials even for trusted local protocol adapters.
 struct AuthorizedBackend {
     backend: Arc<dyn Backend>,
     auth: Arc<Mutex<AuthStore>>,
@@ -359,7 +359,8 @@ pub struct SmbConfig {
     pub socket: PathBuf,
     pub allowed_uid: u32,
     pub spool_limits: SpoolLimits,
-    pub users: BTreeMap<String, String>,
+    /// The single non-guest account authenticated by Samba.
+    pub username: String,
 }
 #[derive(Clone)]
 pub struct ServerConfig {
@@ -456,9 +457,13 @@ impl ServerConfig {
         if self.max_upload_bytes == 0 {
             return Err(ApiError::invalid("upload limit must be positive"));
         }
-        if self.smb.as_ref().is_some_and(|smb| smb.users.is_empty()) {
+        if self
+            .smb
+            .as_ref()
+            .is_some_and(|smb| smb_protocol::protocol::validate_username(&smb.username).is_err())
+        {
             return Err(ApiError::invalid(
-                "SMB requires explicit authenticated-user mappings",
+                "SMB requires one explicit authenticated Samba username",
             ));
         }
         self.normalized_external_origin()?;
@@ -613,13 +618,11 @@ fn router_shared(
         .route("/api/auth/me", get(me))
         .route("/api/auth/logout", post(logout))
         .route("/api/auth/password", post(change_password))
-        .route("/api/admin/accounts", get(accounts).post(account_upsert))
         .route(
             "/api/repositories",
             get(repositories).post(create_repository),
         )
         .route("/api/repositories/{repo}", get(repository))
-        .route("/api/repositories/{repo}/grants", put(grants))
         .route(
             "/api/repositories/{repo}/smb-binding",
             get(smb_binding).put(update_smb_binding),
@@ -767,16 +770,6 @@ pub async fn serve(
     let bridge = async move {
         if let Some(smb) = smb {
             let run = async move {
-                // Recovery may import credentials after HTTP is already online.
-                // Until then no SMB identity is admitted.
-                let identities = loop {
-                    if let Some(identities) =
-                        bridge_identities(bridge_auth.clone(), smb.users.clone()).await?
-                    {
-                        break identities;
-                    }
-                    tokio::time::sleep(std::time::Duration::from_secs(1)).await;
-                };
                 let socket = smb.socket.clone();
                 tokio::task::spawn_blocking(move || {
                     let parent = socket
@@ -801,7 +794,8 @@ pub async fn serve(
                 smb_rpc::serve(
                     &smb.socket,
                     smb.allowed_uid,
-                    identities,
+                    smb.username,
+                    bridge_auth,
                     backend,
                     smb.spool_limits,
                     smb_max_file_bytes,
@@ -816,29 +810,6 @@ pub async fn serve(
     };
     service_lifecycle::run_with_management(http, bridge, shutdown(), management_shutdown).await?;
     Ok(())
-}
-async fn bridge_identities(
-    auth: Arc<Mutex<AuthStore>>,
-    users: BTreeMap<String, String>,
-) -> Result<Option<BTreeMap<String, Identity>>, ApiError> {
-    // At most one bridge startup job is outstanding. Slow credentials must not
-    // pin a Tokio worker or prevent management HTTP from accepting requests.
-    tokio::task::spawn_blocking(move || {
-        let auth = lock(&auth)?;
-        if !auth.is_available() {
-            return Ok(None);
-        }
-        users
-            .into_iter()
-            .map(|(alias, principal)| {
-                auth.identity_for_principal(&principal)
-                    .map(|identity| (alias, identity))
-            })
-            .collect::<Result<BTreeMap<_, _>, _>>()
-            .map(Some)
-    })
-    .await
-    .map_err(ApiError::join)?
 }
 
 async fn shutdown() {
@@ -1056,7 +1027,6 @@ id_post_handler!(
     "repository_id"
 );
 id_post_handler!(resolve, crate::BackendAction::Resolve, "branch_id");
-id_post_handler!(grants, crate::BackendAction::SetGrants, "repository_id");
 id_post_handler!(
     update_smb_binding,
     crate::BackendAction::UpdateSmbBinding,
@@ -1168,16 +1138,14 @@ async fn workspace_capacity(
 
 async fn storage_status(
     State(state): State<AppState>,
-    http_routing::Extension(identity): http_routing::Extension<Identity>,
+    http_routing::Extension(_identity): http_routing::Extension<Identity>,
 ) -> Result<Json<Value>, ApiError> {
-    identity.require_admin()?;
     Ok(Json(state.backend.management_status()))
 }
 async fn storage_retry(
     State(state): State<AppState>,
     http_routing::Extension(identity): http_routing::Extension<Identity>,
 ) -> Result<Json<Value>, ApiError> {
-    identity.require_admin()?;
     http_auth::storage_retry_job(state.backend, state.management_slots, identity)
         .await
         .map(Json)
@@ -1188,8 +1156,6 @@ async fn ready(State(state): State<AppState>) -> Result<Json<Value>, ApiError> {
         admission_session: None,
         smb_binding: None,
         principal: "health".into(),
-        admin: false,
-        repositories: Default::default(),
     };
     management_call(state, identity, crate::BackendAction::Ready, json!({})).await
 }
@@ -1198,8 +1164,6 @@ async fn capabilities(State(state): State<AppState>) -> Result<Json<Value>, ApiE
         admission_session: None,
         smb_binding: None,
         principal: "anonymous".into(),
-        admin: false,
-        repositories: Default::default(),
     };
     let limit = state.config.max_upload_bytes;
     let Json(mut value) = management_call(

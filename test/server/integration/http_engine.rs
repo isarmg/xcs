@@ -208,6 +208,13 @@ async fn login(app: &Router, name: &str, password: &str) -> String {
     value["token"].as_str().unwrap().into()
 }
 
+/// Exercise real revocation rather than inventing a lower-privileged account.
+async fn revoked_session(app: &Router) -> String {
+    let token = login(app, "admin", "integration-test-password").await;
+    success(app, &token, "POST", "/api/auth/logout", None).await;
+    token
+}
+
 #[tokio::test]
 async fn self_password_change_is_csrf_protected_and_restored_from_pool_control_state() {
     let root = tempfile::tempdir().unwrap();
@@ -540,30 +547,20 @@ async fn file_notes_are_authorized_bounded_persistent_and_download_uses_current_
     .await;
     let file = listing["entries"][0]["file_id"].as_str().unwrap();
     let version = listing["entries"][0]["version_id"].as_str().unwrap();
-    let repo = listing["context"]["repository_id"].as_str().unwrap();
-    success(
-        &app,
-        &token,
-        "POST",
-        "/api/admin/accounts",
-        Some(
-            json!({"username":"reader","password":"read-only-test-password","repositories":[repo]}),
-        ),
-    )
-    .await;
-    success(&app,&token,"PUT",&format!("/api/repositories/{repo}/grants"),Some(json!({"grants":{"read":["reader"],"write":[],"manage":["admin"]},"operation_id":new_id("op")}))).await;
-    let reader = login(&app, "reader", "read-only-test-password").await;
+
+    let session = login(&app, "admin", "integration-test-password").await;
+    let revoked = revoked_session(&app).await;
     assert_eq!(
         send(
             &app,
-            Some(&reader),
+            Some(&revoked),
             "POST",
             &format!("/api/file-manager/files/{file}/metadata"),
             Some(json!({"note":"cannot edit","operation_id":new_id("op")}))
         )
         .await
         .0,
-        StatusCode::FORBIDDEN
+        StatusCode::UNAUTHORIZED
     );
     // Both metadata endpoints count UTF-8 bytes, reject every control character,
     // and accept an empty note as a deletion of the stored metadata.
@@ -648,7 +645,7 @@ async fn file_notes_are_authorized_bounded_persistent_and_download_uses_current_
     .await;
     let history = success(
         &app,
-        &reader,
+        &session,
         "GET",
         &format!("/api/file-manager/files/{file}/history"),
         None,
@@ -669,7 +666,7 @@ async fn file_notes_are_authorized_bounded_persistent_and_download_uses_current_
         .oneshot(
             Request::builder()
                 .uri(format!("/api/versions/{version}/content"))
-                .header("authorization", format!("Bearer {reader}"))
+                .header("authorization", format!("Bearer {session}"))
                 .body(Body::empty())
                 .unwrap(),
         )
@@ -688,7 +685,7 @@ async fn file_notes_are_authorized_bounded_persistent_and_download_uses_current_
     manager_namespace(&app, &token, "delete", "改名后的文件.txt", None).await;
     let deleted = success(
         &app,
-        &reader,
+        &session,
         "GET",
         &format!("/api/file-manager/files/{file}/history"),
         None,
@@ -703,7 +700,7 @@ async fn file_notes_are_authorized_bounded_persistent_and_download_uses_current_
         .oneshot(
             Request::builder()
                 .uri(format!("/api/versions/{version}/content"))
-                .header("authorization", format!("Bearer {reader}"))
+                .header("authorization", format!("Bearer {session}"))
                 .body(Body::empty())
                 .unwrap(),
         )
@@ -747,7 +744,7 @@ async fn file_notes_are_authorized_bounded_persistent_and_download_uses_current_
 }
 
 #[tokio::test]
-async fn file_history_exposes_durable_content_edges_and_preserves_read_permissions() {
+async fn file_history_exposes_durable_content_edges_and_rechecks_authentication() {
     let root = tempfile::tempdir().unwrap();
     let app = application(root.path());
     let admin = login(&app, "admin", "integration-test-password").await;
@@ -772,7 +769,6 @@ async fn file_history_exposes_durable_content_edges_and_preserves_read_permissio
         .iter()
         .find(|entry| entry["name"] == "sibling.txt")
         .unwrap();
-    let repo = listing["context"]["repository_id"].as_str().unwrap();
     let history_path = format!("/api/file-manager/files/{file}/history");
 
     manager_upload(&app, &admin, "tree.txt", b"second main content").await;
@@ -821,16 +817,8 @@ async fn file_history_exposes_durable_content_edges_and_preserves_read_permissio
     .await;
     manager_upload(&app, &admin, "tree.txt", b"new branch content").await;
 
-    success(
-        &app, &admin, "POST", "/api/admin/accounts",
-        Some(json!({"username":"tree-reader","password":"tree-reader-test-password","repositories":[repo]})),
-    ).await;
-    success(
-        &app, &admin, "PUT", &format!("/api/repositories/{repo}/grants"),
-        Some(json!({"grants":{"read":["tree-reader"],"write":[],"manage":["admin"]},"operation_id":new_id("op")})),
-    ).await;
-    let reader = login(&app, "tree-reader", "tree-reader-test-password").await;
-    let history = success(&app, &reader, "GET", &history_path, None).await;
+    let session = login(&app, "admin", "integration-test-password").await;
+    let history = success(&app, &session, "GET", &history_path, None).await;
     let nodes = history["nodes"].as_array().unwrap();
     assert_eq!(nodes.len(), 3);
     for node in nodes {
@@ -885,7 +873,7 @@ async fn file_history_exposes_durable_content_edges_and_preserves_read_permissio
     }
     let sibling_history = success(
         &app,
-        &reader,
+        &session,
         "GET",
         &format!(
             "/api/file-manager/files/{}/history",
@@ -903,6 +891,7 @@ async fn file_history_exposes_durable_content_edges_and_preserves_read_permissio
         send(&app, None, "GET", &history_path, None).await.0,
         StatusCode::UNAUTHORIZED
     );
+    success(&app, &session, "POST", "/api/auth/logout", None).await;
     for (path, body) in [
         (
             format!("/api/file-manager/files/{file}/metadata"),
@@ -914,20 +903,19 @@ async fn file_history_exposes_durable_content_edges_and_preserves_read_permissio
         ),
     ] {
         assert_eq!(
-            send(&app, Some(&reader), "POST", &path, Some(body)).await.0,
-            StatusCode::FORBIDDEN
+            send(&app, Some(&session), "POST", &path, Some(body))
+                .await
+                .0,
+            StatusCode::UNAUTHORIZED
         );
     }
-    success(
-        &app, &admin, "POST", "/api/admin/accounts",
-        Some(json!({"username":"tree-outsider","password":"tree-outsider-test-password","repositories":[]})),
-    ).await;
-    let outsider = login(&app, "tree-outsider", "tree-outsider-test-password").await;
+
+    let revoked = revoked_session(&app).await;
     assert_eq!(
-        send(&app, Some(&outsider), "GET", &history_path, None)
+        send(&app, Some(&revoked), "GET", &history_path, None)
             .await
             .0,
-        StatusCode::FORBIDDEN
+        StatusCode::UNAUTHORIZED
     );
 
     // The same edges are restored from the durable pool, not synthesized by an
@@ -943,31 +931,31 @@ async fn file_history_exposes_durable_content_edges_and_preserves_read_permissio
         ServerConfig::loopback(&root.path().join("system")),
     )
     .unwrap();
-    let reader = login(&app, "tree-reader", "tree-reader-test-password").await;
+    let session = login(&app, "admin", "integration-test-password").await;
     assert_eq!(
-        success(&app, &reader, "GET", &history_path, None).await,
+        success(&app, &session, "GET", &history_path, None).await,
         history
     );
 
     // This small store uses the scan path. An unavailable query cache must not
-    // change API compatibility or ACLs. Large-store indexed fallback is covered
+    // change the API contract or authentication. Large-store indexed fallback is covered
     // by the core routing/corruption tests, not by this fixture.
-    let outsider = login(&app, "tree-outsider", "tree-outsider-test-password").await;
+    let revoked = revoked_session(&app).await;
     let index = root.path().join("system/index.sqlite");
     let saved_index = root.path().join("system/index.saved");
     std::fs::rename(&index, &saved_index).unwrap();
     std::fs::create_dir(&index).unwrap();
     assert_eq!(
-        success(&app, &reader, "GET", &history_path, None).await,
+        success(&app, &session, "GET", &history_path, None).await,
         history,
         "an unavailable cache must preserve scan-path versions, order, and edges"
     );
     assert_eq!(
-        send(&app, Some(&outsider), "GET", &history_path, None)
+        send(&app, Some(&revoked), "GET", &history_path, None)
             .await
             .0,
-        StatusCode::FORBIDDEN,
-        "an unavailable cache must not bypass repository read permission"
+        StatusCode::UNAUTHORIZED,
+        "an unavailable cache must not bypass session revocation"
     );
     std::fs::remove_dir(&index).unwrap();
     std::fs::rename(&saved_index, &index).unwrap();
@@ -1967,56 +1955,67 @@ async fn durable_http_save_seals_the_real_manifest_and_keeps_original_publicatio
 }
 
 #[tokio::test]
-async fn repository_permissions_apply_to_direct_content_graph_and_write_paths() {
+async fn authentication_applies_to_direct_content_graph_and_write_paths() {
     let root = tempfile::tempdir().unwrap();
     let app = application(root.path());
     let admin = login(&app, "admin", "integration-test-password").await;
-    let repo=success(&app,&admin,"POST","/api/repositories",Some(json!({"name":"Private repository","primary_slot_id":"P01","target_copies":1,"operation_id":new_id("op")}))).await;
-    success(&app,&admin,"POST","/api/admin/accounts",Some(json!({"username":"reader","password":"reader-test-password","admin":false,"repositories":[],"disabled":false}))).await;
-    let reader = login(&app, "reader", "reader-test-password").await;
-    for path in [
-        format!(
-            "/api/repositories/{}",
-            repo["repository_id"].as_str().unwrap()
-        ),
-        format!(
-            "/api/branches/{}/tree",
-            repo["main_branch_id"].as_str().unwrap()
-        ),
-        format!(
-            "/api/history-trees/{}/graph",
-            repo["history_tree_id"].as_str().unwrap()
-        ),
-    ] {
+    let repo = success(&app, &admin, "POST", "/api/repositories", Some(json!({"name":"Private","primary_slot_id":"P01","target_copies":1,"operation_id":new_id("op")}))).await;
+    manager_upload(&app, &admin, "Private/body.txt", b"authenticated content").await;
+    let listing = success(
+        &app,
+        &admin,
+        "GET",
+        "/api/file-manager/disks/P01/entries?path=Private",
+        None,
+    )
+    .await;
+    let version = listing["entries"][0]["version_id"].as_str().unwrap();
+    assert_eq!(
+        version_bytes(&app, &admin, version).await,
+        b"authenticated content"
+    );
+    let revoked = revoked_session(&app).await;
+    for token in [None, Some(revoked.as_str())] {
+        for path in [
+            format!(
+                "/api/repositories/{}",
+                repo["repository_id"].as_str().unwrap()
+            ),
+            format!(
+                "/api/branches/{}/tree",
+                repo["main_branch_id"].as_str().unwrap()
+            ),
+            format!(
+                "/api/history-trees/{}/graph",
+                repo["history_tree_id"].as_str().unwrap()
+            ),
+            format!("/api/versions/{version}/content"),
+            "/api/auth/me".into(),
+        ] {
+            assert_eq!(
+                send(&app, token, "GET", &path, None).await.0,
+                StatusCode::UNAUTHORIZED,
+                "{path}"
+            );
+        }
         assert_eq!(
-            send(&app, Some(&reader), "GET", &path, None).await.0,
-            StatusCode::FORBIDDEN
+            send(
+                &app,
+                token,
+                "POST",
+                "/api/workspaces",
+                Some(json!({"branch_id":repo["main_branch_id"]}))
+            )
+            .await
+            .0,
+            StatusCode::UNAUTHORIZED
         );
     }
+    // Revoking one session does not discard durable content or a different
+    // authenticated session belonging to the same administrator.
     assert_eq!(
-        send(
-            &app,
-            Some(&reader),
-            "POST",
-            "/api/workspaces",
-            Some(json!({"branch_id":repo["main_branch_id"]}))
-        )
-        .await
-        .0,
-        StatusCode::FORBIDDEN
-    );
-    assert_eq!(
-        send(&app, Some(&reader), "GET", "/api/admin/accounts", None)
-            .await
-            .0,
-        StatusCode::FORBIDDEN
-    );
-    success(&app,&admin,"POST","/api/admin/accounts",Some(json!({"username":"reader","password":null,"admin":false,"repositories":[],"disabled":true}))).await;
-    assert_eq!(
-        send(&app, Some(&reader), "GET", "/api/auth/me", None)
-            .await
-            .0,
-        StatusCode::UNAUTHORIZED
+        version_bytes(&app, &admin, version).await,
+        b"authenticated content"
     );
 }
 
@@ -2190,13 +2189,18 @@ fn capture_wire(name: &str, wire: &Value) {
     }
 }
 
+fn seed_engine_authority(engine: &mut Engine, system: &Path) {
+    let auth = AuthStore::initialize(system, "admin", "integration-test-password").unwrap();
+    engine
+        .persist_auth_state(auth.snapshot().unwrap(), "system_auth", &new_id("op"))
+        .unwrap();
+}
+
 fn operation_identity() -> Identity {
     Identity {
         admission_session: None,
         smb_binding: None,
         principal: "admin".into(),
-        admin: true,
-        repositories: Default::default(),
     }
 }
 
@@ -2210,6 +2214,7 @@ fn recovered_permanent_loss_returns_degraded_save_wire_with_frozen_unavailable_s
         root.path().join("d3"),
     ]);
     let mut engine = Engine::initialize(&system, config).unwrap();
+    seed_engine_authority(&mut engine, &system);
     let repo = engine
         .create_repository("Lost candidate", "P01", 3, "admin", &new_id("op"))
         .unwrap();
@@ -2327,6 +2332,7 @@ fn damage_after_normal_publication_keeps_original_target_met_in_save_wire() {
         root.path().join("d3"),
     ]);
     let mut engine = Engine::initialize(&root.path().join("system"), config).unwrap();
+    seed_engine_authority(&mut engine, &root.path().join("system"));
     let repo = engine
         .create_repository("Published evidence", "P01", 3, "admin", &new_id("op"))
         .unwrap();
@@ -2459,20 +2465,15 @@ async fn default_directory_branch_is_shared_authorized_and_persistent() {
         .find(|entry| entry["name"] == "one.txt")
         .unwrap()["version_id"]
         .clone();
-    success(&app, &admin, "POST", "/api/admin/accounts", Some(json!({
-        "username":"view-writer","password":"view-writer-test-password","repositories":[repository]
-    }))).await;
-    success(&app, &admin, "PUT", &format!("/api/repositories/{repository}/grants"), Some(json!({
-        "grants":{"read":["view-writer"],"write":["view-writer"],"manage":["admin"]},"operation_id":new_id("op")
-    }))).await;
-    let writer = login(&app, "view-writer", "view-writer-test-password").await;
+
+    let session = login(&app, "admin", "integration-test-password").await;
     assert_eq!(
-        success(&app, &writer, "GET", &api, None).await["namespace_branch_id"],
+        success(&app, &session, "GET", &api, None).await["namespace_branch_id"],
         namespace
     );
     let selected = success(
         &app,
-        &writer,
+        &session,
         "PUT",
         &api,
         Some(json!({
@@ -2481,11 +2482,11 @@ async fn default_directory_branch_is_shared_authorized_and_persistent() {
     )
     .await;
     assert_eq!(selected["result"]["directory_branch_id"], frozen);
-    let current = success(&app, &writer, "GET", &api, None).await;
+    let current = success(&app, &session, "GET", &api, None).await;
     assert_eq!(current["directory_branch_id"], frozen);
     assert_eq!(current["namespace_branch_id"], namespace);
     let tree_path = format!("/api/branches/{namespace}/tree");
-    let tree = success(&app, &writer, "GET", &tree_path, None).await;
+    let tree = success(&app, &session, "GET", &tree_path, None).await;
     let visible = tree["entries"]
         .as_array()
         .unwrap()
@@ -2494,12 +2495,12 @@ async fn default_directory_branch_is_shared_authorized_and_persistent() {
         .unwrap();
     assert_eq!(visible["version_id"], original["version_id"]);
     assert_eq!(
-        version_bytes(&app, &writer, visible["version_id"].as_str().unwrap()).await,
+        version_bytes(&app, &session, visible["version_id"].as_str().unwrap()).await,
         b"frozen parent"
     );
     let repeated = success(
         &app,
-        &writer,
+        &session,
         "PUT",
         &api,
         Some(json!({
@@ -2509,13 +2510,13 @@ async fn default_directory_branch_is_shared_authorized_and_persistent() {
     .await;
     assert_eq!(repeated["result"]["no_change"], true);
     assert_eq!(
-        success(&app, &writer, "GET", &tree_path, None).await["commit_id"],
+        success(&app, &session, "GET", &tree_path, None).await["commit_id"],
         tree["commit_id"]
     );
 
     let wrong = send(
         &app,
-        Some(&writer),
+        Some(&session),
         "POST",
         "/api/file-manager/disks/P01/write-sessions",
         Some(json!({
@@ -2527,7 +2528,7 @@ async fn default_directory_branch_is_shared_authorized_and_persistent() {
     assert_eq!(wrong.1["error"]["code"], "FILE_BRANCH_CONFLICT");
     let workspace = success(
         &app,
-        &writer,
+        &session,
         "POST",
         "/api/file-manager/disks/P01/write-sessions",
         Some(json!({
@@ -2539,7 +2540,7 @@ async fn default_directory_branch_is_shared_authorized_and_persistent() {
     assert_eq!(workspace["base_head"], tree["commit_id"]);
     success(
         &app,
-        &writer,
+        &session,
         "POST",
         &format!(
             "/api/workspaces/{}/abort",
@@ -2550,7 +2551,7 @@ async fn default_directory_branch_is_shared_authorized_and_persistent() {
     .await;
     let nested = success(
         &app,
-        &writer,
+        &session,
         "GET",
         "/api/file-manager/disks/P01/entries?path=folder",
         None,
@@ -2560,7 +2561,7 @@ async fn default_directory_branch_is_shared_authorized_and_persistent() {
         nested["directory_branches"].as_array().unwrap()[0]["directory_branch_id"].clone();
     let wrong_scope = send(
         &app,
-        Some(&writer),
+        Some(&session),
         "PUT",
         &api,
         Some(json!({"directory_branch_id":nested_id,"operation_id":new_id("op")})),
@@ -2570,10 +2571,10 @@ async fn default_directory_branch_is_shared_authorized_and_persistent() {
 
     // Saving another file from a frozen composition must not rewind a
     // shared branch whose newer HEAD belongs to a different directory view.
-    manager_upload(&app, &writer, "folder/two.txt", b"edited second file").await;
+    manager_upload(&app, &session, "folder/two.txt", b"edited second file").await;
     let a_history = success(
         &app,
-        &writer,
+        &session,
         "GET",
         &format!(
             "/api/file-manager/files/{}/history",
@@ -2594,7 +2595,7 @@ async fn default_directory_branch_is_shared_authorized_and_persistent() {
     );
     success(
         &app,
-        &writer,
+        &session,
         "PUT",
         &api,
         Some(json!({"directory_branch_id":frozen,"operation_id":new_id("op")})),
@@ -2604,7 +2605,7 @@ async fn default_directory_branch_is_shared_authorized_and_persistent() {
     let rename_api = format!("/api/repositories/{repository}/directory-branches/{frozen}");
     let renamed = success(
         &app,
-        &writer,
+        &session,
         "PATCH",
         &rename_api,
         Some(json!({
@@ -2614,10 +2615,10 @@ async fn default_directory_branch_is_shared_authorized_and_persistent() {
     .await;
     assert_eq!(renamed["result"]["directory_branch_id"], frozen);
     assert_eq!(
-        success(&app, &writer, "GET", &api, None).await["name"],
+        success(&app, &session, "GET", &api, None).await["name"],
         "saved view"
     );
-    let audit = success(&app, &writer, "GET", "/api/file-manager/history", None).await;
+    let audit = success(&app, &session, "GET", "/api/file-manager/history", None).await;
     for action in [
         "directory.branches.create",
         "directory.default.select",
@@ -2643,7 +2644,7 @@ async fn default_directory_branch_is_shared_authorized_and_persistent() {
     );
     let overlong = send(
         &app,
-        Some(&writer),
+        Some(&session),
         "PATCH",
         &rename_api,
         Some(json!({
@@ -2655,24 +2656,22 @@ async fn default_directory_branch_is_shared_authorized_and_persistent() {
     assert_eq!(listing["default_branch_scope"], true);
     assert_eq!(nested["default_branch_scope"], false);
 
-    success(&app, &admin, "PUT", &format!("/api/repositories/{repository}/grants"), Some(json!({
-        "grants":{"read":["view-writer"],"write":[],"manage":["admin"]},"operation_id":new_id("op")
-    }))).await;
+    success(&app, &session, "POST", "/api/auth/logout", None).await;
     assert_eq!(
-        send(&app, Some(&writer), "GET", &api, None).await.0,
-        StatusCode::FORBIDDEN
+        send(&app, Some(&session), "GET", &api, None).await.0,
+        StatusCode::UNAUTHORIZED
     );
     assert_eq!(
         send(
             &app,
-            Some(&writer),
+            Some(&session),
             "PUT",
             &api,
             Some(json!({"directory_branch_id":frozen,"operation_id":new_id("op")}))
         )
         .await
         .0,
-        StatusCode::FORBIDDEN
+        StatusCode::UNAUTHORIZED
     );
     let empty = success(&app, &admin, "POST", "/api/repositories", Some(json!({
         "name":"Empty view","primary_slot_id":"P01","target_copies":3,"operation_id":new_id("op")
@@ -3139,17 +3138,13 @@ async fn branch_namespace_batch_preserves_unselected_views_and_is_idempotent() {
     )
     .await;
     assert_eq!(readonly.0, StatusCode::FORBIDDEN);
-    success(&app,&token,"POST","/api/admin/accounts",Some(json!({
-        "username":"branch-reader","password":"branch-reader-test-password","repositories":[repo]
-    }))).await;
-    success(&app,&token,"PUT",&format!("/api/repositories/{repo}/grants"),Some(json!({
-        "grants":{"read":["branch-reader"],"write":[],"manage":["admin"]},"operation_id":new_id("op")
-    }))).await;
-    let reader = login(&app, "branch-reader", "branch-reader-test-password").await;
-    let visible = manager_scope(&app, &reader, repo, &b_p).await;
+
+    let session = login(&app, "admin", "integration-test-password").await;
+    let visible = manager_scope(&app, &session, repo, &b_p).await;
+    success(&app, &session, "POST", "/api/auth/logout", None).await;
     let denied = send(
         &app,
-        Some(&reader),
+        Some(&session),
         "POST",
         route,
         Some(json!({"kind":"delete","operation_id":new_id("op"),"items":[
@@ -3157,7 +3152,7 @@ async fn branch_namespace_batch_preserves_unselected_views_and_is_idempotent() {
         ]})),
     )
     .await;
-    assert_eq!(denied.0, StatusCode::FORBIDDEN);
+    assert_eq!(denied.0, StatusCode::UNAUTHORIZED);
     assert_eq!(
         manager_scope(&app, &token, repo, &b_p).await["head_tree_id"],
         visible["head_tree_id"]
@@ -3440,20 +3435,19 @@ async fn public_file_branch_label_patch_preserves_content_and_directory_nodes() 
         .0,
         StatusCode::BAD_REQUEST
     );
-    success(&app,&admin,"POST","/api/admin/accounts",Some(json!({"username":"label-reader","password":"label-reader-test-password","repositories":[repo]}))).await;
-    success(&app,&admin,"PUT",&format!("/api/repositories/{repo}/grants"),Some(json!({"grants":{"read":["label-reader"],"write":[],"manage":["admin"]},"operation_id":new_id("op")}))).await;
-    let reader = login(&app, "label-reader", "label-reader-test-password").await;
+
+    let revoked = revoked_session(&app).await;
     assert_eq!(
         send(
             &app,
-            Some(&reader),
+            Some(&revoked),
             "PATCH",
             &route,
             Some(json!({"name":"denied","operation_id":new_id("op")}))
         )
         .await
         .0,
-        StatusCode::FORBIDDEN
+        StatusCode::UNAUTHORIZED
     );
     let audit = success(&app, &admin, "GET", "/api/file-manager/history", None).await;
     assert!(
@@ -3680,23 +3674,23 @@ async fn rename_nodes_reuse_bodies_and_preserve_graph_parents_notes_and_branch_s
     );
     success(&app,&admin,"POST",&branch_route,Some(json!({"source_version_id":current_body,"source_node_id":current_body,"name":"content-source","operation_id":new_id("op")}))).await;
     assert_eq!(send(&app,Some(&admin),"POST",&branch_route,Some(json!({"source_version_id":current_body,"source_node_id":node,"name":"mismatched-body","operation_id":new_id("op")}))).await.0,StatusCode::NOT_FOUND);
-    success(&app,&admin,"POST","/api/admin/accounts",Some(json!({"username":"path-reader","password":"path-reader-test-password","repositories":[repo]}))).await;
-    success(&app,&admin,"PUT",&format!("/api/repositories/{repo}/grants"),Some(json!({"grants":{"read":["path-reader"],"write":[],"manage":["admin"]},"operation_id":new_id("op")}))).await;
-    let reader = login(&app, "path-reader", "path-reader-test-password").await;
+
+    let session = login(&app, "admin", "integration-test-password").await;
+    let revoked = revoked_session(&app).await;
     assert_eq!(
         send(
             &app,
-            Some(&reader),
+            Some(&revoked),
             "PATCH",
             &note_route,
             Some(json!({"note":"denied","operation_id":new_id("op")}))
         )
         .await
         .0,
-        StatusCode::FORBIDDEN
+        StatusCode::UNAUTHORIZED
     );
     assert_eq!(
-        success(&app, &reader, "GET", &history_route, None).await["nodes"]
+        success(&app, &session, "GET", &history_route, None).await["nodes"]
             .as_array()
             .unwrap()
             .len(),
@@ -3776,8 +3770,6 @@ async fn engine_upload_generation_conflicts_reach_http_as_conflicts() {
                 admission_session: None,
                 smb_binding: None,
                 principal: "admin".into(),
-                admin: true,
-                repositories: Default::default(),
             },
             ws,
             &item,
@@ -3982,7 +3974,7 @@ async fn directory_scope_initialization_accepts_root_but_requires_a_string_path(
 }
 
 #[tokio::test]
-async fn workspace_capacity_is_live_and_principal_scoped() {
+async fn workspace_capacity_is_live_for_the_single_administrator() {
     let root = tempfile::tempdir().unwrap();
     let mut config = Config::development([
         root.path().join("d1"),
@@ -3998,8 +3990,10 @@ async fn workspace_capacity_is_live_and_principal_scoped() {
         StatusCode::UNAUTHORIZED
     );
     let admin = login(&app, "admin", "integration-test-password").await;
-    success(&app, &admin, "POST", "/api/admin/accounts", Some(json!({"username":"capacity-reader","password":"reader-test-password","admin":false,"repositories":[],"disabled":false}))).await;
-    let reader = login(&app, "capacity-reader", "reader-test-password").await;
+    let before = success(&app, &admin, "GET", path, None).await;
+    assert_eq!(before["global"]["records"]["used"], "0");
+    assert_eq!(before["principal"]["records"]["used"], "0");
+    assert_eq!(before["warning"], "ok");
     let repo = success(&app, &admin, "POST", "/api/repositories", Some(json!({"name":"Capacity","primary_slot_id":"P01","target_copies":1,"operation_id":new_id("op")}))).await;
     success(
         &app,
@@ -4009,48 +4003,79 @@ async fn workspace_capacity_is_live_and_principal_scoped() {
         Some(json!({"branch_id":repo["main_branch_id"]})),
     )
     .await;
-    let administrator = success(&app, &admin, "GET", path, None).await;
-    assert_eq!(administrator["global"]["records"]["used"], "1");
-    assert_eq!(administrator["warning"], "exhausted");
-    let own = success(&app, &reader, "GET", path, None).await;
-    assert!(own.get("global").is_none());
-    assert_eq!(own["principal"]["records"]["used"], "0");
-    assert_eq!(own["warning"], "ok");
-    assert_eq!(own["automatic_retirement"], false);
-    assert!(json_codec::from_value::<storage_contract::WorkspaceCapacity>(own).is_ok());
-    // Client-supplied role or principal selectors never elevate this read.
-    let own = success(
-        &app,
-        &reader,
-        "GET",
-        "/api/workspaces/capacity?admin=true&principal=admin",
-        None,
-    )
-    .await;
-    assert!(own.get("global").is_none());
-    assert_eq!(own["principal"]["records"]["used"], "0");
-    success(&app, &admin, "POST", "/api/admin/accounts", Some(json!({"username":"capacity-admin","password":"delegate-test-password","admin":true,"repositories":[],"disabled":false}))).await;
-    let delegate = login(&app, "capacity-admin", "delegate-test-password").await;
-    assert!(
-        success(&app, &delegate, "GET", path, None)
-            .await
-            .get("global")
-            .is_some()
-    );
-    success(&app, &admin, "POST", "/api/admin/accounts", Some(json!({"username":"capacity-admin","password":null,"admin":false,"repositories":[],"disabled":false}))).await;
-    let (status, downgraded) = send(&app, Some(&delegate), "GET", path, None).await;
-    assert!(status == StatusCode::OK || status == StatusCode::UNAUTHORIZED);
-    assert!(downgraded.get("global").is_none());
-    let delegate = login(&app, "capacity-admin", "delegate-test-password").await;
-    assert!(
-        success(&app, &delegate, "GET", path, None)
-            .await
-            .get("global")
-            .is_none()
-    );
-    success(&app, &admin, "POST", "/api/admin/accounts", Some(json!({"username":"capacity-reader","password":null,"admin":false,"repositories":[],"disabled":true}))).await;
+    let current = success(&app, &admin, "GET", path, None).await;
+    assert_eq!(current["global"]["records"]["used"], "1");
+    assert_eq!(current["principal"]["records"]["used"], "1");
+    assert_eq!(current["warning"], "exhausted");
+    assert_eq!(current["automatic_retirement"], false);
+    assert!(json_codec::from_value::<storage_contract::WorkspaceCapacity>(current.clone()).is_ok());
+    // Arbitrary query selectors cannot create a second identity or hide global capacity.
     assert_eq!(
-        send(&app, Some(&reader), "GET", path, None).await.0,
+        success(
+            &app,
+            &admin,
+            "GET",
+            "/api/workspaces/capacity?admin=false&principal=other",
+            None
+        )
+        .await,
+        current
+    );
+    let second = login(&app, "admin", "integration-test-password").await;
+    assert_eq!(success(&app, &second, "GET", path, None).await, current);
+    success(&app, &second, "POST", "/api/auth/logout", None).await;
+    assert_eq!(
+        send(&app, Some(&second), "GET", path, None).await.0,
         StatusCode::UNAUTHORIZED
+    );
+    assert_eq!(success(&app, &admin, "GET", path, None).await, current);
+    success(&app, &admin, "POST", "/api/auth/password", Some(json!({"current_password":"integration-test-password","new_password":"rotated-integration-password"}))).await;
+    assert_eq!(
+        send(&app, Some(&admin), "GET", path, None).await.0,
+        StatusCode::UNAUTHORIZED
+    );
+    let fresh = login(&app, "admin", "rotated-integration-password").await;
+    assert_eq!(success(&app, &fresh, "GET", path, None).await, current);
+}
+
+#[tokio::test]
+async fn removed_account_and_grant_routes_cannot_create_a_second_identity() {
+    let root = tempfile::tempdir().unwrap();
+    let app = application(root.path());
+    let token = login(&app, "admin", "integration-test-password").await;
+    let repo = success(&app, &token, "POST", "/api/repositories", Some(json!({"name":"Single identity","primary_slot_id":"P01","target_copies":1,"operation_id":new_id("op")}))).await;
+    for admin in [false, true] {
+        assert_eq!(send(&app, Some(&token), "POST", "/api/admin/accounts", Some(json!({"username":"second-account","password":"second-account-password","admin":admin,"repositories":[],"disabled":false}))).await.0, StatusCode::NOT_FOUND);
+    }
+    assert_eq!(
+        send(&app, Some(&token), "GET", "/api/admin/accounts", None)
+            .await
+            .0,
+        StatusCode::NOT_FOUND
+    );
+    assert_eq!(send(&app, Some(&token), "PUT", &format!("/api/repositories/{}/grants", repo["repository_id"].as_str().unwrap()), Some(json!({"grants":{"read":["second-account"],"write":["second-account"],"manage":["second-account"]},"operation_id":new_id("op")}))).await.0, StatusCode::NOT_FOUND);
+    assert_eq!(
+        send(
+            &app,
+            None,
+            "POST",
+            "/api/auth/login",
+            Some(json!({"username":"second-account","password":"second-account-password"}))
+        )
+        .await
+        .0,
+        StatusCode::UNAUTHORIZED
+    );
+    let me = success(&app, &token, "GET", "/api/auth/me", None).await;
+    assert_eq!(me["principal"], "admin");
+    assert!(me.get("admin").is_none());
+    assert!(me.get("repositories").is_none());
+    let repositories = success(&app, &token, "GET", "/api/repositories", None).await;
+    assert_eq!(repositories["repositories"].as_array().unwrap().len(), 1);
+    assert!(repositories["repositories"][0].get("grants").is_none());
+    assert!(
+        repositories["repositories"][0]
+            .get("account_scope_repository_id")
+            .is_none()
     );
 }

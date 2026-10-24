@@ -19,11 +19,6 @@ fn detached_snapshot_keeps_only_target_and_preserves_live_retained_evidence() {
     let repo = engine
         .create_repository("planning", "P01", 1, "alice", &new_id("op"))
         .unwrap();
-    let mut grants = repo.grants.clone();
-    grants.write.insert("bob".into());
-    engine
-        .set_grants(&repo.repository_id, grants, "alice", &new_id("op"))
-        .unwrap();
     for (principal, abort) in [("alice", true), ("bob", true), ("bob", false)] {
         let workspace = engine
             .create_workspace(&repo.main_branch_id, principal)
@@ -58,7 +53,7 @@ fn detached_snapshot_keeps_only_target_and_preserves_live_retained_evidence() {
     let frozen_bytes = canonical_json(engine.state()).unwrap();
     let capacities: Vec<_> = ["alice", "bob", "absent"]
         .into_iter()
-        .map(|principal| (principal, engine.workspace_capacity(principal, true)))
+        .map(|principal| (principal, engine.workspace_capacity(principal)))
         .collect();
     let preparation = engine
         .prepare_workspace_commit(request.clone(), None)
@@ -66,15 +61,7 @@ fn detached_snapshot_keeps_only_target_and_preserves_live_retained_evidence() {
     let planning = &preparation.snapshot.engine;
     assert!(Arc::ptr_eq(&planning.state, &engine.state));
     assert_eq!(planning.retained_workspace_limits, Some(limits));
-    assert_eq!(
-        planning
-            .workspace_capacity("alice", true)
-            .global
-            .unwrap()
-            .records
-            .limit,
-        4
-    );
+    assert_eq!(planning.workspace_capacity("alice").global.records.limit, 4);
     assert_eq!(planning.workspaces.len(), 1);
     assert_eq!(
         canonical_json(&planning.workspace(&target.workspace_id).unwrap()).unwrap(),
@@ -84,8 +71,8 @@ fn detached_snapshot_keeps_only_target_and_preserves_live_retained_evidence() {
         assert!(!planning.workspaces.contains_key(workspace_id));
     }
     for (principal, capacity) in &capacities {
-        assert_eq!(&planning.workspace_capacity(principal, true), capacity);
-        assert_eq!(&engine.workspace_capacity(principal, true), capacity);
+        assert_eq!(&planning.workspace_capacity(principal), capacity);
+        assert_eq!(&engine.workspace_capacity(principal), capacity);
     }
     assert_eq!(engine.workspaces.len(), 4);
     assert_eq!(canonical_json(&engine.workspaces).unwrap(), before);
@@ -114,7 +101,7 @@ fn detached_snapshot_keeps_only_target_and_preserves_live_retained_evidence() {
     let published_state = canonical_json(engine.state()).unwrap();
     let capacities: Vec<_> = capacities
         .into_iter()
-        .map(|(principal, _)| (principal, engine.workspace_capacity(principal, true)))
+        .map(|(principal, _)| (principal, engine.workspace_capacity(principal)))
         .collect();
     drop(engine);
     let mut engine = Engine::open_with_workspace_limits(&root, Some(limits)).unwrap();
@@ -130,7 +117,7 @@ fn detached_snapshot_keeps_only_target_and_preserves_live_retained_evidence() {
     assert_eq!(canonical_json(engine.state()).unwrap(), published_state);
     assert_eq!(canonical_json(&engine.workspaces).unwrap(), committed);
     for (principal, capacity) in capacities {
-        assert_eq!(engine.workspace_capacity(principal, true), capacity);
+        assert_eq!(engine.workspace_capacity(principal), capacity);
     }
     engine.assert_workspace_budget_consistent();
 }

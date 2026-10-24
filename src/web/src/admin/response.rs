@@ -53,22 +53,7 @@ impl Contract {
     }
     pub(super) fn validate(&self, value: Value) -> Result<Value, api::Error> {
         let path = self.path.as_str();
-        let valid = if path == "/api/admin/accounts" {
-            if self.method == "GET" {
-                value["accounts"].as_array().is_some_and(|accounts| {
-                    accounts.iter().all(|a| {
-                        nonempty(&a["username"])
-                            && a["admin"].is_boolean()
-                            && a["disabled"].is_boolean()
-                            && a["repositories"]
-                                .as_array()
-                                .is_some_and(|r| r.iter().all(Value::is_string))
-                    })
-                })
-            } else {
-                value["updated"].as_bool() == Some(true)
-            }
-        } else if path.starts_with("/api/operations/") && self.method == "GET" {
+        let valid = if path.starts_with("/api/operations/") && self.method == "GET" {
             operation_shape(&value)
                 && path
                     == format!(
@@ -138,10 +123,7 @@ impl Contract {
                             .unwrap_or_default()
                     )
                 ))
-        } else if path.ends_with("/grants")
-            || path.ends_with("/commit")
-            || path.ends_with("/cancel")
-        {
+        } else if path.ends_with("/commit") || path.ends_with("/cancel") {
             json_codec::from_value::<OperationResult>(value.clone()).is_ok()
                 && nonempty(&value["kind"])
                 && nonempty(&value["request_digest"])

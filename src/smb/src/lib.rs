@@ -1,4 +1,4 @@
-//! Trusted local bridge. Socket peer identity and the administrator's explicit
-//! SMB-user mapping establish authority; request JSON never contains an ACL.
+//! Trusted local bridge. Socket peer identity and the configured authenticated
+//! Samba account bind the sole current ZXS account; request JSON never carries ACLs.
 pub mod client;
 pub mod protocol;

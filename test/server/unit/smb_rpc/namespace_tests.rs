@@ -7,7 +7,7 @@ fn connect(shared: Arc<Shared>) -> (FrameStream, JoinHandle<()>) {
         .backend
         .call(
             crate::BackendAction::Repositories,
-            &shared.identities["alice"],
+            &identity(&shared),
             json!({}),
         )
         .unwrap()["repositories"][0]["repository_id"]
@@ -25,7 +25,10 @@ fn connect(shared: Arc<Shared>) -> (FrameStream, JoinHandle<()>) {
         &mut client,
         Request::Hello {
             protocol: PROTOCOL.into(),
-            capabilities: vec![WRITE_RESERVATION_CAPABILITY.into()],
+            capabilities: REQUIRED_CAPABILITIES
+                .iter()
+                .map(|value| (*value).into())
+                .collect(),
             username: "alice".into(),
             repository_id: repository,
         },
@@ -144,7 +147,8 @@ fn namespace_submission_errors_retain_original_operation_without_abort() {
         });
         let shared = Arc::new(Shared {
             backend: backend.clone(),
-            identities: original.identities.clone(),
+            username: original.username.clone(),
+            auth: original.auth.clone(),
             spool: original.spool.clone(),
             budget: original.budget.clone(),
             max_file_bytes: original.max_file_bytes,
@@ -215,7 +219,7 @@ fn namespace_submission_errors_retain_original_operation_without_abort() {
                 .inner
                 .call(
                     crate::BackendAction::Operation,
-                    &shared.identities["alice"],
+                    &identity(&shared),
                     json!({"operation_id":operation_id}),
                 )
                 .unwrap();
@@ -239,7 +243,8 @@ fn uncertain_namespace_dispatch_never_aborts_its_workspace() {
         });
         let shared = Arc::new(Shared {
             backend: backend.clone(),
-            identities: original.identities.clone(),
+            username: original.username.clone(),
+            auth: original.auth.clone(),
             spool: original.spool.clone(),
             budget: original.budget.clone(),
             max_file_bytes: original.max_file_bytes,
@@ -518,7 +523,8 @@ fn preparation_and_record_sync_failures_keep_unresolved_recovery_evidence() {
             });
             let shared = Arc::new(Shared {
                 backend: backend.clone(),
-                identities: original.identities.clone(),
+                username: original.username.clone(),
+                auth: original.auth.clone(),
                 spool: original.spool.clone(),
                 budget: original.budget.clone(),
                 max_file_bytes: original.max_file_bytes,
@@ -630,7 +636,7 @@ fn dropped_successful_rpc_frame_keeps_the_client_allocated_operation_queryable()
         .inner
         .call(
             crate::BackendAction::Operation,
-            &shared.identities["alice"],
+            &identity(&shared),
             json!({"operation_id":operation_id}),
         )
         .unwrap();

@@ -38,17 +38,17 @@ fn invalid() -> Error {
     Error::new("CHECKPOINT_INVALID", "replay checkpoint coverage differs")
 }
 
-// Read every repair-relevant byte, not metadata timestamps. Published payload
-// modern named-version bytes are excluded: historical recovery reconstructs
-// their proof but does not reverify them. Legacy/content bytes ARE hashed because
-// synchronize_names revalidates them during legacy migration, even after a move.
+// Read every repair-relevant byte, not metadata timestamps. Installed named
+// version payloads are excluded: recovery reconstructs their publication proof
+// without re-verifying the body. Prepared content remains hashed because replay
+// must verify it before installation, including after an interrupted move.
 fn named_container(root: &Path, relative: &Path) -> Result<bool> {
     let parts = relative_parts(relative)?;
     if parts.len() < 5 || parts[0] != "histories" || parts[2] != "file-containers" {
         return Ok(false);
     }
-    // Original direct-name layout has no namespace owner marker. Namespaced
-    // containers may be arbitrarily deep and must carry their exact file ID.
+    // First installation creates a direct-name container before namespace
+    // placement. Namespaced containers must carry their exact file ID.
     if parts.len() == 5 && parts[4] != "namespace" {
         return Ok(true);
     }

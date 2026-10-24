@@ -1,0 +1,34 @@
+# Review-only standalone Samba template. This file does not create accounts,
+# configure credentials, install a module, or modify a running service.
+# Replace zxs-owner with the exact authenticated Samba account_name also passed
+# to zxs --smb-user. Samba and ZXS passwords are configured independently.
+# Do not add force user, guest shares, username maps, or domain authentication.
+[global]
+    server role = standalone server
+    security = user
+    map to guest = Never
+    restrict anonymous = 2
+    server min protocol = SMB3_00
+    server signing = mandatory
+
+[zxs]
+    path = /var/lib/zxs/empty-export
+    vfs objects = zxs
+    zxs:socket = /run/zxs/smb.sock
+    zxs:repository = repo_REPLACE_WITH_REPOSITORY_ID
+    valid users = zxs-owner
+    guest ok = no
+    guest only = no
+    read only = no
+    smb encrypt = required
+    oplocks = no
+    level2 oplocks = no
+    kernel oplocks = no
+    durable handles = no
+    aio read size = 1
+    aio write size = 1
+    use sendfile = no
+    min receivefile size = 0
+    store dos attributes = no
+    ea support = no
+    follow symlinks = no

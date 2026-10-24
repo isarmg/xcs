@@ -21,7 +21,6 @@ pub(crate) struct Draft {
     target: u32,
     prefixes: BTreeMap<String, String>,
     loading: bool,
-    can_manage: bool,
 }
 pub(crate) fn start_entry(state: RwSignal<State>, entry: Value) {
     let Some((repository, path)) = state.with_untracked(|s| file_context(&s.files, &entry)) else {
@@ -61,7 +60,6 @@ fn start(state: RwSignal<State>, repository: String, path: String) {
             target: 0,
             prefixes: BTreeMap::new(),
             loading: true,
-            can_manage: false,
         })
     });
     spawn_local(async move {
@@ -99,7 +97,6 @@ fn start(state: RwSignal<State>, repository: String, path: String) {
                                 .map(|prefix| (slot.clone(), prefix.to_owned()))
                         })
                         .collect();
-                    draft.can_manage = configuration["can_manage"] == true;
                     draft.configuration = configuration;
                     draft.loading = false;
                 }
@@ -117,33 +114,26 @@ fn start(state: RwSignal<State>, repository: String, path: String) {
     });
 }
 fn routes(configuration: &Value) -> Vec<Vec<String>> {
-    let parse = |value: &Value| {
-        value
-            .as_array()
-            .into_iter()
-            .flatten()
-            .filter_map(Value::as_str)
-            .map(str::to_owned)
-            .collect::<Vec<_>>()
+    let Some(chains) = configuration["backup_routes"].as_array() else {
+        return Vec::new();
     };
-    if let Some(chains) = configuration["backup_routes"]
-        .as_array()
-        .filter(|chains| !chains.is_empty())
-    {
-        return chains.iter().map(parse).collect();
-    }
-    let route = parse(
-        configuration
-            .get("available_route_slot_ids")
-            .or_else(|| configuration.get("route_slot_ids"))
-            .unwrap_or(&Value::Null),
-    );
-    if route.is_empty() {
-        vec![]
-    } else {
-        vec![route]
-    }
+    chains
+        .iter()
+        .map(|chain| {
+            let slots = chain.as_array().filter(|slots| !slots.is_empty())?;
+            slots
+                .iter()
+                .map(|slot| {
+                    slot.as_str()
+                        .filter(|slot| !slot.is_empty())
+                        .map(str::to_owned)
+                })
+                .collect::<Option<Vec<_>>>()
+        })
+        .collect::<Option<Vec<_>>>()
+        .unwrap_or_default()
 }
+
 fn max_copies(configuration: &Value) -> usize {
     let available = routes(configuration)
         .iter()
@@ -153,7 +143,7 @@ fn max_copies(configuration: &Value) -> usize {
     crate::format::parse_u64(&configuration["max_copies"])
         .and_then(|n| usize::try_from(n).ok())
         .map(|n| n.min(available))
-        .unwrap_or(available)
+        .unwrap_or(0)
 }
 fn target_slots(configuration: &Value, target: u32) -> Vec<String> {
     routes(configuration)
@@ -172,10 +162,10 @@ fn valid_prefix(prefix: &str) -> bool {
     prefix.len() <= 768 && (prefix.is_empty() || name_policy::validate_path(prefix).is_ok())
 }
 fn request(draft: &Draft) -> Result<Value, String> {
-    if draft.loading || !draft.can_manage {
+    if draft.loading {
         return Err(t(
-            "当前无权修改该备份策略。",
-            "You cannot change this backup configuration.",
+            "备份策略仍在加载，请稍后再试。",
+            "The backup configuration is still loading. Try again when it is ready.",
         ));
     }
     if draft.scope_id.is_empty() || draft.generation.parse::<u64>().is_err() {
@@ -206,6 +196,9 @@ fn request(draft: &Draft) -> Result<Value, String> {
     )
 }
 fn submit(state: RwSignal<State>) {
+    if state.with_untracked(|s| !actions::write_allowed(s)) {
+        return;
+    }
     let Some(draft) = state.with_untracked(|s| s.files.backup.clone()) else {
         return;
     };
@@ -224,34 +217,19 @@ fn submit(state: RwSignal<State>) {
     }
 }
 fn backup_paths(configuration: &Value) -> Vec<(String, String)> {
-    if let Some(paths) = configuration["backup_paths"].as_object() {
-        return paths
-            .iter()
-            .filter_map(|(slot, path)| path.as_str().map(|path| (slot.clone(), path.to_owned())))
-            .collect();
-    }
     configuration["backup_paths"]
-        .as_array()
+        .as_object()
         .into_iter()
         .flatten()
-        .map(|value| {
-            (
-                text(value, &["slot_id", "slot"]),
-                text(value, &["logical_path", "path"]),
-            )
-        })
-        .filter(|(slot, path)| !slot.is_empty() && !path.is_empty())
+        .filter_map(|(slot, path)| path.as_str().map(|path| (slot.clone(), path.to_owned())))
         .collect()
 }
+
 pub(crate) fn view(state: RwSignal<State>) -> impl IntoView {
     let open = Memo::new(move |_| state.with(|s| s.files.backup.is_some()));
     let disabled = Signal::derive(move || {
         state.with(|s| {
-            !actions::write_allowed(s)
-                || s.files
-                    .backup
-                    .as_ref()
-                    .is_none_or(|draft| draft.loading || !draft.can_manage)
+            !actions::write_allowed(s) || s.files.backup.as_ref().is_none_or(|draft| draft.loading)
         })
     });
     let options = Signal::derive(move || {
@@ -309,7 +287,7 @@ pub(crate) fn view(state: RwSignal<State>) -> impl IntoView {
             <div class="zxs-file-toolbar zxs-flow"><Select label=t("目标份数","Target copy count") options=options value=target disabled=disabled on_change=Callback::new(move |value:String|state.update(|s|if let Some(draft)=s.files.backup.as_mut(){draft.target=value.parse().unwrap_or(0);}))/></div>
             {move ||slots.get().into_iter().map(move |slot|{let read=slot.clone();let write=slot.clone();let label=format!("{slot} {}",t("备份前缀","backup prefix"));view!{<label class="zxs-file-toolbar zxs-flow"><span class="zxs-row">{label.clone()}</span><input class="zxs-input zxs-input--compact zxs-input--underline" aria-label=label data-max-bytes="768" disabled=move ||disabled.get() prop:value=move ||state.with(|s|s.files.backup.as_ref().and_then(|draft|draft.prefixes.get(&read)).cloned().unwrap_or_default()) on:input=move |event|state.update(|s|if let Some(draft)=s.files.backup.as_mut(){draft.prefixes.insert(write.clone(),event_target_value(&event));})/></label>}}).collect_view()}
             <div class="zxs-stack">{move ||paths.get().into_iter().map(|(slot,path)|view!{<p class="zxs-row">{format!("{slot} / {path}")}</p>}).collect_view()}</div>
-            <Show when=move ||state.with(|s|s.files.backup.as_ref().is_some_and(|draft|!draft.can_manage))><p class="zxs-row">{t("此备份策略仅可查看。","This backup configuration is read only.")}</p></Show>
+            <Show when=move ||state.with(|s|!s.management.storage.writable())><p class="zxs-row">{t("此备份策略仅可查看。","This backup configuration is read only.")}</p></Show>
             <button class="zxs-button" disabled=move ||disabled.get() on:click=move |_|submit(state)>{t("保存备份设置","Save backup settings")}</button>
         </Show>
         <p class="zxs-row zxs-inline-error" role="status">{move ||state.with(|s|review::error_text(s,review::Kind::Backup))}</p>

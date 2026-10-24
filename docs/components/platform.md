@@ -15,7 +15,7 @@ ZXS 独立的 Linux 服务端基础库，在本项目维护和构建。
 
 `sqlite::block_on_sqlite_connection` 支持同步核心执行直接 `SqliteConnection` 操作；不支持连接池、网络、Tokio 定时器或递归调用。每次必须在 future 返回前显式 `Connection::close().await`。`open_index_connection` 固定索引连接策略并启用 defensive；`create_if_missing=false` 不允许隐式新建数据库。
 
-平台库不拥有数据盘路由、ACL、产品 DDL 或跨盘事务真相。SQLite 仅为可重建索引。`payload::Receipt` 证明单文件落盘，不能被当作 ACCEPT、FINALIZE 或 PUBLICATION。
+平台库不拥有数据盘路由、产品账户状态、产品 DDL 或跨盘事务真相。SQLite 仅为可重建索引。`payload::Receipt` 证明单文件落盘，不能被当作 ACCEPT、FINALIZE 或 PUBLICATION。
 
 认证算法的唯一实现和对应回归测试在 [authentication](auth.md)。该独立 crate 不依赖 Linux 或 SQLite，服务端和救援工具直接依赖它；平台层不保留兼容导出，避免同一密码/令牌策略维护两份实现。
 

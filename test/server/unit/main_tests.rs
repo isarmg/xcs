@@ -128,3 +128,30 @@ fn retained_workspace_flags_require_all_positive_values_or_none() {
         }
     );
 }
+
+#[test]
+fn smb_requires_one_exact_authenticated_account_without_mapping_syntax() {
+    let args = [
+        "zxs",
+        "--smb-socket",
+        "/run/zxs/smb.sock",
+        "--smb-peer-uid",
+        "0",
+        "--smb-user",
+        "samba-owner",
+    ];
+    assert_eq!(
+        Args::try_parse_from(args).unwrap().smb_user.as_deref(),
+        Some("samba-owner")
+    );
+    assert!(Args::try_parse_from(["zxs", "--smb-socket", "/run/zxs/smb.sock"]).is_err());
+    assert!(Args::try_parse_from(["zxs", "--smb-user", "samba-owner"]).is_err());
+    let mut repeated = args.to_vec();
+    repeated.extend(["--smb-user", "other"]);
+    assert!(Args::try_parse_from(repeated).is_err());
+    for invalid in ["", "samba=owner", " guest", "guest ", "line\nbreak"] {
+        let mut args = args;
+        args[6] = invalid;
+        assert!(Args::try_parse_from(args).is_err());
+    }
+}

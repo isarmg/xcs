@@ -62,7 +62,7 @@ pub(crate) async fn upload_status(
                 Err(error) => return Err(error),
             };
         if let Some(record) = uploads::load(&state.config.spool_dir, &workspace, &item)? {
-            if record.principal != identity.principal && !identity.admin {
+            if record.principal != identity.principal {
                 return Err(ApiError::forbidden());
             }
             // A replacement can be durably receiving while the engine still owns

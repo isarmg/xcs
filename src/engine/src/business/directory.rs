@@ -39,25 +39,21 @@ fn selected_tree<'a>(state: &'a State, directory: &str) -> Result<(&'a str, &'a 
 fn frozen_context(
     contexts: &BTreeMap<String, FileContext>,
     branches: &BTreeMap<String, String>,
-    inherited: &BTreeMap<String, String>,
     entry: &Entry,
 ) -> Result<FileContext> {
-    // Every frozen file must retain its public branch reference, even when a
-    // richer context is present. Missing references indicate corrupt state.
-    let branch = required(
+    // Exact path context and public branch ownership are independently required.
+    // Never manufacture a missing frozen context from another identity map.
+    required(
         branches,
         &entry.file_id,
         "snapshot file branch reference missing",
     )?;
-    Ok(contexts
-        .get(&entry.lookup_key)
-        .cloned()
-        .unwrap_or_else(|| FileContext {
-            node_id: None,
-            selection_generation: 0,
-            branch_id: branch.clone(),
-            inherited_from: inherited.get(&entry.file_id).cloned(),
-        }))
+    required(
+        contexts,
+        &entry.lookup_key,
+        "snapshot file path context missing",
+    )
+    .cloned()
 }
 
 pub(crate) fn context_key(repository: &str, path: &str) -> String {
@@ -75,6 +71,8 @@ pub(crate) fn context_at(state: &State, repository: &str, path: &str) -> Option<
     Some(context_for_entry(state, repo, entry))
 }
 
+// A freshly written namespace has not registered a directory composition yet.
+// Bootstrap its live context here; frozen DirectoryBranch/Tree readers never do.
 fn context_for_entry(state: &State, repo: &Repository, entry: &Entry) -> FileContext {
     let branch = state
         .file_selections
@@ -878,12 +876,7 @@ pub(crate) fn select_change(
         .zip(&restored)
         .filter(|(_, e)| e.kind == "file")
         .map(|(old, e)| {
-            let context = frozen_context(
-                &selected.file_contexts,
-                &selected.file_branches,
-                &selected.inherited_files,
-                old,
-            )?;
+            let context = frozen_context(&selected.file_contexts, &selected.file_branches, old)?;
             Ok((context_key(repository, &e.path), context))
         })
         .collect::<Result<BTreeMap<_, _>>>()?;
@@ -1031,8 +1024,8 @@ impl Engine {
         (entry.kind == "file")
             .then(|| std::borrow::Cow::Owned(context_for_entry(&self.state, repo, entry)))
     }
-    /// Explicitly initialize a directory's baseline identity. Used by old
-    /// namespaces which predate composed views; registration copies no data.
+    /// Explicitly initialize a directory's first composition identity.
+    /// A new namespace need not have a named view; registration copies no data.
     pub fn initialize_directory_scope(
         &mut self,
         repository: &str,
@@ -1045,12 +1038,12 @@ impl Engine {
             principal,
             operation,
             json!({"repository_id":repository,"path":path}),
-            |engine, state, _| {
-                let repo = state
+            |_, state, _| {
+                state
                     .repositories
                     .get(repository)
                     .ok_or_else(|| Error::new("REPOSITORY_NOT_FOUND", "repository missing"))?;
-                engine.require_grant(repo, principal, storage_contract::RepositoryAccess::Write)?;
+
                 let (id, _, _) = scope(state, repository, path)?;
                 if !state.directory_selections.contains_key(&id) {
                     snapshot(state, repository, path)?;
@@ -1074,17 +1067,13 @@ impl Engine {
             principal,
             operation,
             json!({"repository_id":repository,"path":path,"name":name}),
-            |engine, state, _| {
+            |_, state, _| {
                 let repo = state
                     .repositories
                     .get(repository)
                     .cloned()
                     .ok_or_else(|| Error::new("REPOSITORY_NOT_FOUND", "repository missing"))?;
-                engine.require_grant(
-                    &repo,
-                    principal,
-                    storage_contract::RepositoryAccess::Write,
-                )?;
+
                 let (directory_id, _, _) = scope(state, repository, path)?;
                 if !state.directory_selections.contains_key(&directory_id) {
                     snapshot(state, repository, path)?;
@@ -1108,12 +1097,8 @@ impl Engine {
                 let mut file_contexts = BTreeMap::new();
                 let mut files = Vec::new();
                 for entry in tree.entries.iter().filter(|e| e.kind == "file") {
-                    let mut context = frozen_context(
-                        &tree.file_contexts,
-                        &tree.file_branches,
-                        &tree.inherited_files,
-                        entry,
-                    )?;
+                    let mut context =
+                        frozen_context(&tree.file_contexts, &tree.file_branches, entry)?;
                     context.selection_generation = 0;
                     context.inherited_from = Some(id.clone());
                     file_contexts.insert(entry.lookup_key.clone(), context);
@@ -1169,11 +1154,11 @@ impl Engine {
             operation,
             json!({"repository_id":repository,"path":path,"name":name}),
             |engine, state, _| {
-                let repo = state
+                state
                     .repositories
                     .get(repository)
                     .ok_or_else(|| Error::new("REPOSITORY_NOT_FOUND", "repository missing"))?;
-                engine.require_grant(repo, principal, storage_contract::RepositoryAccess::Write)?;
+
                 let (id, _, _) = scope(state, repository, path)?;
                 let selected = state
                     .directory_branches
@@ -1227,11 +1212,11 @@ impl Engine {
             operation,
             json!({"repository_id":repository,"directory_branch_id":branch}),
             |engine, state, _| {
-                let repo = state
+                state
                     .repositories
                     .get(repository)
                     .ok_or_else(|| Error::new("REPOSITORY_NOT_FOUND", "repository missing"))?;
-                engine.require_grant(repo, principal, storage_contract::RepositoryAccess::Write)?;
+
                 if !state
                     .directory_branches
                     .get(branch)
@@ -1267,12 +1252,12 @@ impl Engine {
             principal,
             operation,
             json!({"repository_id":repository,"directory_branch_id":branch,"name":name}),
-            |engine, state, _| {
-                let repo = state
+            |_, state, _| {
+                state
                     .repositories
                     .get(repository)
                     .ok_or_else(|| Error::new("REPOSITORY_NOT_FOUND", "repository missing"))?;
-                engine.require_grant(repo, principal, storage_contract::RepositoryAccess::Write)?;
+
                 let current = state
                     .directory_branches
                     .get(branch)

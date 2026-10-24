@@ -52,7 +52,6 @@ pub enum SessionPhase {
 pub struct SessionView {
     pub phase: SessionPhase,
     pub username: String,
-    pub admin: bool,
     pub message: String,
     pub request_id: Option<String>,
 }

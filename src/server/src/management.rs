@@ -495,8 +495,6 @@ impl Inner {
                     admission_session: None,
                     smb_binding: None,
                     principal: "management".into(),
-                    admin: false,
-                    repositories: Default::default(),
                 },
                 json!({}),
             )?;
@@ -540,11 +538,15 @@ impl Backend for ManagementBackend {
             .clone()
             .ok_or_else(ApiError::unauthorized)?;
         let identity = identity
-            .map(|identity| crate::lock(&auth)?.revalidate_identity(identity))
+            .map(|identity| {
+                // Recovery is an HTTP management operation, never an SMB
+                // principal-only operation. Require its current login session.
+                if identity.admission_session.is_none() {
+                    return Err(ApiError::unauthorized());
+                }
+                crate::lock(&auth)?.revalidate_identity(identity)
+            })
             .transpose()?;
-        if let Some(identity) = &identity {
-            identity.require_admin()?;
-        }
         if let Some(token) = bootstrap {
             SetupRecovery::new(
                 self.inner.data_root.clone(),
@@ -678,6 +680,11 @@ impl Backend for ManagementBackend {
                 let request: RestoreRequest =
                     json_codec::from_value(input).map_err(ApiError::invalid)?;
                 let restore = |engine: storage_engine::Engine| {
+                    if let Some(identity) = &identity {
+                        // Disk reconstruction can outlive the original session.
+                        // Recheck immediately before publishing system authority.
+                        crate::lock(&auth)?.revalidate_identity(identity)?;
+                    }
                     claim_authority(&self.inner.data_root)?;
                     // Valid local system authority wins over an older DR copy.
                     let snapshot = if crate::lock(&auth)?.is_available() {
@@ -691,7 +698,7 @@ impl Backend for ManagementBackend {
                             )
                         })?;
                         snapshot["sessions"] = json!({});
-                        let restored = AuthStore::migrate_management(
+                        let restored = AuthStore::restore_management(
                             &self.inner.management_root,
                             snapshot.clone(),
                         )?;
@@ -804,8 +811,6 @@ impl Backend for ManagementBackend {
                                     admission_session: None,
                                     smb_binding: None,
                                     principal: "monitor".into(),
-                                    admin: false,
-                                    repositories: Default::default(),
                                 },
                                 json!({}),
                             );
@@ -858,7 +863,13 @@ impl Backend for ManagementBackend {
         json!({"state":state.as_str(),"retryable":state!=StorageState::Ready,"recovering":self.inner.recovering.load(Ordering::SeqCst)})
     }
     fn retry_storage(&self, identity: &Identity) -> Result<Value, ApiError> {
-        identity.require_admin()?;
+        if identity.admission_session.is_none() {
+            return Err(ApiError::unauthorized());
+        }
+        let auth = crate::lock(&self.inner.auth)?
+            .clone()
+            .ok_or_else(ApiError::unauthorized)?;
+        crate::lock(&auth)?.revalidate_identity(identity)?;
         self.inner.start_recovery(true)?;
         Ok(self.management_status())
     }

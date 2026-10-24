@@ -52,10 +52,9 @@ fn capacity_scope(
 }
 
 impl Engine {
-    /// Report retained evidence capacity without enumerating other owners.
-    /// Callers must authorize `include_global` separately (administrator only).
+    /// Report global and selected operation-actor retained evidence capacity.
     /// This is an observation, not a reservation or authorization decision.
-    pub fn workspace_capacity(&self, principal: &str, include_global: bool) -> WorkspaceCapacity {
+    pub fn workspace_capacity(&self, principal: &str) -> WorkspaceCapacity {
         let limits = self.effective_workspace_limits();
         let budget = &self.workspace_budget;
         let (principal_records, principal_bytes) = budget
@@ -83,9 +82,7 @@ impl Engine {
         ];
         let pressure = counters
             .into_iter()
-            .enumerate()
-            .filter(|(index, _)| include_global || index % 2 == 1)
-            .map(|(_, (used, limit))| {
+            .map(|(used, limit)| {
                 if used >= limit {
                     2
                 } else if used * 5 >= limit * 4 {
@@ -96,14 +93,12 @@ impl Engine {
             })
             .fold(0, usize::max);
         WorkspaceCapacity {
-            global: include_global.then(|| {
-                capacity_scope(
-                    budget.records.len(),
-                    budget.bytes,
-                    limits.max_retained_workspaces,
-                    limits.max_retained_workspace_metadata_bytes,
-                )
-            }),
+            global: capacity_scope(
+                budget.records.len(),
+                budget.bytes,
+                limits.max_retained_workspaces,
+                limits.max_retained_workspace_metadata_bytes,
+            ),
             principal: capacity_scope(
                 principal_records,
                 principal_bytes,

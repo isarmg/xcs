@@ -9,7 +9,10 @@ use std::{
 fn hello_requires_an_explicit_capability_list() {
     let request = Request::Hello {
         protocol: PROTOCOL.into(),
-        capabilities: vec![WRITE_RESERVATION_CAPABILITY.into()],
+        capabilities: REQUIRED_CAPABILITIES
+            .iter()
+            .map(|value| (*value).into())
+            .collect(),
         username: "alice".into(),
         repository_id: "repository".into(),
     };
@@ -406,4 +409,15 @@ fn immutable_reads_hide_appended_bytes_while_workspace_reads_follow_live_length(
     let count = info.read_count(true, 0, bytes.len());
     let received = file.read_at(&mut bytes[..count], 0).unwrap();
     assert_eq!(&bytes[..received], b"go");
+}
+
+#[test]
+fn samba_username_is_one_exact_name_not_a_mapping() {
+    for name in ["alice", "SambaOwner", "local-owner", "dom\\owner"] {
+        assert!(validate_username(name).is_ok());
+    }
+    for name in ["", "alice=bob", " alice", "alice ", "a\0b", "a\nb"] {
+        assert!(validate_username(name).is_err());
+    }
+    assert!(validate_username(&"a".repeat(257)).is_err());
 }

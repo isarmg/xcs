@@ -145,7 +145,13 @@ fn workspace_missing_head_returns_error_without_creating_workspace() {
 
 #[test]
 fn batch_rejects_missing_references_without_publication() {
-    for missing in ["main_branch", "main_head", "scope_commit", "owner"] {
+    for missing in [
+        "main_branch",
+        "main_head",
+        "scope_commit",
+        "owner",
+        "path_context",
+    ] {
         let (_temporary, mut engine, repo, entry, _) = fixture();
         let result = engine
             .create_directory_branches(
@@ -197,6 +203,14 @@ fn batch_rejects_missing_references_without_publication() {
                     .get_mut(&branch_id)
                     .unwrap()
                     .commit_id = "missing".into();
+            }
+            "path_context" => {
+                std::sync::Arc::make_mut(&mut engine.state)
+                    .directory_branches
+                    .get_mut(&branch_id)
+                    .unwrap()
+                    .file_contexts
+                    .clear();
             }
             "owner" => {
                 let branch = std::sync::Arc::make_mut(&mut engine.state)
@@ -514,4 +528,61 @@ fn exhausted_main_generation_rejects_active_namespace_batch() {
         .unwrap_err();
     assert_eq!(error.code(), "RESOURCE_LIMIT");
     assert_eq!(canonical_json(engine.state()).unwrap(), before);
+}
+
+#[test]
+fn frozen_directory_compositions_reject_missing_path_contexts() {
+    for action in ["create", "select"] {
+        let (_temporary, mut engine, repo, _, _) = fixture();
+        let branch = engine
+            .create_directory_branches(
+                &repo.repository_id,
+                "folder",
+                "draft",
+                "admin",
+                &new_id("op"),
+            )
+            .unwrap();
+        let id = branch.result["directory_branch_id"].as_str().unwrap();
+        let head = engine.state.directory_branches[id].head_tree_id.clone();
+        if action == "create" {
+            std::sync::Arc::make_mut(&mut engine.state)
+                .directory_trees
+                .get_mut(&head)
+                .unwrap()
+                .file_contexts
+                .clear();
+        } else {
+            std::sync::Arc::make_mut(&mut engine.state)
+                .directory_branches
+                .get_mut(id)
+                .unwrap()
+                .file_contexts
+                .clear();
+        }
+        let before = canonical_json(engine.state()).unwrap();
+        let error = if action == "create" {
+            engine
+                .create_directory_branches(
+                    &repo.repository_id,
+                    "folder",
+                    "second",
+                    "admin",
+                    &new_id("op"),
+                )
+                .unwrap_err()
+        } else {
+            engine
+                .select_directory_branches(
+                    &repo.repository_id,
+                    "folder",
+                    "draft",
+                    "admin",
+                    &new_id("op"),
+                )
+                .unwrap_err()
+        };
+        assert_eq!(error.code(), "STATE_INVALID", "{action}");
+        assert_eq!(canonical_json(engine.state()).unwrap(), before, "{action}");
+    }
 }

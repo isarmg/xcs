@@ -1,6 +1,6 @@
 //! A mutex-owned engine and its validated, non-authoritative admission projection.
 //!
-//! Engine mutations invalidate the legacy snapshot projection. Managed servers
+//! Engine mutations invalidate the protected snapshot projection. Managed servers
 //! instead revalidate the current system authority after acquiring the engine
 //! lock. Lock order is engine -> short auth read; managed auth writes never
 //! acquire the engine mutex and replicate only through a detached worker.
@@ -55,13 +55,9 @@ impl AdmissionEngine {
                 .transpose()
         });
         match projection {
-            Ok(Some(snapshot)) => {
-                let mut identity = snapshot.identity(&caller.principal)?;
-                identity.smb_binding = caller.smb_binding.clone();
-                Ok(identity)
-            }
-            // Embedded engines without an authoritative protected account store.
-            Ok(None) => Ok(caller.clone()),
+            Ok(Some(snapshot)) => snapshot.revalidate_identity(caller),
+            // An engine without authoritative credentials cannot admit data access.
+            Ok(None) => Err(ApiError::unauthorized()),
             Err(error) => Err(ApiError::invalid(error)),
         }
     }

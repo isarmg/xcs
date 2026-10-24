@@ -20,3 +20,27 @@ fn new_repository_defaults_to_one_actual_copy_and_preserves_explicit_choices() {
         "historical saves retain inherited policy unless explicitly overridden"
     );
 }
+
+#[test]
+fn retired_account_and_acl_actions_cannot_build_requests() {
+    for kind in ["account", "grants"] {
+        assert!(build(kind, &Fields::new(), "operation").is_err());
+    }
+}
+
+#[test]
+fn storage_mutations_require_a_secure_operation_identity() {
+    for kind in [
+        "repository",
+        "smb",
+        "policy",
+        "rule",
+        "branch",
+        "link",
+        "purge",
+        "split",
+        "save",
+    ] {
+        assert!(build(kind, &Fields::new(), "").is_err());
+    }
+}
