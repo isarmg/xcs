@@ -724,15 +724,28 @@ impl Engine {
                             state.file_selections.remove(&file);
                         }
                 }
-                let new_main = original.main_branch_id.as_ref().filter(|id| moved.contains(*id))
+                // Preserve archived records without appointing one as the new
+                // active history's main. Prefer an existing active survivor.
+                let active = moved.iter().filter(|id| {
+                    let branch = &state.branches[&branch_map[*id]];
+                    branch.state == "active" && branch.file_id.is_none()
+                }).cloned().collect::<BTreeSet<_>>();
+                let new_main = original.main_branch_id.as_ref().filter(|id| active.contains(*id))
                     .and_then(|id| branch_map.get(id)).cloned()
-                    .or_else(|| moved.iter().find_map(|id| branch_map.get(id).cloned()))
+                    .or_else(|| active.iter().find_map(|id| branch_map.get(id).cloned()))
                     .unwrap_or_else(|| {
                         let id = new_id("br");
+                        let mut name = "main".to_owned();
+                        let mut suffix = 2;
+                        while state.branches.values().any(|branch| branch.history_tree_id == history_id
+                            && name_policy::lookup_key(&branch.name) == name_policy::lookup_key(&name)) {
+                            name = format!("main-{suffix}");
+                            suffix += 1;
+                        }
                         let pending_file_versions = state.commits[&commit_map[cut]]
                             .pending_file_versions.clone();
                         state.branches.insert(id.clone(), Branch {
-                            branch_id: id.clone(), history_tree_id: history_id.clone(), name: "main".into(),
+                            branch_id: id.clone(), history_tree_id: history_id.clone(), name,
                             head_commit_id: commit_map[cut].clone(), fork_commit_id: commit_map[cut].clone(),
                             branch_kind: "full".into(), file_id: None, file_node_id:None, pending_file_versions, generation: 1, state: "active".into(),
                         });

@@ -812,6 +812,105 @@ fn split_merge_links_have_local_branch_stubs_and_explicit_crossing_boundaries() 
 }
 
 #[test]
+fn split_preserves_archived_branches_and_selects_an_active_main() {
+    for scenario in ["archived_side", "archived_main", "active_survivor"] {
+        let (temp, mut engine, repo) = fixture();
+        let root = engine.state.histories[&repo.history_tree_id]
+            .root_commit_id
+            .clone();
+        let side = engine
+            .create_branch(&root, "side", "alice", &new_id("op"))
+            .unwrap();
+        let archived = if scenario == "archived_main" {
+            engine
+                .set_smb_binding(
+                    &repo.repository_id,
+                    &side.branch_id,
+                    true,
+                    1,
+                    "alice",
+                    &new_id("op"),
+                )
+                .unwrap();
+            repo.main_branch_id.clone()
+        } else {
+            side.branch_id.clone()
+        };
+        let cut = save(&mut engine, &archived, b"archived body");
+        let active = (scenario == "active_survivor").then(|| {
+            engine
+                .create_branch(&cut, "live", "alice", &new_id("op"))
+                .unwrap()
+                .branch_id
+        });
+        engine
+            .archive_branch(&archived, "alice", &new_id("op"))
+            .unwrap();
+        let plan = engine
+            .create_split_plan(&repo.history_tree_id, &cut, "alice")
+            .unwrap();
+        let result = engine
+            .commit_plan(&plan.plan_id, "alice", &new_id("op"))
+            .unwrap();
+        let history = result.history_tree_id.as_ref().unwrap();
+        let main = result.branch_id.as_ref().unwrap();
+        let mapped_archived = result.result["branch_mapping"][&archived].as_str().unwrap();
+        assert_eq!(engine.state.branches[mapped_archived].state, "archived");
+        assert_eq!(engine.state.branches[main].state, "active", "{scenario}");
+        assert!(engine.state.branches[main].file_id.is_none());
+        if scenario == "archived_main" {
+            assert_eq!(engine.state.branches[main].name, "main-2");
+        }
+        let graph = engine.graph(history).unwrap();
+        let mapped_count = result.result["branch_mapping"].as_object().unwrap().len();
+        if let Some(active) = active {
+            assert_eq!(
+                main,
+                result.result["branch_mapping"][active].as_str().unwrap()
+            );
+            assert_eq!(
+                graph.branches.len(),
+                mapped_count,
+                "do not add an unnecessary main"
+            );
+        } else {
+            assert_ne!(main, mapped_archived);
+            assert_eq!(graph.branches.len(), mapped_count + 1);
+            assert_eq!(
+                engine.state.branches[main].head_commit_id,
+                graph.history.root_commit_id
+            );
+        }
+        let names = graph
+            .branches
+            .iter()
+            .map(|branch| name_policy::lookup_key(&branch.name))
+            .collect::<BTreeSet<_>>();
+        assert_eq!(
+            names.len(),
+            graph.branches.len(),
+            "new main must not duplicate an archived name"
+        );
+        engine
+            .export_history_package(history, &temp.path().join("exports/package"))
+            .unwrap();
+        let new_repo = result.result["repository_id"].as_str().unwrap().to_owned();
+        let main = main.clone();
+        let mapped_archived = mapped_archived.to_owned();
+        drop(engine);
+        let mut engine = Engine::open(&temp.path().join("state")).unwrap();
+        assert_eq!(engine.state.branches[&mapped_archived].state, "archived");
+        engine
+            .set_smb_binding(&new_repo, &main, true, 1, "alice", &new_id("op"))
+            .unwrap();
+        let workspace = engine.create_workspace(&main, "alice").unwrap();
+        engine
+            .abort_workspace(&workspace.workspace_id, "alice")
+            .unwrap();
+    }
+}
+
+#[test]
 fn split_rejects_root_and_rechecks_active_read_before_publication() {
     let (_temp, mut engine, repo) = fixture();
     let root = engine.state.histories[&repo.history_tree_id]
