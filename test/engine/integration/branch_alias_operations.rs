@@ -6,6 +6,8 @@ use storage_engine::{
     DirectoryNamespaceSource, DirectoryNamespaceTarget, Engine, Entry, NamespaceOperation,
     OperationResult, Repository, Workspace, new_id,
 };
+#[path = "branch_alias_operations/batch_planning_scenarios.rs"]
+mod batch_planning_scenarios;
 #[path = "branch_alias_operations/file_merge_scenarios.rs"]
 mod file_merge_scenarios;
 

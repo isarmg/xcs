@@ -10,6 +10,56 @@ fn contains(scope: &str, path: &str) -> bool {
     let path = name_policy::path_key(path);
     scope.is_empty() || namespace::is_descendant(&path, &scope)
 }
+
+/// Active compositions are published by complete subtree replacement. Parent
+/// and child drafts cannot both replace the live view without discarding one
+/// draft's changes or mixing their independently frozen contexts. Reject that
+/// unsupported combination before creating any nodes or preparing payloads.
+fn active_scopes(
+    state: &State,
+    originals: &BTreeMap<String, DirectoryBranch>,
+    touched: &BTreeSet<String>,
+    repository: &str,
+    current: &[Entry],
+) -> Result<Vec<String>> {
+    let mut active = Vec::new();
+    let mut paths = Vec::<String>::new();
+    for id in touched {
+        let branch = &originals[id];
+        if state.directory_selections.get(&branch.directory_id) != Some(id)
+            || state
+                .directory_tree_selections
+                .get(&branch.directory_id)
+                .unwrap_or(&branch.head_tree_id)
+                != &branch.head_tree_id
+        {
+            continue;
+        }
+        let path = if branch.directory_id == repository {
+            String::new()
+        } else {
+            current
+                .iter()
+                .find(|entry| entry.kind == "directory" && entry.entry_id == branch.directory_id)
+                .map(|entry| entry.lookup_key.clone())
+                .ok_or_else(|| {
+                    Error::new("DIRECTORY_BRANCH_CONFLICT", "active directory is missing")
+                })?
+        };
+        if paths
+            .iter()
+            .any(|other| path == *other || contains(other, &path) || contains(&path, other))
+        {
+            return Err(Error::new(
+                "BATCH_SCOPE_CONFLICT",
+                "overlapping active directory scopes must use one common ancestor composition",
+            ));
+        }
+        paths.push(path);
+        active.push(id.clone());
+    }
+    Ok(active)
+}
 fn remove(branch: &mut DirectoryBranch, source: &Entry) {
     let key = &source.lookup_key;
     let removed = branch
@@ -240,58 +290,11 @@ fn apply(
         .get(&main.head_commit_id)
         .cloned()
         .ok_or_else(|| Error::new("STATE_INVALID", "repository head missing"))?;
-    let active_rename_changes = request
-        .items
-        .iter()
-        .filter_map(|item| {
-            let source = &originals[&item.source.directory_branch_id];
-            let target = item.target.as_ref()?;
-            if request.kind != "rename" && request.kind != "move" {
-                return None;
-            }
-            if state.directory_selections.get(&source.directory_id)
-                != Some(&source.directory_branch_id)
-            {
-                return None;
-            }
-            if state
-                .directory_tree_selections
-                .get(&source.directory_id)
-                .unwrap_or(&source.head_tree_id)
-                != &source.head_tree_id
-            {
-                return None;
-            }
-            let entry = find(&current.entries, &item.source.path)?;
-            if entry.entry_id != item.source.entry_id {
-                return None;
-            }
-            Some(NamespaceOperation {
-                kind: "rename".into(),
-                path: item.source.path.clone(),
-                destination: Some(target.path.clone()),
-            })
-        })
-        .collect::<Vec<_>>();
-    let renamed_directories = directory::prepare_independent_renamed_directories(
-        state,
-        repository,
-        &current.entries,
-        &active_rename_changes,
-    )?;
-    let baseline_heads = state
-        .directory_branches
-        .iter()
-        .map(|(id, b)| (id.clone(), b.head_tree_id.clone()))
-        .collect::<BTreeMap<_, _>>();
     let mut drafts = originals.clone();
     let mut touched = BTreeSet::new();
     let mut source_ranges = BTreeMap::<String, Vec<String>>::new();
     let mut mappings = BTreeSet::new();
-    let mut owners = BTreeMap::<String, String>::new();
-    let mut copies = BTreeMap::<(String, String, String, String), Entry>::new();
-    let mut directory_copies = BTreeMap::<(String, String, String), Entry>::new();
-    let mut copy_receipts = Vec::new();
+    let mut planned = Vec::new();
     for item in &request.items {
         let source_scope = &originals[&item.source.directory_branch_id];
         if !contains(&source_scope.path, &item.source.path) {
@@ -351,15 +354,6 @@ fn apply(
         {
             continue;
         }
-        let members = source_scope
-            .entries
-            .iter()
-            .filter(|e| {
-                e.lookup_key == source.lookup_key
-                    || namespace::is_descendant(&e.lookup_key, &source.lookup_key)
-            })
-            .cloned()
-            .collect::<Vec<_>>();
         if request.kind != "copy" {
             remove(
                 drafts
@@ -395,24 +389,116 @@ fn apply(
                 "cannot move/copy directory inside itself",
             ));
         }
-        let target_draft = drafts
+        touched.insert(target.directory_branch_id.clone());
+        planned.push((item, source));
+    }
+    // Every source was resolved against its original frozen composition, and
+    // all non-copy sources are now absent from drafts. Check the complete
+    // destination namespace before creating path nodes or preparing content.
+    let mut projected = touched
+        .iter()
+        .map(|id| (id.clone(), drafts[id].entries.clone()))
+        .collect::<BTreeMap<_, _>>();
+    for (item, source) in &planned {
+        let source_scope = &originals[&item.source.directory_branch_id];
+        let target = item.target.as_ref().expect("planned destination");
+        let target_scope = &originals[&target.directory_branch_id];
+        let entries = projected
             .get_mut(&target.directory_branch_id)
             .expect("checked");
-        if namespace::find(&target_draft.entries, &target.path).is_some() {
+        if namespace::find(entries, &target.path).is_some() {
             return Err(Error::new("NAME_COLLISION", "batch destination exists"));
         }
-        // Missing arbitrary destination ancestors are rejected; the user must
-        // select a real directory, preventing accidental scope/identity creation.
+        // A destination must have a real parent after all sources are removed.
         if let Some((parent, _)) = target.path.rsplit_once('/')
-            && name_policy::path_key(parent) != name_policy::path_key(&target_draft.path)
-            && !namespace::find(&target_draft.entries, parent)
-                .is_some_and(|e| e.kind == "directory")
+            && name_policy::path_key(parent) != name_policy::path_key(&target_scope.path)
+            && !namespace::find(entries, parent).is_some_and(|e| e.kind == "directory")
         {
             return Err(Error::new(
                 "DIRECTORY_NOT_FOUND",
                 "destination parent missing in selected subtree",
             ));
         }
+        entries.extend(
+            source_scope
+                .entries
+                .iter()
+                .filter(|entry| {
+                    entry.lookup_key == source.lookup_key
+                        || namespace::is_descendant(&entry.lookup_key, &source.lookup_key)
+                })
+                .map(|entry| relocate(entry, &source.path, &target.path)),
+        );
+    }
+    for id in &touched {
+        let mut full = projected.remove(id).expect("checked");
+        ensure_parents_for_scope(state, &drafts[id], &mut full)?;
+        validate_entries(&mut full, engine.config.max_entries)?;
+    }
+    let active = active_scopes(state, &originals, &touched, repository, &current.entries)?;
+    let active_rename_changes = request
+        .items
+        .iter()
+        .filter_map(|item| {
+            let source = &originals[&item.source.directory_branch_id];
+            let target = item.target.as_ref()?;
+            if request.kind != "rename" && request.kind != "move" {
+                return None;
+            }
+            if state.directory_selections.get(&source.directory_id)
+                != Some(&source.directory_branch_id)
+            {
+                return None;
+            }
+            if state
+                .directory_tree_selections
+                .get(&source.directory_id)
+                .unwrap_or(&source.head_tree_id)
+                != &source.head_tree_id
+            {
+                return None;
+            }
+            let entry = find(&current.entries, &item.source.path)?;
+            if entry.entry_id != item.source.entry_id {
+                return None;
+            }
+            Some(NamespaceOperation {
+                kind: "rename".into(),
+                path: item.source.path.clone(),
+                destination: Some(target.path.clone()),
+            })
+        })
+        .collect::<Vec<_>>();
+    let renamed_directories = directory::prepare_independent_renamed_directories(
+        state,
+        repository,
+        &current.entries,
+        &active_rename_changes,
+    )?;
+    let baseline_heads = state
+        .directory_branches
+        .iter()
+        .map(|(id, b)| (id.clone(), b.head_tree_id.clone()))
+        .collect::<BTreeMap<_, _>>();
+    let mut owners = BTreeMap::<String, String>::new();
+    let mut copies = BTreeMap::<(String, String, String, String), Entry>::new();
+    let mut directory_copies = BTreeMap::<(String, String, String), Entry>::new();
+    let mut copy_receipts = Vec::new();
+    for (item, source) in planned {
+        let source_scope = &originals[&item.source.directory_branch_id];
+        let target = item.target.as_ref().expect("planned destination");
+        let target_draft = drafts
+            .get_mut(&target.directory_branch_id)
+            .expect("checked");
+        let members = source_scope
+            .entries
+            .iter()
+            .filter(|e| {
+                e.lookup_key == source.lookup_key
+                    || namespace::is_descendant(&e.lookup_key, &source.lookup_key)
+            })
+            .cloned()
+            .collect::<Vec<_>>();
         for member in members {
             let mut moved = relocate(&member, &source.path, &target.path);
             let parent_id = if let Some((parent, _)) = moved.path.rsplit_once('/') {
@@ -565,7 +651,6 @@ fn apply(
             }
             target_draft.entries.push(moved);
         }
-        touched.insert(target.directory_branch_id.clone());
     }
     if touched.is_empty() {
         return Ok(
@@ -582,20 +667,6 @@ fn apply(
     }
     let previous = current;
     let mut entries = previous.entries.clone();
-    let mut active = touched
-        .iter()
-        .filter(|id| {
-            let b = &originals[*id];
-            state.directory_selections.get(&b.directory_id) == Some(*id)
-                && state
-                    .directory_tree_selections
-                    .get(&b.directory_id)
-                    .unwrap_or(&b.head_tree_id)
-                    == &b.head_tree_id
-        })
-        .cloned()
-        .collect::<Vec<_>>();
-    active.sort_by_key(|id| drafts[id].path.split('/').count());
     let mut changed_paths = renamed_directories;
     for id in &active {
         let draft = &drafts[id];

@@ -43,6 +43,8 @@ Web 管理页使用 `src/web/src/admin/request.rs` 的 HTTP 请求构建器。�
 
 文件夹分支选择器针对所选可写目录调用 directory-select。批量审阅显式选择源/目标分支；`files/batch/request.rs` 捕获双方 `directory_branch_id`、`expected_tree_id` 和稳定条目 ID。整个批次是分支范围 CAS 事务，不是任意 JSON 控制台；未选分支及 SMB 默认视图不应受影响。
 
+同一批次的源条目始终来自各自的冻结基线，不按前一项的输出继续查找。移动和重命名先腾出所有参与源，再安装目标，因此同一组合内的路径交换及链式重命名不依赖映射顺序；未参与的已有目标仍导致整批失败。当前不支持在一个批次中同时修改默认视图里相互包含的父、子目录组合，核心在修改前返回 `BATCH_SCOPE_CONFLICT`，避免子组合全量替换吞掉父组合修改。此时应把映射统一表达在一个共同祖先组合中，或分批操作并重新读取基线；只读源组合不计入该重叠限制。
+
 ## 检查
 
 运行 `cargo test --locked --offline -p storage-server --test http_engine`。`test/server/integration/http_engine/daily_management.rs` 使用 Web 同一组请求构建器及真实 Router/持久化 Engine，覆盖唯一管理员认证、已移除账户/ACL路由的拒绝、策略代数、SMB 绑定、分支、预览摘要、明确提交、取消及重试幂等。

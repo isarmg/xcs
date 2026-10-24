@@ -781,7 +781,15 @@ pub(crate) fn record_directory_edits(
         }
     }
     let mut paths = paths.into_iter().collect::<Vec<_>>();
-    paths.sort_by_key(|p| std::cmp::Reverse(p.split('/').count()));
+    // The repository root has no components. Publish it after top-level
+    // directories too, so its frozen child references see their new trees.
+    paths.sort_by_key(|p| {
+        std::cmp::Reverse(if p.is_empty() {
+            0
+        } else {
+            p.split('/').count()
+        })
+    });
     let mut result = Vec::new();
     for path in paths {
         if exclude.is_some_and(|key| name_policy::path_key(&path) == key) {
