@@ -80,6 +80,37 @@ fn with_version(version: &FileVersion) -> State {
 }
 
 #[test]
+fn version_creation_time_requires_the_current_whole_second_utc_form() {
+    let mut item = version(
+        &State::default(),
+        &new_id("history"),
+        &new_id("file"),
+        "file.txt",
+        b"body",
+    );
+    assert_eq!(item.created_at.len(), 20);
+    assert!(item.created_at.ends_with('Z'));
+    validate_version(&item).unwrap();
+    for invalid in [
+        "2026-10-24T01:00:00+00:00",
+        "2026-10-24T02:00:00+01:00",
+        "2026-10-24T01:00:00.000Z",
+        "2026-10-24t01:00:00z",
+        "2026-02-30T01:00:00Z",
+    ] {
+        item.created_at = invalid.into();
+        assert_eq!(
+            validate_version(&item).unwrap_err().code(),
+            "CONTAINER_LAYOUT_INVALID"
+        );
+        assert_eq!(
+            item.created_at, invalid,
+            "validation never rewrites stored time"
+        );
+    }
+}
+
+#[test]
 fn current_version_requires_storage_name_and_creation_time() {
     let item = version(
         &State::default(),

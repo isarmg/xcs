@@ -81,6 +81,12 @@ pub(crate) fn validate_version(version: &FileVersion) -> Result<()> {
             "version storage name does not identify its content digest",
         ));
     }
+    if version.created_at.len() != 20
+        || version.created_at.as_bytes()[10] != b'T'
+        || !version.created_at.ends_with('Z')
+    {
+        return Err(invalid("version creation time must be whole-second UTC"));
+    }
     OffsetDateTime::parse(&version.created_at, &Rfc3339)
         .map_err(|_| invalid("version creation time is not RFC3339"))?;
     Ok(())

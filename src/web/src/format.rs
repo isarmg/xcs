@@ -44,35 +44,14 @@ pub fn disk_record(mut v: Value) -> Value {
     }
     v
 }
+/// Display the server's UTC timestamp directly, without browser locale or
+/// timezone conversion. UTC wire values remain identical in both UI languages.
 pub fn timestamp(v: &str) -> String {
     if v == "—" || v.is_empty() {
-        return t("尚无记录", "No record yet");
+        t("尚无记录", "No record yet")
+    } else {
+        v.to_owned()
     }
-    let date = js_sys::Date::new(&wasm_bindgen::JsValue::from_str(v));
-    if date.get_time().is_nan() {
-        return t("未知", "Unknown");
-    }
-    let opts = js_sys::Object::new();
-    let _ = js_sys::Reflect::set(&opts, &"timeZone".into(), &"UTC".into());
-    let _ = js_sys::Reflect::set(&opts, &"hourCycle".into(), &"h23".into());
-    format!(
-        "{} UTC",
-        date.to_locale_string(&web_interface::i18n::locale(), &opts)
-            .as_string()
-            .unwrap_or_default()
-    )
-}
-
-/// File history timestamps are stored in seconds rather than browser milliseconds.
-pub fn timestamp_seconds(value: &str) -> String {
-    let Ok(seconds) = value.parse::<u64>() else {
-        return t("未记录时间", "Time not recorded");
-    };
-    let date = js_sys::Date::new(&wasm_bindgen::JsValue::from_f64(seconds as f64 * 1000.));
-    if date.get_time().is_nan() {
-        return t("未记录时间", "Time not recorded");
-    }
-    timestamp(&date.to_iso_string().as_string().unwrap_or_default())
 }
 #[cfg(test)]
 #[path = "../../../test/web/unit/format/tests.rs"]

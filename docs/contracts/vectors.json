@@ -1248,6 +1248,12 @@
           "queue_warning_seconds": 30
         }
       }
+    },
+    {
+      "name": "utc-timestamp",
+      "schema": "UtcTimestamp",
+      "layer": "schema",
+      "value": "2026-10-24T12:00:00Z"
     }
   ],
   "negative": [
@@ -4762,6 +4768,42 @@
         }
       },
       "layer": "semantic"
+    },
+    {
+      "name": "utc-timestamp-offset",
+      "schema": "UtcTimestamp",
+      "layer": "schema",
+      "value": "2026-10-24T20:00:00+08:00"
+    },
+    {
+      "name": "utc-timestamp-offset-zero",
+      "schema": "UtcTimestamp",
+      "layer": "schema",
+      "value": "2026-10-24T12:00:00+00:00"
+    },
+    {
+      "name": "utc-timestamp-fraction",
+      "schema": "UtcTimestamp",
+      "layer": "schema",
+      "value": "2026-10-24T12:00:00.000Z"
+    },
+    {
+      "name": "utc-timestamp-epoch",
+      "schema": "UtcTimestamp",
+      "layer": "schema",
+      "value": "1792843200"
+    },
+    {
+      "name": "utc-timestamp-lowercase",
+      "schema": "UtcTimestamp",
+      "layer": "schema",
+      "value": "2026-10-24t12:00:00z"
+    },
+    {
+      "name": "utc-timestamp-newline",
+      "schema": "UtcTimestamp",
+      "layer": "schema",
+      "value": "2026-10-24T12:00:00Z\n"
     }
   ],
   "canonical": [

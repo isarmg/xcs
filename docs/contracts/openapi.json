@@ -1958,7 +1958,7 @@
                             ]
                           },
                           "created_at": {
-                            "type": "string"
+                            "$ref": "#/components/schemas/UtcTimestamp"
                           },
                           "message": {
                             "type": "string"
@@ -2007,7 +2007,7 @@
                           "download_name",
                           "storage_name"
                         ],
-                        "description": "created_at为RFC3339 UTC字符串。storage_name为不可变内部版本文件名；download_name使用当前所选视图中的逻辑名称（无当前条目时保留实体容器最后名）。source_version_ids提供真实内容谱系，响应排序不代表父子关系；普通保存连接实际前版，从待写入分支首次保存连接登记的源版；登记分支记录不增加本数组节点。"
+                        "description": "created_at为固定 YYYY-MM-DDTHH:mm:ssZ 的整秒 UTC 字符串。storage_name为不可变内部版本文件名；download_name使用当前所选视图中的逻辑名称（无当前条目时保留实体容器最后名）。source_version_ids提供真实内容谱系，响应排序不代表父子关系；普通保存连接实际前版，从待写入分支首次保存连接登记的源版；登记分支记录不增加本数组节点。"
                       }
                     },
                     "branches": {
@@ -2754,12 +2754,13 @@
                           "timestamp": {
                             "anyOf": [
                               {
-                                "type": "string"
+                                "$ref": "#/components/schemas/UtcTimestamp"
                               },
                               {
                                 "type": "null"
                               }
-                            ]
+                            ],
+                            "description": "服务端输出整秒 UTC 展示时间；未记录时间为 null，不在界面猜测或换算时区。"
                           },
                           "sequence": {
                             "$ref": "#/components/schemas/UInt64"
@@ -5199,8 +5200,7 @@
             "pattern": "^v[0-9]{6,}_[0-9]{8}T[0-9]{6}Z_[0-9a-f]{8}(\\..+)?$"
           },
           "created_at": {
-            "type": "string",
-            "format": "date-time"
+            "$ref": "#/components/schemas/UtcTimestamp"
           }
         },
         "required": [
@@ -7050,7 +7050,7 @@
             "type": "string"
           },
           "created_at": {
-            "type": "string"
+            "$ref": "#/components/schemas/UtcTimestamp"
           },
           "sequence": {
             "$ref": "#/components/schemas/UInt64"
@@ -8001,6 +8001,14 @@
           "reauthentication_required"
         ],
         "additionalProperties": false
+      },
+      "UtcTimestamp": {
+        "type": "string",
+        "format": "date-time",
+        "minLength": 20,
+        "maxLength": 20,
+        "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
+        "description": "业务历史的整秒 UTC 时刻，固定 YYYY-MM-DDTHH:mm:ssZ；不接受本地时区、偏移量或数字秒字符串作为展示格式。"
       }
     }
   }

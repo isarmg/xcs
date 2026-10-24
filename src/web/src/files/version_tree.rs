@@ -68,17 +68,12 @@ fn metadata(records: &[Value], file_id: &str) -> Vec<Version> {
 }
 
 fn newer_first(a: &Version, b: &Version) -> std::cmp::Ordering {
+    // Current history timestamps share the same whole-second UTC wire format,
+    // so lexical order is chronological. Missing dates remain last.
     a.created
         .is_empty()
         .cmp(&b.created.is_empty())
-        .then_with(
-            || match (a.created.parse::<u64>(), b.created.parse::<u64>()) {
-                (Ok(a), Ok(b)) => b.cmp(&a),
-                (Ok(_), Err(_)) => std::cmp::Ordering::Less,
-                (Err(_), Ok(_)) => std::cmp::Ordering::Greater,
-                (Err(_), Err(_)) => b.created.cmp(&a.created),
-            },
-        )
+        .then_with(|| b.created.cmp(&a.created))
         .then_with(|| a.id.cmp(&b.id))
 }
 
@@ -636,7 +631,7 @@ fn node(
             aria-label=move ||version.with(|v|if v["current"]==true{if inherited.get(){t("继承的父版本","Inherited parent version")}else{t("当前版本","Current version")}}else{t("历史版本","Historical version")})>
             <div class="zxs-version-date zxs-row" title=id.get_value()>
                 <Show when=move ||can_modify.get()><input class="zxs-node-checkbox" type="checkbox" aria-label=t("选择此节点","Select this node") disabled=move ||disabled.get()||state.with(|s|s.files.tag_edit.is_some()) prop:checked=move ||state.with(|s|s.files.checked_nodes.contains(&id.get_value())) on:change=move |event|super::tags::toggle(state,id.get_value(),event_target_checked(&event))/></Show>
-                <time>{move ||version.with(|v|v["created_at"].as_str().map(|value|if value.contains('T'){format::timestamp(value)}else{format::timestamp_seconds(value)}).unwrap_or_else(||t("未记录时间","Time not recorded")))}</time>
+                <time>{move ||version.with(|v|v["created_at"].as_str().map(format::timestamp).unwrap_or_else(||t("未记录时间","Time not recorded")))}</time>
                 <Show when=move ||version.with(|v|v["current"]==true)><span class="zxs-version-current">{move ||if inherited.get(){t("继承的父版本","Inherited parent version")}else{t("当前","Current")}}</span></Show>
             </div>
             {note}

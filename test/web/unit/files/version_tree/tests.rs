@@ -2,7 +2,7 @@ use super::*;
 #[test]
 fn obsolete_body_version_graph_fields_are_not_interpreted_as_nodes() {
     let records = vec![
-        json_codec::json!({"file_id":"file","version_id":"old","created_at":"1","source_version_ids":[]}),
+        json_codec::json!({"file_id":"file","version_id":"old","created_at":"1970-01-01T00:00:01Z","source_version_ids":[]}),
         json_codec::json!({"file_id":"file","node_id":"new","version_id":"body","created_at":2,"source_version_ids":["old"]}),
     ];
     let parsed = metadata(&records, "file");
@@ -15,9 +15,9 @@ fn obsolete_body_version_graph_fields_are_not_interpreted_as_nodes() {
 #[test]
 fn rename_nodes_reuse_body_versions_but_keep_their_own_ancestry() {
     let records = vec![
-        json_codec::json!({"file_id":"file","node_id":"ver-one","version_id":"ver-one","parent_node_ids":[],"kind":"content","created_at":"1"}),
-        json_codec::json!({"file_id":"file","node_id":"fnode-rename","version_id":"ver-one","parent_node_ids":["ver-one"],"kind":"rename","created_at":"2"}),
-        json_codec::json!({"file_id":"file","node_id":"ver-two","version_id":"ver-two","parent_node_ids":["fnode-rename"],"source_version_ids":["ver-one"],"kind":"content","created_at":"3"}),
+        json_codec::json!({"file_id":"file","node_id":"ver-one","version_id":"ver-one","parent_node_ids":[],"kind":"content","created_at":"1970-01-01T00:00:01Z"}),
+        json_codec::json!({"file_id":"file","node_id":"fnode-rename","version_id":"ver-one","parent_node_ids":["ver-one"],"kind":"rename","created_at":"1970-01-01T00:00:02Z"}),
+        json_codec::json!({"file_id":"file","node_id":"ver-two","version_id":"ver-two","parent_node_ids":["fnode-rename"],"source_version_ids":["ver-one"],"kind":"content","created_at":"1970-01-01T00:00:03Z"}),
     ];
     let tree = layout(&metadata(&records, "file"));
     assert_eq!(
@@ -44,10 +44,31 @@ fn rename_nodes_reuse_body_versions_but_keep_their_own_ancestry() {
     assert!(inherited_current(&model, "fnode-rename"));
     assert!(!inherited_current(&model, "ver-one"));
 }
+#[test]
+fn current_utc_history_nodes_sort_sibling_tips_by_time_then_identity() {
+    let records = vec![
+        json_codec::json!({"file_id":"file","node_id":"root","version_id":"root","parent_node_ids":[],"kind":"content","created_at":"2025-12-31T23:59:59Z"}),
+        json_codec::json!({"file_id":"file","node_id":"older-rename","version_id":"root","parent_node_ids":["root"],"kind":"rename","created_at":"2026-01-01T00:00:00Z"}),
+        json_codec::json!({"file_id":"file","node_id":"b-newer-body","version_id":"body","parent_node_ids":["root"],"kind":"content","created_at":"2026-01-01T01:00:00Z"}),
+        json_codec::json!({"file_id":"file","node_id":"a-newer-tags","version_id":"body","parent_node_ids":["root"],"kind":"tags","created_at":"2026-01-01T01:00:00Z"}),
+    ];
+    let tree = layout(&metadata(&records, "file"));
+    assert_eq!(
+        tree.levels,
+        vec![
+            vec!["a-newer-tags", "b-newer-body", "older-rename"],
+            vec!["root"]
+        ]
+    );
+    let mut reversed = records;
+    reversed.reverse();
+    assert_eq!(layout(&metadata(&reversed, "file")), tree);
+}
+
 fn v(id: &str, created: u64, parents: &[&str]) -> Version {
     Version {
         id: id.into(),
-        created: created.to_string(),
+        created: format!("1970-01-01T00:{:02}:{:02}Z", created / 60, created % 60),
         parents: parents.iter().map(|p| (*p).into()).collect(),
     }
 }
@@ -134,12 +155,12 @@ fn old_ancestors_group_by_their_newer_children_before_timestamps_and_ids() {
     assert_eq!(layout(&reversed), tree);
 }
 #[test]
-fn mixed_node_timestamp_formats_keep_a_total_stable_order_and_unknown_dates_are_last() {
+fn utc_node_timestamps_keep_a_total_stable_order_and_unknown_dates_are_last() {
     let versions = [
         v("two", 2, &[]),
         v("ten", 10, &[]),
         Version {
-            id: "legacy".into(),
+            id: "recent".into(),
             created: "2020-01-01T00:00:00Z".into(),
             parents: vec![],
         },
@@ -159,7 +180,7 @@ fn mixed_node_timestamp_formats_keep_a_total_stable_order_and_unknown_dates_are_
         }
     }
     let tree = layout(&versions);
-    assert_eq!(tree.levels, vec![vec!["ten", "two", "legacy", "unknown"]]);
+    assert_eq!(tree.levels, vec![vec!["recent", "ten", "two", "unknown"]]);
 }
 #[test]
 fn every_branch_tip_is_above_its_ancestors_even_when_branches_have_unequal_depths() {
@@ -322,9 +343,9 @@ fn orthogonal_turns_have_circular_arcs_and_short_runs_limit_both_corner_radii() 
 #[test]
 fn metadata_ignores_notes_current_markers_and_foreign_file_records() {
     let mut records = vec![
-        json_codec::json!({"file_id":"selected","node_id":"a","version_id":"a","created_at":"1","parent_node_ids":[],"note":"initial"}),
-        json_codec::json!({"file_id":"other","node_id":"foreign","version_id":"foreign","created_at":"0"}),
-        json_codec::json!({"file_id":"selected","node_id":"b","version_id":"b","created_at":"2","parent_node_ids":["foreign","a","a",null]}),
+        json_codec::json!({"file_id":"selected","node_id":"a","version_id":"a","created_at":"1970-01-01T00:00:01Z","parent_node_ids":[],"note":"initial"}),
+        json_codec::json!({"file_id":"other","node_id":"foreign","version_id":"foreign","created_at":"1970-01-01T00:00:00Z"}),
+        json_codec::json!({"file_id":"selected","node_id":"b","version_id":"b","created_at":"1970-01-01T00:00:02Z","parent_node_ids":["foreign","a","a",null]}),
     ];
     let before = metadata(&records, "selected");
     records[0]["note"] = "typing stays mounted".into();
@@ -337,10 +358,10 @@ fn metadata_ignores_notes_current_markers_and_foreign_file_records() {
 #[test]
 fn placeholder_records_never_create_tree_nodes_or_source_aliases() {
     let records = vec![
-        json_codec::json!({"file_id":"selected","node_id":"source","version_id":"source","created_at":"1"}),
+        json_codec::json!({"file_id":"selected","node_id":"source","version_id":"source","created_at":"1970-01-01T00:00:01Z"}),
         json_codec::json!({"file_id":"selected","branch_id":"pending","materialized":false,"content_state":"PENDING","version_id":null,"source_version_id":"source"}),
         json_codec::json!({"file_id":"selected","node_id":"not-real","version_id":"not-real","materialized":false,"parent_node_ids":["source"]}),
-        json_codec::json!({"file_id":"selected","node_id":"first-write","version_id":"first-write","materialized":true,"created_at":"2","size":"0","parent_node_ids":["source"]}),
+        json_codec::json!({"file_id":"selected","node_id":"first-write","version_id":"first-write","materialized":true,"created_at":"1970-01-01T00:00:02Z","size":"0","parent_node_ids":["source"]}),
     ];
     let tree = layout(&metadata(&records, "selected"));
     assert_eq!(
@@ -352,7 +373,7 @@ fn placeholder_records_never_create_tree_nodes_or_source_aliases() {
 #[test]
 fn inherited_current_markers_do_not_change_real_version_identity_or_ancestry() {
     let versions = vec![
-        json_codec::json!({"file_id":"file","node_id":"parent","version_id":"parent","created_at":"1","current":true}),
+        json_codec::json!({"file_id":"file","node_id":"parent","version_id":"parent","created_at":"1970-01-01T00:00:01Z","current":true}),
     ];
     let mut model = Model {
         file_history: json_codec::json!({"node_id":"parent","version_id":"parent","materialized":false,"inherited":true,"own_version_id":null,"source_version_id":"parent","nodes":versions}).into(),

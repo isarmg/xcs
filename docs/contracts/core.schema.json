@@ -122,8 +122,7 @@
           "pattern": "^v[0-9]{6,}_[0-9]{8}T[0-9]{6}Z_[0-9a-f]{8}(\\..+)?$"
         },
         "created_at": {
-          "type": "string",
-          "format": "date-time"
+          "$ref": "#/$defs/UtcTimestamp"
         }
       },
       "required": [
@@ -1973,7 +1972,7 @@
           "type": "string"
         },
         "created_at": {
-          "type": "string"
+          "$ref": "#/$defs/UtcTimestamp"
         },
         "sequence": {
           "$ref": "#/$defs/UInt64"
@@ -2924,6 +2923,14 @@
         "reauthentication_required"
       ],
       "additionalProperties": false
+    },
+    "UtcTimestamp": {
+      "type": "string",
+      "format": "date-time",
+      "minLength": 20,
+      "maxLength": 20,
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
+      "description": "业务历史的整秒 UTC 时刻，固定 YYYY-MM-DDTHH:mm:ssZ；不接受本地时区、偏移量或数字秒字符串作为展示格式。"
     }
   }
 }

@@ -127,7 +127,7 @@ pub(crate) fn view(state: RwSignal<State>) -> impl IntoView {
         {move ||state.with(|s|s.activity.failure.clone()).map(|failure|view!{<ErrorState message=failure.message request_id=failure.request_id/>})}
         <Show when=move || !visible_events.with(Vec::is_empty)><div class="zxs-content-panel zxs-history-list-panel zxs-frame zxs-stack zxs-stack--flush"><ul class="zxs-activity-list zxs-history-list" aria-label=t("文件操作记录","File operation history")>{move ||{
             visible_events.get().into_iter().map(|event|{
-                let time=event["timestamp"].as_str().map(|value|if value.contains('T'){format::timestamp(value)}else{format::timestamp_seconds(value)}).unwrap_or_else(||t("未记录时间","Time not recorded"));
+                let time=event["timestamp"].as_str().map(format::timestamp).unwrap_or_else(||t("未记录时间","Time not recorded"));
                 let path=text(&event,&["path","display_path"]);let slot=text(&event,&["slot_id"]);let principal=text(&event,&["principal"]);
                 view!{<li class="zxs-history-row zxs-flow zxs-flow--stretch"><span class="zxs-history-action zxs-row">{action_label(&text(&event,&["action"]))}</span><span class="zxs-history-path zxs-row">{if slot.is_empty(){path}else{format!("{slot}/{path}")}}</span><time class="zxs-row">{time}</time><span class="zxs-history-principal zxs-row">{if principal.is_empty(){"–".into()}else{principal}}</span></li>}
             }).collect_view()

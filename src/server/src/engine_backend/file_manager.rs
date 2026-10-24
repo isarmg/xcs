@@ -9,6 +9,27 @@ use std::{
     collections::{BTreeMap, BTreeSet},
 };
 
+/// Present stored UTC seconds in the same whole-second UTC form as body
+/// versions. This changes the read projection, never the persisted timestamp.
+fn utc_timestamp(seconds: u64) -> Result<String, ApiError> {
+    let invalid = || ApiError::new(500, "STATE_INVALID", "history timestamp is invalid");
+    date_time::OffsetDateTime::from_unix_timestamp(i64::try_from(seconds).map_err(|_| invalid())?)
+        .map_err(|_| invalid())?
+        .format(&date_time::format_description::well_known::Rfc3339)
+        .map_err(|_| invalid())
+}
+
+fn utc_event_timestamp(event: &mut Value) -> Result<(), ApiError> {
+    if !event["timestamp"].is_null() {
+        let seconds = event["timestamp"]
+            .as_str()
+            .and_then(|value| storage_contract::parse_u64_decimal(value).ok())
+            .ok_or_else(|| ApiError::new(500, "STATE_INVALID", "history timestamp is invalid"))?;
+        event["timestamp"] = utc_timestamp(seconds)?.into();
+    }
+    Ok(())
+}
+
 /// Keep the newest 200 audit rows while scanning, rather than allocating the
 /// complete history and discarding all but one page afterward.
 fn record_event(events: &mut BTreeMap<(Reverse<u64>, String), Value>, event: Value) {
@@ -617,7 +638,7 @@ fn file_history(engine: &Engine, input: &Value) -> Result<Value, ApiError> {
         &versions,
         &first_commits,
         current_node.as_deref(),
-    );
+    )?;
     let mut response = json!({"file_id":file,"repository_id":repo.repository_id,"path":current.as_ref().map(|entry| &entry.path),
         "note":state.file_notes.get(file).map(String::as_str).unwrap_or(""),
         "node_id":current_node,"current_node_id":current_node,
@@ -1018,7 +1039,13 @@ pub(super) fn read(
                     }),
                 );
             }
-            let events = events.into_values().collect::<Vec<_>>();
+            let events = events
+                .into_values()
+                .map(|mut event| {
+                    utc_event_timestamp(&mut event)?;
+                    Ok(event)
+                })
+                .collect::<Result<Vec<_>, ApiError>>()?;
             Ok(json!({"events":events,"limit":200}))
         }
         crate::BackendAction::FileManagerBackupConfiguration => {
@@ -1412,3 +1439,7 @@ pub(super) fn call(
 #[cfg(test)]
 #[path = "../../../../test/server/unit/engine_backend/file_manager/request_tests.rs"]
 mod request_tests;
+
+#[cfg(test)]
+#[path = "../../../../test/server/unit/engine_backend/file_manager/time_tests.rs"]
+mod time_tests;

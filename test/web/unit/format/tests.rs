@@ -19,3 +19,12 @@ fn human_sizes_use_binary_units_in_both_languages() {
     assert_eq!(bytes(42), "42 B");
     assert!(bytes(u64::MAX).ends_with("EiB"));
 }
+
+#[test]
+fn server_utc_timestamps_are_displayed_without_browser_conversion() {
+    for value in ["2026-10-24T01:00:00Z", "2026-10-24T01:00:00.123Z"] {
+        assert_eq!(timestamp(value), value);
+    }
+    assert_eq!(timestamp(""), t("尚无记录", "No record yet"));
+    assert_eq!(timestamp("—"), t("尚无记录", "No record yet"));
+}

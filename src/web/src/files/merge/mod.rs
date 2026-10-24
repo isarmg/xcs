@@ -167,13 +167,7 @@ fn update(state: RwSignal<State>, f: impl FnOnce(&mut Draft)) {
 pub(super) fn node_label(node: &Value, index: usize) -> String {
     let date = node["created_at"]
         .as_str()
-        .map(|value| {
-            if value.contains('T') {
-                format::timestamp(value)
-            } else {
-                format::timestamp_seconds(value)
-            }
-        })
+        .map(format::timestamp)
         .unwrap_or_else(|| t("未记录时间", "Time not recorded"));
     let note = text(node, &["note"]);
     let descriptor = if note.is_empty() {
