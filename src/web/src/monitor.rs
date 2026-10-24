@@ -240,6 +240,11 @@ fn size(value: &Value) -> String {
         .unwrap_or_else(|| t("不可用", "Unavailable"))
 }
 
+fn disk_usage(record: &Value) -> Option<f64> {
+    percent(&record["usage_percent"])
+        .or_else(|| ratio(&record["used_bytes"], &record["total_bytes"]))
+}
+
 #[derive(Clone, Debug, PartialEq, Eq)]
 enum Metric {
     Cpu,
@@ -301,12 +306,16 @@ impl Metric {
             Self::Memory => ratio(&record["used_bytes"], &record["total_bytes"]),
             Self::CpuPower | Self::Disk { power: true, .. } => power(&record["power_watts"]),
             Self::Disk { .. } if record["online"] == false => None,
-            Self::Disk { .. } => percent(&record["usage_percent"]).or_else(|| {
-                let total = format::parse_u64(&record["total_bytes"])?;
-                let available = format::parse_u64(&record["available_bytes"])?;
-                (available <= total && total > 0)
-                    .then_some((total - available) as f64 * 100. / total as f64)
-            }),
+            Self::Disk { .. } => disk_usage(record),
+        }
+    }
+    fn history_value(&self, snapshot: &Value) -> Option<f64> {
+        match self {
+            // A history bucket retains the final online flag, but its capacity
+            // fields average all valid observations. Entirely offline buckets
+            // still contain nulls; the live value keeps its offline guard above.
+            Self::Disk { power: false, .. } => disk_usage(self.record(snapshot)),
+            _ => self.value(snapshot),
         }
     }
     fn current(&self, snapshot: &Value) -> String {
@@ -344,7 +353,7 @@ impl Metric {
             Self::Disk { .. } if record["online"] == false => t("离线", "Offline"),
             Self::Disk { .. } => format!(
                 "{} / {}",
-                size(&format::disk_record(record.clone())["used_bytes"]),
+                size(&record["used_bytes"]),
                 size(&record["total_bytes"])
             ),
         }
@@ -372,6 +381,14 @@ fn power_reason(reason: &str) -> String {
             "No readable hardware power sensor",
         ),
     }
+}
+fn disk_sampling_notice(snapshot: &Value) -> Option<String> {
+    (snapshot["disk_sampling_unavailable"] == true).then(|| {
+        t(
+            "磁盘采样不可用，无法确认当前磁盘状态。",
+            "Disk sampling is unavailable; current disk status cannot be confirmed.",
+        )
+    })
 }
 fn metrics(snapshot: &Value) -> Vec<Metric> {
     let mut metrics = vec![Metric::Cpu, Metric::CpuPower, Metric::Memory];
@@ -433,6 +450,7 @@ pub(crate) fn view(state: RwSignal<State>) -> impl IntoView {
                     <p>{move || state.with(|s| format!("{}：{}", t("当前账户", "Current account"), capacity_summary(s.monitor.capacity.as_ref().map(|capacity| &capacity.principal))))}</p>
                     <p>{t("这是累计生命周期额度，不是活动工作区数。成功提交、中止和过期均不会释放证据名额；当前无自动退休或既有池配额调整。元数据额度不是磁盘剩余空间。", "These are lifetime evidence quotas, not active workspace counts. Committed, aborted and expired records remain charged. Automatic retirement and existing-pool quota changes are not available. Metadata quota is not free disk space.")}</p>
                 </article>
+                {move || state.with(|s| disk_sampling_notice(&s.monitor.snapshot)).map(|message| view!{<p class="zxs-row" role="status">{message}</p>})}
                 <div class="zxs-metric-grid zxs-surface-start"><For each=move ||available_metrics.get() key=Metric::key children=move |metric|metric_card(state,metric)/></div>
                 <p class="zxs-metric-timestamp zxs-row">{move ||state.with(|s|format!("{}: {}",t("采样时间","Sampled at"),s.monitor.snapshot["collected_at"].as_str().map(format::timestamp).unwrap_or_else(||t("不可用","Unavailable"))))}</p>
             </Show>

@@ -219,6 +219,46 @@ fn old_aggregates_without_metric_statistics_are_ignored_but_raw_points_recover()
 }
 
 #[test]
+fn disk_averages_keep_valid_observations_when_the_bucket_ends_offline() {
+    let now = 1_800_000_120;
+    let disk_sample = |at, online: bool| {
+        let mut point = sample(at, Some(20.0));
+        point.status.disks = vec![super::super::DiskStatus {
+            id: "P01".into(),
+            name: "P01".into(),
+            online,
+            read_only: false,
+            simulation: true,
+            total_bytes: online.then(|| "1000".into()),
+            used_bytes: online.then(|| "300".into()),
+            available_bytes: online.then(|| "600".into()),
+            usage_percent: online.then_some(30.0),
+            power_watts: None,
+            power_unavailable_reason: Some("simulated_disk".into()),
+        }];
+        point
+    };
+    for (first_online, last_online, expected) in [
+        (true, false, Some(30.0)),
+        (false, true, Some(30.0)),
+        (false, false, None),
+    ] {
+        let aggregate = average(&[
+            disk_sample(now, first_online),
+            disk_sample(now + 5, last_online),
+        ]);
+        assert!(aggregate.valid_at(now + 5));
+        assert_eq!(aggregate.observations, 2);
+        assert_eq!(aggregate.status.disks[0].online, last_online);
+        assert_eq!(aggregate.status.disks[0].usage_percent, expected);
+        assert_eq!(
+            aggregate.status.disks[0].used_bytes.as_deref(),
+            expected.map(|_| "300")
+        );
+    }
+}
+
+#[test]
 fn recovery_ignores_partial_invalid_and_future_samples() {
     let root = tempfile::tempdir().unwrap();
     let path = root.path().join("cache");

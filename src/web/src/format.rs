@@ -27,23 +27,6 @@ pub fn parse_u64(v: &Value) -> Option<u64> {
         _ => None,
     }
 }
-pub fn disk_record(mut v: Value) -> Value {
-    if let (Some(total), Some(available)) = (
-        parse_u64(&v["total_bytes"]),
-        parse_u64(&v["available_bytes"]),
-    ) && total > 0
-        && available <= total
-    {
-        let used = total - available;
-        v["used_bytes"] = if used > 9_007_199_254_740_991 {
-            Value::String(used.to_string())
-        } else {
-            Value::from(used)
-        };
-        v["usage_percent"] = Value::from(used as f64 * 100. / total as f64);
-    }
-    v
-}
 /// Display the server's UTC timestamp directly, without browser locale or
 /// timezone conversion. UTC wire values remain identical in both UI languages.
 pub fn timestamp(v: &str) -> String {

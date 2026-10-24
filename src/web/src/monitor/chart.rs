@@ -120,7 +120,7 @@ fn series(history: &Value, metric: &Metric, parse: fn(&Value) -> Option<f64>) ->
                     .filter_map(|sample| {
                         Some((
                             parse(&sample["collected_at"])? / 1000.,
-                            metric.value(sample),
+                            metric.history_value(sample),
                         ))
                     })
                     .collect()

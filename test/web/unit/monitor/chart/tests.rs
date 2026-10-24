@@ -57,6 +57,42 @@ fn power_scales_to_real_measurements_and_single_zero_is_still_a_real_point() {
 }
 
 thread_local! { static PARSES: std::cell::Cell<usize> = const { std::cell::Cell::new(0) }; }
+
+#[test]
+fn disk_history_uses_valid_bucket_averages_without_reviving_offline_live_status() {
+    let metric = Metric::Disk {
+        id: "P01".into(),
+        name: "P01".into(),
+        power: false,
+    };
+    // The history API retains the final online flag, but capacity averages
+    // contain every valid observation in the bucket, excluding missing ones.
+    let averaged = json_codec::json!({"collected_at":15000,"disks":[{
+        "id":"P01", "online":false, "usage_percent":30.0,
+        "used_bytes":"300", "total_bytes":"1000", "available_bytes":"600"
+    }]});
+    let all_offline = json_codec::json!({"collected_at":25000,"disks":[{
+        "id":"P01", "online":false, "usage_percent":null,
+        "used_bytes":null, "total_bytes":null, "available_bytes":null
+    }]});
+    let mut history = json_codec::json!({
+        "from":0, "to":30000, "interval_seconds":10,
+        "samples":[averaged.clone(),all_offline.clone()]
+    });
+    assert_eq!(metric.value(&averaged), None);
+    assert_eq!(metric.value(&all_offline), None);
+    assert_eq!(
+        series(&history, &metric, Value::as_f64).points,
+        vec![(15.0, Some(30.0)), (25.0, None)]
+    );
+    // Unprivileged available bytes do not define physical usage.
+    history["samples"][0]["disks"][0]["usage_percent"] = Value::Null;
+    assert_eq!(
+        series(&history, &metric, Value::as_f64).points,
+        vec![(15.0, Some(30.0)), (25.0, None)]
+    );
+}
+
 fn counted_time(value: &Value) -> Option<f64> {
     PARSES.with(|c| c.set(c.get() + 1));
     value.as_f64()

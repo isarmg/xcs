@@ -212,3 +212,54 @@ fn valid_zero_capacity_is_not_missing_or_malformed() {
     assert!(capacity_summary(Some(&value.principal)).contains("0 / 5"));
     assert_ne!(capacity_warning(Some(value)), capacity_warning(None));
 }
+
+#[test]
+fn disk_usage_preserves_physical_used_bytes_when_free_space_is_reserved() {
+    let metric = Metric::Disk {
+        id: "P01".into(),
+        name: "P01".into(),
+        power: false,
+    };
+    let mut snapshot = json_codec::json!({"disks":[{
+        "id":"P01", "online":true,
+        "total_bytes":"1000", "available_bytes":"600", "used_bytes":"300",
+        "usage_percent":30.0
+    }]});
+    assert_eq!(metric.value(&snapshot), Some(30.0));
+    assert_eq!(metric.subtitle(&snapshot), "300 B / 1000 B");
+    snapshot["disks"][0]["usage_percent"] = Value::Null;
+    assert_eq!(metric.value(&snapshot), Some(30.0));
+    snapshot["disks"][0]["used_bytes"] = Value::Null;
+    assert_eq!(metric.value(&snapshot), None);
+    assert_eq!(
+        metric.subtitle(&snapshot),
+        format!("{} / 1000 B", t("不可用", "Unavailable"))
+    );
+}
+
+#[test]
+fn disk_sampling_notice_distinguishes_unavailable_from_empty_success() {
+    assert!(disk_sampling_notice(&Value::Null).is_none());
+    let mut snapshot = json_codec::json!({
+        "cpu":{"usage_percent":25.0},
+        "memory":{"used_bytes":"25","total_bytes":"100"},
+        "disks":[], "disk_sampling_unavailable":false
+    });
+    assert!(disk_sampling_notice(&snapshot).is_none());
+    snapshot["disk_sampling_unavailable"] = Value::Bool(true);
+    assert_eq!(
+        disk_sampling_notice(&snapshot),
+        Some(t(
+            "磁盘采样不可用，无法确认当前磁盘状态。",
+            "Disk sampling is unavailable; current disk status cannot be confirmed.",
+        ))
+    );
+    assert_eq!(Metric::Cpu.value(&snapshot), Some(25.0));
+    assert_eq!(Metric::Memory.value(&snapshot), Some(25.0));
+    assert_eq!(
+        metrics(&snapshot),
+        vec![Metric::Cpu, Metric::CpuPower, Metric::Memory]
+    );
+    snapshot["disk_sampling_unavailable"] = Value::Bool(false);
+    assert!(disk_sampling_notice(&snapshot).is_none());
+}
