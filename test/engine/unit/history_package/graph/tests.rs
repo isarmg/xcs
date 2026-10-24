@@ -3,6 +3,7 @@ use crate::{
     Config,
     journal::{load_object, object_path},
 };
+use crate::{encode_hashed_object, object_hash};
 use json_codec::json;
 
 fn manifest() -> HistoryManifest {

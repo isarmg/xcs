@@ -186,3 +186,81 @@ fn checksum_decoder_rejects_count_overflow_extensions_and_unsupported_chunks() {
         .is_err()
     );
 }
+
+#[test]
+fn borrowed_value_encoding_matches_generic_bytes_and_hashes() {
+    let values = [
+        json_codec::json!({"\u{e000}": 2, "\u{10000}": 1}),
+        json_codec::json!({"escaped": "\"\\\n\r\t\u{0000}/", "nested": [true, null, {"x": []}]}),
+        json_codec::json!([-9_007_199_254_740_991i64, 0, 9_007_199_254_740_991u64]),
+    ];
+    assert_eq!(
+        canonical_json_value(&values[0]).unwrap(),
+        "{\"\u{10000}\":1,\"\u{e000}\":2}".as_bytes()
+    );
+    for value in values {
+        assert_eq!(
+            canonical_json_value(&value).unwrap(),
+            canonical_json(&value).unwrap()
+        );
+        for kind in ["state-page", "history-manifest"] {
+            assert_eq!(
+                encode_hashed_value(kind, &value).unwrap(),
+                encode_hashed_object(kind, &value).unwrap()
+            );
+            assert_eq!(
+                object_hash_value(kind, &value).unwrap(),
+                object_hash(kind, &value).unwrap()
+            );
+        }
+    }
+}
+
+#[test]
+fn borrowed_value_encoding_preserves_validation_errors_and_domain_priority() {
+    for value in [
+        json_codec::json!({"x": [1.5]}),
+        json_codec::json!({"x": u64::MAX}),
+        json_codec::json!({"x": i64::MIN}),
+    ] {
+        let old = canonical_json(&value).unwrap_err();
+        let new = canonical_json_value(&value).unwrap_err();
+        assert_eq!((&new.code, &new.message), (&old.code, &old.message));
+        for kind in ["state-page", "", "Invalid", "bad_domain"] {
+            let old = encode_hashed_object(kind, &value).unwrap_err();
+            let new = encode_hashed_value(kind, &value).unwrap_err();
+            assert_eq!((&new.code, &new.message), (&old.code, &old.message));
+            let hash_error = object_hash_value(kind, &value).unwrap_err();
+            assert_eq!(
+                (&hash_error.code, &hash_error.message),
+                (&old.code, &old.message)
+            );
+            if kind != "state-page" {
+                assert_eq!(new.code, "INVALID_OBJECT_TYPE");
+            }
+        }
+    }
+}
+
+#[test]
+fn generic_encoding_keeps_original_serializer_call_count() {
+    struct Counted<'a>(&'a std::cell::Cell<usize>);
+    impl Serialize for Counted<'_> {
+        fn serialize<S: data_serialization::Serializer>(
+            &self,
+            serializer: S,
+        ) -> std::result::Result<S::Ok, S::Error> {
+            self.0.set(self.0.get() + 1);
+            serializer.serialize_u64(7)
+        }
+    }
+    let count = std::cell::Cell::new(0);
+    assert_eq!(canonical_json(&Counted(&count)).unwrap(), b"7");
+    assert_eq!(count.get(), 2);
+    count.set(0);
+    encode_hashed_object("state-page", &Counted(&count)).unwrap();
+    assert_eq!(count.get(), 2);
+    count.set(0);
+    assert!(encode_hashed_object("Invalid", &Counted(&count)).is_err());
+    assert_eq!(count.get(), 0);
+}

@@ -80,6 +80,16 @@ pub fn decode_strict<T: data_serialization::de::DeserializeOwned>(bytes: &[u8]) 
 /// JCS for the integer-only ZXS schema. UTF-16 ordering is significant for keys.
 pub fn canonical_json<T: Serialize + ?Sized>(value: &T) -> Result<Vec<u8>> {
     crate::integer_json::validate(value)?;
+    emit_canonical_json(&json_codec::to_value(value)?)
+}
+
+/// Canonical encoding of an existing JSON value without rebuilding its tree.
+pub fn canonical_json_value(value: &Value) -> Result<Vec<u8>> {
+    crate::integer_json::validate(value)?;
+    emit_canonical_json(value)
+}
+
+fn emit_canonical_json(value: &Value) -> Result<Vec<u8>> {
     fn number(n: &Number) -> Result<String> {
         const MAX_SAFE_INTEGER: u64 = (1 << 53) - 1;
         let safe = n
@@ -129,7 +139,7 @@ pub fn canonical_json<T: Serialize + ?Sized>(value: &T) -> Result<Vec<u8>> {
         Ok(())
     }
     let mut out = Vec::new();
-    emit(&json_codec::to_value(value)?, &mut out)?;
+    emit(value, &mut out)?;
     Ok(out)
 }
 pub fn object_hash<T: Serialize + ?Sized>(kind: &str, value: &T) -> Result<String> {
@@ -142,14 +152,33 @@ pub fn encode_hashed_object<T: Serialize + ?Sized>(
     kind: &str,
     value: &T,
 ) -> Result<(Vec<u8>, String)> {
+    validate_object_domain(kind)?;
+    Ok(hash_canonical_bytes(kind, canonical_json(value)?))
+}
+
+/// Domain-separated digest of an existing JSON value without rebuilding it.
+pub fn object_hash_value(kind: &str, value: &Value) -> Result<String> {
+    encode_hashed_value(kind, value).map(|(_, hash)| hash)
+}
+
+/// Canonical bytes and digest of an existing JSON value without rebuilding it.
+pub fn encode_hashed_value(kind: &str, value: &Value) -> Result<(Vec<u8>, String)> {
+    validate_object_domain(kind)?;
+    Ok(hash_canonical_bytes(kind, canonical_json_value(value)?))
+}
+
+fn validate_object_domain(kind: &str) -> Result<()> {
     if kind.is_empty() || !kind.bytes().all(|b| b.is_ascii_lowercase() || b == b'-') {
         return Err(Error::new("INVALID_OBJECT_TYPE", "invalid metadata domain"));
     }
-    let bytes = canonical_json(value)?;
+    Ok(())
+}
+
+fn hash_canonical_bytes(kind: &str, bytes: Vec<u8>) -> (Vec<u8>, String) {
     let mut h = blake3::Hasher::new();
     h.update(format!("zxs:{kind}\0").as_bytes());
     h.update(&bytes);
-    Ok((bytes, h.finalize().to_hex().to_string()))
+    (bytes, h.finalize().to_hex().to_string())
 }
 
 /// Digest for a JSON mutation request; transport credentials never enter it.

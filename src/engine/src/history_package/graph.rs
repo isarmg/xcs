@@ -2,8 +2,8 @@
 //! to this disk format, not to a caller's metadata admission budget.
 use super::HistoryManifest;
 use crate::{
-    Error, HistoryTree, Repository, Result, canonical_json, disk::MAX_METADATA,
-    encode_hashed_object, journal::PreparedMetadataObject, object_hash,
+    Error, HistoryTree, Repository, Result, canonical_json, canonical_json_value,
+    disk::MAX_METADATA, encode_hashed_value, journal::PreparedMetadataObject, object_hash_value,
 };
 use data_serialization::{Deserialize, Serialize};
 use json_codec::{Map, Value};
@@ -138,7 +138,8 @@ impl Encoder {
         let entries = map
             .into_iter()
             .map(|(key, value)| {
-                let encoded_bytes = canonical_json(&key)?.len() + 1 + canonical_json(&value)?.len();
+                let encoded_bytes =
+                    canonical_json(&key)?.len() + 1 + canonical_json_value(&value)?.len();
                 // A single entity cannot be divided. Keep the existing reader
                 // ceiling rather than turning the page target into a new
                 // limit on Commit.entries and other existing entity payloads.
@@ -274,7 +275,7 @@ impl<F: FnMut(&str, &str) -> Result<Value>> Resolver<F> {
             Some(index) => self.objects[*index].2.clone(),
             None => {
                 let value = (self.load)(domain, &reference.hash)?;
-                if object_hash(domain, &value)? != reference.hash {
+                if object_hash_value(domain, &value)? != reference.hash {
                     return Err(Error::new(
                         "OBJECT_CORRUPT",
                         "history graph object digest differs",
@@ -288,7 +289,7 @@ impl<F: FnMut(&str, &str) -> Result<Value>> Resolver<F> {
                 let page = value
                     .as_object()
                     .ok_or_else(|| invalid("history graph leaf is not a map"))?;
-                let bytes = canonical_json(&value)?.len();
+                let bytes = canonical_json_value(&value)?.len();
                 if page.len() > PAGE_ENTRIES
                     || bytes > MAX_METADATA
                     || (bytes > PAGE_TARGET_BYTES && page.len() != 1)
@@ -353,7 +354,7 @@ pub(super) fn resolve_with_objects(
     load: impl FnMut(&str, &str) -> Result<Value>,
 ) -> Result<ResolvedGraph> {
     let hash = {
-        let (bytes, hash) = encode_hashed_object("history-manifest", &root)?;
+        let (bytes, hash) = encode_hashed_value("history-manifest", &root)?;
         if bytes.len() > MAX_METADATA {
             return Err(invalid("history root exceeds the metadata reader limit"));
         }

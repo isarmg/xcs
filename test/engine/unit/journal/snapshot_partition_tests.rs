@@ -395,3 +395,77 @@ fn alternate_page_partitions_preserve_exact_bound_current_snapshots() {
     assert_eq!(load_snapshot(disk, &alternate_hash).unwrap(), state);
     assert_eq!(load_snapshot(disk, &modern_hash).unwrap(), state);
 }
+
+// Frozen output from a real three-disk engine pool, captured before the
+// canonical Value encoding fast path. Two saves of nested files (including a
+// Unicode filename) create seven commits, directory branches and four versions.
+// This independent byte oracle pins the current publication bytes and hashes.
+#[derive(Deserialize)]
+#[serialization(deny_unknown_fields)]
+struct CanonicalPublicationFixture {
+    state_bytes: String,
+    snapshot_hash: String,
+    snapshot_objects: BTreeMap<String, String>,
+    history_manifest_hashes: BTreeMap<String, String>,
+    history_objects: BTreeMap<String, String>,
+}
+
+fn publication_object_bytes(objects: &[PreparedMetadataObject]) -> BTreeMap<String, String> {
+    let mut result = BTreeMap::new();
+    for object in objects {
+        let key = format!("{}/{}", object.kind, object.hash);
+        let bytes = String::from_utf8(object.bytes.clone()).unwrap();
+        if let Some(previous) = result.insert(key, bytes.clone()) {
+            // Empty history maps can share one content-addressed page.
+            assert_eq!(previous, bytes);
+        }
+    }
+    result
+}
+
+#[test]
+fn canonical_value_encoding_preserves_publication_bytes_and_hashes() {
+    let fixture: CanonicalPublicationFixture =
+        json_codec::from_slice(include_bytes!("fixtures/canonical_publication.json")).unwrap();
+    let state: State = json_codec::from_slice(fixture.state_bytes.as_bytes()).unwrap();
+    assert_eq!(state.commits.len(), 7);
+    assert_eq!(
+        state
+            .commits
+            .values()
+            .filter(|commit| !commit.entries.is_empty())
+            .count(),
+        6
+    );
+    assert_eq!(
+        state
+            .commits
+            .values()
+            .map(|commit| commit.entries.len())
+            .sum::<usize>(),
+        14
+    );
+    assert_eq!(state.branches.len(), 3);
+    assert_eq!(state.versions.len(), 4);
+    assert_eq!(
+        canonical_json(&state).unwrap(),
+        fixture.state_bytes.as_bytes()
+    );
+
+    let snapshot = prepare_snapshot(&state, MAX_METADATA).unwrap();
+    assert_eq!(snapshot.hash, fixture.snapshot_hash);
+    assert_eq!(fixture.snapshot_objects.len(), 23);
+    assert_eq!(
+        publication_object_bytes(&snapshot.objects),
+        fixture.snapshot_objects
+    );
+
+    let (history_hashes, history_objects) =
+        crate::history_package::prepare_history_manifests(&state, MAX_METADATA).unwrap();
+    assert_eq!(history_hashes, fixture.history_manifest_hashes);
+    assert_eq!(fixture.history_objects.len(), 15);
+    assert_eq!(
+        publication_object_bytes(&history_objects),
+        fixture.history_objects
+    );
+}
