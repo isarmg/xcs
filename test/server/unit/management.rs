@@ -544,6 +544,70 @@ fn stale_readiness_retry_waits_for_existing_engine_holders() {
     assert!(!backend.inner.state.lock().unwrap().admitted);
 }
 
+#[test]
+fn completed_disk_observation_releases_engine_before_retry() {
+    use std::sync::{Arc, Mutex};
+
+    let root = tempfile::tempdir().unwrap();
+    let data = root.path().join("pool");
+    let management = root.path().join("management");
+    let disk = root.path().join("disk");
+    let detached = root.path().join("detached-disk");
+    let mut engine = storage_engine::Engine::initialize(
+        &data,
+        storage_contract::Config::development([disk.clone()]),
+    )
+    .unwrap();
+    let auth =
+        AuthStore::initialize_management(&management, "admin", "a-long-test-password").unwrap();
+    engine
+        .persist_auth_state(
+            auth.snapshot().unwrap(),
+            "system_auth",
+            &storage_contract::new_id("op"),
+        )
+        .unwrap();
+    drop(auth);
+    let (backend, mut auth) = open_service(&data, &management).unwrap();
+    let token = auth.login("admin", "a-long-test-password").unwrap().token;
+    let identity = auth.authenticate(&token).unwrap();
+    *backend.inner.auth.lock().unwrap() = Some(Arc::new(Mutex::new(auth)));
+    let engine = Arc::new(crate::engine_backend::EngineBackend::new(engine));
+    let observed_engine = Arc::downgrade(&engine);
+    backend.inner.set(Some(engine), super::StorageState::Ready);
+
+    // Drive the production sampling boundary directly, without starting its
+    // periodic thread or relying on a five-second timing window.
+    std::fs::rename(&disk, &detached).unwrap();
+    backend.inner.observe_storage_once();
+    assert_eq!(backend.management_status()["state"], "read_only");
+    let observation = backend
+        .observe_disks(&crate::InternalDiskObservation(()))
+        .unwrap();
+    assert_eq!(observation["disks"][0]["online"], false);
+    assert_eq!(
+        observed_engine.strong_count(),
+        1,
+        "only management state may retain the engine between observations"
+    );
+
+    // The first retry after restoring the original disk must reopen, not
+    // report STORAGE_DRAINING for an observer that has already finished.
+    std::fs::rename(&detached, &disk).unwrap();
+    backend.retry_storage(&identity).unwrap();
+    let worker = backend
+        .inner
+        .recovery_worker
+        .lock()
+        .unwrap()
+        .take()
+        .unwrap();
+    worker.join().unwrap();
+    assert!(observed_engine.upgrade().is_none());
+    assert_eq!(backend.management_status()["state"], "ready");
+    backend.drain_management().unwrap();
+}
+
 #[tokio::test]
 async fn web_completion_requires_bound_pristine_pre_authority_setup_proof() {
     use std::os::unix::fs::PermissionsExt;

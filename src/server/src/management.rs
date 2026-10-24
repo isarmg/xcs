@@ -519,6 +519,56 @@ impl Inner {
         let state = crate::lock(&self.state)?;
         state.backend.as_ref().filter(|_|state.admitted && state.status!=StorageState::Unavailable && state.observed_at.elapsed()<std::time::Duration::from_secs(15)).cloned().ok_or_else(||ApiError::new(503,"STORAGE_UNAVAILABLE","storage is unavailable; inspect /api/system/storage and retry after correcting the fault"))
     }
+    /// Keep the engine lease inside one sample. The observer's idle interval
+    /// must not look like an in-flight storage operation to recovery admission.
+    fn observe_storage_once(&self) {
+        let backend = self
+            .state
+            .lock()
+            .ok()
+            .and_then(|state| state.backend.as_ref().filter(|_| state.admitted).cloned());
+        let observation = backend
+            .as_ref()
+            .ok_or_else(|| ApiError::new(503, "STORAGE_UNAVAILABLE", "storage unavailable"))
+            .and_then(|backend| {
+                let health = backend.call(
+                    BackendAction::Ready,
+                    &Identity {
+                        admission_session: None,
+                        smb_binding: None,
+                        principal: "monitor".into(),
+                    },
+                    json!({}),
+                );
+                if let Ok(mut state) = self.state.lock()
+                    && state.admitted
+                    && state
+                        .backend
+                        .as_ref()
+                        .is_some_and(|current| Arc::ptr_eq(current, backend))
+                {
+                    state.observed_at = std::time::Instant::now();
+                    state.status = match &health {
+                        Ok(_) => StorageState::Ready,
+                        Err(error)
+                            if matches!(
+                                error.code.as_str(),
+                                "RECOVERY_REQUIRED" | "METADATA_UNAVAILABLE"
+                            ) =>
+                        {
+                            StorageState::ReadOnly
+                        }
+                        Err(_) => StorageState::Unavailable,
+                    };
+                }
+                backend.observe_disks(&InternalDiskObservation(()))
+            });
+        if let Ok(mut cache) = self.disk_observation.lock() {
+            *cache = observation
+                .ok()
+                .map(|value| (std::time::Instant::now(), value));
+        }
+    }
 }
 impl Backend for ManagementBackend {
     fn setup_operation(
@@ -806,52 +856,7 @@ impl Backend for ManagementBackend {
                     if inner.stopping.load(Ordering::SeqCst) {
                         break;
                     }
-                    let backend = inner.state.lock().ok().and_then(|state| {
-                        state.backend.as_ref().filter(|_| state.admitted).cloned()
-                    });
-                    let observation = backend
-                        .as_ref()
-                        .ok_or_else(|| {
-                            ApiError::new(503, "STORAGE_UNAVAILABLE", "storage unavailable")
-                        })
-                        .and_then(|backend| {
-                            let health = backend.call(
-                                BackendAction::Ready,
-                                &Identity {
-                                    admission_session: None,
-                                    smb_binding: None,
-                                    principal: "monitor".into(),
-                                },
-                                json!({}),
-                            );
-                            if let Ok(mut state) = inner.state.lock()
-                                && state.admitted
-                                && state
-                                    .backend
-                                    .as_ref()
-                                    .is_some_and(|current| Arc::ptr_eq(current, backend))
-                            {
-                                state.observed_at = std::time::Instant::now();
-                                state.status = match &health {
-                                    Ok(_) => StorageState::Ready,
-                                    Err(error)
-                                        if matches!(
-                                            error.code.as_str(),
-                                            "RECOVERY_REQUIRED" | "METADATA_UNAVAILABLE"
-                                        ) =>
-                                    {
-                                        StorageState::ReadOnly
-                                    }
-                                    Err(_) => StorageState::Unavailable,
-                                };
-                            }
-                            backend.observe_disks(&InternalDiskObservation(()))
-                        });
-                    if let Ok(mut cache) = inner.disk_observation.lock() {
-                        *cache = observation
-                            .ok()
-                            .map(|value| (std::time::Instant::now(), value));
-                    }
+                    inner.observe_storage_once();
                     drop(inner);
                     std::thread::sleep(std::time::Duration::from_secs(5));
                 }
