@@ -15,14 +15,20 @@ fn in_ranges(cp: u32, ranges: &[(u32, u32)]) -> bool {
         .is_some_and(|(start, end)| (*start..=*end).contains(&cp))
 }
 pub fn lookup_key(name: &str) -> String {
+    let mut key = String::with_capacity(name.len());
+    append_lookup_key(&mut key, name);
+    key
+}
+fn append_lookup_key(key: &mut String, name: &str) {
     // ASCII is already NFC and the fixed full-fold table changes only A-Z.
     // ASCII casing is independent of the host's Unicode table version.
     if name.is_ascii() {
-        return name.to_ascii_lowercase();
+        let start = key.len();
+        key.push_str(name);
+        key[start..].make_ascii_lowercase();
+    } else {
+        key.extend(unicode::nfc_casefold(name, case_fold));
     }
-    let mut key = String::with_capacity(name.len());
-    key.extend(unicode::nfc_casefold(name, case_fold));
-    key
 }
 fn case_fold(c: char) -> Option<&'static str> {
     if c.is_ascii() {
@@ -112,10 +118,16 @@ pub fn validate_path(path: &str) -> Result<()> {
     Ok(())
 }
 pub fn path_key(path: &str) -> String {
-    path.split('/')
-        .map(lookup_key)
-        .collect::<Vec<_>>()
-        .join("/")
+    let mut key = String::with_capacity(path.len());
+    for (index, component) in path.split('/').enumerate() {
+        // Normalize each component independently, preserving even empty
+        // components for callers that have not yet validated the path.
+        if index > 0 {
+            key.push('/');
+        }
+        append_lookup_key(&mut key, component);
+    }
+    key
 }
 pub fn validate_slot(slot: &str) -> Result<()> {
     if slot.is_empty()

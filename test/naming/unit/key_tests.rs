@@ -65,3 +65,49 @@ fn normalization_check_keeps_original_error_and_suggestion() {
         assert!(error.message.contains(&input.nfc().collect::<String>()));
     }
 }
+
+fn component_wise_path_key(path: &str) -> String {
+    path.split('/')
+        .map(lookup_key)
+        .collect::<Vec<_>>()
+        .join("/")
+}
+
+#[test]
+fn path_keys_preserve_components_and_empty_segments() {
+    for path in [
+        "",
+        "/",
+        "//",
+        "/A//B/",
+        "Projects/Report-2026.TXT",
+        "项目/报告（终稿）.docx",
+        "Straße/Σςσ/İı/각",
+        "A/\u{301}/Z",
+        "A\u{301}//\u{323}\u{301}/Z",
+        "\u{1100}/\u{1161}/\u{11a8}",
+        "\u{212b}/\u{2126}/\u{212a}",
+    ] {
+        assert_eq!(path_key(path), component_wise_path_key(path), "{path:?}");
+        assert_eq!(path_key(&path_key(path)), path_key(path), "{path:?}");
+    }
+    let deep_path = ["A"; 32].join("/");
+    let long_combining = format!("A{}/\u{323}/Z", "\u{301}".repeat(1024));
+    for path in [&deep_path, &long_combining] {
+        assert_eq!(path_key(path), component_wise_path_key(path), "{path:?}");
+    }
+}
+
+#[test]
+fn path_keys_preserve_all_fold_expansions_at_component_boundaries() {
+    for &(scalar, _) in unicode16::FOLD {
+        let c = char::from_u32(scalar).unwrap();
+        for path in [
+            format!("ASCII/{c}/\u{301}/Z"),
+            format!("/{c}\u{323}\u{301}//\u{345}/"),
+            format!("\u{1100}/{c}/\u{1161}\u{11a8}"),
+        ] {
+            assert_eq!(path_key(&path), component_wise_path_key(&path), "{path:?}");
+        }
+    }
+}
