@@ -38,7 +38,7 @@ HTTP 监听地址必须是回环地址。对外部署由同机反向代理终止
 
 `zxs --root SYSTEM_STATE --management-root SYSTEM_MANAGEMENT --web-dir WEB_ROOT` 直接提供 Web/API，不分发管理子命令。系统盘管理目录与数据成员分离，HTTP 先监听，再打开数据引擎；数据故障不自动初始化、清空池、放宽授权或接受损失。systemd 不要求数据成员挂载成功，也不创建、挂载或格式化设备；Samba/smbd 是独立网络服务。
 
-启用 SMB 时，其完整工作副本、未确认操作证据和预算记录固定保存在 `--management-root/smb-spool`，与可清理的 `--smb-socket` 运行目录分离。管理目录必须位于持久系统盘；spool 不可用只停止 SMB 桥接，不阻止管理 HTTP。旧 socket 旁的 spool 不自动迁移，部署与升级边界见 [SMB 本机 RPC](smb.md#本机-rpc-部署)。
+启用 SMB 时，其完整工作副本、未确认操作证据和预算记录固定保存在 `--management-root/smb-spool`，与可清理的 `--smb-socket` 运行目录分离。管理目录必须位于持久系统盘；spool 不可用只停止 SMB 桥接，不阻止管理 HTTP。旧 socket 旁的 spool 不自动迁移，部署与升级边界见 [SMB 本机 RPC](smb.md#smb-local-rpc)。
 
 本机管理员可重复设置 `--setup-disk ID=/absolute/existing/root` 批准初始化磁盘，或使用 `--setup-config ID=/absolute/private-file` 提供配置预设。浏览器只能选择批准的 ID，并审查绑定摘要，不能提交任意系统路径或 Config JSON。预设文件须由服务账号拥有、为单链接普通文件且权限为 0400/0600，所有磁盘仍须在白名单中。
 
