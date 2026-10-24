@@ -99,7 +99,6 @@ pub(super) fn finish_publication(
     result: Value,
 ) -> Result<Value, ApiError> {
     writer.last_head = field(result.get("result").unwrap_or(&result), "commit_id")?.to_owned();
-    writer.committed = true;
     // Bytes may have changed after a response was lost. Never acknowledge the
     // earlier publication as if it included those later FD-backed writes.
     let tree = shared.backend.call(
@@ -133,6 +132,9 @@ pub(super) fn finish_publication(
             .ok_or_else(|| ApiError::limit("file byte count overflow"))?;
     }
     writer.dirty = offset != published.size || hash.finalize().to_hex().as_str() != published.hash;
+    // A failed comparison must remain reconcilable by the original operation.
+    // Only a completed comparison may require a new authorized dirty generation.
+    writer.committed = true;
     if let Err(error) = recovery_record(writer, &identity.principal, branch) {
         tracing::warn!(%error,"published SMB recovery record could not be refreshed");
     }

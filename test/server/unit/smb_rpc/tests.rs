@@ -30,10 +30,16 @@ mod directory_tests;
 mod namespace_tests;
 #[path = "published_selection_tests.rs"]
 mod published_selection_tests;
+#[path = "reconciliation_tests.rs"]
+mod reconciliation_tests;
+
+const RECONCILIATION_TREE: usize = 1;
+const RECONCILIATION_CONTENT: usize = 2;
 
 struct LostCommitReply {
     inner: EngineBackend,
     fail: AtomicBool,
+    reconciliation_failure: AtomicUsize,
     uploads: AtomicUsize,
     revoked: AtomicBool,
     change_before_workspace: AtomicBool,
@@ -45,6 +51,18 @@ impl Backend for LostCommitReply {
         identity: &Identity,
         input: Value,
     ) -> Result<Value, ApiError> {
+        if action == crate::BackendAction::Tree
+            && self
+                .reconciliation_failure
+                .compare_exchange(RECONCILIATION_TREE, 0, Ordering::SeqCst, Ordering::SeqCst)
+                .is_ok()
+        {
+            return Err(ApiError::new(
+                503,
+                "RECONCILIATION_READ_FAILED",
+                "injected one-shot published tree read failure",
+            ));
+        }
         if action == crate::BackendAction::Version && self.revoked.load(Ordering::SeqCst) {
             return Err(ApiError::forbidden());
         }
@@ -92,6 +110,22 @@ impl Backend for LostCommitReply {
         self.inner.upload(identity, workspace, item, path, source)
     }
     fn content(&self, identity: &Identity, version: &str) -> Result<Content, ApiError> {
+        if self
+            .reconciliation_failure
+            .compare_exchange(
+                RECONCILIATION_CONTENT,
+                0,
+                Ordering::SeqCst,
+                Ordering::SeqCst,
+            )
+            .is_ok()
+        {
+            return Err(ApiError::new(
+                503,
+                "RECONCILIATION_READ_FAILED",
+                "injected one-shot published content read failure",
+            ));
+        }
         self.inner.content(identity, version)
     }
 }
@@ -134,6 +168,7 @@ fn fixture() -> (tempfile::TempDir, Arc<Shared>, Arc<LostCommitReply>, String) {
     let backend = Arc::new(LostCommitReply {
         inner: EngineBackend::new(engine),
         fail: AtomicBool::new(false),
+        reconciliation_failure: AtomicUsize::new(0),
         uploads: AtomicUsize::new(0),
         revoked: AtomicBool::new(false),
         change_before_workspace: AtomicBool::new(false),
