@@ -357,6 +357,8 @@ impl Backend for AuthorizedBackend {
 #[derive(Clone)]
 pub struct SmbConfig {
     pub socket: PathBuf,
+    /// Durable system-disk storage, independent of the disposable socket directory.
+    pub spool_dir: PathBuf,
     pub allowed_uid: u32,
     pub spool_limits: SpoolLimits,
     /// The single non-guest account authenticated by Samba.
@@ -770,38 +772,9 @@ pub async fn serve(
     let bridge = async move {
         if let Some(smb) = smb {
             let run = async move {
-                let socket = smb.socket.clone();
-                tokio::task::spawn_blocking(move || {
-                    let parent = socket
-                        .parent()
-                        .ok_or_else(|| ApiError::invalid("SMB socket needs a parent directory"))?;
-                    if !parent.exists() {
-                        std::fs::create_dir_all(parent).map_err(ApiError::io)?;
-                        #[cfg(unix)]
-                        {
-                            use std::os::unix::fs::PermissionsExt;
-                            std::fs::set_permissions(
-                                parent,
-                                std::fs::Permissions::from_mode(0o700),
-                            )
-                            .map_err(ApiError::io)?;
-                        }
-                    }
-                    Ok::<_, ApiError>(())
-                })
-                .await
-                .map_err(ApiError::join)??;
-                smb_rpc::serve(
-                    &smb.socket,
-                    smb.allowed_uid,
-                    smb.username,
-                    bridge_auth,
-                    backend,
-                    smb.spool_limits,
-                    smb_max_file_bytes,
-                )
-                .await
-                .map_err(|_| ApiError::new(503, "SMB_UNAVAILABLE", "SMB bridge stopped"))
+                smb_rpc::serve(smb, bridge_auth, backend, smb_max_file_bytes)
+                    .await
+                    .map_err(|_| ApiError::new(503, "SMB_UNAVAILABLE", "SMB bridge stopped"))
             };
             if let Err(error) = run.await {
                 tracing::error!(%error, "SMB bridge stopped; management HTTP remains available");

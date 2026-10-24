@@ -25,6 +25,8 @@ ExecStart=/opt/zxs/bin/zxs --root /var/lib/zxs/state --management-root /var/lib/
 
 示例的 `0` 只适用于确认桥接在 Samba 可信 root 进程身份下连接的部署。该连接时机必须在目标 Samba 验证，不能放宽 socket 权限来适应未认证的进程。`/run/zxs` 及 socket 分别维持 `0700`、`0600`，`zxs-owner` 通过 Samba 独立凭据认证后绑定到唯一 ZXS 管理员；不接受 `Samba=ZXS` 映射、重复账户配置、匿名、guest 或 force-user 会话。Samba 配置须同时限制 `valid users` 并关闭所有 guest 路径，见[共享样例](../../../deploy/samba/smb.conf.example)。共享仓库拆分、恢复后必须显式重新绑定，不能自动接入迁移后的历史域。
 
+SMB spool 与 socket 目录分离，守护进程固定使用 `--management-root/smb-spool`，本样例为 `/var/lib/zxs/management/smb-spool`。完整工作文件、未确认操作证据和预算记录都留在系统盘，不能放入 `RuntimeDirectory=`、`/run` 或临时文件系统；模板的 `/run/zxs` 只保存可丢弃的 socket 运行状态。现有 `ReadWritePaths=/var/lib/zxs ...` 已覆盖该持久目录，路径单独按服务身份及 `0700` 校验，不安全或无法盘点只停止 SMB，不阻止管理 HTTP。无需用 `RuntimeDirectoryPreserve=` 保存工作数据，该选项也不能使 `/run` 跨重启持久化。旧 socket 邻接 spool 不自动迁移，升级前的留存材料处理边界见[SMB 集成](../../components/smb.md#本机-rpc-部署)。
+
 服务使用 `SIGINT` 触发守护进程的正常退出路径。停止时释放 socket 和文件句柄；未成功保存的完整工作文件及恢复记录保留。模板使用 `TimeoutStopSec=infinity`，正常停服会等待已经接纳的持久化操作及原生恢复线程结束，不会在固定 60 秒后自动强杀。若内核 I/O 持续卡住，管理员可明确决定强制终止；这属于崩溃处理，而不是正常排空，下次启动必须完成恢复。崩溃遗留的 socket 不自动删除，管理员确认路径身份和无存活服务后再清理。不要配置无条件删除 socket 或清空暂存目录的启动脚本。
 
 ## 数据盘故障与管理面

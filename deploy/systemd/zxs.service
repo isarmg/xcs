@@ -10,6 +10,8 @@ Group=zxs
 UMask=0077
 StateDirectory=zxs
 StateDirectoryMode=0700
+# Runtime state contains sockets only. Retained SMB data belongs to
+# --management-root/smb-spool under the persistent StateDirectory.
 RuntimeDirectory=zxs
 RuntimeDirectoryMode=0700
 WorkingDirectory=/var/lib/zxs

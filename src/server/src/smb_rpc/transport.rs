@@ -226,10 +226,21 @@ fn private_path_error(error: platform_io::fs_safety::Error) -> io::Error {
         error => io::Error::new(io::ErrorKind::PermissionDenied, error),
     }
 }
-fn private_directory(path: &Path) -> io::Result<()> {
-    platform_io::fs_safety::PrivateDirectory::open_trusted(path)
-        .map(|_| ())
-        .map_err(private_path_error)
+fn prepare_spool(
+    spool: &Path,
+    limits: crate::SpoolLimits,
+) -> io::Result<(PathBuf, Arc<budget::Budget>)> {
+    use platform_io::fs_safety::{EntryName, PrivateDirectory};
+    // Retained copies, operation evidence and budget records must not follow
+    // the socket into an ephemeral runtime directory. Validate this path on
+    // its own; unsafe existing directories are never repaired or migrated.
+    let directory = PrivateDirectory::create_trusted(spool).map_err(private_path_error)?;
+    directory
+        .create_child(&EntryName::new("empty-directory").map_err(private_path_error)?)
+        .map_err(private_path_error)?;
+    let spool = directory.path().to_path_buf();
+    let budget = budget::Budget::recover(&spool, limits).map_err(io::Error::other)?;
+    Ok((spool, budget))
 }
 
 struct PreparedSocket {
@@ -242,20 +253,17 @@ struct PreparedSocket {
 
 // Keep all path traversal, creation, bind/chmod and budget recovery on a
 // blocking worker. Only Tokio reactor registration belongs on the async side.
-fn prepare_socket(socket: &Path, limits: crate::SpoolLimits) -> io::Result<PreparedSocket> {
+fn prepare_socket(
+    socket: &Path,
+    spool: &Path,
+    limits: crate::SpoolLimits,
+) -> io::Result<PreparedSocket> {
     let parent = socket
         .parent()
         .ok_or_else(|| io::Error::new(io::ErrorKind::InvalidInput, "socket parent missing"))?;
-    private_directory(parent)?;
-    use platform_io::fs_safety::{EntryName, PrivateDirectory};
-    let parent_handle = PrivateDirectory::open_trusted(parent).map_err(private_path_error)?;
-    let spool_handle = parent_handle
-        .create_child(&EntryName::new("smb-spool").map_err(private_path_error)?)
+    let _parent = platform_io::fs_safety::PrivateDirectory::create_trusted(parent)
         .map_err(private_path_error)?;
-    let spool = spool_handle.path().to_path_buf();
-    spool_handle
-        .create_child(&EntryName::new("empty-directory").map_err(private_path_error)?)
-        .map_err(private_path_error)?;
+    let (spool, budget) = prepare_spool(spool, limits)?;
     let listener = std::os::unix::net::UnixListener::bind(socket)?;
     let metadata = fs::symlink_metadata(socket)?;
     let connections = Arc::new(Mutex::new(BTreeMap::new()));
@@ -266,7 +274,6 @@ fn prepare_socket(socket: &Path, limits: crate::SpoolLimits) -> io::Result<Prepa
     };
     fs::set_permissions(socket, fs::Permissions::from_mode(0o600))?;
     listener.set_nonblocking(true)?;
-    let budget = budget::Budget::recover(&spool, limits).map_err(io::Error::other)?;
     Ok(PreparedSocket {
         listener,
         guard,
@@ -284,27 +291,30 @@ async fn startup_io<T: Send + 'static>(
         .map_err(io::Error::other)?
 }
 
-/// Serve only on an existing service-owned private directory. Existing socket
-/// names are never unlinked automatically. The trusted Samba daemon must connect
-/// using the configured peer uid before impersonating a remote SMB user.
+/// Validate the socket parent and durable spool independently, securely creating
+/// missing private components. Existing socket names are never unlinked. The
+/// trusted Samba daemon must connect as the configured peer uid before impersonation.
 pub async fn serve(
-    socket: &Path,
-    allowed_uid: u32,
-    username: String,
+    config: crate::SmbConfig,
     auth: Arc<Mutex<AuthStore>>,
     backend: Arc<dyn Backend>,
-    limits: crate::SpoolLimits,
     max_file_bytes: u64,
 ) -> io::Result<()> {
+    let crate::SmbConfig {
+        socket,
+        spool_dir,
+        allowed_uid,
+        username,
+        spool_limits,
+    } = config;
     smb_protocol::protocol::validate_username(&username)?;
-    let socket = socket.to_owned();
     let PreparedSocket {
         listener,
         guard: _socket_guard,
         connections,
         spool,
         budget,
-    } = startup_io(move || prepare_socket(&socket, limits)).await?;
+    } = startup_io(move || prepare_socket(&socket, &spool_dir, spool_limits)).await?;
     // The descriptor is already nonblocking and mode 0600 before registration;
     // no connection is accepted until preparation and budget recovery succeed.
     let listener = tokio::net::UnixListener::from_std(listener)?;

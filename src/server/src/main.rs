@@ -183,6 +183,7 @@ async fn run(args: Args) -> Result<()> {
         let allowed_uid = smb_peer_uid.ok_or("--smb-peer-uid is required with --smb-socket")?;
         let username = smb_user.ok_or("--smb-user is required with --smb-socket")?;
         config.smb = Some(storage_server::SmbConfig {
+            spool_dir: management_root.join("smb-spool"),
             spool_limits: storage_server::SpoolLimits {
                 bytes_per_account: smb_spool_bytes_per_account,
                 bytes_total: smb_spool_bytes_total,

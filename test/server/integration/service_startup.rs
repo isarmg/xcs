@@ -99,6 +99,8 @@ fn daemon_serves_web_and_liveness_with_missing_or_corrupt_pool() {
         let root = directory.path().join("pool");
         let management = directory.path().join("management");
         let web = directory.path().join("web");
+        let runtime = directory.path().join("runtime");
+        let socket = runtime.join("smb.sock");
         for path in [&root, &management, &web] {
             std::fs::DirBuilder::new().mode(0o700).create(path).unwrap();
         }
@@ -109,6 +111,7 @@ fn daemon_serves_web_and_liveness_with_missing_or_corrupt_pool() {
         }
         if auxiliary_failure {
             std::fs::write(management.join("api-spool"), "keep this evidence").unwrap();
+            std::fs::write(management.join("smb-spool"), "keep SMB evidence").unwrap();
             // Empty assets must not advertise a working Web UI.
         } else {
             std::fs::write(web.join("index.html"), "<h1>management-available</h1>").unwrap();
@@ -123,6 +126,14 @@ fn daemon_serves_web_and_liveness_with_missing_or_corrupt_pool() {
             .arg(&management)
             .arg("--web-dir")
             .arg(&web)
+            .arg("--smb-socket")
+            .arg(&socket)
+            .args([
+                "--smb-peer-uid",
+                &smb_protocol::protocol::effective_uid().to_string(),
+                "--smb-user",
+                "samba-owner",
+            ])
             .args(["--setup-config", &format!("broken={}", preset.display())])
             .args([
                 "--setup-disk",
@@ -149,6 +160,26 @@ fn daemon_serves_web_and_liveness_with_missing_or_corrupt_pool() {
             }
             assert!(std::time::Instant::now() < deadline, "HTTP did not start");
             std::thread::sleep(std::time::Duration::from_millis(25));
+        }
+        // The optional bridge prepares its own paths asynchronously. Its spool
+        // follows management_root, never the disposable socket parent.
+        while !runtime.exists() || (!auxiliary_failure && !socket.exists()) {
+            assert!(child.0.try_wait().unwrap().is_none());
+            assert!(
+                std::time::Instant::now() < deadline,
+                "SMB did not initialize"
+            );
+            std::thread::sleep(std::time::Duration::from_millis(25));
+        }
+        assert!(!runtime.join("smb-spool").exists());
+        if auxiliary_failure {
+            assert!(!socket.exists());
+            assert_eq!(
+                std::fs::read(management.join("smb-spool")).unwrap(),
+                b"keep SMB evidence"
+            );
+        } else {
+            assert!(management.join("smb-spool/empty-directory").is_dir());
         }
         let page = response(port, "/").unwrap();
         if auxiliary_failure {

@@ -1162,18 +1162,22 @@ async fn cancellation_closes_blocked_rpc_sessions_and_removes_its_socket() {
     fs::set_permissions(&parent, fs::Permissions::from_mode(0o700)).unwrap();
     let socket = parent.join("smb.sock");
     let server_socket = socket.clone();
+    let server_spool = temp.path().join("management/smb-spool");
     let repository = repository(&shared);
     let username = shared.username.clone();
     let auth = shared.auth.clone();
     let backend = shared.backend.clone();
     let server = tokio::spawn(async move {
         serve(
-            &server_socket,
-            smb_protocol::protocol::effective_uid(),
-            username,
+            crate::SmbConfig {
+                socket: server_socket,
+                spool_dir: server_spool,
+                allowed_uid: smb_protocol::protocol::effective_uid(),
+                username,
+                spool_limits: crate::SpoolLimits::default(),
+            },
             auth,
             backend,
-            crate::SpoolLimits::default(),
             4096,
         )
         .await

@@ -46,6 +46,7 @@ async fn shutdown_closes_idle_smb_and_http_listener_while_http_request_is_stalle
     std::fs::set_permissions(root.path(), std::fs::Permissions::from_mode(0o700)).unwrap();
     let socket = root.path().join("smb.sock");
     let bridge_socket = socket.clone();
+    let bridge_spool = root.path().join("management/smb-spool");
     let auth = Arc::new(Mutex::new(
         crate::auth::AuthStore::initialize(
             &root.path().join("auth"),
@@ -85,12 +86,15 @@ async fn shutdown_closes_idle_smb_and_http_listener_while_http_request_is_stalle
         },
         async move {
             crate::smb_rpc::serve(
-                &bridge_socket,
-                smb_protocol::protocol::effective_uid(),
-                "alice".into(),
+                crate::SmbConfig {
+                    socket: bridge_socket,
+                    spool_dir: bridge_spool,
+                    allowed_uid: smb_protocol::protocol::effective_uid(),
+                    username: "alice".into(),
+                    spool_limits: crate::SpoolLimits::default(),
+                },
                 auth,
                 Arc::new(BackendProbe),
-                crate::SpoolLimits::default(),
                 4096,
             )
             .await

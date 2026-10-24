@@ -38,7 +38,9 @@
 
 ## 本机 RPC 部署
 
-先建立服务进程拥有的 `0700` 目录，例如 `/var/lib/zxs/runtime/smb`；整个路径不能包含符号链接。服务端绑定其中的 socket，并设置 `0600` 权限。其下 `smb-spool` 和 `empty-directory` 也要求 `0700`。祖先只接受 root 或服务身份拥有、不可被其他用户替换的目录；标准 root-owned sticky `/tmp` 可作为安全父目录，但非 sticky 的组/全局可写目录和外部用户所有的祖先会被拒绝，既有目录不会自动 chmod。创建暂存文件及发布恢复记录使用持有的目录描述符；Flush 提交前检查目录/源文件身份，并把原可写 FD 的长度和摘要绑定到核心复制结果，校验失败不会接受工作区文件或提交。摘要和复制均使用定位读取，不改变 Samba 客户端共享的 FD 游标。
+socket 使用服务进程拥有的 `0700` 运行目录，例如 `/run/zxs`，socket 权限为 `0600`。SMB 完整工作副本、操作证据和预算记录独立保存在系统盘 `--management-root/smb-spool`，不从 socket 路径推导；默认管理目录为 `--root/management`。管理目录必须持久保存，不能设在 `/run`、临时文件系统或版本安装目录。受信任嵌入调用通过 `SmbConfig.spool_dir` 显式提供同样持久的路径，没有另一个 SMB spool CLI 路径开关。
+
+两个路径分别安全校验，缺失的私有组件按 `0700` 创建，整个路径不能包含符号链接。SMB spool 及其 `empty-directory` 也要求 `0700`。祖先只接受 root 或服务身份拥有、不可被其他用户替换的目录；标准 root-owned sticky `/tmp` 可作为安全父目录，但路径校验不等于持久介质保证，不能用于生产留存材料。非 sticky 的组/全局可写目录和外部用户所有的祖先会被拒绝，既有目录不会自动 chmod。创建暂存文件及发布恢复记录使用持有的目录描述符；Flush 提交前检查目录/源文件身份，并把原可写 FD 的长度和摘要绑定到核心复制结果，校验失败不会接受工作区文件或提交。摘要和复制均使用定位读取，不改变 Samba 客户端共享的 FD 游标。
 
 服务端启动配置需要：
 
@@ -49,6 +51,8 @@
 可信 Samba 进程必须在模拟远程用户前建立受保护连接。目标环境需要验证其实际回调时机与 UID；不能为了让连接成功而把 socket 或目录改成所有用户可读写。Samba 必须配置 `map to guest = Never`、`restrict anonymous = 2`、`guest ok = no`、`guest only = no`，并将 `valid users` 限于该唯一账户；不得配置 `force user`。参考[部署样例](../../deploy/samba/smb.conf.example)，部署者独立准备 Samba 凭据，不自动创建或重置密码。
 
 socket 已存在时服务端拒绝覆盖，启动时不会删除未知对象。正常退出或任务取消时，会关闭所有活跃 RPC socket，让阻塞读取退出；只在路径仍对应自身绑定的 device/inode 时移除 socket。服务崩溃遗留的 socket 须由管理员确认后清理。
+
+运行目录清理或系统重启不应删除系统盘上的 SMB 留存材料。旧部署若曾将 spool 放在 socket 旁，本版本不会自动扫描、迁移或删除旧目录；升级前必须另外保全并核对旧留存材料，不能假定启用新路径已恢复旧写入，也不能通过重启触发旧运行目录清理来代替核对。spool 不安全、损坏或无法盘点时只停止 SMB 桥接，管理 HTTP 保持可用。
 
 帧格式为 `u32` 大端 JSON 长度、严格 UTF-8 JSON；最大 8 MiB，分配 payload 前检查长度。可选单个 FD 通过四字节帧头的 SCM_RIGHTS 附带；接收端立即设置 CLOEXEC，拒绝额外或截断的 FD。客户端请求禁止附带 FD。64 位字段使用规范十进制字符串。
 
@@ -106,7 +110,7 @@ CARGO_INCREMENTAL=0 cargo build --locked --offline \
     guest only = no
     path = /var/lib/zxs/empty-export
     vfs objects = zxs
-    zxs:socket = /var/lib/zxs/runtime/smb/core.sock
+    zxs:socket = /run/zxs/smb.sock
     zxs:repository = repo_<32位小写十六进制>
     read only = no
     oplocks = no

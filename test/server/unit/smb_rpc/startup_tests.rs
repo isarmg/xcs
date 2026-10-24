@@ -40,20 +40,112 @@ async fn startup_rejects_nonprivate_and_aliased_directories_before_binding() {
     fs::create_dir(&parent).unwrap();
     fs::set_permissions(&parent, fs::Permissions::from_mode(0o755)).unwrap();
     let socket = parent.join("rpc.sock");
-    let error = startup_io(move || prepare_socket(&socket, crate::SpoolLimits::default()))
-        .await
-        .err()
-        .unwrap();
+    let spool = root.path().join("management/smb-spool");
+    let durable = spool.clone();
+    let error =
+        startup_io(move || prepare_socket(&socket, &durable, crate::SpoolLimits::default()))
+            .await
+            .err()
+            .unwrap();
     assert_eq!(error.kind(), io::ErrorKind::PermissionDenied);
-    assert!(!parent.join("smb-spool").exists());
+    assert!(!spool.exists());
     let alias = root.path().join("alias");
     std::os::unix::fs::symlink(&parent, &alias).unwrap();
     let socket = alias.join("rpc.sock");
-    let error = startup_io(move || prepare_socket(&socket, crate::SpoolLimits::default()))
+    let error = startup_io(move || prepare_socket(&socket, &spool, crate::SpoolLimits::default()))
         .await
         .err()
         .unwrap();
     assert_eq!(error.kind(), io::ErrorKind::PermissionDenied);
+}
+
+#[test]
+fn durable_spool_and_accounting_survive_runtime_directory_removal() {
+    use platform_io::fs_safety::{EntryName, PrivateDirectory};
+    let root = tempfile::tempdir().unwrap();
+    fs::set_permissions(root.path(), fs::Permissions::from_mode(0o700)).unwrap();
+    let runtime = root.path().join("run/zxs");
+    PrivateDirectory::create_trusted(&runtime).unwrap();
+    // Model systemd's disposable runtime directory without binding a socket.
+    fs::write(runtime.join("socket-marker"), b"disposable").unwrap();
+    let durable = root.path().join("management/smb-spool");
+    let limits = crate::SpoolLimits {
+        bytes_per_account: 65536 + 7,
+        bytes_total: 65536 + 7,
+        recovery_reserve_bytes: 1,
+    };
+    let (spool, budget) = prepare_spool(&durable, limits.clone()).unwrap();
+    assert_eq!(spool, durable);
+    assert!(!runtime.join("smb-spool").exists());
+    assert_eq!(fs::symlink_metadata(&spool).unwrap().mode() & 0o777, 0o700);
+    let source = spool.join("retained");
+    let lease = budget.reserve("owner", &source, 7, 100).unwrap();
+    let directory = PrivateDirectory::open_trusted(&spool).unwrap();
+    for (name, bytes) in [
+        ("retained", b"payload".as_slice()),
+        ("retained.work.json", b"unconfirmed operation".as_slice()),
+    ] {
+        let mut file = directory
+            .open_payload(&EntryName::new(name).unwrap(), true)
+            .unwrap();
+        file.write_all(bytes).unwrap();
+        file.sync_all().unwrap();
+    }
+    let owner_record = fs::read(spool.join("retained.budget.json")).unwrap();
+    drop((lease, budget, directory));
+    fs::remove_dir_all(&runtime).unwrap();
+    assert_eq!(fs::read(&source).unwrap(), b"payload");
+    assert_eq!(
+        fs::read(spool.join("retained.work.json")).unwrap(),
+        b"unconfirmed operation"
+    );
+    assert_eq!(
+        fs::read(spool.join("retained.budget.json")).unwrap(),
+        owner_record
+    );
+    // Recreate only runtime state and reopen the same durable inventory.
+    PrivateDirectory::create_trusted(&runtime).unwrap();
+    let (_, recovered) = prepare_spool(&durable, limits).unwrap();
+    let error = recovered
+        .reserve("owner", &durable.join("another"), 0, 100)
+        .err()
+        .unwrap();
+    assert_eq!(error.code, "RESOURCE_LIMIT_EXCEEDED");
+    assert!(!durable.join("another.budget.json").exists());
+}
+
+#[test]
+fn startup_validates_durable_spool_independently_before_binding() {
+    use platform_io::fs_safety::PrivateDirectory;
+    let root = tempfile::tempdir().unwrap();
+    fs::set_permissions(root.path(), fs::Permissions::from_mode(0o700)).unwrap();
+    let runtime = root.path().join("run/zxs");
+    PrivateDirectory::create_trusted(&runtime).unwrap();
+    let socket = runtime.join("rpc.sock");
+    let spool = root.path().join("management/smb-spool");
+    PrivateDirectory::create_trusted(&spool).unwrap();
+    fs::set_permissions(&spool, fs::Permissions::from_mode(0o755)).unwrap();
+    let error = prepare_socket(&socket, &spool, crate::SpoolLimits::default())
+        .err()
+        .unwrap();
+    assert_eq!(error.kind(), io::ErrorKind::PermissionDenied);
+    assert_eq!(fs::symlink_metadata(&spool).unwrap().mode() & 0o777, 0o755);
+    assert!(!socket.exists());
+    let alias = root.path().join("spool-alias");
+    std::os::unix::fs::symlink(&spool, &alias).unwrap();
+    let error = prepare_socket(&socket, &alias, crate::SpoolLimits::default())
+        .err()
+        .unwrap();
+    assert_eq!(error.kind(), io::ErrorKind::PermissionDenied);
+    assert!(!socket.exists());
+    fs::set_permissions(&spool, fs::Permissions::from_mode(0o700)).unwrap();
+    fs::write(spool.join("retained.budget.json"), b"invalid").unwrap();
+    assert!(prepare_socket(&socket, &spool, crate::SpoolLimits::default()).is_err());
+    assert!(!socket.exists());
+    assert_eq!(
+        fs::read(spool.join("retained.budget.json")).unwrap(),
+        b"invalid"
+    );
 }
 
 // Real AF_UNIX binding/registration is exercised by full-feature CI. Local
@@ -65,7 +157,8 @@ async fn bind_and_register_prepared_socket_preserves_permissions_and_identity_cl
     fs::set_permissions(root.path(), fs::Permissions::from_mode(0o700)).unwrap();
     let socket = root.path().join("rpc.sock");
     let path = socket.clone();
-    let prepared = startup_io(move || prepare_socket(&path, crate::SpoolLimits::default()))
+    let spool = root.path().join("management/smb-spool");
+    let prepared = startup_io(move || prepare_socket(&path, &spool, crate::SpoolLimits::default()))
         .await
         .unwrap();
     assert_eq!(fs::symlink_metadata(&socket).unwrap().mode() & 0o777, 0o600);

@@ -14,6 +14,8 @@
 [zxs]
     path = /var/lib/zxs/empty-export
     vfs objects = zxs
+    # Only the socket is runtime state; ZXS retains SMB data separately under
+    # its system-disk --management-root/smb-spool, never beside this socket.
     zxs:socket = /run/zxs/smb.sock
     zxs:repository = repo_REPLACE_WITH_REPOSITORY_ID
     valid users = zxs-owner
