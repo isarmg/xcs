@@ -1,6 +1,6 @@
 # Rust 源码治理工具
 
-正式入口为 Web 和 SMB；运维 CLI 是内部管理工具。所有 Rust 包共享根 `Cargo.toml` 和根 `Cargo.lock`，活动依赖只使用仓库内 path。
+正式入口为 Web 和 SMB；`zxs` 启动守护进程，`zxs-rescue` 是离线救援与未初始化配置草稿工具。所有 Rust 包共享根 `Cargo.toml` 和根 `Cargo.lock`，活动依赖只使用仓库内 path。
 
 - 当前源码、目标闭包、单锁文件与文件摘要：[compliance/rust-sources.json](../../compliance/rust-sources.json)。
 - 不可覆盖的原始 archive 身份、原始文件摘要及材料位置：[origins.json](../../compliance/provenance/origins.json)。
@@ -15,7 +15,7 @@ python3 -m unittest discover -s tools/rust-sources -p 'test_*.py'
 
 `verify` 检查源码、原始来源及中央法律材料的摘要，拒绝源码链接/特殊文件、仓库外依赖、registry/Git 依赖、独立工作区、独立锁文件、嵌套 Git 和散落的仓库脚手架。它同时检查所有活动 manifest 中的特性边，包括尚未启用的可选特性、`dep:alias`、`alias/feature`、`alias?/feature` 和依赖声明的 `features`；目标包或特性不存在时立即失败，不能靠默认编译没有触及来掩盖残留声明。
 
-`--metadata` 另用空 Cargo home 离线解析五种入口、两个目标组成的五个入口／目标组合，核对 normal/build 可达集合、编译／运行角色标签与已解析 features。Cargo metadata 先对整个工作区统一 features，再从各入口根遍历 normal/build 边：直接 dev 边被跳过，但其他成员及 dev 依赖的特性统一仍可能间接激活 normal/build 边。因此结果是保守可达超集，不是精确的单入口运行时或最终链接闭包；不能仅凭该集合断言每棵源码都由该入口实际使用，也不能直接据此删除来源。所有活动源码树和已合并实现都必须至少进入一个登记集合，实际精简仍需依赖、特性及源码调用审查。元数据解析也不等于实际编译、浏览器或 Samba 行为验收。
+`--metadata` 另用空 Cargo home 离线解析[解析策略](../../tools/rust-sources/workspaces.json)登记的入口／目标组合，核对 normal/build 可达集合、编译／运行角色标签与已解析 features。Cargo metadata 先对整个工作区统一 features，再从各入口根遍历 normal/build 边：直接 dev 边被跳过，但其他成员及 dev 依赖的特性统一仍可能间接激活 normal/build 边。因此结果是保守可达超集，不是精确的单入口运行时或最终链接闭包；不能仅凭该集合断言每棵源码都由该入口实际使用，也不能直接据此删除来源。所有活动源码树和已合并实现都必须至少进入一个登记集合，实际精简仍需依赖、特性及源码调用审查。元数据解析也不等于实际编译、浏览器或 Samba 行为验收。
 
 原生产品和构建宿主只支持 Linux amd64；当前登记及验收目标为 `x86_64-unknown-linux-gnu`，其他 Linux amd64 ABI 的必要共享源码保留为未验收预留。`wasm32-unknown-unknown` 只用于 Web 浏览器产物，不是额外原生平台。策略检查拒绝重新登记 ARM、未验收目标或把 Web 目标混入原生入口。
 

@@ -81,7 +81,7 @@ impl Client {
         .await
     }
 
-    /// Open and validate a regular-file descriptor for a management CLI upload.
+    /// Open and validate a regular-file descriptor for the retained Rust client library.
     pub async fn open_upload_source(source: &Path) -> Result<tokio::fs::File, Error> {
         let mut options = tokio::fs::OpenOptions::new();
         options.read(true);
