@@ -256,7 +256,9 @@ fn session_view(state: &State) -> SessionView {
     SessionView {
         phase: if state.restoring() {
             SessionPhase::Loading
-        } else if state.logout_unconfirmed() {
+        } else if state.logout_unconfirmed() || (state.logout_pending() && !state.authenticated) {
+            // Retrying revocation is still unconfirmed. Keep the recovery shell
+            // until the response settles, rather than exposing login or setup.
             SessionPhase::LogoutUnconfirmed
         } else if state.authenticated {
             SessionPhase::Authenticated

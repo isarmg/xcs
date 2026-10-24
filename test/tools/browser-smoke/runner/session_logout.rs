@@ -1,13 +1,13 @@
 //! Exercise a slow, failed sign-out before retrying against the real server.
-//! Only the first logout transport is interrupted; all business requests and
-//! the successful retry continue through the production WASM and HTTP server.
+//! Only the first logout transport is interrupted. Hold the retry's real
+//! Response before delivery to verify that recovery stays locked until settled.
 use super::*;
 
 struct Fixture<'a>(&'a Browser);
 impl Drop for Fixture<'_> {
     fn drop(&mut self) {
         let _ = self.0.script(
-            "if(window.__zxsLogout){window.__zxsLogout.release(); window.__zxsLogout.restore();} return true",
+            "if(window.__zxsLogout){window.__zxsLogout.release(); window.__zxsLogout.releaseRetry(); window.__zxsLogout.restore();} return true",
         );
     }
 }
@@ -26,8 +26,11 @@ pub(super) fn run(browser: &Browser, password: &str) -> Result<()> {
         const originalFetch = window.fetch;
         let release;
         const gate = new Promise(resolve => release = resolve);
+        let releaseRetry;
+        const retryGate = new Promise(resolve => releaseRetry = resolve);
         const state = window.__zxsLogout = {
             waiting: false, attempts: 0, writes: [], loginAttempts: 0, revocationHeaders: [], release,
+            retryWaiting: false, retryStatus: null, releaseRetry,
             restore: () => { window.fetch = originalFetch; }
         };
         window.fetch = async function(...args) {
@@ -43,6 +46,11 @@ pub(super) fn run(browser: &Browser, password: &str) -> Result<()> {
                     await gate;
                     throw new TypeError('Browser smoke: interrupted logout transport');
                 }
+                const response = await originalFetch.apply(this, args);
+                state.retryStatus = response.status;
+                state.retryWaiting = true;
+                await retryGate;
+                return response;
             } else if (path === '/api/auth/login' || path === '/api/auth/me') {
                 state.loginAttempts++;
             } else if (path.startsWith('/api/') && !path.startsWith('/api/auth/')
@@ -94,10 +102,24 @@ pub(super) fn run(browser: &Browser, password: &str) -> Result<()> {
         return Err("unconfirmed logout exposed login/setup or restored a session".into());
     }
     browser.click(&retry)?;
-    browser.css("input[autocomplete='current-password']")?;
+    wait_for("real logout retry response paused before delivery", || {
+        if browser.script(
+            "return window.__zxsLogout.retryWaiting && window.__zxsLogout.retryStatus === 200",
+        )? == true
+        {
+            Ok(())
+        } else {
+            Err("logout retry has not received its original successful response".into())
+        }
+    })?;
+    assert_language_reload_blocked(browser)?;
+    if browser.script("const retry=Array.from(document.querySelectorAll('button')).find(button => ['Retry sign out','重试退出'].includes(button.textContent.trim())); return retry?.disabled && !document.querySelector(\"input[autocomplete='current-password']\") && !document.querySelector('[data-setup-key]') && window.__zxsLogout.loginAttempts === 0")? != true {
+        return Err("pending logout retry exposed login/setup or released its recovery shell".into());
+    }
+    browser.script("window.__zxsLogout.releaseRetry(); return true")?;
     wait_for("real logout retry settled", || {
         if browser.script(
-            "return window.__zxsLogout.attempts === 2 && !Array.from(document.querySelectorAll('button')).some(button => ['Retry sign out','重试退出'].includes(button.textContent.trim()))",
+            "return window.__zxsLogout.attempts === 2 && window.__zxsLogout.retryStatus === 200 && !!document.querySelector(\"input[autocomplete='current-password']:not([readonly])\") && !Array.from(document.querySelectorAll('button')).some(button => ['Retry sign out','重试退出'].includes(button.textContent.trim()))",
         )? == true
         {
             Ok(())

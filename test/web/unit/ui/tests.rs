@@ -194,6 +194,35 @@ fn unconfirmed_logout_cannot_be_replaced_by_login_or_restore() {
 }
 
 #[test]
+fn retrying_unconfirmed_logout_keeps_recovery_shell_until_settled() {
+    Owner::new().with(|| {
+        let state = RwSignal::new(State {
+            session_epoch: 7,
+            session_transition: SessionTransition::LogoutUnconfirmed,
+            ..Default::default()
+        });
+        state.update(|s| {
+            assert_eq!(begin_logout(s), Some(8));
+            assert!(s.logout_pending());
+            assert!(!s.authenticated);
+            assert!(!s.session_active());
+            assert_eq!(session_view(s).phase, SessionPhase::LogoutUnconfirmed);
+            assert!(s.reload_blocked());
+            assert_eq!(begin_login(s), None);
+            assert_eq!(begin_restore(s), None);
+            assert_eq!(begin_logout(s), None);
+        });
+        end_session(state, String::new());
+        state.with_untracked(|s| {
+            assert_eq!(s.session_epoch, 9);
+            assert_eq!(session_view(s).phase, SessionPhase::Anonymous);
+            assert!(!s.logout_pending());
+            assert!(!s.reload_blocked());
+        });
+    });
+}
+
+#[test]
 fn business_reads_do_not_start_outside_a_settled_session() {
     Owner::new().with(|| {
         for (authenticated, session_transition) in [
