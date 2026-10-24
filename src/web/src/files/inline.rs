@@ -6,7 +6,7 @@ use crate::{
 };
 use web_interface::{html, i18n::t, prelude::*};
 
-// The UI applies the shared metadata byte bound to newly entered names too.
+// Branch labels and notes retain their metadata budget; namespace names use name-policy.
 pub(super) const MAX_TEXT_BYTES: usize = storage_contract::MAX_NOTE_BYTES;
 
 #[derive(Clone)]
@@ -27,12 +27,33 @@ pub(super) enum Target {
     NodeNote(String),
 }
 
+#[derive(Clone, Copy, PartialEq, Eq)]
+enum InputKind {
+    NamespaceName,
+    BranchName,
+    Note,
+}
+
 impl Target {
-    fn is_note(&self) -> bool {
-        matches!(
-            self,
-            Self::FileNote | Self::VersionNote(_) | Self::NodeNote(_)
-        )
+    fn input_kind(&self) -> InputKind {
+        match self {
+            Self::CreateDirectory => InputKind::NamespaceName,
+            Self::RenameDirectoryBranch { .. } | Self::RenameFileBranch { .. } => {
+                InputKind::BranchName
+            }
+            Self::FileNote | Self::VersionNote(_) | Self::NodeNote(_) => InputKind::Note,
+        }
+    }
+
+    fn edit_value(&self, value: &str, directory: &str) -> Edit {
+        let edit = edit_value(value, self.input_kind());
+        if matches!(self, Self::CreateDirectory)
+            && let Edit::Save(name) = &edit
+            && name_policy::validate_path(&super::model::join_path(directory, name)).is_err()
+        {
+            return Edit::Invalid;
+        }
+        edit
     }
 
     fn initial(&self, state: &State) -> String {
@@ -127,8 +148,8 @@ pub(super) fn valid_note(value: &str) -> bool {
     storage_contract::validate_note(value).is_ok()
 }
 
-fn edit_value(value: &str, note: bool) -> Edit {
-    if note {
+fn edit_value(value: &str, kind: InputKind) -> Edit {
+    if kind == InputKind::Note {
         if valid_note(value) {
             Edit::Save(value.to_owned())
         } else {
@@ -139,7 +160,7 @@ fn edit_value(value: &str, note: bool) -> Edit {
         if name.is_empty() {
             Edit::Cancel
         } else if !value.chars().any(char::is_control)
-            && name.len() <= MAX_TEXT_BYTES
+            && (kind == InputKind::NamespaceName || name.len() <= MAX_TEXT_BYTES)
             && super::model::valid_name(name)
         {
             Edit::Save(name.to_owned())
@@ -303,7 +324,7 @@ struct Editor {
     target: StoredValue<Target>,
     label: StoredValue<String>,
     disabled: Signal<bool>,
-    note: bool,
+    kind: InputKind,
 }
 
 impl Editor {
@@ -311,7 +332,7 @@ impl Editor {
         Self {
             state,
             draft: Draft::new(state),
-            note: target.is_note(),
+            kind: target.input_kind(),
             target: StoredValue::new(target),
             label: StoredValue::new(label),
             disabled,
@@ -332,7 +353,12 @@ impl Editor {
         if self.disabled.get_untracked() || self.draft.operation.get_untracked().is_some() {
             return;
         }
-        match edit_value(&self.draft.value.get_untracked(), self.note) {
+        let edit = self.state.with_untracked(|state| {
+            self.target
+                .get_value()
+                .edit_value(&self.draft.value.get_untracked(), &state.files.directory)
+        });
+        match edit {
             Edit::Invalid => self.draft.error.set(true),
             Edit::Cancel => self.draft.cancel_idle(),
             Edit::Save(value) => self
@@ -351,8 +377,12 @@ fn editor_input(editor: Editor) -> impl IntoView {
     view! {
         <input class="zxs-inline-input zxs-input zxs-input--compact zxs-input--underline" node_ref=input type="text"
             aria-label=editor.label.get_value() aria-invalid=move ||editor.draft.error.get().to_string()
-            title=t("最多 128 个 UTF-8 字节；Enter 保存，Esc 或点击其他位置取消。","Up to 128 UTF-8 bytes. Enter saves; Escape or clicking elsewhere cancels.")
-            data-max-bytes="128" autocomplete="off" autocapitalize="none" spellcheck="false"
+            title=if editor.kind == InputKind::NamespaceName {
+                t("名称及完整路径须符合共享命名规则；Enter 保存，Esc 或点击其他位置取消。", "Names and complete paths must meet the shared naming rules. Enter saves; Escape or clicking elsewhere cancels.")
+            } else {
+                t("最多 128 个 UTF-8 字节；Enter 保存，Esc 或点击其他位置取消。", "Up to 128 UTF-8 bytes. Enter saves; Escape or clicking elsewhere cancels.")
+            }
+            data-max-bytes=(editor.kind != InputKind::NamespaceName).then_some(MAX_TEXT_BYTES) autocomplete="off" autocapitalize="none" spellcheck="false"
             prop:value=move ||editor.draft.value.get() disabled=move ||editor.disabled.get()||editor.draft.pending()
             on:input=move |event|{editor.draft.value.set(event_target_value(&event));editor.draft.error.set(false);}
             on:blur=move |_|editor.draft.cancel_idle()
@@ -364,9 +394,20 @@ fn editor_input(editor: Editor) -> impl IntoView {
                     _=>{}
                 }
             }/>
-        <span class="zxs-inline-hint zxs-row" aria-live="polite">{move ||format!("{}/128 {}",editor.draft.value.with(|value|value.len()),t("字节","bytes"))}</span>
+        <span class="zxs-inline-hint zxs-row" aria-live="polite">{move ||{
+            let bytes=editor.draft.value.with(|value|value.len());
+            if editor.kind == InputKind::NamespaceName {
+                format!("{bytes} {}",t("字节","bytes"))
+            } else {
+                format!("{bytes}/{MAX_TEXT_BYTES} {}",t("字节","bytes"))
+            }
+        }}</span>
         <Show when=move ||editor.draft.error.get()>
-            <span class="zxs-inline-error zxs-row" role="status">{if editor.note{t("备注最多 128 个 UTF-8 字节，不能包含换行或控制字符。","Notes must be at most 128 UTF-8 bytes without line breaks or control characters.")}else{t("名称无效，最多 128 个 UTF-8 字节。","Invalid name. Use at most 128 UTF-8 bytes.")}}</span>
+            <span class="zxs-inline-error zxs-row" role="status">{match editor.kind {
+                InputKind::Note => t("备注最多 128 个 UTF-8 字节，不能包含换行或控制字符。", "Notes must be at most 128 UTF-8 bytes without line breaks or control characters."),
+                InputKind::BranchName => t("分支名称无效，最多 128 个 UTF-8 字节。", "Invalid branch name. Use at most 128 UTF-8 bytes."),
+                InputKind::NamespaceName => t("名称或完整路径不符合共享命名规则。", "The name or complete path does not meet the shared naming rules."),
+            }}</span>
         </Show>
     }
 }
@@ -380,7 +421,7 @@ pub(super) fn control(
 ) -> impl IntoView {
     let editor = Editor::new(state, label, target, disabled);
     view! {
-        <span class="zxs-inline-edit zxs-flow zxs-flow--inline" class:zxs-inline-note=editor.note>
+        <span class="zxs-inline-edit zxs-flow zxs-flow--inline" class:zxs-inline-note=(editor.kind == InputKind::Note)>
             {move ||if editor.draft.editing.get() {
                 editor_input(editor).into_any()
             } else {
@@ -388,7 +429,7 @@ pub(super) fn control(
                     <button class="zxs-button" type="button" aria-label=editor.label.get_value()
                         disabled=move ||editor.disabled.get() on:click=move |_|editor.start()>
                         {icon.map(|name|view!{<FileIcon name=name/>})}
-                        {move ||if editor.note {
+                        {move ||if editor.kind == InputKind::Note {
                             let note=state.with(|s|editor.target.get_value().initial(s));
                             if note.is_empty(){editor.label.get_value()}else{note}
                         }else{editor.label.get_value()}}

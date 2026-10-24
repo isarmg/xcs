@@ -7,22 +7,103 @@ fn metadata_limits_are_bytes_without_splitting_utf8() {
     assert_eq!(ascii.len(), 128);
     assert_eq!(chinese.len(), 128);
     for value in [&ascii, &chinese] {
-        assert_eq!(edit_value(value, true), Edit::Save(value.clone()));
-        assert_eq!(edit_value(value, false), Edit::Save(value.clone()));
-        assert_eq!(edit_value(&format!("{value}a"), true), Edit::Invalid);
-        assert_eq!(edit_value(&format!("{value}a"), false), Edit::Invalid);
+        assert_eq!(
+            edit_value(value, InputKind::Note),
+            Edit::Save(value.clone())
+        );
+        assert_eq!(
+            edit_value(value, InputKind::BranchName),
+            Edit::Save(value.clone())
+        );
+        assert_eq!(
+            edit_value(&format!("{value}a"), InputKind::Note),
+            Edit::Invalid
+        );
+        assert_eq!(
+            edit_value(&format!("{value}a"), InputKind::BranchName),
+            Edit::Invalid
+        );
     }
-    assert_eq!(edit_value(&"文".repeat(43), true), Edit::Invalid);
+    assert_eq!(edit_value(&"文".repeat(43), InputKind::Note), Edit::Invalid);
+}
+
+#[test]
+fn directory_names_use_current_portable_names_not_the_metadata_budget() {
+    let target = Target::CreateDirectory;
+    for name in ["文".repeat(43), "文".repeat(80)] {
+        assert!(name_policy::validate_path(&format!("资料/{name}")).is_ok());
+        assert_eq!(target.edit_value(&name, "资料"), Edit::Save(name.clone()));
+        assert_eq!(edit_value(&name, InputKind::Note), Edit::Invalid);
+        assert_eq!(edit_value(&name, InputKind::BranchName), Edit::Invalid);
+    }
+    assert_eq!(target.edit_value("  ", ""), Edit::Cancel);
+    assert_eq!(target.edit_value(" 草稿 ", ""), Edit::Save("草稿".into()));
+    for name in [
+        ".",
+        "..",
+        "a/b",
+        "a\\b",
+        "CON",
+        "bad.",
+        "e\u{301}",
+        "a\n",
+        &"文".repeat(81),
+    ] {
+        assert_eq!(target.edit_value(name, ""), Edit::Invalid, "{name}");
+    }
+}
+
+#[test]
+fn directory_creation_validates_the_complete_path_budget() {
+    let target = Target::CreateDirectory;
+    assert_eq!(
+        target.edit_value("文", &"a".repeat(198)),
+        Edit::Save("文".into())
+    );
+    assert_eq!(target.edit_value("文", &"a".repeat(199)), Edit::Invalid);
+    assert!(name_policy::validate_name(&"a".repeat(201)).is_ok());
+    assert_eq!(target.edit_value(&"a".repeat(201), ""), Edit::Invalid);
+    assert_eq!(
+        target.edit_value("文", &vec!["a"; 31].join("/")),
+        Edit::Save("文".into())
+    );
+    assert_eq!(
+        target.edit_value("文", &vec!["a"; 32].join("/")),
+        Edit::Invalid
+    );
+}
+
+#[test]
+fn both_branch_rename_targets_keep_their_own_metadata_limit() {
+    for target in [
+        Target::RenameDirectoryBranch {
+            repository: "repo".into(),
+            branch_id: "branch".into(),
+            name: "old".into(),
+        },
+        Target::RenameFileBranch {
+            file: "file".into(),
+            branch_id: "branch".into(),
+            name: "old".into(),
+        },
+    ] {
+        let boundary = format!("{}ab", "文".repeat(42));
+        assert_eq!(target.edit_value(&boundary, ""), Edit::Save(boundary));
+        assert_eq!(target.edit_value(&"文".repeat(43), ""), Edit::Invalid);
+    }
 }
 
 #[test]
 fn clearing_a_note_is_distinct_from_cancelling_a_name() {
-    assert_eq!(edit_value("", true), Edit::Save(String::new()));
-    assert_eq!(edit_value("  ", false), Edit::Cancel);
-    assert_eq!(edit_value(" 草稿 ", false), Edit::Save("草稿".into()));
+    assert_eq!(edit_value("", InputKind::Note), Edit::Save(String::new()));
+    assert_eq!(edit_value("  ", InputKind::BranchName), Edit::Cancel);
+    assert_eq!(
+        edit_value(" 草稿 ", InputKind::BranchName),
+        Edit::Save("草稿".into())
+    );
     for value in ["a\nb", "a\rb", "a\tb", "a\0b", "a\u{7f}b", "a\n"] {
-        assert_eq!(edit_value(value, true), Edit::Invalid);
-        assert_eq!(edit_value(value, false), Edit::Invalid);
+        assert_eq!(edit_value(value, InputKind::Note), Edit::Invalid);
+        assert_eq!(edit_value(value, InputKind::BranchName), Edit::Invalid);
     }
 }
 
@@ -36,10 +117,13 @@ fn a_path_nodes_generated_caption_is_display_only_and_note_input_starts_from_met
         target.display(&state),
         "Path changed old/report.txt → new/report.txt"
     );
-    assert!(target.is_note());
+    assert!(target.input_kind() == InputKind::Note);
     state.files.file_history["nodes"][0]["note"] = "Reviewed rename".into();
     assert_eq!(target.display(&state), "Reviewed rename");
-    assert_eq!(edit_value("", target.is_note()), Edit::Save(String::new()));
+    assert_eq!(
+        edit_value("", target.input_kind()),
+        Edit::Save(String::new())
+    );
 }
 #[test]
 fn legacy_notes_are_displayed_without_silent_truncation() {
@@ -52,7 +136,7 @@ fn legacy_notes_are_displayed_without_silent_truncation() {
     .into();
     assert_eq!(Target::FileNote.initial(&state), original);
     assert_eq!(Target::VersionNote("old".into()).initial(&state), original);
-    assert_eq!(edit_value(&original, true), Edit::Invalid);
+    assert_eq!(edit_value(&original, InputKind::Note), Edit::Invalid);
     assert_eq!(state.files.file_history["note"], original);
 }
 #[test]
@@ -64,14 +148,14 @@ fn directory_branch_rename_keeps_the_record_identity_and_shares_cancel_and_byte_
     };
     let state = State::default();
     assert_eq!(target.initial(&state), "auto-generated");
-    assert!(!target.is_note());
-    assert_eq!(edit_value("", target.is_note()), Edit::Cancel);
+    assert!(target.input_kind() == InputKind::BranchName);
+    assert_eq!(edit_value("", target.input_kind()), Edit::Cancel);
     assert_eq!(
-        edit_value(&"a".repeat(129), target.is_note()),
+        edit_value(&"a".repeat(129), target.input_kind()),
         Edit::Invalid
     );
     assert_eq!(
-        edit_value(" renamed ", target.is_note()),
+        edit_value(" renamed ", target.input_kind()),
         Edit::Save("renamed".into())
     );
 }

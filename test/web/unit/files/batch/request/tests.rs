@@ -290,17 +290,107 @@ fn no_mapping_missing_guard_or_invalid_utf8_byte_length_is_submitted() {
     draft.sources[0]["head_tree_id"] = "tree-m".into();
     draft
         .names
-        .insert(entry_key(&draft.entries[0]), "文".repeat(43));
+        .insert(entry_key(&draft.entries[0]), "文".repeat(81));
     assert!(request(&draft).is_err());
-    draft.names.insert(
-        entry_key(&draft.entries[0]),
-        format!("{}ab", "文".repeat(42)),
-    );
+    draft
+        .names
+        .insert(entry_key(&draft.entries[0]), "文".repeat(80));
     assert!(request(&draft).is_ok());
     for bad in ["../b", "a//b", "a\\b", "a/./b"] {
         assert!(!valid_path(bad));
     }
     assert!(valid_path("资料/报告"));
+}
+
+#[test]
+fn current_long_names_can_be_renamed_or_moved_and_copied_unchanged() {
+    let name = "文".repeat(43);
+    assert_eq!(name.len(), 129);
+    for kind in [Kind::Rename, Kind::Move, Kind::Copy] {
+        let mut draft = draft(kind);
+        let source_path = if kind == Kind::Rename {
+            "a/old.txt".into()
+        } else {
+            format!("a/{name}")
+        };
+        let entry = file("f", &source_path, "F1");
+        draft.entries = vec![entry.clone()];
+        draft.names = BTreeMap::from([(entry_key(&entry), name.clone())]);
+        draft.sources = vec![branch("m", "a", vec![entry])];
+        draft.selected_sources = BTreeSet::from(["m".into()]);
+        draft.mappings.truncate(1);
+        let parent = if kind == Kind::Rename { "a" } else { "b" };
+        let destination = format!("{parent}/{name}");
+        assert!(name_policy::validate_path(&source_path).is_ok());
+        assert!(name_policy::validate_path(&destination).is_ok());
+        let body = request(&draft).unwrap();
+        assert_eq!(body["items"][0]["source"]["path"], source_path);
+        assert_eq!(body["items"][0]["target"]["path"], destination);
+    }
+}
+
+#[test]
+fn every_name_operation_rejects_invalid_components() {
+    for kind in [Kind::Rename, Kind::Move, Kind::Copy] {
+        let mut draft = draft(kind);
+        for name in [
+            "",
+            ".",
+            "..",
+            "a/b",
+            "a\\b",
+            "CON",
+            "bad.",
+            "e\u{301}",
+            "a\n",
+            &"文".repeat(81),
+        ] {
+            draft
+                .names
+                .insert(entry_key(&draft.entries[0]), name.into());
+            assert!(request(&draft).is_err(), "{name}");
+        }
+    }
+}
+
+#[test]
+fn composed_destinations_obey_the_same_path_budget_as_the_engine() {
+    for kind in [Kind::Rename, Kind::Move, Kind::Copy] {
+        let mut draft = draft(kind);
+        draft.entries.truncate(1);
+        draft.selected_sources = BTreeSet::from(["m".into()]);
+        draft.mappings.truncate(1);
+        draft
+            .names
+            .insert(entry_key(&draft.entries[0]), "文字".into());
+        let mut cases = vec![("a".repeat(197), true), ("a".repeat(198), false)];
+        if kind != Kind::Rename {
+            cases.extend([
+                (vec!["a"; 31].join("/"), true),
+                (vec!["a"; 32].join("/"), false),
+            ]);
+        }
+        for (parent, allowed) in cases {
+            assert!(valid_path(&parent));
+            if kind == Kind::Rename {
+                let source = format!("{parent}/x");
+                assert!(name_policy::validate_path(&source).is_ok());
+                let entry = file("f", &source, "F1");
+                draft.names = BTreeMap::from([(entry_key(&entry), "文字".into())]);
+                draft.entries = vec![entry.clone()];
+                draft.sources[0]["entries"] = json!([entry]);
+                draft.sources[0]["path"] = parent.clone().into();
+            } else {
+                draft.targets[0]["path"] = parent.clone().into();
+            }
+            let destination = format!("{parent}/文字");
+            assert_eq!(name_policy::validate_path(&destination).is_ok(), allowed);
+            assert_eq!(request(&draft).is_ok(), allowed, "{destination}");
+        }
+    }
+    assert!(!valid_path(&"a".repeat(201)));
+    assert!(!valid_path(&vec!["a"; 33].join("/")));
+    assert!(valid_path(""));
 }
 
 #[test]

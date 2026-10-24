@@ -56,7 +56,7 @@ pub(crate) fn view(state: RwSignal<State>) -> impl IntoView {
                 let id=entry_key(&entry);let value_id=StoredValue::new(id.clone());let input_id=StoredValue::new(id);let name=text(&entry,&["name"]);let dom_id=StoredValue::new(entry_id(&entry));
                 view!{<label class="zxs-batch-entry zxs-flow"><span class="zxs-row">{name}</span>
                     <Show when=move ||state.with(|s|s.files.batch.as_ref().is_some_and(|draft|draft.kind!=Kind::Delete))>
-                        <input class="zxs-input zxs-input--compact zxs-input--underline" type="text" aria-label=t("目标名称","Destination name") data-entry-id=dom_id.get_value() data-max-bytes="128" autocomplete="off" spellcheck="false" disabled=move ||blocked.get() prop:value=move ||state.with(|s|s.files.batch.as_ref().and_then(|draft|draft.names.get(&value_id.get_value())).cloned().unwrap_or_default()) on:input=move |event|update(state,|draft|{draft.names.insert(input_id.get_value(),event_target_value(&event));draft.error.clear();})/>
+                        <input class="zxs-input zxs-input--compact zxs-input--underline" type="text" aria-label=t("目标名称","Destination name") data-entry-id=dom_id.get_value() autocomplete="off" spellcheck="false" disabled=move ||blocked.get() prop:value=move ||state.with(|s|s.files.batch.as_ref().and_then(|draft|draft.names.get(&value_id.get_value())).cloned().unwrap_or_default()) on:input=move |event|update(state,|draft|{draft.names.insert(input_id.get_value(),event_target_value(&event));draft.error.clear();})/>
                     </Show>
                 </label>}
             }).collect_view()}</div>

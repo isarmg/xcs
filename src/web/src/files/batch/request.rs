@@ -1,7 +1,7 @@
 //! Pure scope validation and transaction payload construction.
 use super::*;
 pub(super) fn valid_path(path: &str) -> bool {
-    path.is_empty() || path.split('/').all(valid_name)
+    path.is_empty() || name_policy::validate_path(path).is_ok()
 }
 fn error_missing() -> String {
     t(
@@ -43,6 +43,12 @@ fn find_entry<'a>(branch: &'a Value, chosen: &Value) -> Result<&'a Value, String
         .ok_or_else(error_missing)
 }
 fn target_ref(branch: &Value, path: String) -> Result<Value, String> {
+    if name_policy::validate_path(&path).is_err() {
+        return Err(t(
+            "目标路径不符合共享命名规则。",
+            "The destination path does not meet the shared naming rules.",
+        ));
+    }
     let id = branch_id(branch);
     let tree = text(branch, &["head_tree_id"]);
     if id.is_empty() || tree.is_empty() {
@@ -151,12 +157,12 @@ pub(super) fn request(draft: &Draft) -> Result<Value, String> {
     Ok(json!({"kind":draft.kind.wire(),"items":items}))
 }
 fn validate_name(name: &str) -> Result<(), String> {
-    if name.len() <= storage_contract::MAX_NOTE_BYTES && valid_name(name) {
+    if valid_name(name) {
         Ok(())
     } else {
         Err(t(
-            "名称无效，最多 128 个 UTF-8 字节。",
-            "Invalid name. Use at most 128 UTF-8 bytes.",
+            "名称不符合共享文件命名规则。",
+            "The name does not meet the shared file naming rules.",
         ))
     }
 }
