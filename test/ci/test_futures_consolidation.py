@@ -1,8 +1,10 @@
 """Futures dependency and coverage boundaries must not silently broaden."""
 from pathlib import Path
 import runpy
+from types import SimpleNamespace
 import tomllib
 import unittest
+from unittest import mock
 
 ROOT = Path(__file__).resolve().parents[2]
 foundation_path = runpy.run_path(str(ROOT / '.github/scripts/foundation_paths.py'))['package_path']
@@ -23,6 +25,46 @@ class FuturesConsolidationTests(unittest.TestCase):
                     GATE['validate_dependencies']({'futures', extra}, features)
         GATE['validate_dependencies']({'futures', 'slab', 'pin-project-lite'}, ('shared-state',))
         GATE['validate_dependencies']({'futures', 'futures-macro', 'pin-project-lite'}, ('async-await-macro',))
+
+    def test_native_consumer_graph_rejects_unused_features_and_empty_output(self):
+        validate = GATE['validate_native_consumer_features']
+        for selected in ('alloc,std,utilities', 'alloc,channel,executor,sink,std,utilities'):
+            validate(f'futures v0.3.34 (/local/futures)|{selected}\n', 'consumer')
+        for output in ('', 'futures-intrusive v0.5.0|alloc,std\n',
+                       'futures v0.3.34|std,utilities\nfutures-macro v0.3.34 (proc-macro)|\n',
+                       *(f'futures v0.3.34|std,utilities,{feature}\n'
+                         for feature in ('async-await', 'async-await-macro', 'shared-state')),
+                       'futures v0.3.34|std,utilities\nfutures v0.3.34|shared-state (*)\n'):
+            with self.subTest(output=output), self.assertRaises(AssertionError):
+                validate(output, 'consumer')
+
+    def test_native_consumers_are_checked_separately_with_and_without_dev_edges(self):
+        check = GATE['check_native_consumer_features']
+        run = mock.Mock(return_value=SimpleNamespace(stdout='futures v0.3.34|std,utilities\n'))
+        with mock.patch.dict(check.__globals__, run=run):
+            check(ROOT)
+        selections = []
+        for call in run.call_args_list:
+            root, command = call.args
+            self.assertEqual(root, ROOT)
+            self.assertEqual(command.count('-p'), 1)
+            self.assertIn('--locked', command)
+            self.assertIn('--offline', command)
+            self.assertEqual(command[command.index('--target') + 1], 'x86_64-unknown-linux-gnu')
+            selections.append((command[command.index('-p') + 1], command[command.index('--edges') + 1]))
+        self.assertEqual(selections, [(package, edges)
+                                     for package in ('storage-client', 'storage-server')
+                                     for edges in ('normal,build', 'normal,build,dev')])
+
+    def test_native_declarations_do_not_change_browser_capabilities(self):
+        for package in ('client', 'server'):
+            manifest = tomllib.loads((ROOT / f'src/{package}/Cargo.toml').read_text())
+            dependency = manifest['dependencies']['futures']
+            self.assertFalse(dependency['default-features'])
+            self.assertEqual(set(dependency['features']), {'std', 'utilities'})
+        browser = tomllib.loads((ROOT / 'src/interface/Cargo.toml').read_text())
+        self.assertTrue({'async-await-macro', 'shared-state'} <=
+                        set(browser['dependencies']['futures']['features']))
 
     def test_dormant_tests_are_explicit_and_preserved(self):
         unavailable = GATE['UNAVAILABLE_TESTS']

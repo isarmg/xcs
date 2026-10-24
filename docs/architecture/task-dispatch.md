@@ -60,6 +60,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
 `.github/scripts/check-runtime-features.py` 与 `check-runtime-join-map.py` 检查独立特性、ReaderStream 缓冲/EOF/错误融合、信号量公平性/取消/许可释放、发送预留/关闭，以及键控任务生命周期。缺少真实测试依赖的上游材料不计作执行。
 
+原生 `storage-client` 与 `storage-server` 直接只选择 futures 的 `std`、`utilities`；各自的原生消费者图不启用 `join!` / `select!` 过程宏或 `Shared` / 异步 `Mutex` 的共享态能力。SQLite 按实际需求保留 `executor`、`channel` 和 `sink`，浏览器的宏与共享态能力也单独保留。`check-futures-consolidation.py` 分别检查两个原生消费者的生产与含开发依赖图，并逐包编译全部目标，避免工作区统一特性掩盖缺失或多余的能力声明；这些检查不代表整个工作区移除了相关包，也不证明最终产物大小下降。
+
 ## 原始文档
 
 - [any_spawner 0.3.0](../upstream/any_spawner-0.3.0/README.md)：全局执行器和任务接口的原始设计；当前仅支持本页列出的三个后端。

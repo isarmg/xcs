@@ -20,7 +20,7 @@ authentication.workspace = true
 http-routing = { version = "0.8.9", default-features = false, features = ["form", "http1", "json", "query", "tokio", "tower-log", "tracing"], path = "../foundation/networking/http-routing"}
 blake3.workspace = true
 bytes = {version = "1", path = "../foundation/collections/bytes"}
-futures = { version = "0.3.34", path = "../foundation/concurrency/futures", default-features = false, features = ["async-await-macro", "shared-state", "std", "utilities"] }
+futures = { version = "0.3.34", path = "../foundation/concurrency/futures", default-features = false, features = ["std", "utilities"] }
 http = {version = "1", path = "../foundation/networking/http"}
 data-serialization.workspace = true
 json-codec.workspace = true

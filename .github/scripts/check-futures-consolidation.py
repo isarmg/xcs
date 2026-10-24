@@ -14,6 +14,7 @@ ROOT = Path(__file__).resolve().parents[2]
 rebase_dependency_paths = runpy.run_path(str(ROOT / '.github/scripts/foundation_paths.py'))['rebase_dependency_paths']
 foundation_path = runpy.run_path(str(ROOT / '.github/scripts/foundation_paths.py'))['package_path']
 TARGETS = ("x86_64-unknown-linux-gnu", "wasm32-unknown-unknown")
+NATIVE_CONSUMERS = ("storage-client", "storage-server")
 FEATURE_SETS = ((), ("alloc",), ("std",), ("sink",), ("channel",),
                 ("utilities",), ("utilities", "alloc"), ("utilities", "std"),
                 ("io",), ("async-await",), ("async-await-macro",), ("executor",),
@@ -84,6 +85,27 @@ def validate_dependencies(names, features):
         raise AssertionError("shared-state storage was enabled without an explicit request")
     if "async-await-macro" not in features and "futures-macro" in names:
         raise AssertionError("procedural macros were enabled without an explicit request")
+
+
+def validate_native_consumer_features(output, package):
+    features = [set(match.group(1).split(',')) for line in output.splitlines()
+                if (match := re.match(r'^futures v[^|]*\|([^\s]*)', line))]
+    forbidden = {"async-await", "async-await-macro", "shared-state"}
+    if not features or any(forbidden & selected for selected in features):
+        raise AssertionError(f"{package} futures acquired unused capabilities: {features}")
+    if any(line.startswith("futures-macro v") for line in output.splitlines()):
+        raise AssertionError(f"{package} acquired unused futures procedural macros")
+
+
+def check_native_consumer_features(root):
+    # Select each real consumer separately: a workspace-wide graph would let
+    # browser or sibling-package features hide an accidental native dependency.
+    for package in NATIVE_CONSUMERS:
+        for edges in ("normal,build", "normal,build,dev"):
+            result = run(root, ["cargo", "tree", "--locked", "--offline", "-p", package,
+                               "--target", TARGETS[0], "--edges", edges,
+                               "--prefix", "none", "--format", "{p}|{f}"])
+            validate_native_consumer_features(result.stdout, package)
 
 
 def check_features(root, temporary, target_dir):
@@ -186,6 +208,7 @@ def check_retained_tests(root, temporary, target_dir):
 
 def check(root):
     root = Path(root).resolve()
+    check_native_consumer_features(root)
     for name in ABSORBED:
         for path in (foundation_path(root, name), root / "test/foundation" / name):
             if path.exists():
@@ -197,8 +220,9 @@ def check(root):
         temporary = Path(directory)
         check_features(root, temporary, target_dir)
         check_retained_tests(root, temporary, target_dir)
-    run(root, ["cargo", "check", "--locked", "--offline", "--jobs", "2", "--target-dir", str(target_dir),
-               "-p", "storage-client", "-p", "storage-server", "-p", "platform-io"])
+    for package in (*NATIVE_CONSUMERS, "platform-io"):
+        run(root, ["cargo", "check", "--locked", "--offline", "--jobs", "2", "--target-dir", str(target_dir),
+                   "--target", TARGETS[0], "--all-targets", "-p", package])
     run(root, ["cargo", "check", "--locked", "--offline", "--jobs", "2", "--target-dir", str(target_dir),
                "-p", "web-interface", "--target", "wasm32-unknown-unknown"])
 
