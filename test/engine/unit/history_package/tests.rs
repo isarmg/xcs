@@ -2164,3 +2164,131 @@ fn history_notes_use_the_current_write_format_without_legacy_limits() {
         }
     }
 }
+
+#[test]
+fn commit_namespace_envelope_rejects_malformed_entries() {
+    let temporary = tempfile::tempdir().unwrap();
+    fs::set_permissions(temporary.path(), fs::Permissions::from_mode(0o700)).unwrap();
+    let mut engine = initialize(temporary.path());
+    let repo = engine
+        .create_repository("namespace envelope", "P01", 3, "alice", &new_id("op"))
+        .unwrap();
+    save_path(
+        &mut engine,
+        &repo.main_branch_id,
+        "folder/file.txt",
+        b"valid file",
+    );
+    let manifest = HistoryManifest::from_state(engine.state(), &repo.history_tree_id).unwrap();
+    assert!(
+        manifest
+            .commits
+            .values()
+            .flat_map(|commit| &commit.entries)
+            .any(|entry| entry.kind == "directory")
+    );
+    assert!(
+        manifest
+            .commits
+            .values()
+            .flat_map(|commit| &commit.entries)
+            .any(|entry| entry.kind == "file")
+    );
+    let valid_package = temporary.path().join("valid-package");
+    engine
+        .export_history_package(&repo.history_tree_id, &valid_package)
+        .unwrap();
+    offline_check_history_package(&valid_package).unwrap();
+
+    let version = manifest.versions.values().next().unwrap();
+    for case in [
+        "kind",
+        "entry_id",
+        "file_id",
+        "version_id",
+        "directory_payload",
+    ] {
+        let mut entry = Entry {
+            entry_id: new_id("entry"),
+            path: "ghost".into(),
+            name: "ghost".into(),
+            lookup_key: "ghost".into(),
+            kind: "directory".into(),
+            file_id: String::new(),
+            version_id: String::new(),
+            size: 0,
+        };
+        match case {
+            "kind" => entry.kind = "unsupported".into(),
+            "entry_id" => entry.entry_id = "not-an-entry-id".into(),
+            "file_id" | "version_id" => {
+                entry.kind = "file".into();
+                entry.file_id = version.file_id.clone();
+                entry.version_id = version.version_id.clone();
+                entry.size = version.logical_size;
+                if case == "file_id" {
+                    entry.file_id = "not-a-file-id".into();
+                } else {
+                    entry.version_id = "not-a-version-id".into();
+                }
+            }
+            "directory_payload" => {
+                entry.file_id = new_id("file");
+                entry.version_id = new_id("ver");
+                entry.size = 1;
+            }
+            _ => unreachable!(),
+        }
+        let mut invalid = manifest.clone();
+        invalid
+            .commits
+            .get_mut(&manifest.history.root_commit_id)
+            .unwrap()
+            .entries = vec![entry];
+        assert!(invalid.validate().is_err(), "{case}");
+    }
+}
+
+#[test]
+fn history_branch_names_match_the_current_128_byte_write_limit() {
+    let temporary = tempfile::tempdir().unwrap();
+    fs::set_permissions(temporary.path(), fs::Permissions::from_mode(0o700)).unwrap();
+    let mut engine = initialize(temporary.path());
+    let repo = engine
+        .create_repository("branch name limits", "P01", 3, "alice", &new_id("op"))
+        .unwrap();
+    let root = engine.state().histories[&repo.history_tree_id]
+        .root_commit_id
+        .clone();
+    let name = "界".repeat(42) + "ab";
+    assert_eq!(name.len(), 128);
+    let branch = engine
+        .create_branch(&root, &name, "alice", &new_id("op"))
+        .unwrap();
+    let directory = engine
+        .create_directory_branches(&repo.repository_id, "", &name, "alice", &new_id("op"))
+        .unwrap();
+    let directory = directory.result["directory_branch_id"].as_str().unwrap();
+    let manifest = HistoryManifest::from_state(engine.state(), &repo.history_tree_id).unwrap();
+    let package = temporary.path().join("valid-package");
+    engine
+        .export_history_package(&repo.history_tree_id, &package)
+        .unwrap();
+    offline_check_history_package(&package).unwrap();
+
+    for name in ["a".repeat(129), "界".repeat(43)] {
+        for scope in ["branch", "directory_branch"] {
+            let mut invalid = manifest.clone();
+            if scope == "branch" {
+                invalid.branches.get_mut(&branch.branch_id).unwrap().name = name.clone();
+            } else {
+                invalid.directory_branches.get_mut(directory).unwrap().name = name.clone();
+            }
+            assert_eq!(
+                invalid.validate().unwrap_err().code(),
+                "METADATA_TOO_LONG",
+                "{scope}: {name}"
+            );
+        }
+    }
+}

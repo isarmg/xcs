@@ -1,5 +1,5 @@
 //! Scoped logical history projection and closure validation, without storage I/O.
-use crate::business::validate_entries;
+use crate::business::{validate_branch_name, validate_entries};
 use data_serialization::{Deserialize, Serialize};
 use std::collections::{BTreeMap, BTreeSet, VecDeque};
 use storage_contract::{
@@ -76,6 +76,25 @@ pub struct HistoryManifest {
 }
 
 impl HistoryManifest {
+    fn validate_entry_envelope(entry: &Entry) -> Result<()> {
+        validate_id(&entry.entry_id, "entry")?;
+        match entry.kind.as_str() {
+            "file" => {
+                validate_id(&entry.file_id, "file")?;
+                validate_id(&entry.version_id, "ver")?;
+            }
+            "directory"
+                if entry.file_id.is_empty() && entry.version_id.is_empty() && entry.size == 0 => {}
+            _ => {
+                return Err(Error::new(
+                    "HISTORY_PACKAGE_INVALID",
+                    "namespace entry kind or directory payload is invalid",
+                ));
+            }
+        }
+        Ok(())
+    }
+
     pub(super) fn from_state(state: &State, history_id: &str) -> Result<Self> {
         let history = state
             .histories
@@ -361,7 +380,7 @@ impl HistoryManifest {
         let mut entries = BTreeMap::<&str, &Entry>::new();
         let mut files = BTreeSet::new();
         for entry in &branch.entries {
-            validate_id(&entry.entry_id, "entry")?;
+            Self::validate_entry_envelope(entry)?;
             name_policy::validate_path(&entry.path)?;
             if (!scope_key.is_empty() && !entry.lookup_key.starts_with(&prefix))
                 || entry.entry_id == branch.directory_id
@@ -382,41 +401,28 @@ impl HistoryManifest {
                     "directory composition entry identity is reused by different entities",
                 ));
             }
-            match entry.kind.as_str() {
-                "file" => {
-                    validate_id(&entry.file_id, "file")?;
-                    validate_id(&entry.version_id, "ver")?;
-                    let version = self
-                        .versions
-                        .get(&entry.version_id)
-                        .ok_or_else(|| invalid("directory composition version is missing"))?;
-                    let shared = branch
-                        .file_branches
-                        .get(&entry.file_id)
-                        .and_then(|id| self.branches.get(id))
-                        .ok_or_else(|| {
-                            invalid("directory composition shared file branch is missing")
-                        })?;
-                    files.insert(entry.file_id.as_str());
-                    if version.history_tree_id != *history
-                        || version.file_id != entry.file_id
-                        || version.logical_size != entry.size
-                        || shared.history_tree_id != *history
-                        || shared.branch_kind != "file"
-                        || shared.file_id.as_deref() != Some(entry.file_id.as_str())
-                    {
-                        return Err(invalid(
-                            "directory composition file, version or shared branch differs",
-                        ));
-                    }
-                }
-                "directory"
-                    if entry.file_id.is_empty()
-                        && entry.version_id.is_empty()
-                        && entry.size == 0 => {}
-                _ => {
+            if entry.kind == "file" {
+                let version = self
+                    .versions
+                    .get(&entry.version_id)
+                    .ok_or_else(|| invalid("directory composition version is missing"))?;
+                let shared = branch
+                    .file_branches
+                    .get(&entry.file_id)
+                    .and_then(|id| self.branches.get(id))
+                    .ok_or_else(|| {
+                        invalid("directory composition shared file branch is missing")
+                    })?;
+                files.insert(entry.file_id.as_str());
+                if version.history_tree_id != *history
+                    || version.file_id != entry.file_id
+                    || version.logical_size != entry.size
+                    || shared.history_tree_id != *history
+                    || shared.branch_kind != "file"
+                    || shared.file_id.as_deref() != Some(entry.file_id.as_str())
+                {
                     return Err(invalid(
-                        "directory composition entry kind or directory payload is invalid",
+                        "directory composition file, version or shared branch differs",
                     ));
                 }
             }
@@ -859,7 +865,11 @@ impl HistoryManifest {
                     "commit entries are not in canonical namespace form",
                 ));
             }
-            for entry in commit.entries.iter().filter(|e| e.kind == "file") {
+            for entry in &commit.entries {
+                Self::validate_entry_envelope(entry)?;
+                if entry.kind != "file" {
+                    continue;
+                }
                 let version = self
                     .versions
                     .get(&entry.version_id)
@@ -899,7 +909,7 @@ impl HistoryManifest {
         }
         for (id, branch) in &self.branches {
             validate_id(id, "br")?;
-            name_policy::validate_name(&branch.name)?;
+            validate_branch_name(&branch.name)?;
             if branch.branch_id != *id
                 || branch.history_tree_id != *history
                 || !self.commits.contains_key(&branch.head_commit_id)
@@ -968,7 +978,7 @@ impl HistoryManifest {
         }
         for (id, branch) in &self.directory_branches {
             validate_id(id, "dbr")?;
-            name_policy::validate_name(&branch.name)?;
+            validate_branch_name(&branch.name)?;
             if branch.directory_branch_id != *id
                 || branch.repository_id != self.repository.repository_id
             {
