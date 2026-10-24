@@ -217,3 +217,159 @@ fn failed_completion_preserves_the_original_unknown_reload_fence() {
     assert!(!model.complete);
     assert!(model.reload_blocked());
 }
+
+#[test]
+fn authorization_read_settles_but_cannot_restore_secrets_after_form_cleanup() {
+    let key = "a".repeat(64);
+    let response = json!({
+        "state":"empty", "csrf_token":"late-csrf", "disk_ids":["A"],
+        "completion_available":true, "config_presets":["local"]
+    });
+    let pending = Model {
+        key: key.clone(),
+        password: "unsent-password".into(),
+        pending: true,
+        generation: 7,
+        ..Default::default()
+    };
+    let mut current = pending.clone();
+    finish_check(&mut current, 7, &key, Ok(response.clone()));
+    assert!(!current.pending);
+    assert_eq!(current.csrf, "late-csrf");
+    assert!(current.empty && current.completion_available);
+    assert_eq!(current.presets, ["local"]);
+
+    let mut detached = pending.clone();
+    clear_authorization(&mut detached);
+    finish_check(&mut detached, 7, &key, Ok(response.clone()));
+    assert!(
+        !detached.pending,
+        "a discarded read must not strand loading"
+    );
+    assert!(detached.key.is_empty() && detached.password.is_empty() && detached.csrf.is_empty());
+    assert!(!detached.empty && !detached.completion_available);
+    assert!(detached.presets.is_empty() && detached.disks.is_empty());
+    assert!(!can_initialize(&detached));
+
+    let mut replaced = pending;
+    replaced.key = "b".repeat(64);
+    finish_check(&mut replaced, 7, &key, Ok(response));
+    assert!(!replaced.pending);
+    assert!(replaced.csrf.is_empty());
+    assert!(!replaced.empty && !replaced.completion_available);
+}
+
+#[test]
+fn preset_read_requires_the_current_key_and_selection_without_stranding_loading() {
+    let key = "a".repeat(64);
+    let response = json!({
+        "preset_id":"local", "configuration":{"disks":[]}, "config_digest":"reviewed"
+    });
+    let pending = Model {
+        key: key.clone(),
+        pending: true,
+        generation: 7,
+        preset_id: "local".into(),
+        presets: vec!["local".into()],
+        ..Default::default()
+    };
+    let mut current = pending.clone();
+    finish_preset_preview(&mut current, 7, &key, "local", Ok(response.clone()));
+    assert!(!current.pending);
+    assert!(preset_reviewed(&current));
+
+    for change in ["cleanup", "key", "selection"] {
+        let mut stale = pending.clone();
+        match change {
+            "cleanup" => clear_authorization(&mut stale),
+            "key" => stale.key = "b".repeat(64),
+            "selection" => stale.preset_id = "other".into(),
+            _ => unreachable!(),
+        }
+        finish_preset_preview(&mut stale, 7, &key, "local", Ok(response.clone()));
+        assert!(!stale.pending);
+        assert!(stale.preset_preview.is_null() && stale.preset_digest.is_empty());
+        assert!(!preset_reviewed(&stale));
+    }
+}
+
+#[test]
+fn stale_authorization_reads_do_not_settle_a_newer_request() {
+    let key = "a".repeat(64);
+    let mut model = Model {
+        key: key.clone(),
+        pending: true,
+        generation: 8,
+        preset_id: "local".into(),
+        ..Default::default()
+    };
+    finish_check(&mut model, 7, &key, Ok(json!({"csrf_token":"old"})));
+    assert!(model.pending);
+    assert!(model.csrf.is_empty());
+    finish_preset_preview(
+        &mut model,
+        7,
+        &key,
+        "local",
+        Ok(json!({"preset_id":"local", "configuration":{}, "config_digest":"old"})),
+    );
+    assert!(model.pending);
+    assert!(model.preset_preview.is_null() && model.preset_digest.is_empty());
+}
+
+#[test]
+fn an_empty_key_cannot_accept_authorization_but_still_reports_input_errors() {
+    let mut model = Model {
+        pending: true,
+        generation: 7,
+        ..Default::default()
+    };
+    finish_check(
+        &mut model,
+        7,
+        "",
+        Ok(json!({"state":"empty", "csrf_token":"must-not-accept"})),
+    );
+    assert!(!model.pending);
+    assert!(model.csrf.is_empty() && !model.empty);
+    model.pending = true;
+    finish_check(
+        &mut model,
+        7,
+        "",
+        Err(api::Error {
+            code: "INVALID_SETUP_REQUEST".into(),
+            message: "Enter the authorization key".into(),
+            retryable: false,
+            status: 0,
+            request_id: None,
+        }),
+    );
+    assert!(!model.pending);
+    assert!(
+        model
+            .failure
+            .as_ref()
+            .unwrap()
+            .contains("INVALID_SETUP_REQUEST")
+    );
+}
+
+#[test]
+fn form_cleanup_does_not_discard_initialization_outcome_recovery() {
+    for (result, complete) in [(json!({"initialized":true}), true), (json!({}), false)] {
+        let mut model = authorized();
+        model.pending = true;
+        model.generation = 7;
+        clear_authorization(&mut model);
+        assert_eq!(model.generation, 7);
+        assert!(model.pending, "cleanup cannot settle an issued write");
+        finish_initialization(&mut model, Ok(result));
+        assert!(!model.pending);
+        assert_eq!(model.complete, complete);
+        assert_eq!(model.unknown, !complete);
+        assert_eq!(model.reload_blocked(), !complete);
+        assert!(model.key.is_empty() && model.password.is_empty() && model.csrf.is_empty());
+        assert!(!can_initialize(&model));
+    }
+}

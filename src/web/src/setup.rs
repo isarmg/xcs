@@ -80,22 +80,27 @@ fn check(state: RwSignal<Model>) {
     };
     spawn_local(async move {
         let result = api::setup_request("GET", "/api/setup/status", None, &key, None).await;
-        if !state
-            .try_with_untracked(|s| s.generation == generation)
-            .unwrap_or(false)
-        {
-            return;
-        }
-        state.update(|s| {
-            s.pending = false;
-            match result {
-                Ok(value) => {
-                    accept_status(s, &value);
-                }
-                Err(error) => s.failure = Some(error.to_string()),
-            }
-        });
+        let _ = state.try_update(|s| finish_check(s, generation, &key, result));
     });
+}
+/// A root-owned read may outlive the authorization form. Settle its loading
+/// state, but never restore authorization after cleanup cleared its key.
+fn finish_current_read(s: &mut Model, generation: u64, key: &str) -> bool {
+    if s.generation != generation {
+        return false;
+    }
+    s.pending = false;
+    s.key == key
+}
+fn finish_check(s: &mut Model, generation: u64, key: &str, result: Result<Value, api::Error>) {
+    if !finish_current_read(s, generation, key) {
+        return;
+    }
+    match result {
+        Ok(value) if !key.is_empty() => accept_status(s, &value),
+        Ok(_) => {}
+        Err(error) => s.failure = Some(error.to_string()),
+    }
 }
 fn accept_status(s: &mut Model, value: &Value) {
     s.status = value["state"].as_str().unwrap_or("unavailable").into();
@@ -259,35 +264,39 @@ fn preview_preset(state: RwSignal<Model>) {
             Some(&csrf),
         )
         .await;
-        if !state
-            .try_with_untracked(|s| s.generation == generation && s.preset_id == id)
-            .unwrap_or(false)
-        {
-            return;
-        }
-        state.update(|s| {
-            s.pending = false;
-            match result {
-                Ok(value)
-                    if value["preset_id"] == id
-                        && value["configuration"].is_object()
-                        && value["config_digest"]
-                            .as_str()
-                            .is_some_and(|digest| !digest.is_empty()) =>
-                {
-                    s.preset_preview = value["configuration"].clone();
-                    s.preset_digest = value["config_digest"].as_str().unwrap_or_default().into();
-                }
-                Ok(_) => {
-                    s.failure = Some(t(
-                        "预置方案摘要不完整，禁止初始化。",
-                        "The preset preview is incomplete; initialization is blocked.",
-                    ))
-                }
-                Err(error) => s.failure = Some(error.to_string()),
-            }
-        });
+        let _ = state.try_update(|s| finish_preset_preview(s, generation, &key, &id, result));
     });
+}
+fn finish_preset_preview(
+    s: &mut Model,
+    generation: u64,
+    key: &str,
+    id: &str,
+    result: Result<Value, api::Error>,
+) {
+    if !finish_current_read(s, generation, key) || s.preset_id != id {
+        return;
+    }
+    match result {
+        Ok(value)
+            if !key.is_empty()
+                && value["preset_id"] == id
+                && value["configuration"].is_object()
+                && value["config_digest"]
+                    .as_str()
+                    .is_some_and(|digest| !digest.is_empty()) =>
+        {
+            s.preset_preview = value["configuration"].clone();
+            s.preset_digest = value["config_digest"].as_str().unwrap_or_default().into();
+        }
+        Ok(_) => {
+            s.failure = Some(t(
+                "预置方案摘要不完整，禁止初始化。",
+                "The preset preview is incomplete; initialization is blocked.",
+            ))
+        }
+        Err(error) => s.failure = Some(error.to_string()),
+    }
 }
 fn preset_view(state: RwSignal<Model>) -> impl IntoView {
     let options = Signal::derive(move || {
@@ -317,15 +326,17 @@ impl Model {
     }
 }
 
+fn clear_authorization(s: &mut Model) {
+    s.key.clear();
+    s.password.clear();
+    s.csrf.clear();
+}
+
 pub(crate) fn view(state: RwSignal<Model>) -> impl IntoView {
     // Keep only recovery state when the login/setup view disappears. Moving
     // the model to the app owner must not extend the lifetime of its secrets.
     on_cleanup(move || {
-        state.update(|s| {
-            s.key.clear();
-            s.password.clear();
-            s.csrf.clear();
-        });
+        state.update(clear_authorization);
     });
     view! {
         <details class="zxs-content-panel zxs-stack"><summary>{t("受保护的首次设置","Protected first-time setup")}</summary>

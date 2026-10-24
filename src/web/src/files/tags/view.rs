@@ -1,5 +1,13 @@
 use super::*;
 use web_interface::components::{Select, SelectOption};
+
+fn cancel(state: &mut State) {
+    if !actions::pending(state) {
+        state.files.tag_edit = None;
+        state.files.publications.remove(&review::Kind::Tags);
+    }
+}
+
 pub(crate) fn chips(state: RwSignal<State>, id: String) -> impl IntoView {
     let id = StoredValue::new(id);
     let history = Memo::new(move |_| state.with(|s| s.files.file_history.clone()));
@@ -54,7 +62,7 @@ pub(crate) fn view(state: RwSignal<State>) -> impl IntoView {
     });
     view! {<div class="zxs-file-toolbar zxs-flow"><button class="zxs-button" disabled=move ||disabled.get()||state.with(|s|s.files.checked_nodes.is_empty()||s.files.history_loading) on:click=move |_|start(state)>{t("编辑所选节点标签","Edit selected node tags")}</button><span class="zxs-row">{move ||state.with(|s|format!("{} {}",s.files.checked_nodes.len(),t("个节点已选择","nodes selected")))}</span></div>
     <Show when=move ||open.get()><section class="zxs-frame zxs-stack zxs-tag-review" aria-label=t("节点标签编辑","Node tag editor")>
-        <div class="zxs-file-toolbar zxs-flow"><h3 class="zxs-row">{t("节点标签","Node tags")}</h3><button class="zxs-button" disabled=move ||disabled.get() on:click=move |_|{state.update(|s|s.files.tag_edit=None);review::reset(state,review::Kind::Tags);}>{t("取消","Cancel")}</button></div>
+        <div class="zxs-file-toolbar zxs-flow"><h3 class="zxs-row">{t("节点标签","Node tags")}</h3><button class="zxs-button" disabled=move ||state.with(actions::pending) on:click=move |_|state.update(cancel)>{t("取消","Cancel")}</button></div>
         <p class="zxs-row">{t("标签编辑在所选节点后新增元数据子节点，继承原标签和正文。只有来源仍是当前节点的引用才推进，历史节点不会使较新内容回退。","Tag edits add metadata child nodes that inherit existing labels and content. Only references still at the source advance; editing history never rolls back newer content.")}</p>
         <div class="zxs-stack">{move ||source_nodes.get().into_iter().enumerate().map(move |(index,node)|{
             let source=StoredValue::new(history_node_id(&node));let selected=Signal::derive(move ||state.with(|s|s.files.tag_edit.as_ref().and_then(|draft|draft.targets.iter().find(|target|target.source==source.get_value())).map(|target|target.branch.clone()).unwrap_or_default()));
@@ -66,3 +74,7 @@ pub(crate) fn view(state: RwSignal<State>) -> impl IntoView {
         <p class="zxs-row zxs-inline-error" role="status">{move ||state.with(|s|review::error_text(s,review::Kind::Tags))}</p><button class="zxs-button" disabled=move ||disabled.get() on:click=move |_|submit(state)>{t("保存标签子节点","Save tag child nodes")}</button>
     </section></Show>}
 }
+
+#[cfg(test)]
+#[path = "../../../../../test/web/unit/files/tags/view_tests.rs"]
+mod tests;
