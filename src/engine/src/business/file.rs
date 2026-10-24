@@ -622,8 +622,11 @@ impl Engine {
                 }
                 let branch = state.branches.get(branch_id).cloned()
                     .filter(|b| b.file_id.as_deref() == Some(file_id)
-                        && b.history_tree_id == repo.history_tree_id && b.state == "active")
+                        && b.history_tree_id == repo.history_tree_id)
                     .ok_or_else(|| Error::new("FILE_BRANCH_NOT_FOUND", "file branch missing"))?;
+                if branch.state != "active" {
+                    return Err(Error::new("BRANCH_NOT_ACTIVE", "merged file aliases are read-only; select an active branch"));
+                }
                 let selected = state.commits.get(&branch.head_commit_id)
                     .ok_or_else(|| Error::new("STATE_INVALID", "file branch head missing"))?
                     .entries.iter().find(|e| e.kind == "file" && e.file_id == file_id)
@@ -650,8 +653,11 @@ impl Engine {
             json!({"file_id":file_id,"branch_id":branch_id}),
             |engine, state, _| {
                 let branch = state.branches.get(branch_id).cloned()
-                    .filter(|b| b.file_id.as_deref() == Some(file_id) && b.state == "active")
+                    .filter(|b| b.file_id.as_deref() == Some(file_id))
                     .ok_or_else(|| Error::new("FILE_BRANCH_NOT_FOUND", "select an active branch of this file"))?;
+                if branch.state != "active" {
+                    return Err(Error::new("BRANCH_NOT_ACTIVE", "merged file aliases are read-only; select an active branch"));
+                }
                 engine.repository_for_history(&branch.history_tree_id)?;
                 let selected = state.commits.get(&branch.head_commit_id)
                     .ok_or_else(|| Error::new("STATE_INVALID", "file branch head missing"))?

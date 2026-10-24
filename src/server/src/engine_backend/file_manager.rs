@@ -1370,19 +1370,6 @@ pub(super) fn call(
             )?;
             let file = field(&input, "file_id")?;
             let repo = file_repo(engine, file)?.repository_id.clone();
-            if engine
-                .state()
-                .branches
-                .get(field(&input, "branch_id")?)
-                .is_some_and(|branch| {
-                    branch.file_id.as_deref() == Some(file) && branch.state != "active"
-                })
-            {
-                return Err(ApiError::conflict(
-                    "BRANCH_NOT_ACTIVE",
-                    "merged file aliases are read-only; select an active branch",
-                ));
-            }
             let requested_repo = input.get("repository_id");
             let requested_path = input.get("path");
             if requested_repo.is_some() != requested_path.is_some() {

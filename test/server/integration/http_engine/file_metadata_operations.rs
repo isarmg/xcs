@@ -25,6 +25,76 @@ async fn history(app: &Router, token: &str, file: &str) -> Value {
 }
 
 #[tokio::test]
+async fn file_selection_replays_after_its_branch_is_merged_and_path_is_renamed() {
+    let root = tempfile::tempdir().unwrap();
+    let app = application(root.path());
+    let token = login(&app, "admin", "integration-test-password").await;
+    manager_upload(&app, &token, "report.txt", b"base body").await;
+    let listing = success(
+        &app,
+        &token,
+        "GET",
+        "/api/file-manager/disks/P01/entries",
+        None,
+    )
+    .await;
+    let file = listing["entries"][0]["file_id"].as_str().unwrap();
+    let base = listing["entries"][0]["version_id"].as_str().unwrap();
+    let repo = listing["context"]["repository_id"].as_str().unwrap();
+    let left = branch(&app, &token, file, base, "left").await;
+    let right = branch(&app, &token, file, base, "right").await;
+    let route = format!("/api/file-manager/files/{file}/select");
+    let mut selections = Vec::new();
+    for scoped in [false, true] {
+        let mut request = json!({"branch_id":right,"operation_id":new_id("op")});
+        if scoped {
+            request["repository_id"] = repo.into();
+            request["path"] = "report.txt".into();
+        }
+        let original = success(&app, &token, "POST", &route, Some(request.clone())).await;
+        selections.push((request, original));
+    }
+    success(
+        &app,
+        &token,
+        "POST",
+        &format!("/api/file-manager/files/{file}/merge"),
+        Some(json!({
+            "inputs":[{"branch_id":left,"expected_node_id":base},{"branch_id":right,"expected_node_id":base}],
+            "chosen_node_id":base,"surviving_branch_id":left,"confirmed":true,"operation_id":new_id("op")
+        })),
+    )
+    .await;
+    manager_namespace(&app, &token, "rename", "report.txt", Some("renamed.txt")).await;
+    let before = history(&app, &token, file).await;
+    for (request, original) in selections {
+        let replay = success(&app, &token, "POST", &route, Some(request.clone())).await;
+        for field in [
+            "operation_id",
+            "request_digest",
+            "publication_sequence",
+            "result",
+        ] {
+            assert_eq!(replay[field], original[field], "{field}");
+        }
+        let mut changed = request.clone();
+        changed["branch_id"] = left.clone().into();
+        let (status, response) = send(&app, Some(&token), "POST", &route, Some(changed)).await;
+        assert_eq!(status, StatusCode::CONFLICT);
+        assert_eq!(response["error"]["code"], "IDEMPOTENCY_KEY_REUSED");
+        let mut fresh = request;
+        fresh["operation_id"] = new_id("op").into();
+        if fresh.get("path").is_some() {
+            fresh["path"] = "renamed.txt".into();
+        }
+        let (status, response) = send(&app, Some(&token), "POST", &route, Some(fresh)).await;
+        assert_eq!(status, StatusCode::CONFLICT);
+        assert_eq!(response["error"]["code"], "BRANCH_NOT_ACTIVE");
+    }
+    assert_eq!(history(&app, &token, file).await, before);
+}
+
+#[tokio::test]
 async fn tags_and_file_merges_publish_reviewed_node_graphs_without_new_bodies() {
     let root = tempfile::tempdir().unwrap();
     let app = application(root.path());
