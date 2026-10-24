@@ -36,6 +36,58 @@ fn persisted_repository_schema_requires_an_exact_smb_binding_revision() {
 }
 
 #[test]
+fn protection_policy_schema_requires_current_or_retained_role_without_a_default() {
+    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../docs/contracts");
+    let mut core = read(&root.join("core.schema.json")).unwrap();
+    core["$ref"] = "#/$defs/ProtectionPolicy".into();
+    let core_schema = validator(&core).unwrap();
+    let mut api = read(&root.join("openapi.json")).unwrap();
+    api["$ref"] = "#/components/schemas/ProtectionPolicy".into();
+    let api_schema = validator(&api).unwrap();
+    let vectors = read(&root.join("vectors.json")).unwrap();
+    let mut roles = BTreeSet::new();
+    for case in array(&vectors["positive"])
+        .unwrap()
+        .iter()
+        .filter(|case| case["schema"] == "ProtectionPolicy")
+    {
+        let value = &case["value"];
+        assert!(core_schema.is_valid(value), "{}", case["name"]);
+        assert!(api_schema.is_valid(value), "{}", case["name"]);
+        let encoded = storage_contract::canonical_json(value).unwrap();
+        let policy: storage_contract::ProtectionPolicy =
+            storage_contract::decode_strict(&encoded).unwrap();
+        roles.insert(policy.inheritable);
+        assert_eq!(policy.inheritable, value["inheritable"].as_bool().unwrap());
+        assert_eq!(storage_contract::canonical_json(&policy).unwrap(), encoded);
+
+        let mut missing = value.clone();
+        missing.as_object_mut().unwrap().remove("inheritable");
+        assert!(!core_schema.is_valid(&missing));
+        assert!(!api_schema.is_valid(&missing));
+        assert!(
+            storage_contract::decode_strict::<storage_contract::ProtectionPolicy>(
+                &storage_contract::canonical_json(&missing).unwrap()
+            )
+            .is_err()
+        );
+        for invalid in [json!(null), json!(0), json!("false")] {
+            let mut changed = value.clone();
+            changed["inheritable"] = invalid;
+            assert!(!core_schema.is_valid(&changed));
+            assert!(!api_schema.is_valid(&changed));
+            assert!(
+                storage_contract::decode_strict::<storage_contract::ProtectionPolicy>(
+                    &storage_contract::canonical_json(&changed).unwrap()
+                )
+                .is_err()
+            );
+        }
+    }
+    assert_eq!(roles, BTreeSet::from([false, true]));
+}
+
+#[test]
 fn sparse_branch_and_commit_canonical_bytes_omit_empty_pending_maps() {
     let root = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../docs/contracts");
     let vectors = read(&root.join("vectors.json")).unwrap();

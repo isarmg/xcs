@@ -11,7 +11,8 @@ Web 管理页使用 `src/web/src/admin/request.rs` 的 HTTP 请求构建器。�
 | 仓库列表 | GET /api/repositories | 查看仓库 |
 | 磁盘 | GET /api/admin/disks | 查看磁盘 / 现有文件管理器磁盘导航 |
 | 备份拓扑 | GET /api/backup-topologies/{id} | 查看拓扑 |
-| 保护策略 | GET/PUT /api/policies/{id} | 策略表单，显式预期代数；查看当前值 |
+| 路径保护策略 | GET/PUT /api/policies/{id} | 查看当前值；策略表单仅创建／更新无稳定 scope 的现行路径规则，要求显式预期代数 |
+| 文件／目录备份配置 | GET/PUT /api/repositories/{id}/backup-configuration | 文件管理器备份设置，固定 scope 身份与自身代数；保留旧绑定并回填所覆盖的可用历史版本 |
 | 放置规则 | GET/PUT /api/primary-placement-rules/{id} | 放置规则表单，显式预期代数；查看当前值 |
 | SMB 绑定 | GET/PUT /api/repositories/{id}/smb-binding | 绑定表单，包含分支、启用状态和预期历史代数 |
 | 目录树 | GET /api/branches/{id}/tree | 查看分支树 / 现有文件管理器浏览 |
@@ -33,6 +34,7 @@ Web 管理页使用 `src/web/src/admin/request.rs` 的 HTTP 请求构建器。�
 
 - 全部会话均属于唯一管理员；不存在仓库 ACL 或账户准入列表。系统管理仍保留存储策略、绑定、计划及恢复功能。
 - 策略、规则和绑定更新携带明确代数；冲突不得静默重试覆盖。
+- 稳定 scope 规则与文件绑定保留设置不得通过通用策略表单修改；`BACKUP_CONFIGURATION_REQUIRED` 要求改用对应文件／目录的备份设置，不能降级为路径规则更新。
 - 清理、拆分和历史保存先生成不可变预览，审查摘要及影响后明确提交；取消是独立操作。未就绪或已完成计划不能提交。
 - 结果未知时保留原操作 ID，查询原操作，不改用新 ID 重发。
 - 历史保存可引用已有工作区 ID，但管理页不上传、下载或预览文件正文。

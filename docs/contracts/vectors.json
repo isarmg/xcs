@@ -1254,6 +1254,70 @@
       "schema": "UtcTimestamp",
       "layer": "schema",
       "value": "2026-10-24T12:00:00Z"
+    },
+    {
+      "name": "protection-policy-current-path",
+      "schema": "ProtectionPolicy",
+      "layer": "schema",
+      "value": {
+        "policy_id": "policy_00000000000000000000000000000001",
+        "repository_id": "repo_00000000000000000000000000000001",
+        "path_prefix": "工作",
+        "target_copies": 2,
+        "inheritable": true,
+        "generation": "1"
+      }
+    },
+    {
+      "name": "protection-policy-current-directory",
+      "schema": "ProtectionPolicy",
+      "layer": "schema",
+      "value": {
+        "policy_id": "policy_00000000000000000000000000000001",
+        "repository_id": "repo_00000000000000000000000000000001",
+        "path_prefix": "工作",
+        "target_copies": 2,
+        "inheritable": true,
+        "generation": "1",
+        "scope_directory_id": "entry_00000000000000000000000000000001",
+        "backup_prefixes": {
+          "B01": "档案/工作"
+        }
+      }
+    },
+    {
+      "name": "protection-policy-current-file",
+      "schema": "ProtectionPolicy",
+      "layer": "schema",
+      "value": {
+        "policy_id": "policy_00000000000000000000000000000001",
+        "repository_id": "repo_00000000000000000000000000000001",
+        "path_prefix": "工作/报告.txt",
+        "target_copies": 2,
+        "inheritable": true,
+        "generation": "1",
+        "scope_file_id": "file_00000000000000000000000000000001",
+        "backup_prefixes": {
+          "B01": "档案/报告"
+        }
+      }
+    },
+    {
+      "name": "protection-policy-retained-settings",
+      "schema": "ProtectionPolicy",
+      "layer": "schema",
+      "value": {
+        "policy_id": "policy_00000000000000000000000000000002",
+        "repository_id": "repo_00000000000000000000000000000001",
+        "path_prefix": "工作",
+        "target_copies": 2,
+        "inheritable": false,
+        "generation": "1",
+        "scope_directory_id": "entry_00000000000000000000000000000001",
+        "backup_prefixes": {
+          "B01": "档案/工作"
+        }
+      }
     }
   ],
   "negative": [
@@ -4804,6 +4868,57 @@
       "schema": "UtcTimestamp",
       "layer": "schema",
       "value": "2026-10-24T12:00:00Z\n"
+    },
+    {
+      "name": "protection-policy-missing-role",
+      "schema": "ProtectionPolicy",
+      "layer": "schema",
+      "value": {
+        "policy_id": "policy_00000000000000000000000000000001",
+        "repository_id": "repo_00000000000000000000000000000001",
+        "path_prefix": "工作",
+        "target_copies": 2,
+        "generation": "1"
+      }
+    },
+    {
+      "name": "protection-policy-null-role",
+      "schema": "ProtectionPolicy",
+      "layer": "schema",
+      "value": {
+        "policy_id": "policy_00000000000000000000000000000001",
+        "repository_id": "repo_00000000000000000000000000000001",
+        "path_prefix": "工作",
+        "target_copies": 2,
+        "inheritable": null,
+        "generation": "1"
+      }
+    },
+    {
+      "name": "protection-policy-string-role",
+      "schema": "ProtectionPolicy",
+      "layer": "schema",
+      "value": {
+        "policy_id": "policy_00000000000000000000000000000001",
+        "repository_id": "repo_00000000000000000000000000000001",
+        "path_prefix": "工作",
+        "target_copies": 2,
+        "inheritable": "false",
+        "generation": "1"
+      }
+    },
+    {
+      "name": "protection-policy-number-role",
+      "schema": "ProtectionPolicy",
+      "layer": "schema",
+      "value": {
+        "policy_id": "policy_00000000000000000000000000000001",
+        "repository_id": "repo_00000000000000000000000000000001",
+        "path_prefix": "工作",
+        "target_copies": 2,
+        "inheritable": 0,
+        "generation": "1"
+      }
     }
   ],
   "canonical": [

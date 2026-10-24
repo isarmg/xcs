@@ -1373,6 +1373,12 @@ impl HistoryManifest {
                 return Err(invalid("backup binding escapes its history or policy"));
             }
         }
+        let bound_policies = self
+            .file_backup_policies
+            .values()
+            .map(String::as_str)
+            .collect::<BTreeSet<_>>();
+        let mut inheritable_scopes = BTreeSet::new();
         for (id, policy) in &self.protection_policies {
             validate_id(id, "policy")?;
             if id != &policy.policy_id || policy.repository_id != self.repository.repository_id {
@@ -1380,6 +1386,17 @@ impl HistoryManifest {
             }
             if !policy.path_prefix.is_empty() {
                 name_policy::validate_path(&policy.path_prefix)?;
+            }
+            if !policy.inheritable && !bound_policies.contains(id.as_str()) {
+                return Err(invalid("retained backup settings have no file binding"));
+            }
+            let scope = policy
+                .scope_directory_id
+                .as_deref()
+                .map(|id| ("directory", id))
+                .or_else(|| policy.scope_file_id.as_deref().map(|id| ("file", id)));
+            if policy.inheritable && scope.is_some_and(|scope| !inheritable_scopes.insert(scope)) {
+                return Err(invalid("backup scope has multiple inheritable policies"));
             }
             if policy.target_copies == 0
                 || (policy.scope_file_id.is_some() && policy.scope_directory_id.is_some())

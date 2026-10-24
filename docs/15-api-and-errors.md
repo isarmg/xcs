@@ -89,7 +89,7 @@ Web 和保留的受控 HTTP 客户端使用统一 HTTPS 业务契约；SMB 基�
 | `POST /api/plans/{plan}/commit` | 以固定计划摘要和代际执行，长任务通过operation查询 |
 | `POST /api/plans/{plan}/cancel` | 仅在未进入不可撤销决定时取消 |
 | `GET /api/history-trees/{history}/graph` | 分别包含版本演进父边、合并标记线、PURGED 节点及拆分来源的历史图 |
-| `PUT /api/policies/{policy}` | 条件更新保护策略 |
+| `PUT /api/policies/{policy}` | 条件创建／更新无稳定 scope 的现行路径保护规则，仅影响后续版本；稳定 scope 与保留设置须用 `backup-configuration` |
 | `GET /api/events?after={cursor}` | 可续读事件流或分页事件 |
 | `GET /api/backup-topologies/{topology}` | 已发布层级、各盘位直接来源和物理绑定；供已认证管理员查看 |
 | `POST /api/backup-topology-plans` | 用户指定一级/二级/后续来源映射，预检路由和数据迁移 |
@@ -176,6 +176,7 @@ Web 和保留的受控 HTTP 客户端使用统一 HTTPS 业务契约；SMB 基�
 | `METADATA_UNAVAILABLE` | 元数据保护或恢复条件不足 | 阻止危险写入 |
 | `RECOVERY_REQUIRED` | 可信成员、日志或配置证据不足 | 只开放可验证读取与恢复，不自动重置池 |
 | `POLICY_CHANGED` | 准备期间保护策略代际改变 | 按新条件重新准备，不能修改已有候选 |
+| `BACKUP_CONFIGURATION_REQUIRED` | 通用策略更新试图修改稳定 scope 规则或仅供文件绑定使用的保留设置，HTTP 400 | 改用对应文件／目录的 `backup-configuration`，重新读取稳定身份和自身代数 |
 | `FORMAT_UNSUPPORTED` | 必需盘格式或协议特性未知 | 停止写入/自动重放，使用受支持读取器 |
 | `SAVE_MODE_UNSUPPORTED` | 请求不支持的保存或分支类型 | 明确拒绝；实际内容只接受 FULL，分支创建先记录与来源引用 |
 | `HISTORY_NODE_NOT_FOUND` | 所选连线端点不存在或不在请求历史域中 | 重新选择有效节点，不以分支当前 HEAD 偷换端点 |
@@ -216,6 +217,8 @@ Web 和保留的受控 HTTP 客户端使用统一 HTTPS 业务契约；SMB 基�
 | `POST /api/file-manager/files/{file}/tags` | 每个显式 `source_node_id` 与所关联分支当前 `expected_node_id`，按 `add/remove` 增量创建继承标签的元数据子节点；最多16标签、每项128 UTF-8字节；历史源不推进分支head |
 | `PATCH /api/file-manager/files/{file}/nodes/{node}` | 路径、标签与合并节点的独立128字节备注；不修改正文备注或正文proof |
 | `GET/PUT /api/repositories/{repo}/backup-configuration` | GET返回自身与有效策略代数、scope身份及实际备份路线，不返回账户权限投影；PUT固定 `expected_scope_id`/`expected_generation`、含主盘总份数和每个备份slot的用户逻辑前缀，并回填可用历史版本 |
+
+保护规则必填 `inheritable`：`true` 表示当前可按 scope／路径继承的规则，`false` 表示仅经文件绑定生效的保留设置，不允许缺省或旧格式推断。重配沿用现行 `policy_id` 并推进 `generation`，仅把范围外仍绑定旧规则的文件转到共享的旧设置快照，保留其份数和路径。保留设置不参加精确 scope／祖先查找，不受父目录配置覆盖；显式文件配置可以重新绑定。GET 对保留设置返回 `inherited:false`，`effective_policy_id`／`effective_generation` 描述绑定设置；自身 `policy_id`／`generation` 仍只描述精确现行规则，不存在时为 `null`／`"0"`。没有绑定的保留设置清理，空 scope 的现行规则继续保留。
 
 节点标签和合并复用已有正文，`versions`仍只包含真实正文版本。统一 `nodes` 增加 `tags`/`merge` 类型与 `tags` 快照；独立 `merges` 保存全部输入来源，图边略去会形成环的关系。只读别名可通过历史节点下载和派生新分支，不能直接选择为可写分支。条件冲突返回409，标签限制/无效prefix返回400；不能因客户端先筛选了分支就省略服务端校验。
 

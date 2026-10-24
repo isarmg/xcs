@@ -179,6 +179,8 @@ required_slots(v) = route(v)[1:r(v)]
 
 若同一保留版本仍受多个有效保留要求约束，其目标取这些要求的最大值。已实际写入的分支内容拥有自己的版本和放置绑定，不通过修改源分支策略改变另一分支已经创建的文件。
 
+当前 `backup-configuration` 显式回填所覆盖文件的可用历史版本。scope 的现行规则保持原 ID 并推进代数；本次覆盖范围外仍绑定旧规则的文件共用一份 `inheritable:false` 的保留设置，其已绑定份数和备份路径不变。只有 `inheritable:true` 的现行 scope／路径规则参与后续继承；保留设置只由文件绑定使用，父目录重配不能覆盖它。无引用保留设置清理，空 scope 的现行规则保留。通用 `PUT /api/policies/{policy}` 只接受无稳定 scope 的现行路径规则，不回填历史；稳定 scope 与保留设置直接更新会被拒绝。字段与导入／拆分边界见[备份规则](design/file-merge-tags-backup.md#backup-prefix)。
+
 ---
 
 [文档目录](README.md) · [上一章：全量存储、盘格式与单盘恢复](08-full-storage-and-disk-format.md) · [下一章：事务、持久化与崩溃恢复](10-transactions-and-recovery.md)

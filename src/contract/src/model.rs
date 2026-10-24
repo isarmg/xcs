@@ -605,6 +605,8 @@ pub struct ProtectionPolicy {
     pub repository_id: String,
     pub path_prefix: String,
     pub target_copies: u32,
+    /// Retained settings apply only to explicit file bindings, not new paths.
+    pub inheritable: bool,
     #[serialization(default, skip_serializing_if = "Option::is_none")]
     pub scope_directory_id: Option<String>,
     #[serialization(default, skip_serializing_if = "Option::is_none")]

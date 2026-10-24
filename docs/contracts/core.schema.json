@@ -2323,6 +2323,10 @@
           "type": "integer",
           "minimum": 1
         },
+        "inheritable": {
+          "type": "boolean",
+          "description": "必填规则角色：true为可按当前文件/目录scope或path_prefix选择的现行规则；false为仅供file_backup_policies显式绑定引用的保留设置，不参与精确scope匹配或祖先继承。缺失不补默认值。"
+        },
         "scope_directory_id": {
           "anyOf": [
             {
@@ -2355,10 +2359,11 @@
         "repository_id",
         "path_prefix",
         "target_copies",
+        "inheritable",
         "generation"
       ],
       "additionalProperties": false,
-      "description": "文件/目录稳定身份的保护规则。旧path_prefix规则可没有scope身份，新增配置绑定其中一种稳定scope；总份数包含主盘。空前缀映射默认省略。"
+      "description": "文件/目录保护规则，总份数包含主盘。现行规则inheritable=true，可绑定一种稳定scope或只按path_prefix匹配；保留设置inheritable=false，只通过显式文件绑定生效。保留设置可保存仍有效的本地scope引用，但不参与scope查找；跨对象引用、唯一现行scope及保留设置非空绑定由核心验证。空前缀映射省略。"
     },
     "FileMetadataNodes": {
       "type": "object",

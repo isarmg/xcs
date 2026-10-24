@@ -1,5 +1,7 @@
 use super::*;
 use std::{fs, os::unix::fs::MetadataExt, path::Path};
+#[path = "retained_tests.rs"]
+mod retained_tests;
 
 fn initialize(root: &Path, copies: u32, capacity: Option<u64>) -> (Engine, Repository) {
     let mut config = Config::development([root.join("p"), root.join("b"), root.join("c")]);
@@ -420,7 +422,7 @@ fn empty_extensions_use_sparse_current_state_and_policy_encoding() {
         canonical_json(&recovered).unwrap(),
         canonical_json(&state).unwrap()
     );
-    let minimal = json!({"policy_id":new_id("policy"),"repository_id":new_id("repo"),"path_prefix":"docs","target_copies":2,"generation":"1"});
+    let minimal = json!({"policy_id":new_id("policy"),"repository_id":new_id("repo"),"path_prefix":"docs","target_copies":2,"inheritable":true,"generation":"1"});
     let policy: ProtectionPolicy = json_codec::from_value(minimal.clone()).unwrap();
     assert_eq!(
         canonical_json(&policy).unwrap(),

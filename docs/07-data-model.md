@@ -26,7 +26,7 @@
 | MergeLink | merge_link_id, history_tree_id, source_branch_id, source_commit_id, target_branch_id, target_commit_id, author, created_at, operation_id | 两端为选定的已有版本；无结果版本、目录快照或内容依赖 |
 | FileMetadataNode | node_id, file_id, version_id, parent_node_ids, branch_id, kind, tags, sequence | 标签或合并子节点复用真实正文；标签快照不可变，不制造 FULL |
 | FileBranchMerge | input_branch_ids, input_node_ids, chosen_node_id, result_node_id, surviving_branch_id, reused_node, parent_node_ids | 完整来源独立保留；复用输入头时不新建节点，附加边不得成环；消耗分支记录只读别名 |
-| ProtectionPolicy / file_backup_paths | 稳定策略范围、target_copies、每槽用户前缀、按文件与槽位解析的路径 | 份数含主盘；副本前缀独立于主盘真实路径，移动不重设绑定 |
+| ProtectionPolicy / file_backup_policies / file_backup_paths | 稳定策略范围、target_copies、必填 inheritable、每槽用户前缀、文件策略绑定与逐槽路径 | true 为现行 scope／路径规则；false 仅供文件绑定保留旧设置，不参加继承；份数含主盘，移动不重设绑定 |
 | DirectoryTree / Entry | tree_id, entry_id, name, lookup_key, kind, file_id, version_id | 不可变目录语义，条目指向逻辑版本而非物理路径 |
 | FileVersion | version_id, history_tree_id, file_id, logical_size, content_hash, checksum_manifest_hash, origin_commit_id, source_version_ids, version_sequence, creation_primary_slot_id, created_as_full_checkpoint | 逻辑描述不可变；内容状态另记事件 |
 | FullPayload | payload_id, version_id, kind, content_hash, size | kind 固定 FULL；无基础版本、差异链或模式切换 |

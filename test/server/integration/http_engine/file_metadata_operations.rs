@@ -1,5 +1,136 @@
 use super::*;
 
+#[tokio::test]
+async fn scoped_and_retained_policies_require_the_backup_configuration_endpoint() {
+    let root = tempfile::tempdir().unwrap();
+    let app = application(root.path());
+    let token = login(&app, "admin", "integration-test-password").await;
+    manager_upload(&app, &token, "docs/stay.txt", b"stay").await;
+    manager_upload(&app, &token, "docs/moved.txt", b"moved").await;
+    let listing = success(
+        &app,
+        &token,
+        "GET",
+        "/api/file-manager/disks/P01/entries?path=docs",
+        None,
+    )
+    .await;
+    let repo = listing["context"]["repository_id"].as_str().unwrap();
+    let route = format!("/api/repositories/{repo}/backup-configuration");
+    let baseline = success(&app, &token, "GET", &format!("{route}?path=docs"), None).await;
+    let configured = success(&app, &token, "PUT", &route, Some(json!({
+        "path":"docs", "target_copies":2, "backup_prefixes":{"B01":"old"},
+        "expected_generation":"0", "expected_scope_id":baseline["scope"]["id"], "operation_id":new_id("op")
+    }))).await;
+    let current = configured["result"]["policy"]["policy_id"]
+        .as_str()
+        .unwrap();
+    // A metadata-only workspace move updates the selected source and destination
+    // views together, so the file is no longer retained inside the source scope.
+    let workspace = success(
+        &app,
+        &token,
+        "POST",
+        "/api/file-manager/disks/P01/write-sessions",
+        Some(json!({"path":"docs/moved.txt"})),
+    )
+    .await;
+    let workspace_id = workspace["workspace_id"].as_str().unwrap();
+    success(
+        &app,
+        &token,
+        "POST",
+        &format!("/api/workspaces/{workspace_id}/namespace-operations"),
+        Some(json!({"kind":"rename","path":"docs/moved.txt","destination":"moved.txt"})),
+    )
+    .await;
+    let mut commit = success(
+        &app,
+        &token,
+        "POST",
+        &format!("/api/workspaces/{workspace_id}/seal"),
+        Some(json!({})),
+    )
+    .await;
+    assert_eq!(commit["file_placement"], json!({}));
+    commit["request_digest"] = request_digest(
+        "POST",
+        "/api/workspaces/{workspace}/commit",
+        json!({"workspace":workspace_id}),
+        json!({}),
+        &commit,
+    )
+    .unwrap()
+    .into();
+    success(
+        &app,
+        &token,
+        "POST",
+        &format!("/api/workspaces/{workspace_id}/commit"),
+        Some(commit),
+    )
+    .await;
+    let changed = success(&app, &token, "PUT", &route, Some(json!({
+        "path":"docs", "target_copies":3, "backup_prefixes":{"B01":"new","C01":"cold"},
+        "expected_generation":"1", "expected_scope_id":baseline["scope"]["id"], "operation_id":new_id("op")
+    }))).await;
+    assert_eq!(changed["result"]["policy"]["policy_id"], current);
+    assert_eq!(changed["result"]["file_count"], "1");
+    let moved_route = format!("{route}?path=moved.txt");
+    let moved = success(&app, &token, "GET", &moved_route, None).await;
+    assert_eq!(moved["target_copies"], 2);
+    assert_eq!(moved["inherited"], false);
+    assert_eq!(moved["backup_paths"]["B01"], "old/moved.txt");
+    let retained = moved["effective_policy_id"].as_str().unwrap();
+    assert_ne!(retained, current);
+    for (id, inheritable) in [(current, true), (retained, false)] {
+        let policy_route = format!("/api/policies/{id}");
+        let policy = success(&app, &token, "GET", &policy_route, None).await;
+        assert_eq!(policy["inheritable"], inheritable);
+        let (status, rejected) = send(
+            &app,
+            Some(&token),
+            "PUT",
+            &policy_route,
+            Some(json!({
+                "repository_id":repo, "path_prefix":policy["path_prefix"], "target_copies":1,
+                "expected_generation":policy["generation"], "operation_id":new_id("op")
+            })),
+        )
+        .await;
+        assert_eq!(status, StatusCode::BAD_REQUEST);
+        assert_eq!(rejected["error"]["code"], "BACKUP_CONFIGURATION_REQUIRED");
+        assert_eq!(
+            success(&app, &token, "GET", &policy_route, None).await,
+            policy
+        );
+    }
+    assert_eq!(
+        success(&app, &token, "GET", &moved_route, None).await,
+        moved
+    );
+    // Ordinary public saves must use the retained file binding, not the current
+    // source rule or the repository fallback supplied at seal time.
+    let saved = manager_upload(&app, &token, "moved.txt", b"moved update").await;
+    let version = saved["result"]["versions"][0]["version_id"]
+        .as_str()
+        .unwrap();
+    let placement = success(
+        &app,
+        &token,
+        "GET",
+        &format!("/api/versions/{version}/placement"),
+        None,
+    )
+    .await;
+    assert_eq!(placement["target_copies"], 2);
+    assert_eq!(placement["route_slot_ids"], json!(["P01", "B01"]));
+    assert_eq!(
+        success(&app, &token, "GET", &moved_route, None).await,
+        moved
+    );
+}
+
 async fn branch(app: &Router, token: &str, file: &str, version: &str, name: &str) -> String {
     success(app,token,"POST",&format!("/api/file-manager/files/{file}/branches"),Some(json!({"source_version_id":version,"source_node_id":version,"name":name,"operation_id":new_id("op")}))).await["result"]["branch_id"].as_str().unwrap().into()
 }

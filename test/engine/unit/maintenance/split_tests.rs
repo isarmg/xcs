@@ -1,5 +1,5 @@
 use super::*;
-use std::io::Read;
+use std::{io::Read, os::unix::fs::PermissionsExt};
 
 fn fixture() -> (tempfile::TempDir, Engine, Repository) {
     let temp = tempfile::tempdir().unwrap();
@@ -66,6 +66,189 @@ fn assert_graph_closed(engine: &Engine, history: &str) {
             assert!(branches.contains(branch.as_str()));
         }
         assert!(!boundary.external_commit_id.is_empty());
+    }
+}
+
+#[test]
+fn split_preserves_bound_settings_when_the_original_scope_is_outside_the_cut() {
+    for inheritable in [false, true] {
+        let (temp, mut engine, repo) = fixture();
+        fs::set_permissions(temp.path(), fs::Permissions::from_mode(0o700)).unwrap();
+        let mut policies = Vec::new();
+        for path in ["old", "unused"] {
+            engine
+                .file_namespace(
+                    &repo.repository_id,
+                    NamespaceOperation {
+                        kind: "mkdir".into(),
+                        path: path.into(),
+                        destination: None,
+                    },
+                    "alice",
+                    &new_id("op"),
+                )
+                .unwrap();
+            let configured = engine
+                .configure_backups(BackupConfigurationRequest {
+                    repository_id: &repo.repository_id,
+                    path,
+                    target_copies: 2,
+                    backup_prefixes: &BTreeMap::from([("B01".into(), path.into())]),
+                    expected_generation: 0,
+                    principal: "alice",
+                    operation_id: &new_id("op"),
+                })
+                .unwrap();
+            policies.push(
+                configured.result["policy"]["policy_id"]
+                    .as_str()
+                    .unwrap()
+                    .to_owned(),
+            );
+            engine
+                .file_namespace(
+                    &repo.repository_id,
+                    NamespaceOperation {
+                        kind: "delete".into(),
+                        path: path.into(),
+                        destination: None,
+                    },
+                    "alice",
+                    &new_id("op"),
+                )
+                .unwrap();
+        }
+        engine
+            .configure_backups(BackupConfigurationRequest {
+                repository_id: &repo.repository_id,
+                path: "",
+                target_copies: 3,
+                backup_prefixes: &BTreeMap::from([
+                    ("B01".into(), "root".into()),
+                    ("C01".into(), "cold".into()),
+                ]),
+                expected_generation: 0,
+                principal: "alice",
+                operation_id: &new_id("op"),
+            })
+            .unwrap();
+        let cut = save(&mut engine, &repo.main_branch_id, b"split body");
+        let file = engine
+            .list_tree(&repo.main_branch_id)
+            .unwrap()
+            .into_iter()
+            .find(|entry| entry.kind == "file")
+            .unwrap();
+        // Real directory/path-node histories are deliberately not splittable.
+        // Publish only the valid binding prerequisite into an ordinary history
+        // to exercise policy remapping without weakening that admission rule.
+        engine
+            .mutate(
+                "fixture.bound_settings",
+                "alice",
+                &new_id("op"),
+                json!({}),
+                |_, state, _| {
+                    state
+                        .protection_policies
+                        .get_mut(&policies[0])
+                        .unwrap()
+                        .inheritable = inheritable;
+                    state
+                        .file_backup_policies
+                        .insert(file.file_id.clone(), policies[0].clone());
+                    state
+                        .file_backup_paths
+                        .get_mut(&file.file_id)
+                        .unwrap()
+                        .insert("B01".into(), "old/文件.txt".into());
+                    Ok(json!({}))
+                },
+            )
+            .unwrap();
+        let plan = engine
+            .create_split_plan(&repo.history_tree_id, &cut, "alice")
+            .unwrap();
+        let split = engine
+            .commit_plan(&plan.plan_id, "alice", &new_id("op"))
+            .unwrap();
+        let history = split.history_tree_id.unwrap();
+        let copied = engine
+            .state
+            .repositories
+            .values()
+            .find(|repo| repo.history_tree_id == history)
+            .unwrap()
+            .clone();
+        let file = engine
+            .list_tree(&copied.main_branch_id)
+            .unwrap()
+            .into_iter()
+            .find(|entry| entry.kind == "file")
+            .unwrap();
+        let bound = engine.state.file_backup_policies[&file.file_id].clone();
+        let retained = &engine.state.protection_policies[&bound];
+        assert!(!retained.inheritable);
+        assert_eq!(retained.scope_directory_id, None);
+        assert_eq!(retained.scope_file_id, None);
+        assert_eq!(retained.target_copies, 2);
+        assert_eq!(retained.generation, 1);
+        assert_eq!(
+            engine
+                .state
+                .protection_policies
+                .values()
+                .filter(|policy| policy.repository_id == copied.repository_id)
+                .count(),
+            2
+        );
+        assert_eq!(
+            engine
+                .new_file_placement(&copied.repository_id, "old/future.txt")
+                .unwrap()
+                .1,
+            3
+        );
+        assert_eq!(
+            engine
+                .backup_configuration(&copied.repository_id, &file.path)
+                .unwrap()["target_copies"],
+            2
+        );
+        assert_eq!(
+            engine.state.file_backup_paths[&file.file_id]["B01"],
+            "old/文件.txt"
+        );
+        save(&mut engine, &copied.main_branch_id, b"after split");
+        let latest = engine
+            .list_tree(&copied.main_branch_id)
+            .unwrap()
+            .into_iter()
+            .find(|entry| entry.kind == "file")
+            .unwrap();
+        assert_eq!(engine.state.placements[&latest.version_id].target_copies, 2);
+        assert_graph_closed(&engine, &history);
+        let package = temp.path().join("package");
+        engine.export_history_package(&history, &package).unwrap();
+        let destination = temp.path().join("restored");
+        let mut restored = Engine::initialize(
+            &destination.join("state"),
+            Config::development([
+                destination.join("p"),
+                destination.join("b"),
+                destination.join("c"),
+            ]),
+        )
+        .unwrap();
+        restored
+            .restore_history_package(&package, "P01", 2, "alice", &new_id("op"))
+            .unwrap();
+        assert!(!restored.state.protection_policies[&bound].inheritable);
+        assert_eq!(restored.state.file_backup_policies[&file.file_id], bound);
+        drop(restored);
+        Engine::open(&destination.join("state")).unwrap();
+        drop(engine);
+        Engine::open(&temp.path().join("state")).unwrap();
     }
 }
 

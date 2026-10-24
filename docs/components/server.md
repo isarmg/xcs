@@ -99,7 +99,7 @@ HTTP 监听地址必须是回环地址。对外部署由同机反向代理终止
 | `/api/history-trees/{history}/graph`、`/merge-links` | GET 图、POST 仅关联的合并链接 |
 | `/api/history-trees/{history}/purge-plans`、`/split-plans`、`/historical-save-plans` | POST 预览，尚不执行变更 |
 | `/api/plans/{plan}`、`/commit`、`/cancel` | GET 已保存预览、POST 按摘要执行或取消 |
-| `/api/policies/{policy}`、`/api/primary-placement-rules/{rule}` | GET/PUT 目录保护策略、主盘规则，更新要求 generation |
+| `/api/policies/{policy}`、`/api/primary-placement-rules/{rule}` | GET 保护策略／主盘规则；PUT 按 generation 更新，保护策略仅接受无稳定 scope 的现行路径规则 |
 | `/api/admin/disks`、`/api/backup-topologies/{topology}`、`/api/admin/check` | GET 盘状态、拓扑、完整性检查 |
 | `/api/operations/{operation}`、`/api/events`、`/api/compare` | GET 结果/分页事件、POST 两次提交比较 |
 
@@ -159,6 +159,8 @@ Unix socket 测试需要运行环境允许本机 socket。[集成回归](../../t
 `POST /api/file-manager/files/{file}/tags` 对显式节点与分支 head 基线应用标签增量，最多16项，每项128 UTF-8字节。变化生成不可变标签子节点，保留源标签；历史源不推进分支 head，当前精确引用才推进。标签不产生正文或完成首次正文写入。路径、标签、合并节点备注统一使用 `PATCH /files/{file}/nodes/{node}`，与正文备注独立。
 
 `GET/PUT /api/repositories/{repo}/backup-configuration` 查询/配置稳定文件或目录 scope。写请求需要当前唯一管理员认证，绑定 `expected_scope_id` 与自身 `expected_generation`；继承策略的有效代数另以 `effective_generation` 返回。份数包含主盘；每个备份slot使用用户独立指定的逻辑路径前缀，相对所选scope根。配置回填可用历史正文且保持版本及proof ID。目录分支合并待用户确认，暂不实现，能力明确为false且无写端点。完整语义见[文件合并、标签和备份](../design/file-merge-tags-backup.md)。
+
+保护规则必填 `inheritable`，现行规则为 `true`，文件绑定保留设置为 `false`。后者不参加 scope／祖先查找，GET 返回 `inherited:false`，但其份数和路径仍经文件绑定生效。重配只推进现行规则的原 ID／代数，将范围外绑定独立保留；父目录不能覆盖这些保留设置。通用策略 PUT 对稳定 scope 或保留设置返回 `400 BACKUP_CONFIGURATION_REQUIRED`，要求使用文件／目录备份配置，不通过通用入口绕过历史回填。
 
 ### 反向代理登录限流
 

@@ -789,13 +789,22 @@ impl Engine {
                 let mut policy_map=BTreeMap::new();
                 for mut policy in policies {
                     let old=policy.policy_id.clone();
-                    if let Some(file)=&policy.scope_file_id {let Some(mapped)=file_map.get(file) else {continue;};policy.scope_file_id=Some(mapped.clone());}
-                    if let Some(directory)=&policy.scope_directory_id {policy.scope_directory_id=Some(if directory==&original.repository_id {repository_id.clone()}else{let Some(mapped)=entry_map.get(directory) else{continue;};mapped.clone()});}
+                    if let Some(file)=&policy.scope_file_id {
+                        let mapped=file_map.get(file).cloned();
+                        if mapped.is_none(){policy.inheritable=false;}
+                        policy.scope_file_id=mapped;
+                    }
+                    if let Some(directory)=&policy.scope_directory_id {
+                        let mapped=if directory==&original.repository_id {Some(repository_id.clone())}else{entry_map.get(directory).cloned()};
+                        if mapped.is_none(){policy.inheritable=false;}
+                        policy.scope_directory_id=mapped;
+                    }
                     policy.policy_id = new_id("policy"); policy.repository_id = repository_id.clone(); policy.generation = 1;
                     policy_map.insert(old,policy.policy_id.clone());
                     state.protection_policies.insert(policy.policy_id.clone(), policy);
                 }
                 for (old,new) in &file_map {if let Some(policy)=state.file_backup_policies.get(old).and_then(|policy|policy_map.get(policy)).cloned(){state.file_backup_policies.insert(new.clone(),policy);}}
+                crate::protection::prune_retained_policies(state, &repository_id);
                 // The cut edge and each crossing merge edge are explicit audit boundaries.
                 insert_boundary(state, BoundaryInput { history, commit: &prefix_head, branch: None, relation: "split_out", external_history: &history_id, external_commit: &commit_map[cut], source_link: None });
                 insert_boundary(state, BoundaryInput { history: &history_id, commit: &commit_map[cut], branch: None, relation: "split_origin", external_history: history, external_commit: &prefix_head, source_link: None });

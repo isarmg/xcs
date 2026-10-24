@@ -79,6 +79,9 @@ fn policy_applies(
     file: Option<&str>,
     path: &str,
 ) -> bool {
+    if !policy.inheritable {
+        return false;
+    }
     if let Some(expected) = &policy.scope_file_id {
         return file.is_some_and(|file| file == expected);
     }
@@ -210,7 +213,8 @@ fn exact_policy<'a>(
         .protection_policies
         .values()
         .find(|policy| {
-            policy.repository_id == repository
+            policy.inheritable
+                && policy.repository_id == repository
                 && if scope.kind == "file" {
                     policy.scope_file_id.as_deref() == Some(&scope.id)
                 } else {
@@ -219,7 +223,8 @@ fn exact_policy<'a>(
         })
         .or_else(|| {
             state.protection_policies.values().find(|policy| {
-                policy.repository_id == repository
+                policy.inheritable
+                    && policy.repository_id == repository
                     && policy.scope_file_id.is_none()
                     && policy.scope_directory_id.is_none()
                     && name_policy::path_key(&policy.path_prefix)
@@ -240,9 +245,23 @@ fn retain_inherited_files(
         let Some(effective) = effective_policy(state, repository, Some(file), &entry.path) else {
             return true;
         };
+        if !effective.inheritable {
+            return false;
+        }
         previous.is_some_and(|own| own.policy_id == effective.policy_id)
             || (effective.scope_file_id.is_none()
                 && scope_path(state, effective).is_some_and(|root| within(root, &scope.path)))
+    });
+}
+
+pub(crate) fn prune_retained_policies(state: &mut State, repository: &str) {
+    let referenced = state
+        .file_backup_policies
+        .values()
+        .map(String::as_str)
+        .collect::<BTreeSet<_>>();
+    state.protection_policies.retain(|id, policy| {
+        policy.repository_id != repository || policy.inheritable || referenced.contains(id.as_str())
     });
 }
 
@@ -387,7 +406,7 @@ impl Engine {
             .cloned()
             .collect::<BTreeSet<_>>();
         Ok(
-            json!({"scope":{"id":scope.id,"kind":scope.kind,"path":scope.path},"policy_id":exact.map(|policy|&policy.policy_id),"effective_policy_id":effective.map(|policy|&policy.policy_id),"generation":exact.map_or(0,|policy|policy.generation).to_string(),"effective_generation":effective.map_or(0,|policy|policy.generation).to_string(),"inherited":exact.is_none()&&effective.is_some(),"target_copies":copies,"backup_prefixes":effective.map(|policy|policy.backup_prefixes.clone()).unwrap_or_default(),"route_slot_ids":self.route(&primary,copies)?,"available_route_slot_ids":available_route,"backup_routes":routes,"backup_slot_ids":backup_slots,"max_copies":maximum,"file_count":scope.files.len().to_string(),"backup_paths":if scope.kind=="file"{self.state.file_backup_paths.get(&scope.id).cloned().unwrap_or_default()}else{BTreeMap::new()}}),
+            json!({"scope":{"id":scope.id,"kind":scope.kind,"path":scope.path},"policy_id":exact.map(|policy|&policy.policy_id),"effective_policy_id":effective.map(|policy|&policy.policy_id),"generation":exact.map_or(0,|policy|policy.generation).to_string(),"effective_generation":effective.map_or(0,|policy|policy.generation).to_string(),"inherited":exact.is_none()&&effective.is_some_and(|policy|policy.inheritable),"target_copies":copies,"backup_prefixes":effective.map(|policy|policy.backup_prefixes.clone()).unwrap_or_default(),"route_slot_ids":self.route(&primary,copies)?,"available_route_slot_ids":available_route,"backup_routes":routes,"backup_slot_ids":backup_slots,"max_copies":maximum,"file_count":scope.files.len().to_string(),"backup_paths":if scope.kind=="file"{self.state.file_backup_paths.get(&scope.id).cloned().unwrap_or_default()}else{BTreeMap::new()}}),
         )
     }
 
@@ -477,13 +496,28 @@ impl Engine {
                     }
                 }
                 let policy = ProtectionPolicy {
-                    policy_id: previous.map(|policy| policy.policy_id).unwrap_or_else(|| new_id("policy")),
+                    policy_id: previous.as_ref().map(|policy| policy.policy_id.clone()).unwrap_or_else(|| new_id("policy")),
                     repository_id: repository.into(), path_prefix: scope.path.clone(), target_copies: copies,
+                    inheritable: true,
                     scope_directory_id: (scope.kind == "directory").then_some(scope.id.clone()),
                     scope_file_id: (scope.kind == "file").then_some(scope.id.clone()),
                     backup_prefixes: normalized.clone(),
                     generation: generation.checked_add(1).ok_or_else(|| Error::new("RESOURCE_LIMIT", "backup policy generation exhausted"))?,
                 };
+                if let Some(previous) = previous {
+                    let detached = state.file_backup_policies.iter()
+                        .filter(|(file, id)| *id == &previous.policy_id && !scope.files.contains_key(*file))
+                        .map(|(file, _)| file.clone()).collect::<Vec<_>>();
+                    if !detached.is_empty() {
+                        let mut retained = previous;
+                        retained.policy_id = new_id("policy");
+                        retained.inheritable = false;
+                        for file in detached {
+                            state.file_backup_policies.insert(file, retained.policy_id.clone());
+                        }
+                        state.protection_policies.insert(retained.policy_id.clone(), retained);
+                    }
+                }
                 for (file, entry) in &scope.files {
                     let relative = relative_path(&scope.path, &entry.path, scope.kind == "file");
                     for (slot, prefix) in &normalized {
@@ -493,6 +527,7 @@ impl Engine {
                     state.file_backup_policies.insert(file.clone(), policy.policy_id.clone());
                 }
                 state.protection_policies.insert(policy.policy_id.clone(), policy.clone());
+                prune_retained_policies(state, repository);
                 for version in &versions {
                     let previous = state.placements[&version.version_id].clone();
                     let route = engine.route(&previous.primary_slot_id, copies)?;

@@ -4,6 +4,67 @@ use std::{
     os::unix::fs::{MetadataExt, PermissionsExt},
 };
 
+#[test]
+fn retained_policy_manifests_require_bindings_and_unique_current_scopes() {
+    let temp = tempfile::tempdir().unwrap();
+    let mut engine = initialize(temp.path());
+    let repo = engine
+        .create_repository("retained policies", "P01", 2, "alice", &new_id("op"))
+        .unwrap();
+    save(&mut engine, &repo.main_branch_id, b"body");
+    let file = engine
+        .list_tree(&repo.main_branch_id)
+        .unwrap()
+        .into_iter()
+        .find(|entry| entry.kind == "file")
+        .unwrap();
+    let configured = engine
+        .configure_backups(BackupConfigurationRequest {
+            repository_id: &repo.repository_id,
+            path: "file.txt",
+            target_copies: 2,
+            backup_prefixes: &BTreeMap::from([("B01".into(), "backup".into())]),
+            expected_generation: 0,
+            principal: "alice",
+            operation_id: &new_id("op"),
+        })
+        .unwrap();
+    let current = configured.result["policy"]["policy_id"].as_str().unwrap();
+    let mut manifest = HistoryManifest::from_state(engine.state(), &repo.history_tree_id).unwrap();
+    let mut retained = manifest.protection_policies[current].clone();
+    retained.policy_id = new_id("policy");
+    retained.inheritable = false;
+    let id = retained.policy_id.clone();
+    manifest.protection_policies.insert(id.clone(), retained);
+    manifest
+        .file_backup_policies
+        .insert(file.file_id.clone(), id.clone());
+    manifest.validate().unwrap();
+    let mut unbound = manifest.clone();
+    unbound.file_backup_policies.remove(&file.file_id);
+    assert!(unbound.validate().is_err());
+    let mut ambiguous = manifest.clone();
+    ambiguous
+        .protection_policies
+        .get_mut(&id)
+        .unwrap()
+        .inheritable = true;
+    assert!(ambiguous.validate().is_err());
+    let mut dangling = manifest.clone();
+    dangling
+        .protection_policies
+        .get_mut(&id)
+        .unwrap()
+        .scope_file_id = Some(new_id("file"));
+    assert!(dangling.validate().is_err());
+    manifest
+        .protection_policies
+        .get_mut(&id)
+        .unwrap()
+        .scope_file_id = None;
+    manifest.validate().unwrap();
+}
+
 fn initialize(root: &Path) -> Engine {
     Engine::initialize(
         &root.join("state"),

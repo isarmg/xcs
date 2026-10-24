@@ -37,7 +37,10 @@ async fn user_backup_prefixes_keep_fixed_paths_and_slot_versions_after_primary_r
     let root = tempfile::tempdir().unwrap();
     let app = application(root.path());
     let admin = login(&app, "admin", "integration-test-password").await;
-    manager_upload(&app, &admin, "docs/nested/report.txt", b"first stored body").await;
+    let first = manager_upload(&app, &admin, "docs/nested/report.txt", b"first stored body").await;
+    let first_version = first["result"]["versions"][0]["version_id"]
+        .as_str()
+        .unwrap();
     manager_upload(
         &app,
         &admin,
@@ -49,7 +52,7 @@ async fn user_backup_prefixes_keep_fixed_paths_and_slot_versions_after_primary_r
     let file = primary["entries"][0]["file_id"].as_str().unwrap();
     let version = primary["entries"][0]["version_id"].as_str().unwrap();
     let repo = primary["context"]["repository_id"].as_str().unwrap();
-    let configured = configure(&app, &admin, repo, "docs", "WorkBackup", "冷备份/docs").await;
+    configure(&app, &admin, repo, "docs", "WorkBackup", "冷备份/docs").await;
     let configuration = success(
         &app,
         &admin,
@@ -85,32 +88,85 @@ async fn user_backup_prefixes_keep_fixed_paths_and_slot_versions_after_primary_r
             "docs/nested/report.txt"
         );
     }
-    // The legacy policy update affects later writes only. Existing AVAILABLE
-    // v1/v2 remain officially placed on B/C, while the new body is P-only.
-    let policy = configured["result"]["policy"]["policy_id"]
-        .as_str()
-        .unwrap();
-    success(
+    // A public commit can explicitly choose one copy for this new version.
+    // The scoped policy and existing AVAILABLE v1/v2 placements remain unchanged.
+    let workspace = success(
         &app,
         &admin,
-        "PUT",
-        &format!("/api/policies/{policy}"),
-        Some(
-            json!({"repository_id":repo,"path_prefix":"docs","target_copies":1,
-        "expected_generation":"1","operation_id":new_id("op")}),
-        ),
+        "POST",
+        "/api/file-manager/disks/P01/write-sessions",
+        Some(json!({"path":"docs/nested/report.txt"})),
     )
     .await;
-    manager_upload(
+    let workspace_id = workspace["workspace_id"].as_str().unwrap();
+    let item_id = new_id("entry");
+    upload(
         &app,
         &admin,
-        "docs/nested/report.txt",
+        workspace_id,
+        &item_id,
+        workspace["relative_path"].as_str().unwrap(),
         b"primary body without B or C placement",
     )
     .await;
+    let mut commit = success(
+        &app,
+        &admin,
+        "POST",
+        &format!("/api/workspaces/{workspace_id}/seal"),
+        Some(json!({})),
+    )
+    .await;
+    assert_eq!(commit["file_placement"][&item_id]["target_copies"], 3);
+    commit["file_placement"][&item_id] = json!({"primary_slot_id":"P01","target_copies":1});
+    commit["request_digest"] = request_digest(
+        "POST",
+        "/api/workspaces/{workspace}/commit",
+        json!({"workspace":workspace_id}),
+        json!({}),
+        &commit,
+    )
+    .unwrap()
+    .into();
+    success(
+        &app,
+        &admin,
+        "POST",
+        &format!("/api/workspaces/{workspace_id}/commit"),
+        Some(commit),
+    )
+    .await;
+    assert_eq!(
+        success(
+            &app,
+            &admin,
+            "GET",
+            &format!("/api/repositories/{repo}/backup-configuration?path=docs"),
+            None,
+        )
+        .await,
+        configuration,
+        "one version's placement does not mutate scoped backup settings"
+    );
     let current = listing(&app, &admin, "P01", "docs/nested").await;
     let current_version = current["entries"][0]["version_id"].as_str().unwrap();
     assert_ne!(current_version, version);
+    for (body, copies, slots) in [
+        (first_version, 3, json!(["P01", "B01", "C01"])),
+        (version, 3, json!(["P01", "B01", "C01"])),
+        (current_version, 1, json!(["P01"])),
+    ] {
+        let placement = success(
+            &app,
+            &admin,
+            "GET",
+            &format!("/api/versions/{body}/placement"),
+            None,
+        )
+        .await;
+        assert_eq!(placement["target_copies"], copies);
+        assert_eq!(placement["route_slot_ids"], slots);
+    }
     for (path, destination) in [
         ("docs", "archive"),
         ("archive/nested/report.txt", "archive/nested/renamed.txt"),

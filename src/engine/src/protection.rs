@@ -2,8 +2,8 @@
 use crate::*;
 use json_codec::json;
 mod backup_paths;
-pub(crate) use backup_paths::apply_backup_paths;
 pub use backup_paths::{BackupConfigurationRequest, ScopedBackupConfigurationRequest};
+pub(crate) use backup_paths::{apply_backup_paths, prune_retained_policies};
 
 /// A conditional placement update, including its authenticated actor and replay identity.
 #[derive(Clone, Copy, Debug)]
@@ -119,10 +119,11 @@ impl Engine {
             let actual=state.protection_policies.get(id).map_or(0,|p|p.generation);
             if actual!=expected_generation { return Err(Error::new("GENERATION_MISMATCH","protection policy changed; reread before updating")); }
             if state.protection_policies.get(id).is_some_and(|p|p.repository_id!=repository) { return Err(Error::new("REQUEST_BINDING_MISMATCH","policy is bound to another repository")); }
-            if state.protection_policies.values().any(|p|p.policy_id!=id&&p.repository_id==repository&&name_policy::path_key(&p.path_prefix)==name_policy::path_key(path_prefix)) { return Err(Error::new("NAME_COLLISION","an equivalent protection prefix already has a policy")); }
+            if state.protection_policies.get(id).is_some_and(|p|!p.inheritable||p.scope_directory_id.is_some()||p.scope_file_id.is_some()) { return Err(Error::new("BACKUP_CONFIGURATION_REQUIRED","scoped and retained settings must be changed through file or directory backup configuration")); }
+            if state.protection_policies.values().any(|p|p.inheritable&&p.policy_id!=id&&p.repository_id==repository&&name_policy::path_key(&p.path_prefix)==name_policy::path_key(path_prefix)) { return Err(Error::new("NAME_COLLISION","an equivalent protection prefix already has a policy")); }
             engine.route(&engine.new_file_placement(repository,path_prefix)?.0,copies)?;
             let previous=state.protection_policies.get(id);
-            let policy=ProtectionPolicy{policy_id:id.into(),repository_id:repository.into(),path_prefix:path_prefix.into(),target_copies:copies,scope_directory_id:previous.and_then(|policy|policy.scope_directory_id.clone()),scope_file_id:previous.and_then(|policy|policy.scope_file_id.clone()),backup_prefixes:previous.map(|policy|policy.backup_prefixes.clone()).unwrap_or_default(),generation:actual.checked_add(1).ok_or_else(||Error::new("RESOURCE_LIMIT","policy generation exhausted"))?};
+            let policy=ProtectionPolicy{policy_id:id.into(),repository_id:repository.into(),path_prefix:path_prefix.into(),target_copies:copies,inheritable:true,scope_directory_id:None,scope_file_id:None,backup_prefixes:previous.map(|policy|policy.backup_prefixes.clone()).unwrap_or_default(),generation:actual.checked_add(1).ok_or_else(||Error::new("RESOURCE_LIMIT","policy generation exhausted"))?};
             state.protection_policies.insert(id.into(),policy.clone());
             Ok(json!({"policy":policy}))
         })
