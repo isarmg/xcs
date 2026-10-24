@@ -365,9 +365,12 @@ fn file_history_graph_distinguishes_path_nodes_from_real_content_versions() {
     let version = storage_contract::new_id("ver");
     let renamed = storage_contract::new_id("fnode");
     let content = json!({"node_id":version,"version_id":version,"file_id":file,"kind":"content","parent_node_ids":[],"path":"a/report.txt","previous_path":null,"note":"","created_at":"2026-10-20T00:00:00Z","sequence":"1","current":false});
-    let rename = json!({"node_id":renamed,"version_id":version,"file_id":file,"kind":"rename","parent_node_ids":[version],"path":"a/new.txt","previous_path":"a/report.txt","note":"Path note","created_at":"1792400000","sequence":"2","current":true});
+    let rename = json!({"node_id":renamed,"version_id":version,"file_id":file,"kind":"rename","parent_node_ids":[version],"path":"a/new.txt","previous_path":"a/report.txt","note":"Path note","created_at":"2026-10-19T08:53:20Z","sequence":"2","current":true});
     assert!(schema.is_valid(&content));
     assert!(schema.is_valid(&rename));
+    let mut numeric_time = rename.clone();
+    numeric_time["created_at"] = "1792400000".into();
+    assert!(!schema.is_valid(&numeric_time));
     let mut child = content.clone();
     child["node_id"] = storage_contract::new_id("ver").into();
     child["version_id"] = child["node_id"].clone();
@@ -471,7 +474,7 @@ fn file_merge_tags_and_scope_backups_require_explicit_reviewed_baselines() {
     let mut document = api.clone();
     document["$ref"] = "#/components/schemas/FileHistoryNode".into();
     let node = validator(&document).unwrap();
-    let body = json!({"node_id":meta,"version_id":version,"file_id":file,"kind":"tags","parent_node_ids":[version],"path":"report.txt","previous_path":null,"note":"","created_at":"1792400000","sequence":"5","current":true,"tags":["审核"]});
+    let body = json!({"node_id":meta,"version_id":version,"file_id":file,"kind":"tags","parent_node_ids":[version],"path":"report.txt","previous_path":null,"note":"","created_at":"2026-10-19T08:53:20Z","sequence":"5","current":true,"tags":["审核"]});
     assert!(node.is_valid(&body));
     let mut invalid = body;
     invalid["version_id"] = meta.into();
