@@ -43,6 +43,80 @@ fn language_reload_preserves_admin_operation_fences() {
 }
 
 #[test]
+fn edited_plan_inputs_require_a_new_preview_before_commit_or_cancel() {
+    for (kind, key, original, changed) in [
+        ("inspect", "id", "plan-a", "plan-b"),
+        ("purge", "versions", "version-a", "version-b"),
+        ("split", "commit", "commit-a", "commit-b"),
+        ("save", "name", "saved-a", "saved-b"),
+    ] {
+        let mut model = Model {
+            kind: kind.into(),
+            fields: [(key.into(), original.into())].into_iter().collect(),
+            plan: json_codec::json!({"plan_id":"plan-a", "digest":"reviewed", "state":"ready"}),
+            result: "previous plan preview".into(),
+            acknowledged: true,
+            ..Default::default()
+        };
+        model.edit_field(key, changed.into());
+        assert_eq!(model.fields[key], changed);
+        assert!(model.plan.is_null(), "{kind} retained its previous plan");
+        assert!(!model.acknowledged);
+        assert!(model.result.is_empty());
+        // Even a queued acknowledgment cannot make the previous target usable.
+        model.acknowledged = true;
+        for commit in [true, false] {
+            assert!(request::plan_action(&model.plan, commit, model.acknowledged, "new").is_err());
+        }
+    }
+}
+
+#[test]
+fn field_events_cannot_change_pending_or_unconfirmed_admin_intent() {
+    let plan = json_codec::json!({"plan_id":"plan-a", "digest":"reviewed", "state":"ready"});
+    for (busy, uncertain) in [(true, ""), (false, "original"), (false, "unknown")] {
+        let mut model = Model {
+            fields: [
+                ("id".into(), "plan-a".into()),
+                ("enabled".into(), "false".into()),
+            ]
+            .into_iter()
+            .collect(),
+            plan: plan.clone(),
+            acknowledged: true,
+            result: "original operation receipt".into(),
+            busy,
+            uncertain_operation: uncertain.into(),
+            ..Default::default()
+        };
+        model.edit_field("id", "plan-b".into());
+        model.edit_field("enabled", "true".into());
+        assert_eq!(model.fields["id"], "plan-a");
+        assert_eq!(model.fields["enabled"], "false");
+        assert_eq!(model.plan, plan);
+        assert!(model.acknowledged);
+        assert_eq!(model.result, "original operation receipt");
+        assert_eq!(model.uncertain_operation, uncertain);
+        assert_eq!(model.busy, busy);
+    }
+}
+
+#[test]
+fn repeated_field_values_preserve_the_exact_review() {
+    let mut model = Model {
+        fields: [("id".into(), "plan-a".into())].into_iter().collect(),
+        plan: json_codec::json!({"plan_id":"plan-a", "digest":"reviewed", "state":"ready"}),
+        acknowledged: true,
+        ..Default::default()
+    };
+    let plan = model.plan.clone();
+    model.edit_field("id", "plan-a".into());
+    model.edit_field("workspace", String::new());
+    assert_eq!(model.plan, plan);
+    assert!(model.acknowledged);
+}
+
+#[test]
 fn invalid_success_and_early_not_found_preserve_review_and_uncertainty() {
     let reviewed = json_codec::json!({"plan_id":"p", "digest":"reviewed", "state":"ready"});
     for response in [

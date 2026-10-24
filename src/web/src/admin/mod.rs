@@ -38,6 +38,20 @@ impl Model {
     pub(crate) fn reload_blocked(&self) -> bool {
         self.busy || !self.uncertain_operation.is_empty()
     }
+
+    /// A reviewed plan belongs to the inputs that produced or selected it.
+    /// Editing those inputs requires a new preview, not just a new checkmark.
+    fn edit_field(&mut self, key: &str, value: String) {
+        if self.reload_blocked()
+            || self.fields.get(key).map(String::as_str).unwrap_or_default() == value
+        {
+            return;
+        }
+        self.fields.insert(key.into(), value);
+        self.plan = Value::Null;
+        self.acknowledged = false;
+        self.result.clear();
+    }
 }
 fn permitted(state: &State, storage: bool) -> bool {
     state.session_active()
@@ -189,10 +203,10 @@ fn select(state: RwSignal<State>, kind: &'static str) {
 }
 
 fn field(state: RwSignal<State>, key: &'static str, label: &'static str) -> impl IntoView {
-    view! {<label class="zxs-flow"><span>{label}</span><input class="zxs-input" type="text" autocomplete="off" disabled=move ||state.with(|s|s.admin_console.busy) prop:value=move ||state.with(|s|s.admin_console.fields.get(key).cloned().unwrap_or_default()) on:input=move |ev|state.update(|s|{s.admin_console.fields.insert(key.into(),event_target_value(&ev));s.admin_console.acknowledged=false;})/></label>}
+    view! {<label class="zxs-flow"><span>{label}</span><input class="zxs-input" type="text" autocomplete="off" disabled=move ||state.with(|s|s.admin_console.reload_blocked()) prop:value=move ||state.with(|s|s.admin_console.fields.get(key).cloned().unwrap_or_default()) on:input=move |ev|state.update(|s|s.admin_console.edit_field(key,event_target_value(&ev)))/></label>}
 }
 fn toggle(state: RwSignal<State>, key: &'static str, label: &'static str) -> impl IntoView {
-    view! {<label class="zxs-row"><input type="checkbox" disabled=move ||state.with(|s|s.admin_console.busy) prop:checked=move ||state.with(|s|s.admin_console.fields.get(key).is_some_and(|v|v=="true")) on:change=move |ev|state.update(|s|{s.admin_console.fields.insert(key.into(),event_target_checked(&ev).to_string());})/>{label}</label>}
+    view! {<label class="zxs-row"><input type="checkbox" disabled=move ||state.with(|s|s.admin_console.reload_blocked()) prop:checked=move ||state.with(|s|s.admin_console.fields.get(key).is_some_and(|v|v=="true")) on:change=move |ev|state.update(|s|s.admin_console.edit_field(key,event_target_checked(&ev).to_string()))/>{label}</label>}
 }
 fn query(
     state: RwSignal<State>,
