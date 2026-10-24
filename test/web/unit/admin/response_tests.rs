@@ -7,7 +7,12 @@ fn raw_operation() -> Value {
     json!({"operation_id":"original", "kind":"plan.cancel", "commit_id":null,"history_tree_id":null,"branch_id":null,"commit_state":"PUBLISHED","protection_at_publish":"NOT_APPLICABLE","current_health":"UNKNOWN","request_digest":"digest","sequence":"4","result":{}})
 }
 fn wire_operation() -> Value {
-    json!({"operation_id":"original","operation_kind":"policy.update","commit_state":"PUBLISHED","request_digest":"digest","current_health":{"state":"UNKNOWN","checked_at":"2026-10-22T00:00:00Z"},"result":{},"state":"completed","publication_sequence":"4","protection_at_publish":"NOT_APPLICABLE","error":null})
+    let mut value: Value = json_codec::from_str(include_str!(
+        "../files/fixtures/namespace-batch-operation.json"
+    ))
+    .unwrap();
+    value["operation_id"] = "original".into();
+    value
 }
 #[test]
 fn operation_contracts_reject_missing_wrong_and_nonterminal_receipts() {
@@ -47,8 +52,46 @@ fn inspection_must_match_original_operation_and_terminal_state() {
     assert!(!terminal(&value, "original"));
     value["operation_id"] = "original".into();
     value["commit_state"] = "IN_DOUBT".into();
+    value["state"] = "in_doubt".into();
+    value["protection_at_publish"] = "UNCONFIRMED".into();
     assert!(c.validate(value.clone()).is_ok());
     assert!(!terminal(&value, "original"));
+}
+
+#[test]
+fn administration_uses_the_shared_current_wire_evidence() {
+    use storage_contract::client_protocol::{OperationStatus, operation_status};
+    let c = Contract::new("GET", "/api/operations/original", None, "", "admin");
+    let mut content: Value = json_codec::from_str(include_str!(
+        "../files/fixtures/damaged-published-save-operation.json"
+    ))
+    .unwrap();
+    content["operation_id"] = "original".into();
+    for valid in [wire_operation(), content] {
+        assert!(c.validate(valid.clone()).is_ok());
+        assert!(terminal(&valid, "original"));
+        assert_eq!(operation_status(&valid), Some(OperationStatus::Published));
+        let mut malformed = valid.clone();
+        malformed["result"] = Value::Null;
+        let mut incomplete = valid.clone();
+        incomplete.as_object_mut().unwrap().remove("current_health");
+        let mut contradictory = valid.clone();
+        contradictory["state"] = "in_doubt".into();
+        let mut extra = valid.clone();
+        extra["legacy"] = true.into();
+        for invalid in [
+            malformed,
+            incomplete,
+            contradictory,
+            extra,
+            json!({"operation":valid}),
+            json!({"operation_id":"original", "state":"SUCCEEDED"}),
+        ] {
+            assert!(c.validate(invalid.clone()).is_err());
+            assert!(!terminal(&invalid, "original"));
+            assert_eq!(operation_status(&invalid), None);
+        }
+    }
 }
 #[test]
 fn domain_and_preview_contracts_accept_real_shapes_not_generic_receipts() {

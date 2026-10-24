@@ -1,6 +1,57 @@
 use super::*;
 
 #[test]
+fn logout_confirmation_accepts_only_the_current_closed_response() {
+    let current: Value = json_codec::from_str(include_str!(
+        "../../../tools/contract-check/fixtures/authentication/LogoutResponse.json"
+    ))
+    .unwrap();
+    assert!(logout_confirmed(&current));
+    for value in [
+        Value::Null,
+        json!([]),
+        json!(true),
+        json!({}),
+        json!({"logged_out":false}),
+        json!({"logged_out":"true"}),
+        json!({"logged_out":true,"admin":true}),
+        json!({"logged_out":true,"extra":null}),
+    ] {
+        assert!(!logout_confirmed(&value), "accepted {value}");
+    }
+    assert!(!logout_confirmed(&decode_response(204, b"").unwrap()));
+    assert!(decode_response(200, br#"{"logged_out":true,"logged_out":true}"#).is_err());
+}
+
+#[test]
+fn password_change_confirmation_requires_both_true_fields_and_no_extras() {
+    let current: Value = json_codec::from_str(include_str!(
+        "../../../tools/contract-check/fixtures/authentication/PasswordChangeResponse.json"
+    ))
+    .unwrap();
+    assert!(password_change_confirmed(&current));
+    for value in [Value::Null, json!([]), json!(true), json!({})] {
+        assert!(!password_change_confirmed(&value));
+    }
+    for field in ["changed", "reauthentication_required"] {
+        let mut missing = current.clone();
+        missing.as_object_mut().unwrap().remove(field);
+        assert!(!password_change_confirmed(&missing));
+        for replacement in [Value::Null, json!(false), json!(1), json!("true")] {
+            let mut invalid = current.clone();
+            invalid[field] = replacement;
+            assert!(!password_change_confirmed(&invalid));
+        }
+    }
+    let mut extra = current;
+    extra["admin"] = true.into();
+    assert!(!password_change_confirmed(&extra));
+    assert!(!password_change_confirmed(
+        &decode_response(200, b"").unwrap()
+    ));
+}
+
+#[test]
 fn seal_identity_is_checked_before_preparation() {
     for seal in [
         Value::Null,

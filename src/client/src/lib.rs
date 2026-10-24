@@ -149,8 +149,14 @@ impl Client {
         Ok(session)
     }
     pub async fn logout(&mut self) -> Result<(), Error> {
-        self.request("POST", "/api/auth/logout", Some(&json!({})))
+        let value = self
+            .request("POST", "/api/auth/logout", Some(&json!({})))
             .await?;
+        if !storage_contract::client_protocol::logout_confirmed(&value) {
+            return Err(Error::Response(
+                "logout was not confirmed; retain the session for a revocation retry".into(),
+            ));
+        }
         self.token = None;
         Ok(())
     }

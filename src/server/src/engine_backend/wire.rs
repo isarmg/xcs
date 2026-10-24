@@ -404,6 +404,8 @@ pub(super) fn operation_wire(op: storage_engine::OperationResult) -> Result<Valu
         );
         let state = if complete {
             "completed"
+        } else if op.commit_state == storage_contract::CommitState::Aborted {
+            "failed"
         } else if matches!(
             op.commit_state,
             storage_contract::CommitState::InDoubt
@@ -429,8 +431,16 @@ pub(super) fn operation_wire(op: storage_engine::OperationResult) -> Result<Valu
         } else {
             Value::Null
         };
+        let error = if op.commit_state == storage_contract::CommitState::Aborted {
+            encode(ApiError::conflict(
+                "OPERATION_ABORTED",
+                "the operation was aborted before publication",
+            ))?
+        } else {
+            Value::Null
+        };
         Ok(
-            json!({"operation_id":op.operation_id,"operation_kind":"content_save","request_digest":op.request_digest,"state":state,"commit_state":op.commit_state,"result":result,"error":null,"current_health":current_health}),
+            json!({"operation_id":op.operation_id,"operation_kind":"content_save","request_digest":op.request_digest,"state":state,"commit_state":op.commit_state,"result":result,"error":error,"current_health":current_health}),
         )
     } else {
         Ok(
@@ -438,3 +448,7 @@ pub(super) fn operation_wire(op: storage_engine::OperationResult) -> Result<Valu
         )
     }
 }
+
+#[cfg(test)]
+#[path = "../../../../test/server/unit/engine_backend/wire_tests.rs"]
+mod tests;

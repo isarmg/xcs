@@ -141,7 +141,11 @@ fn language_reload_waits_for_pending_or_uncertain_work() {
         .operations
         .push(json!({"operation_id":"original", "commit_state":"IN_DOUBT"}));
     assert!(state.reload_blocked());
-    state.files.operations[0]["commit_state"] = "PUBLISHED".into();
+    state.files.operations[0] = json_codec::from_str(include_str!(
+        "../files/fixtures/damaged-published-save-operation.json"
+    ))
+    .unwrap();
+    state.files.operations[0]["operation_id"] = "original".into();
     assert!(!state.reload_blocked());
     state.password_change = crate::ui::PasswordChangeState::Pending;
     assert!(state.reload_blocked());
@@ -293,20 +297,71 @@ fn uncertain_password_change_blocks_resubmission_and_reload_without_discarding_w
 #[test]
 fn malformed_password_success_requires_signout_before_another_change() {
     Owner::new().with(|| {
+        for value in [
+            Value::Null,
+            json!([]),
+            json!({}),
+            json!({"changed":true}),
+            json!({"reauthentication_required":true}),
+            json!({"changed":false,"reauthentication_required":true}),
+            json!({"changed":true,"reauthentication_required":false}),
+            json!({"changed":"true","reauthentication_required":true}),
+            json!({"changed":true,"reauthentication_required":true,"admin":true}),
+        ] {
+            let state = RwSignal::new(State {
+                authenticated: true,
+                password_change: crate::ui::PasswordChangeState::Pending,
+                ..Default::default()
+            });
+            complete_password_change(state, Ok(value));
+            state.with_untracked(|s| {
+                assert!(s.authenticated);
+                assert!(s.password_unknown());
+                assert!(s.password_change_blocked());
+                assert!(s.reload_blocked());
+            });
+            end_session(state, String::new());
+            state.with_untracked(|s| {
+                assert!(!s.password_unknown());
+                assert!(!s.reload_blocked());
+            });
+        }
+    });
+}
+
+#[test]
+fn exact_password_confirmation_and_unauthorized_logout_settle_the_session() {
+    Owner::new().with(|| {
         let state = RwSignal::new(State {
             authenticated: true,
-            password_change: crate::ui::PasswordChangeState::Pending,
+            password_change: PasswordChangeState::Pending,
             ..Default::default()
         });
-        state.update(reject_unconfirmed_password_change);
+        complete_password_change(
+            state,
+            Ok(json!({"changed":true,"reauthentication_required":true})),
+        );
         state.with_untracked(|s| {
-            assert!(s.password_unknown());
-            assert!(s.password_change_blocked());
-            assert!(s.reload_blocked());
+            assert!(!s.authenticated);
+            assert_eq!(s.password_change, PasswordChangeState::Idle);
+            assert!(!s.notice.is_empty());
         });
-        end_session(state, String::new());
+        state.update(|s| {
+            s.authenticated = true;
+            assert!(begin_logout(s).is_some());
+        });
+        complete_logout(
+            state,
+            Err(api::Error {
+                code: "UNAUTHORIZED".into(),
+                message: "Session expired".into(),
+                status: 401,
+                retryable: false,
+                request_id: None,
+            }),
+        );
         state.with_untracked(|s| {
-            assert!(!s.password_unknown());
+            assert_eq!(session_view(s).phase, SessionPhase::Anonymous);
             assert!(!s.reload_blocked());
         });
     });

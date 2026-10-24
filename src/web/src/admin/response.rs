@@ -167,30 +167,7 @@ fn branch_creation_shape(value: &Value) -> bool {
             == Some(if pending { "PENDING" } else { "LIVE" })
 }
 fn operation_shape(value: &Value) -> bool {
-    nonempty(&value["operation_id"])
-        && nonempty(&value["operation_kind"])
-        && nonempty(&value["request_digest"])
-        && json_codec::from_value::<storage_contract::CommitState>(value["commit_state"].clone())
-            .is_ok()
-        && matches!(
-            value["state"].as_str(),
-            Some("completed" | "in_doubt" | "processing")
-        )
-        && matches!(
-            value["current_health"]["state"].as_str(),
-            Some("HEALTHY" | "DEGRADED" | "UNAVAILABLE" | "UNKNOWN")
-        )
-        && nonempty(&value["current_health"]["checked_at"])
-        && value.get("result").is_some()
-        && value.get("error").is_some()
-        && (value["operation_kind"] == "content_save"
-            || (value["publication_sequence"]
-                .as_str()
-                .is_some_and(|sequence| storage_contract::parse_u64_decimal(sequence).is_ok())
-                && json_codec::from_value::<storage_contract::ProtectionAtPublish>(
-                    value["protection_at_publish"].clone(),
-                )
-                .is_ok()))
+    storage_contract::client_protocol::operation_status(value).is_some()
 }
 fn confirmed(value: &Value, operation: &str) -> bool {
     !operation.is_empty()
@@ -201,12 +178,14 @@ fn confirmed(value: &Value, operation: &str) -> bool {
         )
 }
 pub(super) fn terminal(value: &Value, operation: &str) -> bool {
-    operation_shape(value)
-        && !operation.is_empty()
+    use storage_contract::client_protocol::{OperationStatus, operation_status};
+    !operation.is_empty()
         && value["operation_id"].as_str() == Some(operation)
         && matches!(
-            value["commit_state"].as_str(),
-            Some("PUBLISHED" | "ACKED" | "PUBLISHED_DEGRADED" | "ABORTED")
+            operation_status(value),
+            Some(
+                OperationStatus::Published | OperationStatus::Degraded | OperationStatus::Rejected
+            )
         )
 }
 

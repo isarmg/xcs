@@ -35,6 +35,41 @@ async fn reply(response: Vec<u8>) -> (Client, tokio::task::JoinHandle<()>) {
     (client, task)
 }
 
+#[tokio::test]
+async fn logout_requires_an_exact_http_receipt_before_discarding_the_bearer() {
+    for (status, body, confirmed) in [
+        (200, r#"{"logged_out":true}"#, true),
+        (200, "", false),
+        (204, "", false),
+        (200, "null", false),
+        (200, "[]", false),
+        (200, "true", false),
+        (200, "{}", false),
+        (200, r#"{"logged_out":false}"#, false),
+        (200, r#"{"logged_out":"true"}"#, false),
+        (200, r#"{"logged_out":true,"admin":true}"#, false),
+        (200, r#"{"logged_out":true,"extra":null}"#, false),
+        (200, r#"{"logged_out":true,"logged_out":true}"#, false),
+        // Preserve the native client's existing error/credential policy for 401.
+        (401, r#"{"code":"UNAUTHORIZED"}"#, false),
+    ] {
+        let response = format!(
+            "HTTP/1.1 {status} Test\r\nContent-Type: application/json\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{body}",
+            body.len()
+        );
+        let (mut client, server) = reply(response.into_bytes()).await;
+        client.set_token(Some("original-bearer".into()));
+        let result = client.logout().await;
+        assert_eq!(result.is_ok(), confirmed, "status={status}, body={body}");
+        assert_eq!(
+            client.token.as_deref(),
+            (!confirmed).then_some("original-bearer"),
+            "status={status}, body={body}"
+        );
+        server.await.unwrap();
+    }
+}
+
 fn content_headers(content: &[u8]) -> Vec<u8> {
     format!(
         "HTTP/1.1 200 OK\r\nContent-Length: {}\r\nETag: \"{}\"\r\nConnection: close\r\n\r\n",

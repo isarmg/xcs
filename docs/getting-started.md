@@ -59,7 +59,7 @@ PYBOOTSTRAP
 
 Web UI 不提供文件上传、下载或正文预览；文件正文由 SMB 或受控 HTTP API 读写。HTTP API 仍是可测试的协议边界，不因 UI 缺少按钮而删除，也不等同于额外的原生用户 App。页面范围以[Web 组件说明](components/web.md)为准，协议以[API 规范](15-api-and-errors.md)为准。
 
-Web 构建、资源服务及真实浏览器验证见 [Web README](components/web.md)。仅提供浏览器和 SMB 用户入口，不安装原生 App。Samba 的目标 SDK、受限用户映射和构建边界见 [Samba README](components/smb.md)。
+Web 构建、资源服务及真实浏览器验证见 [Web README](components/web.md)。仅提供浏览器和 SMB 用户入口，不安装原生 App。Samba 的目标 SDK、单一认证账户绑定和构建边界见 [Samba README](components/smb.md)。
 
 ```sh
 cargo test --locked --offline --target-dir target/native

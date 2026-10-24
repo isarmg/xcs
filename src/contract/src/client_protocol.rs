@@ -1,6 +1,9 @@
 //! Transport-independent client protocol. HTTP, credentials and I/O stay in adapters.
 use json_codec::json;
 
+mod operation;
+pub use operation::{OperationStatus, operation_status};
+
 /// Common JSON response cap, enforced while streaming and again when decoding.
 pub const MAX_RESPONSE_BYTES: usize = 8 * 1024 * 1024;
 
@@ -27,6 +30,16 @@ impl ResponseError {
 /// Only an explicit client-error response proves that a submitted mutation was rejected.
 pub fn mutation_outcome_unknown(status: u16) -> bool {
     !(400..500).contains(&status)
+}
+
+/// Only the exact current logout response confirms server-side revocation.
+pub fn logout_confirmed(value: &Value) -> bool {
+    value == &json!({"logged_out":true})
+}
+
+/// Missing or extra fields cannot confirm a non-idempotent password change.
+pub fn password_change_confirmed(value: &Value) -> bool {
+    value == &json!({"changed":true,"reauthentication_required":true})
 }
 
 /// Missing IPC stage evidence must be treated conservatively.

@@ -137,6 +137,56 @@ fn uncertain_results_keep_the_original_operation_until_its_own_receipt() {
     assert!(model.batch.is_none());
     assert!(model.checked_entries.is_empty());
 }
+
+#[test]
+fn malformed_http_success_preserves_the_batch_draft_until_a_real_poll_receipt() {
+    Owner::new().with(|| {
+        let state = RwSignal::new(State::default());
+        let mut batch = draft(Kind::Copy);
+        batch.submitted_operation = Some("original".into());
+        state.update(|s| {
+            s.files.batch = Some(batch);
+            s.files.checked_entries.insert("f".into());
+        });
+        for response in [
+            json!({"operation_id":"original", "state":"SUCCEEDED"}),
+            json!({"operation_id":"original", "state":"REJECTED"}),
+            json!({"operation_id":"original", "commit_state":"PUBLISHED"}),
+        ] {
+            assert_eq!(
+                file_actions::record_receipt(state, "original", response),
+                crate::files::model::SaveStatus::Unknown
+            );
+            state.with_untracked(|s| {
+                assert_eq!(
+                    s.files
+                        .batch
+                        .as_ref()
+                        .unwrap()
+                        .submitted_operation
+                        .as_deref(),
+                    Some("original")
+                );
+                assert!(s.files.checked_entries.contains("f"));
+                assert!(file_actions::pending(s));
+            });
+        }
+        let mut receipt: Value = json_codec::from_str(include_str!(
+            "../../fixtures/namespace-batch-operation.json"
+        ))
+        .unwrap();
+        receipt["operation_id"] = "original".into();
+        assert_eq!(
+            file_actions::record_receipt(state, "original", receipt),
+            crate::files::model::SaveStatus::Published
+        );
+        state.with_untracked(|s| {
+            assert!(s.files.batch.is_none());
+            assert!(s.files.checked_entries.is_empty());
+            assert!(!file_actions::pending(s));
+        });
+    });
+}
 #[test]
 fn multiple_aliases_of_one_identity_resolve_by_path_without_sharing_name_edits() {
     let mut draft = draft(Kind::Rename);

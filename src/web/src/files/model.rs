@@ -146,36 +146,19 @@ impl Model {
 pub(crate) enum NamespaceAction {
     CreateDirectory,
 }
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
-pub(crate) enum SaveStatus {
-    Unknown,
-    Published,
-    Degraded,
-    Rejected,
-}
+pub(crate) use storage_contract::client_protocol::OperationStatus as SaveStatus;
 pub(crate) fn operation_status(value: &Value) -> SaveStatus {
-    let value = value.get("operation").unwrap_or(value);
-    let state = value["commit_state"]
-        .as_str()
-        .or_else(|| value["state"].as_str())
-        .unwrap_or_default();
-    match state {
-        "PUBLISHED_DEGRADED" => SaveStatus::Degraded,
-        "PUBLISHED" | "ACKED" => {
-            if value["result"]["outcome"] == "COMMITTED_DEGRADED"
-                || value["result"]["protection_at_publish"] == "BELOW_TARGET"
-            {
-                SaveStatus::Degraded
-            } else {
-                SaveStatus::Published
-            }
-        }
-        "REJECTED" | "FAILED" | "CANCELLED" | "ABORTED" | "failed" | "cancelled" => {
-            SaveStatus::Rejected
-        }
-        "SUCCEEDED" | "completed" | "succeeded" => SaveStatus::Published,
-        _ => SaveStatus::Unknown,
+    // Only local HTTP-outcome records use this two-field marker. Network
+    // receipts must pass the shared wire validator before entering the model.
+    if value.as_object().is_some_and(|fields| fields.len() == 2)
+        && value["operation_id"]
+            .as_str()
+            .is_some_and(|id| !id.is_empty())
+        && value["state"] == "REJECTED"
+    {
+        return SaveStatus::Rejected;
     }
+    storage_contract::client_protocol::operation_status(value).unwrap_or(SaveStatus::Unknown)
 }
 pub(crate) fn publication_notice(status: SaveStatus) -> String {
     match status {

@@ -354,19 +354,29 @@ fn logout(state: RwSignal<State>) {
         {
             return;
         }
-        match result {
-            Ok(_) => {
-                end_session(state, String::new());
-            }
-            Err(error) if error.status == 401 => {
-                end_session(state, String::new());
-            }
-            Err(error) => state.update(|s| {
-                s.authenticated = false;
-                s.session_transition = SessionTransition::LogoutUnconfirmed;
-                s.session_failure = Some(feedback(&error));
-            }),
+        complete_logout(state, result);
+    });
+}
+pub(crate) fn complete_logout(state: RwSignal<State>, result: Result<Value, api::Error>) {
+    let failure = match result {
+        Ok(value) if storage_contract::client_protocol::logout_confirmed(&value) => {
+            end_session(state, String::new());
+            return;
         }
+        Err(error) if error.status == 401 => {
+            end_session(state, String::new());
+            return;
+        }
+        Err(error) => feedback(&error),
+        Ok(_) => t(
+            "未收到有效的退出确认，请重试退出；不会恢复会话或重复登录。",
+            "Sign-out was not confirmed. Retry signing out; session restoration and sign-in remain blocked.",
+        ).as_str().into(),
+    };
+    state.update(|s| {
+        s.authenticated = false;
+        s.session_transition = SessionTransition::LogoutUnconfirmed;
+        s.session_failure = Some(failure);
     });
 }
 fn end_session(state: RwSignal<State>, notice: String) {
@@ -405,24 +415,25 @@ fn account(state: RwSignal<State>) -> impl IntoView {
             if !current_session(state, epoch) {
                 return;
             }
-            match result {
-                Ok(value)
-                    if value["changed"] == true && value["reauthentication_required"] == true =>
-                {
-                    end_session(
-                        state,
-                        t(
-                            "密码已更新，请使用新密码登录。",
-                            "Your password was changed. Sign in with the new password.",
-                        ),
-                    );
-                }
-                Ok(_) => state.update(reject_unconfirmed_password_change),
-                Err(error) => state.update(|s| reject_password_change(s, &error)),
-            }
+            complete_password_change(state, result);
         });
     });
     view! { <section class="zxs-content-stack zxs-stack"><p class="zxs-row">{t("修改密码后，该账号的全部会话将失效。","Changing the password signs this account out on all devices.")}</p><Show when=move ||state.with(|s|s.password_unknown())><p class="zxs-row" role="alert">{t("改密结果未知，已禁用重复提交。请先退出登录，再核实可用的密码；不会自动重试改密。","The password change outcome is unknown; repeat submission is disabled. Sign out, then verify which password works. The change will not be retried automatically.")}</p></Show><AccountPage username_value=username.into() pending=pending.into() remote_failure=failure.into() on_submit=change/></section> }
+}
+fn complete_password_change(state: RwSignal<State>, result: Result<Value, api::Error>) {
+    match result {
+        Ok(value) if storage_contract::client_protocol::password_change_confirmed(&value) => {
+            end_session(
+                state,
+                t(
+                    "密码已更新，请使用新密码登录。",
+                    "Your password was changed. Sign in with the new password.",
+                ),
+            );
+        }
+        Ok(_) => state.update(reject_unconfirmed_password_change),
+        Err(error) => state.update(|s| reject_password_change(s, &error)),
+    }
 }
 fn reject_unconfirmed_password_change(state: &mut State) {
     state.password_change = PasswordChangeState::Unknown;

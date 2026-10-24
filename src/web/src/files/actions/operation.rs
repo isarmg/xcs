@@ -9,8 +9,8 @@ use json_codec::{Value, json};
 use web_interface::prelude::*;
 use web_interface::tasks::spawn_local;
 
-/// A successful HTTP response is not a receipt unless it names our operation.
-/// Keep the original ID pollable when a proxy returns empty/unrelated JSON.
+/// Only a complete current receipt can settle its matching operation. Malformed
+/// success responses retain the original ID, draft and write fence for polling.
 pub(crate) fn record_receipt(state: RwSignal<State>, id: &str, value: Value) -> SaveStatus {
     let value = receipt(id, value);
     let status = operation_status(&value);
@@ -18,8 +18,10 @@ pub(crate) fn record_receipt(state: RwSignal<State>, id: &str, value: Value) -> 
     status
 }
 pub(super) fn receipt(id: &str, value: Value) -> Value {
-    let item = value.get("operation").unwrap_or(&value);
-    if item["operation_id"].as_str() == Some(id) {
+    if !id.is_empty()
+        && value["operation_id"].as_str() == Some(id)
+        && storage_contract::client_protocol::operation_status(&value).is_some()
+    {
         value
     } else {
         json!({"operation_id":id,"state":"in_doubt"})
@@ -27,15 +29,14 @@ pub(super) fn receipt(id: &str, value: Value) -> Value {
 }
 
 pub(crate) fn record_operation(state: RwSignal<State>, value: Value) {
-    let item = value.get("operation").unwrap_or(&value).clone();
-    let id = text(&item, &["operation_id"]);
-    let status = operation_status(&item);
+    let id = text(&value, &["operation_id"]);
+    let status = operation_status(&value);
     state.update(|s| {
         if !id.is_empty() {
             s.files
                 .operations
                 .retain(|operation| text(operation, &["operation_id"]) != id);
-            s.files.operations.insert(0, item);
+            s.files.operations.insert(0, value);
             s.files.operations.truncate(100);
         }
         crate::files::batch::settle_operation(&mut s.files, &id, status);
