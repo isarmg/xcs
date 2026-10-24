@@ -1104,6 +1104,12 @@ async fn cancellation_closes_blocked_rpc_sessions_and_removes_its_socket() {
     fs::set_permissions(&parent, fs::Permissions::from_mode(0o700)).unwrap();
     let socket = parent.join("smb.sock");
     let server_socket = socket.clone();
+    let repository = shared.identities["alice"]
+        .repositories
+        .iter()
+        .next()
+        .unwrap()
+        .clone();
     let identities = shared.identities.clone();
     let backend = shared.backend.clone();
     let server = tokio::spawn(async move {
@@ -1123,11 +1129,42 @@ async fn cancellation_closes_blocked_rpc_sessions_and_removes_its_socket() {
         }
         tokio::time::sleep(std::time::Duration::from_millis(10)).await;
     }
-    let stream = std::os::unix::net::UnixStream::connect(&socket).unwrap();
+    // Binding happens on a blocking startup worker. Only a successful Hello
+    // proves serve owns the socket guard and has admitted this idle session.
+    let mut stream = tokio::task::spawn_blocking({
+        let socket = socket.clone();
+        move || {
+            let mut wire = FrameStream::with_timeout(
+                std::os::unix::net::UnixStream::connect(socket).unwrap(),
+                std::time::Duration::from_secs(5),
+            )
+            .unwrap();
+            wire.send(
+                &Request::Hello {
+                    protocol: PROTOCOL.into(),
+                    capabilities: vec![WRITE_RESERVATION_CAPABILITY.into()],
+                    username: "alice".into(),
+                    repository_id: repository,
+                },
+                None,
+            )
+            .unwrap();
+            let (response, descriptor) = wire.receive::<Response>().unwrap();
+            assert!(matches!(response, Response::Ok { .. }));
+            assert!(descriptor.is_none());
+            wire.0
+        }
+    })
+    .await
+    .unwrap();
     server.abort();
-    let _ = server.await;
+    assert!(server.await.unwrap_err().is_cancelled());
     assert!(!socket.exists());
-    drop(stream);
+    tokio::task::spawn_blocking(move || {
+        assert_eq!(stream.read(&mut [0u8; 1]).unwrap(), 0);
+    })
+    .await
+    .unwrap();
 }
 
 fn immutable_fixture_payloads(root: &Path) -> Vec<PathBuf> {
