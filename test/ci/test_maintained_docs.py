@@ -1,11 +1,35 @@
-"""Keep maintained entrypoint and SQLite examples aligned with supported APIs."""
-from pathlib import Path
+"""Keep maintained deployment, entrypoint and SQLite examples aligned with their contracts."""
+import configparser
+from pathlib import Path, PurePosixPath
+import re
 import unittest
 
 ROOT = Path(__file__).resolve().parents[2]
 
 
 class MaintainedDocs(unittest.TestCase):
+    def test_samba_export_is_consistent_and_outside_private_service_directories(self):
+        samba = configparser.ConfigParser(interpolation=None, delimiters=('=',))
+        samba.read(ROOT / 'deploy/samba/smb.conf.example')
+        export = PurePosixPath(samba['zxs']['path'])
+        self.assertTrue(export.is_absolute())
+        self.assertNotIn('..', export.parts)
+
+        text = (ROOT / 'docs/components/smb.md').read_text()
+        self.assertEqual(re.findall(r'^\s*path\s*=\s*(/\S+)\s*$', text, re.MULTILINE),
+                         [str(export)])
+        self.assertIn(f'`{export}`', (ROOT / 'docs/operations/deploy/systemd.md').read_text())
+
+        unit = configparser.ConfigParser(interpolation=None, delimiters=('=',))
+        unit.read(ROOT / 'deploy/systemd/zxs.service')
+        service = unit['Service']
+        for setting, base in (('StateDirectory', '/var/lib'), ('RuntimeDirectory', '/run')):
+            private = PurePosixPath(base, service[setting])
+            with self.subTest(directory=private):
+                self.assertFalse(export.is_relative_to(private))
+                self.assertFalse(private.is_relative_to(export))
+                self.assertEqual(service[f'{setting}Mode'], '0700')
+
     def test_engineering_entrypoints_and_test_layout(self):
         text = (ROOT / 'docs/20-engineering.md').read_text()
         self.assertNotRegex(text, r'\bzxs offline-(?:check|export)\b')

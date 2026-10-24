@@ -112,7 +112,7 @@ CARGO_INCREMENTAL=0 cargo build --locked --offline \
     valid users = zxs-owner
     guest ok = no
     guest only = no
-    path = /var/lib/zxs/empty-export
+    path = /srv/zxs-smb/empty-export
     vfs objects = zxs
     zxs:socket = /run/zxs/smb.sock
     zxs:repository = repo_<32位小写十六进制>
@@ -130,7 +130,9 @@ CARGO_INCREMENTAL=0 cargo build --locked --offline \
     follow symlinks = no
 ```
 
-`path` 只能是专用空目录，不能指向版本目录、数据盘根或工作区。上线前使用 `testparm` 检查配置，并验证生产用户认证、SMB 最低版本、签名、加密和可信 UID 链路。不要为了消除浏览权限警告而放宽核心 socket 或私有目录权限。
+`path` 只能是部署者预先准备的真实空目录，不包含符号链接；该目录由 root 所有，认证 Samba Unix 用户可读取和遍历但不可写，例如空目录 `0555`、root 所有的父目录 `0755`。它须独立于 ZXS 系统状态、管理、socket、spool、数据盘及工作区目录，不能放在私有的 `/var/lib/zxs` 或 `/run/zxs` 下。Samba 的 root 身份桥接握手成功后，后续共享请求仍会切换到认证 Unix 用户并进入这个宿主目录；VFS 正文通过 RPC 读写不免除目录遍历权限。不要通过放宽私有目录权限或设置 `force user` 绕过此要求。
+
+上线前使用 `testparm` 检查配置，并验证生产用户认证、首次目录枚举和文件打开，以及 SMB 最低版本、签名、加密和可信 UID 链路；模块加载或握手成功不等于共享可用。
 
 ## 验证范围
 

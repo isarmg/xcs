@@ -25,6 +25,8 @@ ExecStart=/opt/zxs/bin/zxs --root /var/lib/zxs/state --management-root /var/lib/
 
 示例的 `0` 只适用于确认桥接在 Samba 可信 root 进程身份下连接的部署。该连接时机必须在目标 Samba 验证，不能放宽 socket 权限来适应未认证的进程。`/run/zxs` 及 socket 分别维持 `0700`、`0600`，`zxs-owner` 通过 Samba 独立凭据认证后绑定到唯一 ZXS 管理员；不接受 `Samba=ZXS` 映射、重复账户配置、匿名、guest 或 force-user 会话。Samba 配置须同时限制 `valid users` 并关闭所有 guest 路径，见[共享样例](../../../deploy/samba/smb.conf.example)。共享仓库拆分、恢复后必须显式重新绑定，不能自动接入迁移后的历史域。
 
+共享样例的 `/srv/zxs-smb/empty-export` 是另行预建、root 所有且认证 Unix 用户不可写的真实空目录，其父路径须允许该用户遍历；具体权限见 [Samba 部署说明](../../components/smb.md)。不能将它放入 `/var/lib/zxs`、`/run/zxs`、spool 或数据盘私有树，也不能为共享访问放宽现有 `0700`/`0600` 权限。这个宿主空目录与 SMB 业务正文存储、私有 spool 均无关。
+
 SMB spool 与 socket 目录分离，守护进程固定使用 `--management-root/smb-spool`，本样例为 `/var/lib/zxs/management/smb-spool`。完整工作文件、未确认操作证据和预算记录都留在系统盘，不能放入 `RuntimeDirectory=`、`/run` 或临时文件系统；模板的 `/run/zxs` 只保存可丢弃的 socket 运行状态。现有 `ReadWritePaths=/var/lib/zxs ...` 已覆盖该持久目录，路径单独按服务身份及 `0700` 校验，不安全或无法盘点只停止 SMB，不阻止管理 HTTP。无需用 `RuntimeDirectoryPreserve=` 保存工作数据，该选项也不能使 `/run` 跨重启持久化。旧 socket 邻接 spool 不自动迁移，升级前的留存材料处理边界见[SMB 集成](../../components/smb.md#smb-local-rpc)。
 
 服务使用 `SIGINT` 触发守护进程的正常退出路径。停止时释放 socket 和文件句柄；未成功保存的完整工作文件及恢复记录保留。模板使用 `TimeoutStopSec=infinity`，正常停服会等待已经接纳的持久化操作及原生恢复线程结束，不会在固定 60 秒后自动强杀。若内核 I/O 持续卡住，管理员可明确决定强制终止；这属于崩溃处理，而不是正常排空，下次启动必须完成恢复。崩溃遗留的 socket 不自动删除，管理员确认路径身份和无存活服务后再清理。不要配置无条件删除 socket 或清空暂存目录的启动脚本。
@@ -34,6 +36,8 @@ SMB spool 与 socket 目录分离，守护进程固定使用 `--management-root/
 `zxs` 直接启动 HTTP/Web，不再需要 `serve` 子命令。管理目录、凭据、HTTP 暂存与监控位于系统盘的 `--management-root`；示例与池系统目录分开。数据引擎后台尝试打开，失败不能阻止静态 Web 和管理状态页。数据业务仍拒绝不安全请求，不会因 Web 可用而绕过元数据仲裁或自动重置池。系统目录不可用或监听端口错误仍可阻止服务启动。
 
 Web 静态目录无效或缺少 `index.html` 时，页面返回 `503 WEB_ASSETS_UNAVAILABLE`，但管理 HTTP API 继续可用；HTTP 暂存不可用只阻止上传，不阻止登录和管理。通过 `GET /api/management/status` 的 `auxiliary.web_assets` 与 `auxiliary.http_uploads` 分别核对，不把 `/healthz` 成功视为全部能力正常。修复目录、权限或发行件后重启服务；不要清空暂存和恢复证据来掩盖故障。
+
+`--web-dir` 及其所有祖先必须是真实目录，资源树也不能包含符号链接。升级时正常停服后，把参数直接改为新版本的 `public/` 实目录；不要使用 `current` 等符号链接切换 Web 版本，否则静态资源准入会拒绝并返回上述 503。
 
 生产启动前必须保持挂载目录身份和权限安全。`-` 路径选项只允许路径缺失，不代表空目录是一块有效磁盘；引擎仍验证登记身份。如果启动时目标缺失而被跳过，后来出现的挂载不能据此视为已经可见或可写；在宿主机恢复挂载后应重启服务，并在服务私有挂载命名空间中核对可见性、写权限和设备身份。此样例未做真实热插拔验收，也不自动挂载或格式化设备。
 
