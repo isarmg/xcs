@@ -79,6 +79,7 @@ impl IntoResponse for ApiError {
     }
 }
 
+/// Reject duplicate decoded fields before map deserialization can erase them.
 /// Preserve Axum query parsing, but never expose its plain-text rejection body.
 pub(crate) struct ApiQuery<T>(pub T);
 
@@ -90,6 +91,14 @@ where
     type Rejection = ApiError;
 
     async fn from_request_parts(parts: &mut Parts, state: &S) -> Result<Self, Self::Rejection> {
+        let mut fields = std::collections::BTreeSet::new();
+        for (field, _) in
+            url_encoding::form::parse(parts.uri.query().unwrap_or_default().as_bytes())
+        {
+            if !fields.insert(field) {
+                return Err(ApiError::invalid("duplicate query field"));
+            }
+        }
         Query::<T>::from_request_parts(parts, state)
             .await
             .map(|Query(value)| Self(value))

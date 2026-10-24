@@ -37,6 +37,12 @@ async fn query_and_path_rejections_use_the_api_envelope_after_authorization() {
         ("GET", "/api/versions/version/content?unknown=value"),
         ("GET", "/api/system/history?range=1min&range=1h"),
         ("GET", "/api/system/history?range=invalid"),
+        ("GET", "/api/events?after=1&after=2"),
+        (
+            "GET",
+            "/api/branches/branch/tree?commit_id=old&commit_id=new",
+        ),
+        ("GET", "/api/file-manager/disks/P01/entries?path=a&%70ath=b"),
         ("GET", "/api/repositories/%FF"),
         ("PATCH", "/api/file-manager/files/%FF/nodes/node"),
     ] {
@@ -68,6 +74,67 @@ async fn query_and_path_rejections_use_the_api_envelope_after_authorization() {
             .unwrap();
         assert_eq!(response.headers()[header::CACHE_CONTROL], "no-store");
         assert_error(response, StatusCode::BAD_REQUEST, "INVALID_REQUEST", false).await;
+    }
+}
+
+#[tokio::test]
+async fn map_query_rejects_duplicate_decoded_fields_without_overwriting() {
+    for query in [
+        "after=1&after=2",
+        "path=a&path=b",
+        "path=a&%70ath=b",
+        "path=a&path=a",
+        "commit_id=old&commit_id=new",
+        "a+b=first&a%20b=second",
+        "&after=1&&after=2&",
+        "path&path=",
+    ] {
+        let (mut parts, _) = Request::builder()
+            .uri(format!("/api/events?{query}"))
+            .body(Body::empty())
+            .unwrap()
+            .into_parts();
+        let result =
+            ApiQuery::<BTreeMap<String, String>>::from_request_parts(&mut parts, &()).await;
+        let error = match result {
+            Ok(ApiQuery(fields)) => panic!("duplicate query accepted: {query}: {fields:?}"),
+            Err(error) => error,
+        };
+        assert_eq!(error.status, 400);
+        assert_eq!(error.code, "INVALID_REQUEST");
+    }
+}
+
+#[tokio::test]
+async fn map_query_keeps_distinct_fields_and_normal_form_decoding() {
+    for (query, expected) in [
+        ("", BTreeMap::new()),
+        (
+            "&%70ath=a%26path%3Db&&commit_id=selected+commit&",
+            BTreeMap::from([
+                ("path".to_owned(), "a&path=b".to_owned()),
+                ("commit_id".to_owned(), "selected commit".to_owned()),
+            ]),
+        ),
+        (
+            "path=&after=0&unused=0",
+            BTreeMap::from([
+                ("path".to_owned(), String::new()),
+                ("after".to_owned(), "0".to_owned()),
+                ("unused".to_owned(), "0".to_owned()),
+            ]),
+        ),
+    ] {
+        let (mut parts, _) = Request::builder()
+            .uri(format!("/api/events?{query}"))
+            .body(Body::empty())
+            .unwrap()
+            .into_parts();
+        let ApiQuery(actual) =
+            ApiQuery::<BTreeMap<String, String>>::from_request_parts(&mut parts, &())
+                .await
+                .unwrap();
+        assert_eq!(actual, expected);
     }
 }
 
